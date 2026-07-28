@@ -2599,6 +2599,7 @@
     "signatoriesTitleCount": "Signatories { count }",
     "signing": "{ signed } of { threshold } signed",
     "status": {
+      "awaitingOutcomeDescription": "Waiting for the final status — it will be updated automatically when network data is received",
       "cancelled": "Rejected",
       "error": "Rejected",
       "established": "Established",

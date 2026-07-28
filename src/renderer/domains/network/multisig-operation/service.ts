@@ -145,25 +145,32 @@ const mergeMultisigOperations = (
     filter: (a, b) => !isEqual(a, b),
     mergeBy: a => a.id,
     sort: (a, b) => a.blockCreated - b.blockCreated,
-    merge: (a, b) => ({
-      ...b,
+    merge: (a, b) => {
       // A still-pending version must not shadow one that already knows how the
       // operation resolved — either side can lag the other (live storage
       // snapshot vs indexer catching up).
-      status: b.status === 'pending' && a.status !== 'pending' ? a.status : b.status,
-      // Union: each side can know approvals the other lacks — the live path has
-      // storage-derived approvals the indexer hasn't indexed yet, the indexer
-      // has the executor's approval when the live event was missed. On an id
-      // collision the a-side (indexer) event wins: it carries the real per-event
-      // block and timestamp, while storage-derived events reuse the creation
-      // timepoint.
-      events: uniqBy([...a.events, ...b.events], event => event.id),
-      callData: b.callData ?? a.callData,
-      callHash: b.callHash ?? a.callHash,
-      transaction: b.transaction ?? a.transaction,
-      section: b.section ?? a.section,
-      method: b.method ?? a.method,
-    }),
+      const status = b.status === 'pending' && a.status !== 'pending' ? a.status : b.status;
+
+      return {
+        ...b,
+        status,
+        // The awaiting-outcome marker only makes sense while the merged status
+        // is still pending — drop it as soon as either side knows the outcome.
+        awaitingOutcome: status === 'pending' ? (b.awaitingOutcome ?? a.awaitingOutcome) : undefined,
+        // Union: each side can know approvals the other lacks — the live path has
+        // storage-derived approvals the indexer hasn't indexed yet, the indexer
+        // has the executor's approval when the live event was missed. On an id
+        // collision the a-side (indexer) event wins: it carries the real per-event
+        // block and timestamp, while storage-derived events reuse the creation
+        // timepoint.
+        events: uniqBy([...a.events, ...b.events], event => event.id),
+        callData: b.callData ?? a.callData,
+        callHash: b.callHash ?? a.callHash,
+        transaction: b.transaction ?? a.transaction,
+        section: b.section ?? a.section,
+        method: b.method ?? a.method,
+      };
+    },
   });
 };
 

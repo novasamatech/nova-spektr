@@ -38,7 +38,11 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   const isContact = isContactMultisigAccount(account);
 
-  if (isContact && operation.status !== 'pending') return null;
+  // An awaiting-outcome operation has already left on-chain storage — it only
+  // looks pending until the indexer reports; signing it would fail on-chain.
+  const isActionable = operation.status === 'pending' && !operation.awaitingOutcome;
+
+  if (isContact && !isActionable) return null;
 
   const hasRejectAccount =
     !isContact &&
@@ -52,14 +56,13 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
   const hasApproveAccount =
     !isContact && multisigOperationService.findActionableSignatories(operation, account, allAccounts, chain).length > 0;
 
-  const isRejectAvailable = operation.status === 'pending' && hasRejectAccount;
+  const isRejectAvailable = isActionable && hasRejectAccount;
 
   const isFinalSigning = operation.events.length === account.threshold - 1;
   const hasValidCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
-  const isApproveAvailable =
-    operation.status === 'pending' && hasApproveAccount && (!isFinalSigning || hasValidCallData);
+  const isApproveAvailable = isActionable && hasApproveAccount && (!isFinalSigning || hasValidCallData);
 
-  const needsCallData = operation.status === 'pending' && hasApproveAccount && isFinalSigning && !hasValidCallData;
+  const needsCallData = isActionable && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
   if (!chain && !isContact) return null;
 

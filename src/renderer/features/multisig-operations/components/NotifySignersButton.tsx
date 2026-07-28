@@ -31,7 +31,11 @@ export const NotifySignersButton = ({ operation }: Props) => {
   // signatories, so nudging an unknown multisig can never succeed.
   const isKnownMultisig = backendContacts.some(contact => contact.accountId === operation.multisigAccountId);
   const canNotify =
-    Boolean(baseUrl) && isHealthy && operation.status === MultisigOperationStatus.Pending && isKnownMultisig;
+    Boolean(baseUrl) &&
+    isHealthy &&
+    operation.status === MultisigOperationStatus.Pending &&
+    !operation.awaitingOutcome &&
+    isKnownMultisig;
   if (!canNotify) return null;
 
   // The backend only authorizes a signatory who has already signed; mirror that rule with the
