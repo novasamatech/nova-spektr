@@ -70,7 +70,6 @@ const makeValidator = (index: number, overrides: Partial<EraValidator> = {}): Er
   nominatorCount: 10,
   pageCount: 1,
   maxNominatorsRewarded: 512,
-  oversubscribed: false,
   slashed: false,
   eraPoints: 100,
   blocksAuthored: 10,
@@ -292,7 +291,7 @@ describe('validatorSelectionModel table', () => {
     const scope = forkWith(SCENARIO);
 
     await initiate(scope, {});
-    await allSettled(validatorSelectionModel.events.filtersChanged, { scope, params: { hideOversubscribed: true } });
+    await allSettled(validatorSelectionModel.events.filtersChanged, { scope, params: { hideIdle: true } });
     await allSettled(validatorSelectionModel.events.queryChanged, { scope, params: 'alpha' });
     await allSettled(validatorSelectionModel.events.filtersReset, { scope });
 
@@ -499,7 +498,6 @@ describe('validatorSelectionModel submit', () => {
         totalStake: '1000',
         commission: 1,
         blocked: false,
-        oversubscribed: false,
         slashed: false,
         apy: 5,
         avgApy: 0,
@@ -512,7 +510,6 @@ describe('validatorSelectionModel submit', () => {
         totalStake: '1000',
         commission: 3,
         blocked: false,
-        oversubscribed: false,
         slashed: false,
         apy: 12,
         avgApy: 0,

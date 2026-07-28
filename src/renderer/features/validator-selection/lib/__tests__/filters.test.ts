@@ -12,7 +12,6 @@ const OPEN_FILTERS: FiltersState = {
   minApy: null,
   maxCommission: null,
   minOwnStake: null,
-  hideOversubscribed: false,
   hideIdle: false,
   hasIdentity: false,
   neverSlashed: false,
@@ -36,7 +35,7 @@ describe('hasOnChainIdentity', () => {
 
 describe('applyFilters', () => {
   it('keeps everything when no bound is set', () => {
-    const validators = [makeValidator(1, { slashed: true, oversubscribed: true, blocksAuthored: 0, apy: null })];
+    const validators = [makeValidator(1, { slashed: true, blocksAuthored: 0, apy: null })];
 
     expect(applyFilters(validators, OPEN_FILTERS, identityParents)).toEqual(validators);
   });
@@ -79,14 +78,6 @@ describe('applyFilters', () => {
     );
 
     expect(ids(result)).toEqual([accountId(1)]);
-  });
-
-  it('hides oversubscribed validators', () => {
-    const validators = [makeValidator(1, { oversubscribed: true }), makeValidator(2)];
-
-    expect(ids(applyFilters(validators, withFilters({ hideOversubscribed: true }), identityParents))).toEqual([
-      accountId(2),
-    ]);
   });
 
   it('hides validators that authored zero blocks, but keeps unknown block counts', () => {
@@ -132,7 +123,6 @@ describe('applyFilters', () => {
         minApy: 10,
         maxCommission: 5,
         minOwnStake: '100',
-        hideOversubscribed: true,
         hideIdle: true,
         hasIdentity: true,
         neverSlashed: true,
@@ -174,7 +164,6 @@ describe('filtersDiffer', () => {
       { minApy: 0 },
       { maxCommission: 100 },
       { minOwnStake: '0' },
-      { hideOversubscribed: true },
       { hideIdle: true },
       { hasIdentity: false },
       { neverSlashed: false },

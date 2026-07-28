@@ -8,7 +8,6 @@ describe('defaults', () => {
       minApy: null,
       maxCommission: null,
       minOwnStake: null,
-      hideOversubscribed: false,
       hideIdle: false,
       hasIdentity: true,
       neverSlashed: true,

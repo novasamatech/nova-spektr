@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, DetailRow, FootnoteText, IconButton } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Label, Progress, ScrollArea } from '@/shared/ui-kit';
@@ -22,7 +22,6 @@ const { events } = validatorSelectionModel;
 const RISK_VARIANT: Record<ValidatorFlag, 'info' | 'warn' | 'error'> = {
   blocked: 'info',
   slashed: 'error',
-  oversubscribed: 'warn',
   cluster: 'warn',
   noIdentity: 'info',
 };
@@ -120,9 +119,7 @@ export const ValidatorDetailPane = () => {
             </DetailRow>
 
             <DetailRow label={t('staking.validatorSelection.detail.nominators')}>
-              <FootnoteText className={validator.oversubscribed ? 'text-text-negative' : undefined}>
-                {validator.nominatorCount.toLocaleString()}
-              </FootnoteText>
+              <FootnoteText>{validator.nominatorCount.toLocaleString()}</FootnoteText>
             </DetailRow>
 
             <DetailRow label={t('staking.validatorSelection.detail.ownStake')}>
@@ -198,6 +195,13 @@ const WhyRecommended = ({ score }: WhyRecommendedProps) => {
   return (
     <div className="flex flex-col gap-y-3 rounded-lg bg-main-app-background p-3">
       <FootnoteText className="font-semibold">{t('staking.validatorSelection.detail.whyRecommended')}</FootnoteText>
+
+      {/* The blend that decided the order, above the metrics that fed it. */}
+      <ScoreBar label={t('staking.validatorSelection.detail.scoreOverall')} value={score.overall} emphasized />
+
+      <div className="border-t border-container-border" />
+
+      <ScoreBar label={t('staking.validatorSelection.detail.scoreApy')} value={score.apy} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreCommission')} value={score.commission} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreSelfStake')} value={score.selfStake} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreBlockProduction')} value={score.blockProduction} />
@@ -209,16 +213,18 @@ const WhyRecommended = ({ score }: WhyRecommendedProps) => {
 type ScoreBarProps = {
   label: string;
   value: number;
+  /** The composite row, set apart from the metrics that make it up. */
+  emphasized?: boolean;
 };
 
-const ScoreBar = ({ label, value }: ScoreBarProps) => {
+const ScoreBar = ({ label, value, emphasized }: ScoreBarProps) => {
   const percent = Math.round(Math.min(Math.max(value, 0), 1) * 100);
 
   return (
     <div className="flex flex-col gap-y-1">
       <div className="flex items-center justify-between">
-        <FootnoteText className="text-text-tertiary">{label}</FootnoteText>
-        <FootnoteText className="tabular-nums">{`${percent}%`}</FootnoteText>
+        <FootnoteText className={emphasized ? 'font-semibold' : 'text-text-tertiary'}>{label}</FootnoteText>
+        <FootnoteText className={cnTw('tabular-nums', emphasized && 'font-semibold')}>{`${percent}%`}</FootnoteText>
       </div>
       <Progress value={percent} max={100} />
     </div>

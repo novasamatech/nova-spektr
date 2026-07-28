@@ -18,10 +18,10 @@ const VARIANT: Record<PositionStatus, LabelVariant> = {
  * The pill and the sentence behind it.
  *
  * The reason is what makes the pill actionable — "Inactive" alone tells the
- * user nothing they can do about it, while "every validator is oversubscribed"
- * points straight at changing validators. When the chain has not told us why,
- * the tooltip falls back to the plain status meaning rather than inventing
- * one.
+ * user nothing they can do about it, while "none of the nominated validators
+ * was elected" points straight at changing validators. When the chain has not
+ * told us why, the tooltip falls back to the plain status meaning rather than
+ * inventing one.
  */
 export const PositionStatusPill = ({ status, statusReason }: Props) => {
   const { t } = useI18n();

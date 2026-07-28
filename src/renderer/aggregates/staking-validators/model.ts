@@ -169,6 +169,10 @@ function readFlag(value: unknown, fallback: boolean): boolean {
  * Turns whatever localStorage returned into a complete set of flags: every key
  * that is missing or not a boolean falls back to its default, so a stale or
  * corrupt payload can never leak `undefined` into the recommendation criteria.
+ *
+ * Reading key by key is also what makes a retired criterion harmless: an entry
+ * written before `excludeOversubscribed` was dropped still hydrates, and the
+ * flag that no longer exists is simply not read.
  */
 function normalizeCriteria(value: unknown): CriteriaFlags {
   const source = isRecord(value) ? value : {};
@@ -176,10 +180,6 @@ function normalizeCriteria(value: unknown): CriteriaFlags {
   return {
     excludeSlashed: readFlag(source['excludeSlashed'], DEFAULT_RECOMMENDATION_CRITERIA.excludeSlashed),
     requireIdentity: readFlag(source['requireIdentity'], DEFAULT_RECOMMENDATION_CRITERIA.requireIdentity),
-    excludeOversubscribed: readFlag(
-      source['excludeOversubscribed'],
-      DEFAULT_RECOMMENDATION_CRITERIA.excludeOversubscribed,
-    ),
     limitClusters: readFlag(source['limitClusters'], DEFAULT_RECOMMENDATION_CRITERIA.limitClusters),
   };
 }

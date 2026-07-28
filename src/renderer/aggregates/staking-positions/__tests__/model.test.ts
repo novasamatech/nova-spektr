@@ -78,7 +78,6 @@ vi.mock('@/domains/staking/exposures/service', () => ({
   exposureService: {
     getEraOverviews: () => Promise.resolve({}),
     getExposurePages: (api: { chainId: string }) => Promise.resolve(chainMock.exposurePages[api.chainId] ?? {}),
-    checkOversubscribed: () => false,
   },
 }));
 

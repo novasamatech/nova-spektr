@@ -455,3 +455,52 @@ under tomorrow.
 
 **Verification:** `pnpm types:go` clean, 2616 unit tests, 223 integration tests, `check:feature-map` OK (132 modules),
 eslint 0 errors on the changed files.
+
+## Follow-up decisions (2026-07-28)
+
+Two of the open items from the review pass above were resolved by the user; the other two were left as they are.
+
+### 1. `oversubscribed` — flag removed (decided: remove, not redefine)
+
+`MaxExposurePageSize` is the size of one exposure page, not a reward cutoff: every page is payable through
+`payout_stakers_by_page`, so a validator with more backers than one page holds is spread over several pages rather than
+paying its tail nothing. The flag was therefore false in substance everywhere it appeared, and it drove three real
+behaviours — a warning badge, a default-on recommendation exclusion, and an `inactive` position's stated reason.
+
+Removed end to end: `EraValidator.oversubscribed`, the legacy `Validator.oversubscribed`,
+`exposureService.checkOversubscribed`, the `excludeOversubscribed` criterion (persisted payloads that still carry the
+key hydrate fine — flags are read key by key), the `hideOversubscribed` table filter, the row badge and its risk copy,
+and the `'oversubscribed'` `PositionStatusReason`. `nominatorCount` and `maxNominatorsRewarded` stay: the `412 / 512`
+cell is a fact, it just no longer implies a penalty, and the red text is gone.
+
+`deriveStatusReason` now answers `notElected` / `notExposed` only — which is what it could honestly distinguish anyway,
+since exposure pages are flattened across all pages before the stash is looked for.
+
+### 2. Recommendation ranking — composite score (decided: APY leading, four metrics adjusting)
+
+`recommendValidators` ranked purely by APY while the criteria popover claimed it scored on commission, self stake, block
+production and era points. Fixed the algorithm rather than the copy.
+
+Ranking is now the weighted blend in `SCORE_WEIGHTS`: APY 0.4, commission 0.2, self stake 0.15, block production 0.15,
+era points 0.1. APY leads because it is the return being bought, but it no longer decides alone — a headline APY earned
+behind a 20% commission now loses to a cheaper, better-run validator. An unknown APY scores 0 on that metric instead of
+sinking the validator outright, so the other four still speak for it.
+
+- `ScoreBreakdown` gained `apy` and `overall`; `getScoreBreakdown` is the single source for both the ordering and the
+  "Why recommended" card, so the bars a user reads are the numbers that produced the pick.
+- The card leads with an `Overall` row above a divider, then the five metrics.
+- Popover copy now reads "Ranked by estimated APY, commission, self stake, block production and era points."
+- **Perf:** scoring every validator against every other is quadratic, and `ownStake` is a planck string, so the naive
+  form re-parsed ~600 BNs per validator. The normalisation maxima are now computed once per candidate set
+  (`createScorer`) and closed over.
+
+Tests: the old ordering cases still hold (with everything else equal, APY decides) and four new ones pin the blend — a
+cheaper validator outranking a higher APY, a clearly better APY still winning when the rest is close, ranking with no
+APY known at all, and `overall` being exactly the weighted sum.
+
+### 3. Extra claim transactions unvalidated — left open, as agreed.
+
+### 4. Draft mode using the picked address-book source — reviewed and accepted as correct behaviour; no change.
+
+**Verification:** `pnpm types:go` clean, 2616 unit tests, 223 integration tests, feature-map OK (132 modules), eslint 0
+errors on changed files, every static `t()` key resolves.

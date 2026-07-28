@@ -62,15 +62,30 @@ true about it. In order of precedence:
 
 1. **blocked** — the validator rejects new nominations. The row cannot be picked at all.
 2. **slashed** — it carries a slash inside the defer window.
-3. **oversubscribed** — its exposure page is full, so the tail of its nominators earns nothing.
-4. **3rd in cluster** — the third-best validator run by an operator the list already shows twice. Spreading a nomination
+3. **3rd in cluster** — the third-best validator run by an operator the list already shows twice. Spreading a nomination
    across operators limits the blast radius of one operator being slashed, which is why the recommendation stops at two
    per operator; the badge says which rows are the ones it stopped at.
-5. **no identity** — nobody has registered a name for it on chain, so we cannot say who runs it.
+4. **no identity** — nobody has registered a name for it on chain, so we cannot say who runs it.
 
-Cluster numbering follows the **recommendation order** (APY descending), not the column the user happens to be sorting
-by. "3rd in cluster" is a fact about the operator's validators, and it would be a poor one if clicking a column header
-changed which row carried it.
+There is deliberately no "oversubscribed" badge. `MaxExposurePageSize` is the size of one exposure page, not a reward
+cutoff: every page is payable through `payout_stakers_by_page`, so a validator with more backers than one page holds is
+spread over several pages rather than paying its tail nothing. The nominators column still shows `412 / 512` because the
+count and the page size are facts; nothing derives a warning from them.
+
+Cluster numbering follows the **recommendation order**, not the column the user happens to be sorting by. "3rd in
+cluster" is a fact about the operator's validators, and it would be a poor one if clicking a column header changed which
+row carried it.
+
+### What "recommended" is ranked on
+
+Not APY alone. Each candidate is scored `0..1` on five metrics — estimated APY, commission, self stake, block production
+and era points — normalised against the other candidates of that era, and the ranking sorts by a weighted blend of them
+(`SCORE_WEIGHTS` in `domains/staking/recommendations`). APY leads at 0.4 because it is the return the user is actually
+buying, but it cannot decide alone: a headline APY earned behind a large commission, or on a validator with no stake of
+its own in the position, is not the same offer as one earned without either.
+
+The "Why recommended" card renders exactly these numbers, `Overall` first. The card and the ordering come from one
+function on purpose — an explanation that can disagree with the decision it explains is worse than none.
 
 ### Search matches what is on screen
 
@@ -85,13 +100,12 @@ typing into the search box is a narrowing, not a re-sort.
 
 Two similar-looking sets of switches, deliberately kept apart:
 
-- **Filters** (min APY, max commission, min own stake, hide oversubscribed, hide idle, has identity, never slashed)
-  narrow the **table the user is browsing**. They are local to this screen and reset when it closes. "Has identity" and
-  "never slashed" start on — an anonymous or slashed validator is rarely what someone browsing wants — and the dot on
-  the filter button is the only signal that a collapsed popover is still narrowing the list.
-- **Criteria** (exclude slashed, require identity, exclude oversubscribed, limit clusters) shape the **recommendation**.
-  They are a saved user preference shared with every other staking surface, so changing them here changes what
-  "recommended" means everywhere.
+- **Filters** (min APY, max commission, min own stake, hide idle, has identity, never slashed) narrow the **table the
+  user is browsing**. They are local to this screen and reset when it closes. "Has identity" and "never slashed" start
+  on — an anonymous or slashed validator is rarely what someone browsing wants — and the dot on the filter button is the
+  only signal that a collapsed popover is still narrowing the list.
+- **Criteria** (exclude slashed, require identity, limit clusters) shape the **recommendation**. They are a saved user
+  preference shared with every other staking surface, so changing them here changes what "recommended" means everywhere.
 
 Consequently the recommendation can legitimately include a validator the current filters hide, and "Fill with
 recommended" can therefore select rows that are not visible. That is why the footer counts selected-and-shown separately

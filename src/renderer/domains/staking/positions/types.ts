@@ -37,7 +37,7 @@ export type PositionStatus = 'active' | 'waiting' | 'inactive' | 'bonded';
  * statuses, and `null` when the era validator set is unavailable - the reason
  * is never guessed.
  */
-export type PositionStatusReason = 'oversubscribed' | 'notElected' | 'notExposed' | null;
+export type PositionStatusReason = 'notElected' | 'notExposed' | null;
 
 export type StakingPosition = {
   accountId: AccountId;

@@ -63,7 +63,7 @@ descending by default, and clearing the sort returns to that default rather than
 - **Share** — a share of what the user is _looking at_. Under the dashboard's account filter the denominator is the
   visible chain total, so the column always adds up to 100%.
 - **Status** — `Active` / `Waiting` / `Inactive` / `Bonded`, each with the reason behind it. The reason is the point:
-  "Inactive" alone tells the user nothing actionable, "every nominated validator is oversubscribed" points straight at
+  "Inactive" alone tells the user nothing actionable, "none of the nominated validators was elected" points straight at
   changing validators. When the chain has not said why, the tooltip falls back to the plain status meaning rather than
   inventing one.
 - **APY** — the mean APY of the validators that actually back the position; for one that earns nothing, the mean of what

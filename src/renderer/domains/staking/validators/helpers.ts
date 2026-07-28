@@ -17,7 +17,6 @@ export function mapEraValidatorToLegacy(validator: EraValidator, chainId: ChainI
     totalStake: validator.totalStake,
     commission: validator.commission,
     blocked: validator.blocked,
-    oversubscribed: validator.oversubscribed,
     slashed: validator.slashed,
     apy: validator.apy ?? 0,
     avgApy: 0,

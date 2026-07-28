@@ -13,7 +13,6 @@ export const makeValidator = (index: number, overrides: Partial<EraValidator> = 
   nominatorCount: 10,
   pageCount: 1,
   maxNominatorsRewarded: 512,
-  oversubscribed: false,
   slashed: false,
   eraPoints: 100,
   blocksAuthored: 10,

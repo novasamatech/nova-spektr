@@ -35,7 +35,6 @@ export type FiltersState = {
   maxCommission: number | null;
   /** Minimum validator self stake, in planck. `null` - no bound. */
   minOwnStake: string | null;
-  hideOversubscribed: boolean;
   /** Drops validators that authored zero blocks. Unknown block counts stay. */
   hideIdle: boolean;
   hasIdentity: boolean;
@@ -47,7 +46,7 @@ export type FiltersState = {
  * important thing to know about a validator, not a list of everything true
  * about it.
  */
-export type ValidatorFlag = 'blocked' | 'slashed' | 'oversubscribed' | 'cluster' | 'noIdentity';
+export type ValidatorFlag = 'blocked' | 'slashed' | 'cluster' | 'noIdentity';
 
 /** Everything the header chips need to describe who is signing and how. */
 export type SigningInfo = {

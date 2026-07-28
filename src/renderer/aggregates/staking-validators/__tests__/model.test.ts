@@ -53,7 +53,6 @@ const makeValidator = (index: number, overrides: Partial<EraValidator> = {}): Er
   nominatorCount: 10,
   pageCount: 1,
   maxNominatorsRewarded: 512,
-  oversubscribed: false,
   slashed: false,
   eraPoints: 100,
   blocksAuthored: null,

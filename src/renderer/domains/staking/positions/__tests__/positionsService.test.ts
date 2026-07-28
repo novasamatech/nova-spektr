@@ -48,7 +48,7 @@ function createExposure(others: AccountId[]): Exposure {
   };
 }
 
-function createValidator(accountId: AccountId, oversubscribed = false): EraValidator {
+function createValidator(accountId: AccountId): EraValidator {
   return {
     accountId,
     totalStake: '1000',
@@ -58,7 +58,6 @@ function createValidator(accountId: AccountId, oversubscribed = false): EraValid
     nominatorCount: 10,
     pageCount: 1,
     maxNominatorsRewarded: 512,
-    oversubscribed,
     slashed: false,
     eraPoints: 100,
     blocksAuthored: null,
@@ -218,20 +217,6 @@ describe('positionsService', () => {
   });
 
   describe('statusReason', () => {
-    test('should be oversubscribed when every elected nominated validator is oversubscribed', () => {
-      const position = positionsService.derivePosition(
-        createInput({
-          nomination: createNomination([validatorA, validatorB, validatorC]),
-          exposures: { [validatorA]: createExposure([otherStash]) },
-          // validatorC is not elected, so it doesn't break the oversubscribed verdict
-          validators: createValidatorMap([createValidator(validatorA, true), createValidator(validatorB, true)]),
-        }),
-      );
-
-      expect(position.status).toEqual('inactive');
-      expect(position.statusReason).toEqual('oversubscribed');
-    });
-
     test('should be notElected when none of the nominated validators is elected', () => {
       const position = positionsService.derivePosition(
         createInput({
@@ -245,12 +230,12 @@ describe('positionsService', () => {
       expect(position.statusReason).toEqual('notElected');
     });
 
-    test('should be notExposed when an elected, non-oversubscribed validator does not expose the stash', () => {
+    test('should be notExposed when an elected validator does not expose the stash', () => {
       const position = positionsService.derivePosition(
         createInput({
           nomination: createNomination([validatorA, validatorB]),
           exposures: { [validatorA]: createExposure([otherStash]) },
-          validators: createValidatorMap([createValidator(validatorA, true), createValidator(validatorB, false)]),
+          validators: createValidatorMap([createValidator(validatorA), createValidator(validatorB)]),
         }),
       );
 
@@ -272,7 +257,7 @@ describe('positionsService', () => {
     });
 
     test('should stay null for non-inactive statuses', () => {
-      const validators = createValidatorMap([createValidator(validatorA, true)]);
+      const validators = createValidatorMap([createValidator(validatorA)]);
 
       const active = positionsService.derivePosition(
         createInput({
@@ -473,14 +458,14 @@ describe('positionsService', () => {
       const inactiveInput = createInput({
         nomination: createNomination([validatorB]),
         exposures: {},
-        validators: createValidatorMap([createValidator(validatorB, true)]),
+        validators: createValidatorMap([createValidator(validatorB)]),
       });
 
       const positions = positionsService.derivePositions([bondedInput, activeInput, inactiveInput]);
 
       expect(positions).toHaveLength(3);
       expect(positions.map(position => position.status)).toEqual(['bonded', 'active', 'inactive']);
-      expect(positions.map(position => position.statusReason)).toEqual([null, null, 'oversubscribed']);
+      expect(positions.map(position => position.statusReason)).toEqual([null, null, 'notExposed']);
       expect(positions[1]?.accountId).toEqual(otherStash);
       expect(positions[1]?.redeemable).toEqual('10');
       expect(positions[2]?.chainId).toEqual(chainId);

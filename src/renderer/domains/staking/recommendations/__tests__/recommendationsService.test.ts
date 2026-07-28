@@ -1,6 +1,6 @@
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EraValidator } from '../../validators/types';
-import { DEFAULT_RECOMMENDATION_CRITERIA, MAX_PER_CLUSTER } from '../constants';
+import { DEFAULT_RECOMMENDATION_CRITERIA, MAX_PER_CLUSTER, SCORE_WEIGHTS } from '../constants';
 import { recommendationsService } from '../service';
 import { type IdentityParentMap, type RecommendationCriteria } from '../types';
 
@@ -22,7 +22,6 @@ function createValidator(accountId: AccountId, overrides: Partial<EraValidator> 
     nominatorCount: 0,
     pageCount: 0,
     maxNominatorsRewarded: 512,
-    oversubscribed: false,
     slashed: false,
     eraPoints: 0,
     blocksAuthored: null,
@@ -41,7 +40,6 @@ function createOpenCriteria(overrides: Partial<RecommendationCriteria> = {}): Re
   return createCriteria({
     excludeSlashed: false,
     requireIdentity: false,
-    excludeOversubscribed: false,
     limitClusters: false,
     ...overrides,
   });
@@ -116,18 +114,6 @@ describe('recommendationsService.recommendValidators', () => {
       expect(getIds(result)).toEqual([alice, bob]);
     });
 
-    it('should drop oversubscribed validators when excludeOversubscribed is on', () => {
-      const validators = [createValidator(alice, { oversubscribed: true }), createValidator(bob)];
-
-      const result = recommendationsService.recommendValidators(
-        validators,
-        identities,
-        createOpenCriteria({ excludeOversubscribed: true }),
-      );
-
-      expect(getIds(result)).toEqual([bob]);
-    });
-
     it('should drop validators without identity when requireIdentity is on', () => {
       const validators = [createValidator(alice), createValidator(bob), createValidator(charlie)];
       // alice has a root identity, bob is explicitly identity-less, charlie is absent.
@@ -158,7 +144,7 @@ describe('recommendationsService.recommendValidators', () => {
     it('should apply every relaxable filter together', () => {
       const validators = [
         createValidator(alice, { slashed: true }),
-        createValidator(bob, { oversubscribed: true }),
+        createValidator(bob, { slashed: true }),
         createValidator(charlie),
         createValidator(dave),
       ];
@@ -174,7 +160,7 @@ describe('recommendationsService.recommendValidators', () => {
     it('should relax every relaxable filter when the strict pass is empty', () => {
       const validators = [
         createValidator(alice, { slashed: true, apy: 5 }),
-        createValidator(bob, { oversubscribed: true, apy: 9 }),
+        createValidator(bob, { slashed: true, apy: 9 }),
       ];
 
       const result = recommendationsService.recommendValidators(validators, {}, createCriteria());
@@ -209,7 +195,44 @@ describe('recommendationsService.recommendValidators', () => {
   });
 
   describe('ordering', () => {
-    it('should sort by apy descending', () => {
+    it('should let a cheaper, better-run validator outrank a higher apy', () => {
+      // APY carries 0.4 of the score, the other four carry 0.6 together, so a
+      // validator that wins every one of them beats a 20%-better APY. This is
+      // the whole point of ranking on a blend: a headline APY earned behind a
+      // large commission is not the same offer as one earned without it.
+      const validators = [
+        createValidator(alice, { apy: 12, commission: 20, ownStake: '1', blocksAuthored: 0, eraPoints: 10 }),
+        createValidator(bob, { apy: 10, commission: 0, ownStake: '1000', blocksAuthored: 20, eraPoints: 900 }),
+      ];
+
+      const result = recommendationsService.recommendValidators(validators, {}, createOpenCriteria());
+
+      expect(getIds(result)).toEqual([bob, alice]);
+    });
+
+    it('should still put a clearly better apy first when the other metrics are close', () => {
+      const validators = [
+        createValidator(alice, { apy: 4, commission: 5, ownStake: '100', blocksAuthored: 5, eraPoints: 100 }),
+        createValidator(bob, { apy: 14, commission: 6, ownStake: '95', blocksAuthored: 5, eraPoints: 95 }),
+      ];
+
+      const result = recommendationsService.recommendValidators(validators, {}, createOpenCriteria());
+
+      expect(getIds(result)).toEqual([bob, alice]);
+    });
+
+    it('should rank on the metrics that remain when no apy is known at all', () => {
+      const validators = [
+        createValidator(alice, { apy: null, commission: 30, eraPoints: 10 }),
+        createValidator(bob, { apy: null, commission: 0, eraPoints: 900 }),
+      ];
+
+      const result = recommendationsService.recommendValidators(validators, {}, createOpenCriteria());
+
+      expect(getIds(result)).toEqual([bob, alice]);
+    });
+
+    it('should sort by apy descending when nothing else separates the validators', () => {
       const validators = [
         createValidator(alice, { apy: 3 }),
         createValidator(bob, { apy: 12.5 }),
@@ -221,7 +244,7 @@ describe('recommendationsService.recommendValidators', () => {
       expect(getIds(result)).toEqual([bob, charlie, alice]);
     });
 
-    it('should sort validators with unknown apy last', () => {
+    it('should sort validators with unknown apy last among otherwise equal ones', () => {
       const validators = [
         createValidator(alice, { apy: null }),
         createValidator(bob, { apy: 1 }),
@@ -268,7 +291,7 @@ describe('recommendationsService.recommendValidators', () => {
       const result = recommendationsService.recommendValidators(
         validators,
         parents,
-        createCriteria({ excludeSlashed: false, excludeOversubscribed: false }),
+        createCriteria({ excludeSlashed: false }),
       );
 
       expect(result).toHaveLength(MAX_PER_CLUSTER);
@@ -517,11 +540,52 @@ describe('recommendationsService.getScoreBreakdown', () => {
     const validator = createValidator(alice, { commission: 5, ownStake: '10', blocksAuthored: 3, eraPoints: 7 });
 
     expect(recommendationsService.getScoreBreakdown(validator, [])).toEqual({
+      apy: 0,
       commission: 0,
       selfStake: 0,
       blockProduction: 0,
       eraPoints: 0,
+      overall: 0,
     });
+  });
+
+  it('should blend the metrics into overall with the documented weights', () => {
+    // Best of the set on every metric - the ceiling the weights add up to.
+    const best = createValidator(alice, {
+      apy: 20,
+      commission: 0,
+      ownStake: '100',
+      blocksAuthored: 10,
+      eraPoints: 100,
+    });
+    const worst = createValidator(bob, { apy: 0, commission: 20, ownStake: '0', blocksAuthored: 0, eraPoints: 0 });
+
+    const bestScore = recommendationsService.getScoreBreakdown(best, [best, worst]);
+    const worstScore = recommendationsService.getScoreBreakdown(worst, [best, worst]);
+
+    expect(bestScore.overall).toBeCloseTo(1);
+    expect(worstScore.overall).toBeCloseTo(0);
+  });
+
+  it('should weight apy at four tenths of overall', () => {
+    // Identical on every metric but APY: the gap between a perfect and a zero
+    // APY is exactly the APY weight.
+    const shared = { commission: 5, ownStake: '100', blocksAuthored: 5, eraPoints: 50 };
+    const high = createValidator(alice, { ...shared, apy: 10 });
+    const low = createValidator(bob, { ...shared, apy: 0 });
+
+    const highScore = recommendationsService.getScoreBreakdown(high, [high, low]);
+    const lowScore = recommendationsService.getScoreBreakdown(low, [high, low]);
+
+    expect(highScore.overall - lowScore.overall).toBeCloseTo(SCORE_WEIGHTS.apy);
+  });
+
+  it('should report an unknown apy as a zero apy score rather than skipping the metric', () => {
+    const known = createValidator(alice, { apy: 10 });
+    const unknown = createValidator(bob, { apy: null });
+
+    expect(recommendationsService.getScoreBreakdown(unknown, [known, unknown]).apy).toBe(0);
+    expect(recommendationsService.getScoreBreakdown(known, [known, unknown]).apy).toBe(1);
   });
 
   it('should keep every metric within 0..1', () => {

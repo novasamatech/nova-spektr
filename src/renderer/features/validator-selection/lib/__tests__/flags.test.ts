@@ -21,13 +21,11 @@ describe('getValidatorFlag', () => {
     expect(getValidatorFlag(makeValidator(1), 0)).toBe('noIdentity');
   });
 
-  it('follows the precedence blocked > slashed > oversubscribed > cluster > noIdentity', () => {
-    const everything = { blocked: true, slashed: true, oversubscribed: true };
+  it('follows the precedence blocked > slashed > cluster > noIdentity', () => {
+    const everything = { blocked: true, slashed: true };
 
     expect(getValidatorFlag(makeValidator(1, everything), 5)).toBe('blocked');
     expect(getValidatorFlag(makeValidator(1, { ...everything, blocked: false }), 5)).toBe('slashed');
-    expect(getValidatorFlag(makeValidator(1, { oversubscribed: true }), 5)).toBe('oversubscribed');
-    expect(getValidatorFlag(makeValidator(1, { oversubscribed: true }))).toBe('oversubscribed');
     expect(getValidatorFlag(makeValidator(1), 5)).toBe('cluster');
   });
 });

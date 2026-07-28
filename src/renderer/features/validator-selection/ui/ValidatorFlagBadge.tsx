@@ -3,15 +3,14 @@ import { type LabelVariant, Label } from '@/shared/ui-kit';
 import { type ValidatorFlag } from '../lib';
 
 /**
- * Severity read as colour: a slash is a loss that already happened (red), a
- * full exposure page and an over-represented operator are costs the user is
- * about to take on (amber), and "blocked"/"no identity" are statements about
- * what we know rather than warnings (grey).
+ * Severity read as colour: a slash is a loss that already happened (red), an
+ * over-represented operator is a cost the user is about to take on (amber), and
+ * "blocked"/"no identity" are statements about what we know rather than
+ * warnings (grey).
  */
 const FLAG_VARIANT: Record<ValidatorFlag, LabelVariant> = {
   blocked: 'gray',
   slashed: 'red',
-  oversubscribed: 'orange',
   cluster: 'orange',
   noIdentity: 'gray',
 };

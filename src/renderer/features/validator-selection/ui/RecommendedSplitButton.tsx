@@ -62,12 +62,6 @@ const CriteriaForm = ({ onClose }: FormProps) => {
 
       <div className="flex flex-col gap-y-3">
         <Switch
-          checked={criteria.excludeOversubscribed}
-          onChange={(checked) => events.criteriaChanged({ excludeOversubscribed: checked })}
-        >
-          {t('staking.validatorSelection.criteria.excludeOversubscribed')}
-        </Switch>
-        <Switch
           checked={criteria.excludeSlashed}
           onChange={(checked) => events.criteriaChanged({ excludeSlashed: checked })}
         >

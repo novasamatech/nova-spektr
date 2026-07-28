@@ -92,7 +92,6 @@ async function getEraValidators(params: EraValidatorsParams): Promise<EraValidat
     result[validator.accountId] = {
       ...validator,
       maxNominatorsRewarded: Number.isFinite(maxExposurePageSize) ? maxExposurePageSize : null,
-      oversubscribed: exposureService.checkOversubscribed(validator.nominatorCount, maxExposurePageSize),
       slashed: slashed.has(validator.accountId),
       eraPoints: eraPoints[validator.accountId] ?? 0,
       blocksAuthored: blocksAuthored?.[validator.accountId] ?? null,
@@ -305,7 +304,8 @@ function getMaxExposurePageSize(api: ApiPromise): number {
   } catch (error) {
     console.warn(error);
 
-    // Without the const nothing can be proven oversubscribed - don't warn falsely.
+    // The page size is informational only; without the const the column simply
+    // has no denominator to show.
     return Number.POSITIVE_INFINITY;
   }
 }
@@ -320,7 +320,6 @@ function createUnknownValidator(accountId: AccountId): EraValidator {
     nominatorCount: 0,
     pageCount: 0,
     maxNominatorsRewarded: null,
-    oversubscribed: false,
     slashed: false,
     eraPoints: 0,
     blocksAuthored: null,

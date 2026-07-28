@@ -240,12 +240,13 @@ export const ValidatorTable = () => {
           const validator = row.validator;
           if (nullable(validator) || nullable(row.nominators)) return <Skeleton width="60%" height="16px" />;
 
-          // The cap is what makes the count meaningful - "412 / 512" says how
-          // much room is left, a bare "412" says nothing.
+          // The cap is the exposure page size, so "412 / 512" says how far into
+          // the current page the validator is. Passing it is not a penalty:
+          // every page is payable through `payout_stakers_by_page`.
           const cap = validator.maxNominatorsRewarded;
 
           return (
-            <div className={cnTw('text-right tabular-nums', validator.oversubscribed && 'text-text-negative')}>
+            <div className="text-right tabular-nums">
               {nullable(cap)
                 ? row.nominators.toLocaleString()
                 : t('staking.validatorSelection.nominatorsOfCap', {

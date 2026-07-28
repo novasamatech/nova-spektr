@@ -23,7 +23,6 @@ function eraValidator(overrides: Partial<EraValidator> = {}): EraValidator {
     nominatorCount: 10,
     pageCount: 1,
     maxNominatorsRewarded: 512,
-    oversubscribed: false,
     slashed: false,
     eraPoints: 120,
     blocksAuthored: null,

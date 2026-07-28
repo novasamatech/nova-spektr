@@ -13,8 +13,6 @@ export type RecommendationCriteria = {
   excludeSlashed: boolean;
   /** Keep only validators with an on-chain identity. Relaxable. */
   requireIdentity: boolean;
-  /** Drop validators whose exposure page is already full. Relaxable. */
-  excludeOversubscribed: boolean;
   /** Keep at most `MAX_PER_CLUSTER` validators per identity cluster. */
   limitClusters: boolean;
   /** Maximum number of validators to return - the chain's `maxNominations`. */
@@ -35,10 +33,15 @@ export type IdentityParentMap = Record<AccountId, AccountId | null>;
 
 /**
  * Per-metric contribution of a validator to its recommendation, each value
- * normalised to `0..1` against the set it was compared with. Feeds the "Why
- * recommended" card - it explains a pick, it does not produce one.
+ * normalised to `0..1` against the set it was compared with.
+ *
+ * These are the metrics the recommender actually ranks on - `overall` is the
+ * weighted sum that decides the order, and the "Why recommended" card renders
+ * the same numbers, so the explanation and the decision cannot drift apart.
  */
 export type ScoreBreakdown = {
+  /** Estimated APY relative to the highest in the set. Unknown APY scores `0`. */
+  apy: number;
   /** Lower commission scores higher. */
   commission: number;
   /** Self stake relative to the largest self stake in the set. */
@@ -47,4 +50,6 @@ export type ScoreBreakdown = {
   blockProduction: number;
   /** Era reward points relative to the largest in the set. */
   eraPoints: number;
+  /** Weighted sum of the metrics above - what the ranking sorts by. */
+  overall: number;
 };

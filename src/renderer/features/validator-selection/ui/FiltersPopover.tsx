@@ -128,12 +128,6 @@ const FiltersForm = ({ onDone }: FormProps) => {
       </Field>
 
       <div className="flex flex-col gap-y-3">
-        <Switch
-          checked={filters.hideOversubscribed}
-          onChange={(checked) => events.filtersChanged({ hideOversubscribed: checked })}
-        >
-          {t('staking.validatorSelection.filters.hideOversubscribed')}
-        </Switch>
         <Switch checked={filters.hideIdle} onChange={(checked) => events.filtersChanged({ hideIdle: checked })}>
           {t('staking.validatorSelection.filters.hideIdle')}
         </Switch>

@@ -71,17 +71,17 @@ record for a case the user cannot distinguish anyway.
 
 ## Saved criteria
 
-Four switches, all on by default, all persisted and shared across windows:
+Three switches, all on by default, all persisted and shared across windows:
 
-| Criterion              | Effect when on                                        |
-| ---------------------- | ----------------------------------------------------- |
-| Exclude slashed        | Drops validators carrying a slash in the defer window |
-| Require identity       | Keeps only validators with an on-chain identity       |
-| Exclude oversubscribed | Drops validators whose exposure page is already full  |
-| Limit clusters         | Keeps at most two validators per operator cluster     |
+| Criterion        | Effect when on                                        |
+| ---------------- | ----------------------------------------------------- |
+| Exclude slashed  | Drops validators carrying a slash in the defer window |
+| Require identity | Keeps only validators with an on-chain identity       |
+| Limit clusters   | Keeps at most two validators per operator cluster     |
 
-Patches are merged, so a screen can flip one switch without restating the rest, and a reset returns all four to the
-defaults.
+Patches are merged, so a screen can flip one switch without restating the rest, and a reset returns all three to the
+defaults. A payload written before a criterion was retired still hydrates — the flags are read key by key, so a key
+nobody reads any more is simply ignored.
 
 **A stored payload is never trusted as-is.** Storage can hold an older shape, a half-written value or a hand-edited
 entry, and a missing switch would otherwise read as neither on nor off. Every switch is validated on load and falls back

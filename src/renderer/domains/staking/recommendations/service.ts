@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EraValidator } from '../validators/types';
 
-import { MAX_PER_CLUSTER, SCORE_PRECISION } from './constants';
+import { MAX_PER_CLUSTER, SCORE_PRECISION, SCORE_WEIGHTS } from './constants';
 import { type IdentityParentMap, type RecommendationCriteria, type ScoreBreakdown } from './types';
 
 export const recommendationsService = {
@@ -12,7 +12,7 @@ export const recommendationsService = {
 };
 
 /**
- * Picks the validators to nominate, mirroring Nova Wallet's recommender.
+ * Picks the validators to nominate.
  *
  * 1. Blocked validators are dropped unconditionally - they reject nominations, so
  *    recommending them can never work.
@@ -20,10 +20,14 @@ export const recommendationsService = {
  * 3. If step 2 emptied the list, it is rebuilt with the mandatory filter only. The
  *    user is never shown an empty recommendation because their filters were too
  *    strict for the era.
- * 4. The survivors are ordered by APY, unknown APY last, ties keeping the input
- *    order.
+ * 4. The survivors are ordered by their `overall` score - the weighted blend of
+ *    APY, commission, self stake, block production and era points described by
+ *    `SCORE_WEIGHTS`. Ties keep the input order.
  * 5. At most `MAX_PER_CLUSTER` validators of one identity cluster are kept.
  * 6. The result is cut to `criteria.limit`.
+ *
+ * Scores are normalised against the candidate set, so the ranking answers "best
+ * of what is electable this era", not "good by some absolute standard".
  */
 function recommendValidators(
   validators: EraValidator[],
@@ -36,7 +40,7 @@ function recommendValidators(
   // Graceful degradation: strict criteria must never yield nothing.
   const candidates = filtered.length > 0 ? filtered : nominable;
 
-  const sorted = sortByApy(candidates);
+  const sorted = sortByScore(candidates);
   const spread = criteria.limitClusters ? limitClusters(sorted, identityParents) : sorted;
 
   return spread.slice(0, Math.max(0, criteria.limit));
@@ -49,7 +53,6 @@ function applyRelaxableFilters(
 ): EraValidator[] {
   return validators.filter(validator => {
     if (criteria.excludeSlashed && validator.slashed) return false;
-    if (criteria.excludeOversubscribed && validator.oversubscribed) return false;
     if (criteria.requireIdentity && getClusterKey(validator, identityParents) === null) return false;
 
     return true;
@@ -57,24 +60,17 @@ function applyRelaxableFilters(
 }
 
 /**
- * Descending APY. `null` APY means the chain reported no reward data - those go
- * last instead of being read as `0`. Equal values keep the input order, which
- * is pinned by an explicit index tiebreak rather than by engine sort
- * stability.
+ * Descending `overall` score, each validator scored against the candidate set
+ * it competes in. Equal scores keep the input order, which is pinned by an
+ * explicit index tiebreak rather than by engine sort stability.
  */
-function sortByApy(validators: EraValidator[]): EraValidator[] {
+function sortByScore(validators: EraValidator[]): EraValidator[] {
+  const score = createScorer(validators);
+
   return validators
-    .map((validator, index) => ({ validator, index }))
-    .sort((a, b) => compareApy(a.validator.apy, b.validator.apy) || a.index - b.index)
+    .map((validator, index) => ({ validator, index, score: score(validator).overall }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
     .map(entry => entry.validator);
-}
-
-function compareApy(left: number | null, right: number | null): number {
-  if (left === right) return 0;
-  if (left === null) return 1;
-  if (right === null) return -1;
-
-  return right - left;
 }
 
 /**
@@ -104,70 +100,79 @@ function getClusterKey(validator: EraValidator, identityParents: IdentityParentM
 
 /**
  * Explains a recommendation: each metric of `validator` normalised to `0..1`
- * against `all`, so the UI can render comparable bars.
+ * against `all`, plus the weighted `overall` the ranking actually sorts by.
+ *
+ * The same function feeds both the ordering and the "Why recommended" card, so
+ * the bars a user reads are the numbers that produced the pick.
  *
  * A metric whose reference set carries no signal at all - empty set, every
  * value zero - scores `0` for everyone rather than dividing by zero.
  */
 function getScoreBreakdown(validator: EraValidator, all: EraValidator[]): ScoreBreakdown {
-  return {
-    commission: getCommissionScore(validator, all),
-    selfStake: getSelfStakeScore(validator, all),
-    blockProduction: getBlockProductionScore(validator, all),
-    eraPoints: getEraPointsScore(validator, all),
-  };
+  return createScorer(all)(validator);
 }
 
 /**
- * Inverted - the cheapest validator of the set scores `1`.
+ * The normalisation reference of one candidate set: the best value of each
+ * metric, read in a single pass.
  *
- * Unlike the other metrics, an all-zero set is not a missing-data case: a 0%
- * commission is the best possible value, so everyone scores `1` rather than the
- * `0` a plain zero-division guard would produce. An empty set is still missing
- * data and scores `0`.
+ * Ranking scores every validator against every other, so recomputing the maxima
+ * per validator would be quadratic - and `ownStake` is a planck string, so it
+ * would also re-parse ~600 BNs per validator on Polkadot. The reference is
+ * built once and closed over instead.
  */
-function getCommissionScore(validator: EraValidator, all: EraValidator[]): number {
-  if (all.length === 0) return 0;
+function createScorer(all: EraValidator[]): (validator: EraValidator) => ScoreBreakdown {
+  const empty = all.length === 0;
 
+  const maxApy = getMaxNumber(all.map(v => v.apy ?? 0));
   const maxCommission = getMaxNumber(all.map(v => v.commission));
-  if (maxCommission <= 0) return 1;
+  const maxPoints = getMaxNumber(all.map(v => v.eraPoints));
+  const maxBlocks = getMaxNumber(all.map(v => v.blocksAuthored ?? 0));
+  // Authored blocks are only readable on chains with the `imOnline` pallet.
+  // When the whole set reports `null`, era points stand in as the liveness proxy.
+  const blocksKnown = all.some(v => v.blocksAuthored !== null);
 
-  return clampScore(1 - validator.commission / maxCommission);
-}
-
-/** Self stake is a planck string - it overflows `Number`, so compare with BN. */
-function getSelfStakeScore(validator: EraValidator, all: EraValidator[]): number {
-  const own = parseStake(validator.ownStake);
   const maxOwn = all.reduce((max, v) => {
     const stake = parseStake(v.ownStake);
 
     return stake.gt(max) ? stake : max;
   }, new BN(0));
 
-  if (maxOwn.isZero()) return 0;
+  const scoreEraPoints = (validator: EraValidator) =>
+    maxPoints <= 0 ? 0 : clampScore(validator.eraPoints / maxPoints);
 
-  return clampScore(own.muln(SCORE_PRECISION).div(maxOwn).toNumber() / SCORE_PRECISION);
-}
+  return (validator: EraValidator): ScoreBreakdown => {
+    const apy = maxApy <= 0 ? 0 : clampScore((validator.apy ?? 0) / maxApy);
 
-/**
- * Authored blocks are only readable on chains with the `imOnline` pallet. When
- * the whole set reports `null`, era points stand in as the liveness proxy.
- */
-function getBlockProductionScore(validator: EraValidator, all: EraValidator[]): number {
-  const blocksKnown = all.some(v => v.blocksAuthored !== null);
-  if (!blocksKnown) return getEraPointsScore(validator, all);
+    // Inverted - the cheapest validator of the set scores `1`. Unlike the other
+    // metrics, an all-zero set is not a missing-data case: a 0% commission is
+    // the best possible value, so everyone scores `1` rather than the `0` a
+    // plain zero-division guard would produce. An empty set is still missing
+    // data and scores `0`.
+    const commission = empty ? 0 : maxCommission <= 0 ? 1 : clampScore(1 - validator.commission / maxCommission);
 
-  const maxBlocks = getMaxNumber(all.map(v => v.blocksAuthored ?? 0));
-  if (maxBlocks <= 0) return 0;
+    const selfStake = maxOwn.isZero()
+      ? 0
+      : clampScore(parseStake(validator.ownStake).muln(SCORE_PRECISION).div(maxOwn).toNumber() / SCORE_PRECISION);
 
-  return clampScore((validator.blocksAuthored ?? 0) / maxBlocks);
-}
+    const eraPoints = scoreEraPoints(validator);
 
-function getEraPointsScore(validator: EraValidator, all: EraValidator[]): number {
-  const maxPoints = getMaxNumber(all.map(v => v.eraPoints));
-  if (maxPoints <= 0) return 0;
+    const blockProduction = !blocksKnown
+      ? eraPoints
+      : maxBlocks <= 0
+        ? 0
+        : clampScore((validator.blocksAuthored ?? 0) / maxBlocks);
 
-  return clampScore(validator.eraPoints / maxPoints);
+    const overall = clampScore(
+      apy * SCORE_WEIGHTS.apy +
+        commission * SCORE_WEIGHTS.commission +
+        selfStake * SCORE_WEIGHTS.selfStake +
+        blockProduction * SCORE_WEIGHTS.blockProduction +
+        eraPoints * SCORE_WEIGHTS.eraPoints,
+    );
+
+    return { apy, commission, selfStake, blockProduction, eraPoints, overall };
+  };
 }
 
 function parseStake(value: string): BN {

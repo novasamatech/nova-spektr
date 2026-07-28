@@ -135,18 +135,4 @@ describe('exposureService', () => {
       expect(storage.erasStakersPaged).toHaveBeenCalledWith(api, ERA, bob);
     });
   });
-
-  describe('checkOversubscribed', () => {
-    test('should not report a full page as oversubscribed', () => {
-      expect(exposureService.checkOversubscribed(512, 512)).toEqual(false);
-    });
-
-    test('should report one nominator over the page size as oversubscribed', () => {
-      expect(exposureService.checkOversubscribed(513, 512)).toEqual(true);
-    });
-
-    test('should never report oversubscription without a known page size', () => {
-      expect(exposureService.checkOversubscribed(9999, Number.POSITIVE_INFINITY)).toEqual(false);
-    });
-  });
 });

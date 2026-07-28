@@ -90,11 +90,7 @@ function deriveStatusReason(targets: AccountId[], validators: EraValidatorMap | 
 
   const electedTargets = targets.filter(target => validators[target]?.elected);
 
-  if (electedTargets.length === 0) return 'notElected';
-
-  const allOversubscribed = electedTargets.every(target => validators[target]?.oversubscribed);
-
-  return allOversubscribed ? 'oversubscribed' : 'notExposed';
+  return electedTargets.length === 0 ? 'notElected' : 'notExposed';
 }
 
 function derivePosition(input: DerivePositionInput): StakingPosition {

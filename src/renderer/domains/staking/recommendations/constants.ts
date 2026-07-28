@@ -7,9 +7,28 @@ import { type RecommendationCriteria } from './types';
 export const DEFAULT_RECOMMENDATION_CRITERIA: Omit<RecommendationCriteria, 'limit'> = {
   excludeSlashed: true,
   requireIdentity: true,
-  excludeOversubscribed: true,
   limitClusters: true,
 };
+
+/**
+ * How much each metric moves the ranking. Sums to 1, so `overall` stays in
+ * `0..1` and reads as a percentage of the best possible validator.
+ *
+ * APY leads because it is the return the user is actually buying, but it cannot
+ * decide alone: a validator can post a high APY on a thin, volatile exposure or
+ * behind a commission it is free to raise tomorrow. Commission is the second
+ * weight because it is the one number the validator controls directly; self
+ * stake is the operator's own risk in the position; block production and era
+ * points are the liveness evidence, weighted lower because they move with the
+ * era and recover on their own.
+ */
+export const SCORE_WEIGHTS = {
+  apy: 0.4,
+  commission: 0.2,
+  selfStake: 0.15,
+  blockProduction: 0.15,
+  eraPoints: 0.1,
+} as const;
 
 /**
  * How many validators of the same identity cluster may enter one nomination.

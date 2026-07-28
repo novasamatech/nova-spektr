@@ -17,13 +17,13 @@ export type EraValidator = {
   nominatorCount: number;
   pageCount: number;
   /**
-   * How many nominators of this validator are actually rewarded - the chain's
-   * `maxExposurePageSize`. `null` when the runtime does not expose the const,
-   * in which case nothing can be proven oversubscribed.
+   * How many nominators fit into one exposure page - the chain's
+   * `maxExposurePageSize`. Purely informational: paged exposures are all
+   * payable through `payout_stakers_by_page`, so a validator with more backers
+   * than this is simply spread over several pages, not cut off. `null` when the
+   * runtime does not expose the const.
    */
   maxNominatorsRewarded: number | null;
-  /** More nominators than fit into one exposure page - the tail earns nothing. */
-  oversubscribed: boolean;
   slashed: boolean;
   /** Era reward points earned so far, `0` when the validator has none. */
   eraPoints: number;

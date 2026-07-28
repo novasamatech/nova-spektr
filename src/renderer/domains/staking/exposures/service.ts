@@ -10,7 +10,6 @@ import { type Exposure, type ExposureMap, type ExposureOverview, type ExposureOv
 export const exposureService = {
   getEraOverviews,
   getExposurePages,
-  checkOversubscribed,
 };
 
 /**
@@ -89,12 +88,4 @@ async function getValidatorExposure(
     pageCount: overview?.pageCount ?? sortedPages.length,
     others,
   };
-}
-
-/**
- * A validator is oversubscribed when it has more nominators than fit into a
- * single exposure page - the ones beyond the page size earn nothing.
- */
-function checkOversubscribed(nominatorCount: number, maxExposurePageSize: number): boolean {
-  return nominatorCount > maxExposurePageSize;
 }

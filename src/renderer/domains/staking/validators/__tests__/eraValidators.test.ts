@@ -115,7 +115,6 @@ describe('validatorsService.getEraValidators', () => {
       nominatorCount: 7,
       pageCount: 2,
       maxNominatorsRewarded: 512,
-      oversubscribed: false,
       slashed: false,
       eraPoints: 40,
       blocksAuthored: null,
@@ -132,7 +131,10 @@ describe('validatorsService.getEraValidators', () => {
     expect(result[alice]?.eraPoints).toEqual(0);
   });
 
-  test('should treat a full exposure page as not oversubscribed', async () => {
+  test('should surface the exposure page size without penalising a validator past it', async () => {
+    // Paged exposures are all payable through `payout_stakers_by_page`, so more
+    // backers than one page holds is not a reward cutoff - the count and the cap
+    // are reported as they are, and nothing derives a warning from them.
     const result = await getEraValidators({
       overviews: overviews([
         [alice, { nominatorCount: 512 }],
@@ -140,8 +142,9 @@ describe('validatorsService.getEraValidators', () => {
       ]),
     });
 
-    expect(result[alice]?.oversubscribed).toEqual(false);
-    expect(result[bob]?.oversubscribed).toEqual(true);
+    expect(result[alice]?.maxNominatorsRewarded).toEqual(512);
+    expect(result[bob]?.maxNominatorsRewarded).toEqual(512);
+    expect(result[bob]?.nominatorCount).toEqual(513);
   });
 
   test('should mark validators slashed inside the defer window', async () => {
