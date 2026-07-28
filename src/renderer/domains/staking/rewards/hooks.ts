@@ -69,7 +69,9 @@ export const useStakingRewards = (
     params,
     defaultValue: EMPTY_MAP,
     map: (cache: Record<string, RewardsMap>, p: StakingRewardsParams) => {
-      const cached = cache[rewardsCacheKey(p.chainId, p.since)];
+      // The key covers the account set, so a hit answers for exactly these
+      // accounts - `?? '0'` is now only the service's own "nothing earned".
+      const cached = cache[rewardsCacheKey(p.chainId, p.accounts, p.since)];
       if (!cached) return undefined;
 
       const merged: RewardsMap = {};

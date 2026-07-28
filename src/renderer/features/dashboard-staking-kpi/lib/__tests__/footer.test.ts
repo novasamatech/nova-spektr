@@ -62,7 +62,23 @@ describe('unclaimed footer visibility', () => {
       daysUntilExpiry: 12,
     });
 
-    expect(footer).toEqual({ totalFiat: '128.4', amounts: [{ ...DOT, amount: '9000' }], daysUntilExpiry: 12 });
+    expect(footer).toEqual({
+      totalFiat: '128.4',
+      amounts: [{ ...DOT, amount: '9000' }],
+      daysUntilExpiry: 12,
+      historyDepth: null,
+    });
+  });
+
+  test('carries the history depth of the chain the countdown belongs to', () => {
+    const footer = getUnclaimedFooter({
+      totalFiat: '128.4',
+      amounts: [{ ...DOT, amount: '9000' }],
+      daysUntilExpiry: 12,
+      historyDepth: 30,
+    });
+
+    expect(footer?.historyDepth).toBe(30);
   });
 
   test('survives an unpriced asset — the tokens are still claimable', () => {

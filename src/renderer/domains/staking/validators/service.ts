@@ -258,7 +258,11 @@ async function getSlashedValidators(api: ApiPromise, era: EraIndex, validators: 
     if (spans) {
       return new Set(
         spans.flatMap(({ validator, spans }) =>
-          spans && era - spans.lastNonzeroSlash < slashDeferDuration ? [validator] : [],
+          // `SlashingSpans::new` initialises `lastNonzeroSlash` to 0, so a
+          // never-slashed validator carries a zero rather than an absent value.
+          // Without the guard every validator on a chain younger than the defer
+          // duration reads as recently slashed.
+          spans && spans.lastNonzeroSlash > 0 && era - spans.lastNonzeroSlash < slashDeferDuration ? [validator] : [],
         ),
       );
     }
@@ -266,8 +270,13 @@ async function getSlashedValidators(api: ApiPromise, era: EraIndex, validators: 
     console.warn(error);
   }
 
-  const oldestEra = Math.max(0, era - slashDeferDuration + 1);
-  const eras = Array.from({ length: era - oldestEra + 1 }, (_, index) => oldestEra + index);
+  // `UnappliedSlashes` is keyed by the era the slash becomes *applicable* —
+  // offence era plus `SlashDeferDuration` — and the entry is taken when that era
+  // starts. Pending slashes therefore live in the eras ahead of the active one,
+  // so walking backwards read a window that is empty by construction and left
+  // `slashed` permanently false on every staking-async runtime (which is every
+  // chain this feature targets, since they have no `SlashingSpans`).
+  const eras = Array.from({ length: slashDeferDuration + 1 }, (_, index) => era + index);
 
   try {
     const slashed = await Promise.all(eras.map(era => stakingPallet.storage.unappliedSlashKeys(api, era)));

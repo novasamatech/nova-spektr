@@ -723,11 +723,12 @@
         "rewards": {
           "title": "Rewards",
           "subline": "{amounts} · {days}d",
+          "sublineNoFiat": "last {days}d",
           "unclaimed": "Unclaimed",
           "claimLink": "Claim →",
           "expiresIn_one": "expires in {count}d",
           "expiresIn_other": "expires in {count}d",
-          "claimWindowHint": "Staking rewards can only be claimed for the last {eras} eras — roughly {eras} days. Once an era falls out of that window its reward expires and cannot be recovered.",
+          "claimWindowHint": "Staking rewards can only be claimed for the last {eras} eras. Once an era falls out of that window its reward expires and cannot be recovered.",
           "detailTitle": "Unclaimed rewards",
           "unclaimedTotal": "Unclaimed total",
           "oldestExpires_one": "oldest expires in {count}d",

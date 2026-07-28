@@ -15,6 +15,22 @@ export const DEFAULT_FILTERS: FiltersState = {
   neverSlashed: true,
 };
 
+/**
+ * Every bound off. What the empty table's "Clear search and filters" escape
+ * hatch resets to - falling back to `DEFAULT_FILTERS` would leave `hasIdentity`
+ * and `neverSlashed` on, so the button that promises to clear the filters would
+ * leave the list just as empty as it found it.
+ */
+export const OPEN_FILTERS: FiltersState = {
+  minApy: null,
+  maxCommission: null,
+  minOwnStake: null,
+  hideOversubscribed: false,
+  hideIdle: false,
+  hasIdentity: false,
+  neverSlashed: false,
+};
+
 /** Best paying first - the order the recommendation itself is built in. */
 export const DEFAULT_SORT: SortState = {
   column: 'apy',

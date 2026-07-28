@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
 import { DashboardWidget } from '@/pages/Dashboard';
-import { useChainEras, useEraDurations } from '../hooks/useChainEras';
+import { useChainEras, useChainHistoryDepths, useEraDurations } from '../hooks/useChainEras';
 import { useStakingKpi } from '../hooks/useStakingKpi';
 import { formatAssetAmounts } from '../lib/amounts';
 
@@ -16,6 +16,7 @@ import { Price } from './Price';
 
 type Props = {
   accountIds: string[];
+  /** Part of the dashboard slot contract; this widget resolves names itself. */
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
@@ -28,6 +29,7 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
   const kpi = useStakingKpi(accountIds);
   const eras = useChainEras();
   const eraDurations = useEraDurations();
+  const historyDepths = useChainHistoryDepths();
   const [openModal, setOpenModal] = useState<OpenModal>(null);
 
   const closeModal = useCallback(() => setOpenModal(null), []);
@@ -49,8 +51,17 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
   }
 
   const { pending, currency } = kpi;
-  const stakedSubline = formatAssetAmounts(kpi.stakedAmounts, { fallback: EM_DASH });
-  const rewardsSubline = formatAssetAmounts(kpi.rewardAmounts, { sign: '+', fallback: EM_DASH });
+  const stakedTokens = formatAssetAmounts(kpi.stakedAmounts, { fallback: EM_DASH });
+  const rewardTokens = formatAssetAmounts(kpi.rewardAmounts, { sign: '+', fallback: EM_DASH });
+
+  // With fiat switched off in Settings the two money cards lead with the token
+  // amounts instead — the same figures the subline carries, so nothing is lost
+  // and the subline would only repeat the headline.
+  const showFiat = kpi.fiatFlag !== false;
+  const stakedSubline = showFiat ? stakedTokens : null;
+  const rewardsSubline = showFiat
+    ? t('dashboard.staking.kpi.rewards.subline', { amounts: rewardTokens, days: kpi.rewardsWindowDays })
+    : t('dashboard.staking.kpi.rewards.sublineNoFiat', { days: kpi.rewardsWindowDays });
 
   return (
     <DashboardWidget colSpan={4} card={false}>
@@ -59,7 +70,7 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
           title={t('dashboard.staking.kpi.totalStaked.title')}
           ariaLabel={t('dashboard.staking.kpi.totalStaked.title')}
           loading={pending}
-          value={<Price amount={kpi.totalStakedFiat} currency={currency} />}
+          value={showFiat ? <Price amount={kpi.totalStakedFiat} currency={currency} /> : stakedTokens}
           subline={stakedSubline}
           footer={
             kpi.unbondingFooter ? (
@@ -118,11 +129,8 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
           ariaLabel={t('dashboard.staking.kpi.rewards.title')}
           loading={pending}
           valueClass="text-text-positive"
-          value={<Price amount={kpi.rewardsFiat} currency={currency} />}
-          subline={t('dashboard.staking.kpi.rewards.subline', {
-            amounts: rewardsSubline,
-            days: kpi.rewardsWindowDays,
-          })}
+          value={showFiat ? <Price amount={kpi.rewardsFiat} currency={currency} /> : rewardTokens}
+          subline={rewardsSubline}
           footer={
             kpi.unclaimedFooter ? (
               <div className="flex items-center gap-2">
@@ -131,7 +139,10 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
                 </HelpText>
                 <HelpText className="truncate">{formatAssetAmounts(kpi.unclaimedFooter.amounts)}</HelpText>
                 {kpi.unclaimedFooter.daysUntilExpiry !== null && (
-                  <ExpiryChip daysLeft={kpi.unclaimedFooter.daysUntilExpiry} />
+                  <ExpiryChip
+                    daysLeft={kpi.unclaimedFooter.daysUntilExpiry}
+                    historyDepth={kpi.unclaimedFooter.historyDepth}
+                  />
                 )}
                 <button
                   className="ms-auto shrink-0 cursor-pointer text-caption font-semibold text-tab-text-accent"
@@ -164,6 +175,7 @@ export const StakingKpiRow = ({ accountIds }: Props) => {
           currency={currency}
           eras={eras}
           eraDurations={eraDurations}
+          historyDepths={historyDepths}
           walletByAccount={kpi.walletByAccount}
           onClose={closeModal}
         />

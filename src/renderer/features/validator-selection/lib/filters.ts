@@ -36,13 +36,21 @@ export function applyFilters(
 ): EraValidator[] {
   const minOwnStake = filters.minOwnStake === null ? null : parseStake(filters.minOwnStake);
 
+  // Identities load after the elected set does, so an empty map means "not known
+  // yet", not "nobody has one". Applying the identity bound against it would
+  // filter every row out and show "no validators match your filters" for a list
+  // that is merely still resolving.
+  const identitiesKnown = Object.keys(identityParents).length > 0;
+
   return validators.filter((validator) => {
     if (filters.minApy !== null && (validator.apy === null || validator.apy < filters.minApy)) return false;
     if (filters.maxCommission !== null && validator.commission > filters.maxCommission) return false;
     if (minOwnStake !== null && parseStake(validator.ownStake).lt(minOwnStake)) return false;
     if (filters.hideOversubscribed && validator.oversubscribed) return false;
     if (filters.hideIdle && validator.blocksAuthored === 0) return false;
-    if (filters.hasIdentity && !hasOnChainIdentity(validator.accountId, identityParents)) return false;
+    if (filters.hasIdentity && identitiesKnown && !hasOnChainIdentity(validator.accountId, identityParents)) {
+      return false;
+    }
     if (filters.neverSlashed && validator.slashed) return false;
 
     return true;

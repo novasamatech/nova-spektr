@@ -228,9 +228,31 @@ describe('buildClaimPlans', () => {
   });
 
   it('keeps each account with its own plans', () => {
-    const plans = buildClaimPlans([request(1, [payout(5, 1)]), request(2, [payout(5, 1)])]);
+    const plans = buildClaimPlans([request(1, [payout(5, 1)]), request(2, [payout(5, 2)])]);
 
     expect(plans.map((plan) => plan.account.accountId)).toEqual([accountId(1), accountId(2)]);
+  });
+
+  it('emits one call when two accounts share the same (era, validator, page)', () => {
+    // payout_stakers_by_page pays every nominator on that page, so the second
+    // call would only revert with AlreadyClaimed and take its BATCH_ALL with it.
+    const plans = buildClaimPlans([request(1, [payout(5, 1)]), request(2, [payout(5, 1)])]);
+
+    expect(plans).toHaveLength(1);
+    expect(plans[0]?.account.accountId).toEqual(accountId(1));
+  });
+
+  it('keeps the payouts a shared call does not cover', () => {
+    const plans = buildClaimPlans([request(1, [payout(5, 1)]), request(2, [payout(5, 1), payout(6, 1)])]);
+
+    expect(plans).toHaveLength(2);
+    expect(plans[1]?.payouts).toEqual([payout(6, 1)]);
+  });
+
+  it('does not deduplicate across pages of the same validator and era', () => {
+    const plans = buildClaimPlans([request(1, [payout(5, 1, 0)]), request(2, [payout(5, 1, 1)])]);
+
+    expect(plans.flatMap((plan) => plan.payouts)).toEqual([payout(5, 1, 0), payout(5, 1, 1)]);
   });
 });
 

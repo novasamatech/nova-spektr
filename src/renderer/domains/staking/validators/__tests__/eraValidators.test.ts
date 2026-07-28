@@ -164,7 +164,10 @@ describe('validatorsService.getEraValidators', () => {
 
   test('should walk the unapplied slashes when the runtime dropped the slashing spans', async () => {
     storage.slashingSpans.mockResolvedValue(null);
-    storage.unappliedSlashKeys.mockImplementation((_api, era) => Promise.resolve(era === ERA - 5 ? [bob] : []));
+    // `UnappliedSlashes` is keyed by the era the slash becomes applicable, which
+    // is ahead of the active era — a slash reported five eras ago sits at
+    // ERA + slashDeferDuration - 5, never behind ERA.
+    storage.unappliedSlashKeys.mockImplementation((_api, era) => Promise.resolve(era === ERA + 5 ? [bob] : []));
 
     const result = await getEraValidators({
       overviews: overviews([
@@ -175,8 +178,29 @@ describe('validatorsService.getEraValidators', () => {
 
     expect(result[alice]?.slashed).toEqual(false);
     expect(result[bob]?.slashed).toEqual(true);
-    // The whole defer window is walked, not only the active era.
-    expect(storage.unappliedSlashKeys).toHaveBeenCalledTimes(27);
+    // The whole defer window ahead of the active era, plus the active era itself.
+    expect(storage.unappliedSlashKeys).toHaveBeenCalledTimes(28);
+  });
+
+  test('should not read a zero lastNonzeroSlash as a recent slash', async () => {
+    // `SlashingSpans::new` initialises `lastNonzeroSlash` to 0, so a chain whose
+    // era index is below the defer duration would otherwise flag every validator
+    // that merely carries a spans record.
+    consts.slashDeferDuration.mockReturnValue(ERA + 100);
+    storage.slashingSpans.mockResolvedValue([
+      { validator: alice, spans: { spanIndex: 1, lastStart: 0, lastNonzeroSlash: 0, prior: [] } },
+      { validator: bob, spans: { spanIndex: 1, lastStart: 0, lastNonzeroSlash: ERA - 3, prior: [] } },
+    ]);
+
+    const result = await getEraValidators({
+      overviews: overviews([
+        [alice, {}],
+        [bob, {}],
+      ]),
+    });
+
+    expect(result[alice]?.slashed).toEqual(false);
+    expect(result[bob]?.slashed).toEqual(true);
   });
 
   test('should not read the slashes of an empty validator set', async () => {

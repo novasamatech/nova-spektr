@@ -41,10 +41,11 @@ const Root = ({
   });
   const drawerNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
 
-  const hasTitle =
-    drawerNodes.find(child => {
-      return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
-    }) !== null;
+  // `find` returns undefined, never null - comparing against null made this
+  // unconditionally true and the a11y fallback title below unreachable.
+  const hasTitle = drawerNodes.some(child => {
+    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
+  });
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onToggle}>

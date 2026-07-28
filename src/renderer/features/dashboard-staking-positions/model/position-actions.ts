@@ -103,9 +103,17 @@ sample({
   target: nominationsChangeRequested,
 });
 
-// Submitting is also a close: the picker has said everything it had to say.
+// Closing is what clears the picker, and a submit reaches this through
+// `nominationsChangeRequested → changeValidatorsClosed` below.
+//
+// Deliberately NOT clocked on `formSubmitted` directly. `validatorSelectionModel`
+// is a singleton shared with the Staking page's bond-nominate/nominate flows,
+// which keep the picker alive until their own `flowFinished` so that Back from
+// Confirmation can re-enter the validators step. Clearing on every submit —
+// including submits this module never opened — wiped their chain, asset and
+// selection out from under them.
 sample({
-  clock: [validatorSelectionModel.output.formSubmitted, changeValidatorsClosed],
+  clock: changeValidatorsClosed,
   target: validatorSelectionModel.events.formCleared,
 });
 

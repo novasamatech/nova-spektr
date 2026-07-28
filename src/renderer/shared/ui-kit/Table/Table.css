@@ -94,8 +94,16 @@
 }
 
 .table-row--selected {
-  box-shadow: inset 3px 0 0 var(--accent-background);
   background-color: color-mix(in srgb, var(--accent-background) 6%, transparent);
+}
+
+/*
+ * The accent bar lives on the first cell, not on the row: under
+ * `border-collapse: collapse` a <tr> has no border box of its own and Chromium
+ * does not paint its box-shadow, so the marker was invisible on the row.
+ */
+.table-row--selected .table-cell:first-child {
+  box-shadow: inset 3px 0 0 var(--accent-background);
 }
 
 .table-row--selected:hover {

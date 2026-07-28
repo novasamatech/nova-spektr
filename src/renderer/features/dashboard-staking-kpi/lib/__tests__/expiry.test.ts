@@ -1,5 +1,5 @@
 import {
-  CLAIM_WINDOW_ERAS,
+  DEFAULT_CLAIM_WINDOW_ERAS,
   EXPIRY_LABEL_VARIANT,
   daysUntilExpiry,
   erasUntilExpiry,
@@ -30,11 +30,22 @@ describe('expiry chip thresholds', () => {
 
 describe('claim window', () => {
   test('a payout from the current era has the whole window left', () => {
-    expect(erasUntilExpiry(1000, 1000)).toBe(CLAIM_WINDOW_ERAS);
+    expect(erasUntilExpiry(1000, 1000)).toBe(DEFAULT_CLAIM_WINDOW_ERAS + 1);
   });
 
   test('the window shrinks era by era', () => {
-    expect(erasUntilExpiry(1000, 1010)).toBe(CLAIM_WINDOW_ERAS - 10);
+    expect(erasUntilExpiry(1000, 1010)).toBe(DEFAULT_CLAIM_WINDOW_ERAS - 9);
+  });
+
+  test('the oldest still-claimable era has one era left, not zero', () => {
+    // The scan runs over [activeEra - historyDepth, activeEra - 1] inclusive, so
+    // era E is still claimable at activeEra === E + historyDepth.
+    expect(erasUntilExpiry(1000, 1000 + DEFAULT_CLAIM_WINDOW_ERAS)).toBe(1);
+    expect(erasUntilExpiry(1000, 1000 + DEFAULT_CLAIM_WINDOW_ERAS + 1)).toBe(0);
+  });
+
+  test('honours the runtime history depth over the default', () => {
+    expect(erasUntilExpiry(1000, 1010, 30)).toBe(21);
   });
 
   test('an expired payout never reports negative eras', () => {
@@ -48,8 +59,11 @@ describe('days until expiry', () => {
     expect(daysUntilExpiry(10, 12 * 60 * 60 * 1000)).toBe(5);
   });
 
-  test('falls back to one era per day when the duration is unknown', () => {
-    expect(daysUntilExpiry(14, null)).toBe(14);
+  test('is null when the duration is unknown, rather than guessing a day per era', () => {
+    // Kusama runs 6-hour eras: guessing would report a reward that expires in
+    // three weeks as 84 days away, and colour the chip green for it.
+    expect(daysUntilExpiry(14, null)).toBeNull();
+    expect(daysUntilExpiry(14, 0)).toBeNull();
   });
 
   test('never goes negative', () => {

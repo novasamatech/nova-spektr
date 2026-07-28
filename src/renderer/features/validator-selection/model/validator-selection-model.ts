@@ -20,6 +20,7 @@ import {
   type SortState,
   DEFAULT_FILTERS,
   DEFAULT_SORT,
+  OPEN_FILTERS,
   applyFilters,
   filtersDiffer,
   getClusterPositions,
@@ -94,7 +95,11 @@ const $sort = createStore<SortState>(DEFAULT_SORT)
 
 const $filters = createStore<FiltersState>(DEFAULT_FILTERS)
   .on(filtersChanged, (state, patch) => ({ ...state, ...patch }))
-  .reset([formCleared, filtersReset, clearSearchAndFilters]);
+  // `clearSearchAndFilters` opens every bound rather than returning to the
+  // defaults - it is the empty table's escape hatch, and the defaults are
+  // themselves narrowing.
+  .on(clearSearchAndFilters, () => OPEN_FILTERS)
+  .reset([formCleared, filtersReset]);
 
 const $selected = createStore<AccountId[]>(EMPTY_SELECTION)
   .on(formInitiated, (_, { nominatedIds }) => nominatedIds ?? EMPTY_SELECTION)
@@ -280,14 +285,21 @@ sample({
  * A blocked validator rejects nominations, a watch-only account cannot change
  * any, and the chain refuses a set larger than its nomination limit - in all
  * three cases the click is simply not an action, so the store never moves.
+ *
+ * Removing is the exception: a validator already in the set is always
+ * removable. `blocked` is a state a nominated validator can enter _after_ it
+ * was picked, and refusing the click in that direction too would trap it in the
+ * set with no way out but replacing the whole selection.
  */
 sample({
   clock: validatorToggled,
   source: { selected: $selected, signingMode: $signingMode, maxNominations: stakingValidators.$maxNominations },
   filter: ({ selected, signingMode, maxNominations }, validator) => {
-    if (signingMode === 'watchOnly' || validator.blocked) return false;
+    if (signingMode === 'watchOnly') return false;
+    if (selected.includes(validator.accountId)) return true;
+    if (validator.blocked) return false;
 
-    return selected.includes(validator.accountId) || selected.length < maxNominations;
+    return selected.length < maxNominations;
   },
   fn: ({ selected }, validator) => {
     return selected.includes(validator.accountId)
@@ -299,10 +311,14 @@ sample({
 
 // Replaces rather than appends: "fill with recommended" is the recommendation as
 // a whole, not a merge with whatever the user had picked before.
+//
+// Which is exactly why an empty recommendation must not go through: while the
+// elected set is still loading `$recommended` is `[]`, and replacing with it
+// would silently wipe the nominations the modal was opened on.
 sample({
   clock: fillWithRecommended,
   source: { recommended: stakingValidators.$recommended, signingMode: $signingMode },
-  filter: ({ signingMode }) => signingMode !== 'watchOnly',
+  filter: ({ signingMode, recommended }) => signingMode !== 'watchOnly' && recommended.length > 0,
   fn: ({ recommended }) => recommended,
   target: $selected,
 });

@@ -6,7 +6,7 @@ import { CaptionText, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
-import { type ExpiryUrgency, type PositionRow } from '../lib';
+import { type ExpiryUrgency, type PositionRow, getExpiryLabelKey } from '../lib';
 
 type Props = {
   row: PositionRow;
@@ -46,7 +46,7 @@ export const UnclaimedCell = ({ row }: Props) => {
           <Tooltip.Trigger>
             <div className={cnTw('flex h-4.5 shrink-0 items-center rounded-full px-1.5', URGENCY_CLASS[urgency])}>
               <CaptionText className="text-inherit">
-                {expiryDays < 1
+                {getExpiryLabelKey(expiryDays) === 'expiring'
                   ? t('dashboard.staking.positions.expiry.expiring')
                   : t('dashboard.staking.positions.expiry.days', { days: Math.floor(expiryDays) })}
               </CaptionText>

@@ -12,7 +12,7 @@ import { type CurrencyItem } from '@/domains/price';
 import { networkModel } from '@/entities/network';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { canAct } from '../lib/access';
-import { type AssetAmount, formatAssetAmount, formatAssetAmounts, sumPlanck } from '../lib/amounts';
+import { type AssetAmount, formatAssetAmount, formatAssetAmounts, sumFiat, sumPlanck } from '../lib/amounts';
 import { type CsvPositionRow, csvFileName, positionsCsvColumns } from '../lib/csv';
 import { formatFiat } from '../lib/format-fiat';
 import { type PositionRow } from '../lib/types';
@@ -54,7 +54,9 @@ export const PositionsModal = memo(({ rows, currency, walletByAccount, onClose }
     [rows],
   );
 
-  const totalFiat = useMemo(() => rows.reduce((sum, row) => sum + Number(row.stakedFiat), 0).toString(), [rows]);
+  // `sumFiat`, not a float reduce: the Total staked card sums the very same
+  // figures with BigNumber, and the two must never disagree.
+  const totalFiat = useMemo(() => sumFiat(rows.map((row) => row.stakedFiat)), [rows]);
 
   const totalsByAsset = useMemo(() => {
     const byAsset = new Map<string, AssetAmount>();

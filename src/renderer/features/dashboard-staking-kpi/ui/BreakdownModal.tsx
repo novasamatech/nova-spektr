@@ -65,7 +65,11 @@ export const BreakdownModal = memo(
                   <>
                     <SmallTitleText>
                       {mode === 'apy'
-                        ? t('dashboard.staking.kpi.apy.value', { apy: (hovered.apy ?? 0).toFixed(1) })
+                        ? // An unknown APY is not a zero one — the row's own cell
+                          // says so too, and the donut centre must not disagree.
+                          hovered.apy === null
+                          ? t('dashboard.staking.kpi.apy.unknown')
+                          : t('dashboard.staking.kpi.apy.value', { apy: hovered.apy.toFixed(1) })
                         : t('dashboard.staking.kpi.nominations.count', { count: hovered.validatorCount })}
                     </SmallTitleText>
                     <span className="mt-0.5 text-footnote font-medium" style={{ color: hovered.color }}>

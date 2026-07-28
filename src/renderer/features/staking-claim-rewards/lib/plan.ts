@@ -76,14 +76,18 @@ export function countEras(payouts: UnclaimedPayout[]): number {
  * same chain is one signer with one merged set of payouts.
  */
 export function groupRequestsByAccount(requests: ClaimRequest[]): ClaimRequest[] {
-  const byAccount = new Map<AccountId, ClaimRequest>();
+  const byAccount = new Map<string, ClaimRequest>();
 
   for (const request of requests) {
-    const existing = byAccount.get(request.account.accountId);
+    // Keyed by chain as well as account: the same stash nominates on several
+    // networks, and merging those would batch one chain's payouts into the
+    // other's transaction.
+    const key = `${request.chain.chainId}:${request.account.accountId}`;
+    const existing = byAccount.get(key);
     if (existing) {
       existing.payouts = existing.payouts.concat(request.payouts);
     } else {
-      byAccount.set(request.account.accountId, { ...request, payouts: [...request.payouts] });
+      byAccount.set(key, { ...request, payouts: [...request.payouts] });
     }
   }
 
@@ -114,10 +118,33 @@ export function selectClaimableRequests(requests: ClaimRequest[]): {
   };
 }
 
-/** Every transaction the session will sign, in the order it will sign them. */
+/**
+ * Every transaction the session will sign, in the order it will sign them.
+ *
+ * Deduplication spans the whole session, not one account:
+ * `payout_stakers_by_page` pays **every** nominator on that exposure page, so
+ * when two of the user's stashes back the same validator in the same era and
+ * land on the same page, one call settles both. Emitting it twice makes the
+ * second revert with `AlreadyClaimed` — and since a plan of several payouts is
+ * a `BATCH_ALL`, that revert takes every other still-valid payout in the batch
+ * down with it. The dropped duplicate is not lost money: it is paid by the call
+ * that was kept, which is why `$totalAmount` is summed over the requests rather
+ * than the plans.
+ */
 export function buildClaimPlans(requests: ClaimRequest[]): ClaimPlan[] {
+  const claimedByCall = new Set<string>();
+
   return requests.flatMap((request) => {
-    const batches = chunkPayouts(request.payouts);
+    const payouts = request.payouts.filter((payout) => {
+      const key = payoutKey(payout);
+      if (claimedByCall.has(key)) return false;
+
+      claimedByCall.add(key);
+
+      return true;
+    });
+
+    const batches = chunkPayouts(payouts);
 
     return batches.map((payouts, batchIndex) => ({
       chain: request.chain,

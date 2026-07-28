@@ -67,15 +67,22 @@ function exposureKey(era: EraIndex, validator: AccountId): string {
   return `${era}-${validator}`;
 }
 
+/**
+ * `null` when no configured indexer produced a usable answer — an empty array
+ * means the indexers answered and the stash was exposed nowhere. The caller has
+ * to tell those apart: reporting a failed request as "no unclaimed rewards"
+ * hides real money.
+ */
 export async function fetchNominatorEraValidators({
   rewardSources,
   stash,
   eraFrom,
   eraTo,
-}: FetchNominatorEraValidatorsParams): Promise<EraValidatorExposure[]> {
-  if (rewardSources.length === 0 || eraTo < eraFrom) return [];
+}: FetchNominatorEraValidatorsParams): Promise<EraValidatorExposure[] | null> {
+  if (rewardSources.length === 0 || eraTo < eraFrom) return null;
 
   const collected = new Map<string, EraValidatorExposure>();
+  let answered = false;
 
   await Promise.allSettled(
     rewardSources.map(async ({ url, addressPrefix }) => {
@@ -116,11 +123,13 @@ export async function fetchNominatorEraValidators({
           offset += nodes.length;
           if (nodes.length === 0 || offset >= totalCount) break;
         }
+
+        answered = true;
       } catch (error) {
         console.error('Staking: era validators request failed for', url, error);
       }
     }),
   );
 
-  return Array.from(collected.values());
+  return answered ? Array.from(collected.values()) : null;
 }

@@ -63,17 +63,31 @@ async function getLegacyClaimedEras(api: ApiPromise, stash: AccountId): Promise<
   }
 }
 
+/**
+ * Which pages of each `(era, validator)` are already paid out, plus the keys
+ * the chain refused to answer for.
+ *
+ * A failed chunk must not fall through as "no page claimed": that both
+ * overstates the unclaimed total and builds a `payoutStakersByPage` the runtime
+ * rejects with `AlreadyClaimed`. Unknown keys are dropped from the candidate
+ * set instead.
+ */
 async function getClaimedPages(
   api: ApiPromise,
   exposures: EraValidatorExposure[],
-): Promise<Map<string, readonly number[]>> {
+): Promise<{ claimed: Map<string, readonly number[]>; unknown: Set<string> }> {
   const claimed = new Map<string, readonly number[]>();
+  const unknown = new Set<string>();
   const keys = exposures.map(({ era, validator }) => ({ era, validator }));
 
   const responses = await Promise.all(
     chunk(keys, CLAIMED_REWARDS_CHUNK).map(part =>
       stakingPallet.storage.claimedRewards(api, part).catch((error: unknown) => {
         console.warn(error);
+
+        for (const { era, validator } of part) {
+          unknown.add(exposureKey(era, validator));
+        }
 
         return [];
       }),
@@ -86,7 +100,7 @@ async function getClaimedPages(
     }
   }
 
-  return claimed;
+  return { claimed, unknown };
 }
 
 /**
@@ -336,11 +350,13 @@ export async function getUnclaimedPayouts({
     return emptyResult(hasIndexer ? 'subquery' : 'chain');
   }
 
-  const exposures = hasIndexer
-    ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo })
-    : await collectChainExposures(api, stash, eraFrom, eraTo);
+  // `null` means the indexer never answered, which is not the same as "nothing
+  // to claim over the full history" — fall through to the bounded chain scan
+  // rather than telling the user their rewards do not exist.
+  const indexed = hasIndexer ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo }) : null;
+  const exposures = indexed ?? (await collectChainExposures(api, stash, eraFrom, eraTo));
 
-  const source: PayoutSource = hasIndexer ? 'subquery' : exposures.length > 0 ? 'chain' : 'unavailable';
+  const source: PayoutSource = indexed !== null ? 'subquery' : exposures.length > 0 ? 'chain' : 'unavailable';
   if (source === 'unavailable') return EMPTY_PAYOUTS;
   if (exposures.length === 0) return emptyResult(source);
 
@@ -348,8 +364,12 @@ export async function getUnclaimedPayouts({
   const candidates = exposures.filter(exposure => !legacyClaimedEras.has(exposure.era));
   if (candidates.length === 0) return emptyResult(source);
 
-  const claimed = await getClaimedPages(api, candidates);
-  const resolved = await resolvePayoutPages(api, stash, candidates, claimed);
+  const { claimed, unknown } = await getClaimedPages(api, candidates);
+  const answered =
+    unknown.size === 0 ? candidates : candidates.filter(e => !unknown.has(exposureKey(e.era, e.validator)));
+  if (answered.length === 0) return emptyResult(source);
+
+  const resolved = await resolvePayoutPages(api, stash, answered, claimed);
   if (resolved.length === 0) return emptyResult(source);
 
   const { total, payouts } = await calculatePayouts(api, resolved);

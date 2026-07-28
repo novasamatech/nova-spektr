@@ -94,9 +94,10 @@ export const useRewardsWindow = (
     const result: ChainRewards = {};
 
     for (const chainId of chainIds) {
-      // The cache entry is keyed by chain + window only, so it may hold accounts
-      // of a previous selection — take exactly the ones asked for.
-      const cached = cache[rewardsCacheKey(chainId, since)];
+      // Keyed by the account set too, so a hit is an answer about exactly these
+      // accounts. Reading a chain+window-only entry used to hand back a settled
+      // `0` for an account that was simply not part of the cached request.
+      const cached = cache[rewardsCacheKey(chainId, accountIds, since)];
       if (!cached) continue;
 
       const scoped: Record<AccountId, string> = {};

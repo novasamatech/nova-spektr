@@ -144,10 +144,22 @@ describe('applyFilters', () => {
     expect(result[0]?.accountId).toBe(accountId(1));
   });
 
-  it('drops everything with no identity map at all when identity is required', () => {
+  it('keeps everything while the identity map has not arrived yet', () => {
+    // Identities resolve after the elected set does. An empty map means "not
+    // known yet", not "nobody has one" - applying the bound against it would
+    // blank the table and tell the user nothing matches their filters.
     const validators = [makeValidator(1), makeValidator(2)];
 
-    expect(applyFilters(validators, withFilters({ hasIdentity: true }))).toEqual([]);
+    expect(applyFilters(validators, withFilters({ hasIdentity: true }))).toEqual(validators);
+  });
+
+  it('still drops the identity-less once some identity is known', () => {
+    const validators = [makeValidator(1), makeValidator(2)];
+    const parents = { [accountId(1)]: accountId(1) };
+
+    const result = applyFilters(validators, withFilters({ hasIdentity: true }), parents);
+
+    expect(result.map((validator) => validator.accountId)).toEqual([accountId(1)]);
   });
 });
 

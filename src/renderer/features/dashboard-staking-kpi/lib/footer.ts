@@ -61,22 +61,26 @@ export type UnclaimedFooterInput = {
   amounts: AssetAmount[];
   /** Days until the oldest unclaimed era falls out of the claim window. */
   daysUntilExpiry: number | null;
+  /** `HistoryDepth` of the chain that expiry belongs to — the tooltip quotes it. */
+  historyDepth?: number | null;
 };
 
 export type UnclaimedFooter = {
   totalFiat: string;
   amounts: AssetAmount[];
   daysUntilExpiry: number | null;
+  historyDepth: number | null;
 };
 
 export function getUnclaimedFooter({
   totalFiat,
   amounts,
   daysUntilExpiry,
+  historyDepth = null,
 }: UnclaimedFooterInput): UnclaimedFooter | null {
   const nonZero = nonZeroAmounts(amounts);
 
   if (nonZero.length === 0 && !isPositive(totalFiat)) return null;
 
-  return { totalFiat, amounts: nonZero, daysUntilExpiry };
+  return { totalFiat, amounts: nonZero, daysUntilExpiry, historyDepth };
 }

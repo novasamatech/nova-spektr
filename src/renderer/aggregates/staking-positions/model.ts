@@ -562,6 +562,13 @@ const $pending = combine(
       const chainLedgers = ledgers[chainId];
       if (nullable(chainLedgers)) return true;
 
+      // The cache is chain-keyed and outlives the subscription key, so "a map
+      // exists" is not "this map answers for the accounts being asked about".
+      // Without the coverage check a wallet switch, or a newly tracked
+      // address-book row, reads the previous set's map as a finished answer and
+      // renders the empty state instead of a skeleton.
+      if (accountIds.some(accountId => !(accountId in chainLedgers))) return true;
+
       const bonded = accountIds.filter(accountId => nonNullable(chainLedgers[accountId]));
       if (bonded.length === 0) return false;
 

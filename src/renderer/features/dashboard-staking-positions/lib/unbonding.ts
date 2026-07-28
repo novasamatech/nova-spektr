@@ -1,6 +1,17 @@
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
+/**
+ * Which of the two expiry strings a countdown renders.
+ *
+ * Shared so the table cell and the drawer cannot disagree about the same
+ * position: the cell said "expires now" under a day while the drawer floored
+ * the value and said "0d left".
+ */
+export function getExpiryLabelKey(expiryDays: number): 'expiring' | 'days' {
+  return expiryDays < 1 ? 'expiring' : 'days';
+}
+
 export type UnbondingCountdown = {
   days: number;
   hours: number;

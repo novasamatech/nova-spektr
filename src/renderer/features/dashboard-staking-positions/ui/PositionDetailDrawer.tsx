@@ -6,12 +6,12 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
-import { Drawer, Label, Tooltip } from '@/shared/ui-kit';
+import { Drawer, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
-import { type PositionRow, getUnbondingCountdown } from '../lib';
+import { type PositionRow, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
 import { type PositionAction, positionActions } from '../model/position-actions';
 
 import { NominationsTable } from './NominationsTable';
@@ -48,7 +48,11 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
 
   const isOpen = row !== null;
   const watchOnly = row?.accessMode === 'watchOnly';
-  const hasUnclaimed = !new BN(unclaimed.total).isZero();
+  // While the payout scan is in flight `unclaimed.total` is a placeholder `'0'`,
+  // not an answer. Reading it as one made the drawer open with "Nothing to claim
+  // on this position" over a position that turned out to have rewards.
+  const unclaimedPending = unclaimed.pending;
+  const hasUnclaimed = !unclaimedPending && !new BN(unclaimed.total).isZero();
 
   // The chip names the amount it will claim, so the user does not have to look
   // back up at the grid to know what they are about to sign for.
@@ -168,7 +172,9 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
               </StatCell>
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.unclaimed')}>
-                {hasUnclaimed ? (
+                {unclaimedPending ? (
+                  <Skeleton width="72px" height="14px" />
+                ) : hasUnclaimed ? (
                   <div className="flex items-center gap-x-2">
                     <AssetBalance value={unclaimed.total} asset={row.asset} className="text-footnote" />
                     {unclaimed.urgency && unclaimed.expiryDays !== null ? (
@@ -180,9 +186,11 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                         })}
                       >
                         <CaptionText className="text-inherit">
-                          {t('dashboard.staking.positions.expiry.days', {
-                            days: Math.floor(unclaimed.expiryDays),
-                          })}
+                          {getExpiryLabelKey(unclaimed.expiryDays) === 'expiring'
+                            ? t('dashboard.staking.positions.expiry.expiring')
+                            : t('dashboard.staking.positions.expiry.days', {
+                                days: Math.floor(unclaimed.expiryDays),
+                              })}
                         </CaptionText>
                       </div>
                     ) : null}
@@ -243,7 +251,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
                   () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
                   true,
-                  hasUnclaimed ? undefined : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
+                  // No "nothing to claim" while the scan is still running: the
+                  // chip stays disabled, but the app does not assert something
+                  // it has not checked yet.
+                  hasUnclaimed || unclaimedPending
+                    ? undefined
+                    : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
                 )}
 
                 {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>

@@ -13,7 +13,7 @@ import {
   getActionRequiredAmount,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
-import { type PayoutsResourceParams, era, payouts } from '@/domains/staking';
+import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
@@ -491,23 +491,48 @@ sample({
   target: stepChanged,
 });
 
+/**
+ * What actually landed, not what was attempted.
+ *
+ * One signing payload is built per plan and in plan order, so a result's `id`
+ * is its plan's index. Announcing `$requests` and `$totalAmount` wholesale
+ * reported the full amount as claimed even when only one chunk of several
+ * succeeded.
+ */
 const claimLanded = sample({
   clock: submitModel.done,
-  source: { step: $step, requests: $requests, chain: $chain, asset: $asset, total: $totalAmount },
+  source: { step: $step, plans: $plans, chain: $chain, asset: $asset },
   filter: ({ step }, results) =>
     step === Step.SUBMIT && results.some((result) => result.result === ExtrinsicResult.SUCCESS),
-  fn: ({ requests, chain, asset, total }): ClaimedRewards | null => {
+  fn: ({ plans, chain, asset }, results): ClaimedRewards | null => {
     if (!chain || !asset) return null;
+
+    const landed = results
+      .filter((result) => result.result === ExtrinsicResult.SUCCESS)
+      .map((result) => plans[result.id])
+      .filter(nonNullable);
+
+    const byAccount = new Map<AccountId, { account: AnyAccount; payouts: UnclaimedPayout[] }>();
+    for (const plan of landed) {
+      const existing = byAccount.get(plan.account.accountId);
+      if (existing) {
+        existing.payouts = existing.payouts.concat(plan.payouts);
+      } else {
+        byAccount.set(plan.account.accountId, { account: plan.account, payouts: [...plan.payouts] });
+      }
+    }
+
+    const claims = [...byAccount.values()].map(({ account, payouts }) => ({
+      account,
+      payouts,
+      amount: sumPayouts(payouts),
+    }));
 
     return {
       chain,
       asset,
-      total,
-      claims: requests.map((request) => ({
-        account: request.account,
-        payouts: request.payouts,
-        amount: sumPayouts(request.payouts),
-      })),
+      total: sumPayouts(landed.flatMap((plan) => plan.payouts)),
+      claims,
     };
   },
 }).filterMap((claimed) => claimed ?? undefined);

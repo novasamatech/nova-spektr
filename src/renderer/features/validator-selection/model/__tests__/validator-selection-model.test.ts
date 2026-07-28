@@ -9,7 +9,7 @@ import { type AccountIdentity } from '@/domains/network';
 import type * as StakingDomain from '@/domains/staking';
 import { type EraValidator, DEFAULT_STAKING_CHAIN } from '@/domains/staking';
 import { stakingValidators } from '@/aggregates/staking-validators';
-import { DEFAULT_FILTERS, DEFAULT_SORT } from '../../lib';
+import { DEFAULT_FILTERS, DEFAULT_SORT, OPEN_FILTERS } from '../../lib';
 import { validatorSelectionModel } from '../validator-selection-model';
 
 import { $identityCache, $validatorsCache, requestIdentitiesFx } from './domainMocks';
@@ -278,10 +278,14 @@ describe('validatorSelectionModel table', () => {
     await allSettled(validatorSelectionModel.events.clearSearchAndFilters, { scope });
 
     expect(scope.getState(validatorSelectionModel.$query)).toBe('');
-    expect(scope.getState(validatorSelectionModel.$filters)).toEqual(DEFAULT_FILTERS);
-    expect(scope.getState(validatorSelectionModel.$filtersDiffer)).toBe(false);
+    // Opens every bound rather than returning to the defaults: this is the empty
+    // table's escape hatch, and `hasIdentity`/`neverSlashed` default to on, so
+    // resetting to the defaults could leave the list just as empty as it was.
+    expect(scope.getState(validatorSelectionModel.$filters)).toEqual(OPEN_FILTERS);
     expect(scope.getState(validatorSelectionModel.$sort)).toEqual({ column: 'commission', direction: 'asc' });
-    expect(visibleIds(scope)).toEqual([accountId(3), accountId(1), accountId(2)]);
+    // Anonymous validator 4 is back too - clearing the filters means clearing
+    // the identity requirement, not restoring it.
+    expect(visibleIds(scope)).toEqual([accountId(3), accountId(1), accountId(4), accountId(2)]);
   });
 
   it('resets filters alone without touching the query', async () => {
@@ -331,6 +335,18 @@ describe('validatorSelectionModel selection', () => {
     expect(scope.getState(validatorSelectionModel.$selected)).toEqual([]);
   });
 
+  it('still lets a nominated validator go after it turned blocked', async () => {
+    // `blocked` is a state a validator can enter after it was nominated. Refusing
+    // the click in the removing direction too would trap it in the set.
+    const blocked = makeValidator(5, { blocked: true });
+    const scope = forkWith({ validators: [...SCENARIO.validators, blocked], identities: SCENARIO.identities });
+
+    await initiate(scope, { nominatedIds: [accountId(5), accountId(1)] });
+    await allSettled(validatorSelectionModel.events.validatorToggled, { scope, params: blocked });
+
+    expect(scope.getState(validatorSelectionModel.$selected)).toEqual([accountId(1)]);
+  });
+
   it('ignores every selection change in watch-only mode', async () => {
     const scope = forkWith(SCENARIO);
 
@@ -372,6 +388,18 @@ describe('validatorSelectionModel selection', () => {
     expect(recommended).toEqual([accountId(2), accountId(1), accountId(3)]);
     // (25 + 12 + 5) / 3
     expect(scope.getState(validatorSelectionModel.$estimatedSetApy)).toBeCloseTo(14);
+  });
+
+  it('keeps the current nominations when the recommendation has not loaded yet', async () => {
+    // `$recommended` is empty until the elected set lands, and "fill with
+    // recommended" replaces rather than merges - going through with an empty
+    // recommendation would silently wipe the set the modal was opened on.
+    const scope = forkWith({ validators: [], identities: [] });
+
+    await initiate(scope, { nominatedIds: [accountId(3), accountId(1)] });
+    await allSettled(validatorSelectionModel.events.fillWithRecommended, { scope });
+
+    expect(scope.getState(validatorSelectionModel.$selected)).toEqual([accountId(3), accountId(1)]);
   });
 
   it('has no estimated apy with nothing selected, and ignores validators with unknown apy', async () => {

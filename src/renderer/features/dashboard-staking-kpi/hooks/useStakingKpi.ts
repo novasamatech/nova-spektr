@@ -19,7 +19,7 @@ import { type UnbondingFooter, type UnclaimedFooter, getUnbondingFooter, getUncl
 import { filterPositionsByAccounts, summarizePositions, withdrawablePositions } from '../lib/summary';
 import { type BreakdownRow, type ClaimRow, type PositionRow } from '../lib/types';
 
-import { useChainEras, useEraDurations } from './useChainEras';
+import { useChainEras, useChainHistoryDepths, useEraDurations } from './useChainEras';
 import { useNetworkApys } from './useNetworkApys';
 import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './useRewardsWindow';
 import { useStakingChainAssets } from './useStakingChainAssets';
@@ -79,6 +79,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const { byChain: assets, chains, currency, fiatFlag, toFiat } = useStakingChainAssets();
   const eras = useChainEras();
   const eraDurations = useEraDurations();
+  const historyDepths = useChainHistoryDepths();
 
   // The aggregate answers for the selected wallet; the dashboard's own account
   // picker scopes it further.
@@ -225,6 +226,8 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const unclaimedFooter = useMemo(() => {
     const byAsset = new Map<string, AssetAmount>();
     let soonestDays: number | null = null;
+    // Of the chain that owns the soonest expiry — the one the chip warns about.
+    let soonestDepth: number | null = null;
 
     for (const row of claimRows) {
       if (!new BigNumber(row.unclaimed).gt(0)) continue;
@@ -240,16 +243,23 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
       const activeEra = eras[row.chainId];
       if (oldest === null || activeEra === undefined) continue;
 
-      const days = daysUntilExpiry(erasUntilExpiry(oldest, activeEra), eraDurations[row.chainId] ?? null);
-      soonestDays = soonestDays === null ? days : Math.min(soonestDays, days);
+      const erasLeft = erasUntilExpiry(oldest, activeEra, historyDepths[row.chainId] ?? undefined);
+      const days = daysUntilExpiry(erasLeft, eraDurations[row.chainId] ?? null);
+      if (days === null) continue;
+
+      if (soonestDays === null || days < soonestDays) {
+        soonestDays = days;
+        soonestDepth = historyDepths[row.chainId] ?? null;
+      }
     }
 
     return getUnclaimedFooter({
       totalFiat: sumFiat(claimRows.map((row) => row.unclaimedFiat)),
       amounts: [...byAsset.values()],
       daysUntilExpiry: soonestDays,
+      historyDepth: soonestDepth,
     });
-  }, [claimRows, eras, eraDurations]);
+  }, [claimRows, eras, eraDurations, historyDepths]);
 
   const positionRows = useMemo(() => {
     const rows: PositionRow[] = [];

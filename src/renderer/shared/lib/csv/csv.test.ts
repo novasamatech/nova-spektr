@@ -29,6 +29,24 @@ describe('shared/lib/csv', () => {
     expect(result).toBe('Name,Value\r\n"a,b",1');
   });
 
+  it.each(['=1+1', '+1', '-1', '@SUM(A1)', '\tx'])('should neutralise the formula prefix in %j', (name) => {
+    const result = buildCsv(columns, [{ name, value: '1' }]);
+
+    expect(result.split('\r\n')[1]).toMatch(/^'/);
+  });
+
+  it('should quote a neutralised formula that also needs RFC 4180 quoting', () => {
+    const result = buildCsv(columns, [{ name: '=HYPERLINK("http://x","go")', value: '1' }]);
+
+    expect(result).toBe(`Name,Value\r\n"'=HYPERLINK(""http://x"",""go"")",1`);
+  });
+
+  it('should leave a value that only contains a formula character alone', () => {
+    const result = buildCsv(columns, [{ name: 'a=b', value: '1-2' }]);
+
+    expect(result).toBe('Name,Value\r\na=b,1-2');
+  });
+
   it('should escape quotes by doubling and wrap the field in quotes', () => {
     const result = buildCsv(columns, [{ name: 'say "hi"', value: '1' }]);
 

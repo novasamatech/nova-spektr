@@ -4,16 +4,36 @@ export type CsvColumn<T> = {
 };
 
 /**
+ * Leading characters a spreadsheet reads as the start of a formula. RFC 4180
+ * quoting does not neutralise them — Excel, LibreOffice and Sheets all evaluate
+ * `"=HYPERLINK(...)"` on open.
+ */
+const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+
+/**
+ * Marks the file as UTF-8 for Excel, which otherwise assumes the ANSI code
+ * page.
+ */
+const UTF8_BOM = '\uFEFF';
+
+/**
  * Escapes a single CSV field according to RFC 4180: fields containing commas,
  * double quotes or line breaks are wrapped in double quotes, with inner quotes
  * doubled.
+ *
+ * A value that would otherwise open as a formula is additionally prefixed with
+ * a single quote. Cell content here is user- and chain-supplied (wallet names,
+ * on-chain identities, call metadata), so the export must not hand the
+ * spreadsheet something to execute.
  */
 const escapeCsvField = (value: string): string => {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replaceAll('"', '""')}"`;
+  const guarded = FORMULA_PREFIX.test(value) ? `'${value}` : value;
+
+  if (/[",\r\n]/.test(guarded)) {
+    return `"${guarded.replaceAll('"', '""')}"`;
   }
 
-  return value;
+  return guarded;
 };
 
 /**
@@ -36,7 +56,10 @@ export const buildCsv = <T>(columns: CsvColumn<T>[], rows: T[]): string => {
  * Electron's session download handling picks up.
  */
 export const downloadCsv = (filename: string, content: string): void => {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+  // Excel on Windows reads a BOM-less file with the ANSI code page, which turns
+  // Cyrillic wallet names and non-Latin symbols into mojibake. `buildCsv` stays
+  // pure; the marker belongs to the file, not to the content.
+  const blob = new Blob([UTF8_BOM, content], { type: 'text/csv;charset=utf-8' });
   const url = window.URL.createObjectURL(blob);
 
   const anchor = document.createElement('a');

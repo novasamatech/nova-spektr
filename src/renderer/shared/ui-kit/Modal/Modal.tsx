@@ -40,10 +40,11 @@ const Root = ({
   });
   const modalNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
 
-  const hasTitle =
-    modalNodes.find(child => {
-      return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
-    }) !== null;
+  // `find` returns undefined, never null - comparing against null made this
+  // unconditionally true and the a11y fallback title below unreachable.
+  const hasTitle = modalNodes.some(child => {
+    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
+  });
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onToggle}>

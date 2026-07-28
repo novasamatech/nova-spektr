@@ -98,9 +98,18 @@ describe('positions CSV shaping', () => {
 
 describe('file name', () => {
   test('carries the export kind and the date', () => {
-    expect(csvFileName('rewards', new Date('2026-07-27T10:00:00Z'))).toBe('nova-spektr-staking-rewards-2026-07-27.csv');
-    expect(csvFileName('positions', new Date('2026-07-27T10:00:00Z'))).toBe(
-      'nova-spektr-staking-positions-2026-07-27.csv',
-    );
+    // Local-time components, so the assertion holds in every timezone the suite
+    // runs in — and so the name matches the day the user pressed Export.
+    const noon = new Date(2026, 6, 27, 12, 0, 0);
+
+    expect(csvFileName('rewards', noon)).toBe('nova-spektr-staking-rewards-2026-07-27.csv');
+    expect(csvFileName('positions', noon)).toBe('nova-spektr-staking-positions-2026-07-27.csv');
+  });
+
+  test('uses the local date rather than the UTC one', () => {
+    // 22:00 in UTC−5 is already the 28th in UTC; the export belongs to the 27th.
+    const lateEvening = new Date(2026, 6, 27, 22, 0, 0);
+
+    expect(csvFileName('rewards', lateEvening)).toBe('nova-spektr-staking-rewards-2026-07-27.csv');
   });
 });

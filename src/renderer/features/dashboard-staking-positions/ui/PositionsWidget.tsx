@@ -56,8 +56,11 @@ export const PositionsWidget = ({ accountIds }: Props) => {
 
   const handleSortChange = useCallback((next: TableSort | null) => {
     // Clearing the sort would leave the rows in aggregate order, which means
-    // nothing to the user. The default is the answer to "which is biggest".
-    setSort(next ?? DEFAULT_SORT);
+    // nothing to the user. `Table` cycles asc → desc → null, so `null` is folded
+    // back onto the same column as ascending: sending it to `DEFAULT_SORT` made
+    // the third click on the Staked column - the default one - land on the state
+    // it was already in, so Staked could never be sorted ascending at all.
+    setSort((current) => next ?? { column: current.column, direction: 'asc' });
   }, []);
 
   const startStakingWired = wiredActions.includes('startStaking');

@@ -64,9 +64,18 @@ export function positionsCsvColumns(headers: PositionsCsvHeaders): CsvColumn<Csv
   ];
 }
 
-/** `nova-spektr-staking-rewards-2026-07-27.csv` */
+/**
+ * `nova-spektr-staking-rewards-2026-07-27.csv`
+ *
+ * Stamped with the user's local date, not the UTC one: an export at 22:00 in
+ * UTC−5 would otherwise be filed under tomorrow.
+ */
 export function csvFileName(kind: 'rewards' | 'positions', now = new Date()): string {
-  const date = now.toISOString().slice(0, 10);
+  const date = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
 
   return `nova-spektr-staking-${kind}-${date}.csv`;
 }

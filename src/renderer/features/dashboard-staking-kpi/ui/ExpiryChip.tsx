@@ -2,18 +2,20 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Label, Tooltip } from '@/shared/ui-kit';
-import { CLAIM_WINDOW_ERAS, EXPIRY_LABEL_VARIANT, getExpiryUrgency } from '../lib/expiry';
+import { DEFAULT_CLAIM_WINDOW_ERAS, EXPIRY_LABEL_VARIANT, getExpiryUrgency } from '../lib/expiry';
 
 type Props = {
   daysLeft: number;
+  /** Runtime `HistoryDepth` of the chain the payout belongs to. */
+  historyDepth?: number | null;
 };
 
 /**
  * How long the oldest unclaimed payout has left. Colour carries the urgency,
  * the tooltip explains the rule behind it — most users have never heard of the
- * 84-era claim window until a reward silently expires.
+ * claim window until a reward silently expires.
  */
-export const ExpiryChip = memo(({ daysLeft }: Props) => {
+export const ExpiryChip = memo(({ daysLeft, historyDepth }: Props) => {
   const { t } = useI18n();
   const urgency = getExpiryUrgency(daysLeft);
 
@@ -27,7 +29,7 @@ export const ExpiryChip = memo(({ daysLeft }: Props) => {
         </div>
       </Tooltip.Trigger>
       <Tooltip.Content>
-        {t('dashboard.staking.kpi.rewards.claimWindowHint', { eras: CLAIM_WINDOW_ERAS })}
+        {t('dashboard.staking.kpi.rewards.claimWindowHint', { eras: historyDepth ?? DEFAULT_CLAIM_WINDOW_ERAS })}
       </Tooltip.Content>
     </Tooltip>
   );

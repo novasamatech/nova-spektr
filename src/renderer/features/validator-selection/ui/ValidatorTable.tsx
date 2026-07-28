@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from '@/shared/ui-kit';
 import { type EraValidator } from '@/domains/staking';
-import { type SortColumn, DEFAULT_SORT, getDisplayedLabel, getValidatorFlag } from '../lib';
+import { type SortColumn, getDisplayedLabel, getValidatorFlag } from '../lib';
 import { validatorSelectionModel } from '../model/validator-selection-model';
 
 import { ValidatorFlagBadge } from './ValidatorFlagBadge';
@@ -153,7 +153,8 @@ export const ValidatorTable = () => {
           return (
             <Checkbox
               checked={checked}
-              disabled={validator.blocked || (!checked && atLimit)}
+              // Unchecking is never blocked - see the toggle guard in the model.
+              disabled={!checked && (validator.blocked || atLimit)}
               onChange={() => events.validatorToggled(validator)}
               onClick={(event) => event.stopPropagation()}
             />
@@ -300,8 +301,14 @@ export const ValidatorTable = () => {
   }, [t, chain, asset, displayed, clusterPositions, recommendedSet, selectedSet, nominatedSet, isReadOnly, atLimit]);
 
   const handleSortChange = (next: TableSort | null) => {
+    // `Table` cycles asc → desc → null, but this list is never meaningfully
+    // unsorted. Folding `null` back onto the same column as ascending keeps the
+    // header a plain two-way toggle; sending it to `DEFAULT_SORT` instead made
+    // the third click on the APY column a no-op, so APY-ascending was
+    // unreachable and a third click on any other column silently teleported the
+    // table back to APY descending.
     if (nullable(next)) {
-      events.sortChanged(DEFAULT_SORT);
+      events.sortChanged({ column: sort.column, direction: 'asc' });
 
       return;
     }
