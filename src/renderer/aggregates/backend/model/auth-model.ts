@@ -62,6 +62,11 @@ $selectedChainId.on(chainSelected, (_, chainId) => chainId);
 const $defaultAuthChainId = createStore<ChainId>(DEFAULT_AUTH_CHAIN_ID);
 persistLocal({ store: $defaultAuthChainId, key: 'address-book-default-auth-chain-id', sync: true });
 
+// Account of the last successful sign-in. Unlike $lastAuthedAccountId it survives sign-out
+// and source disconnect, so reconnecting preselects the account the user used before.
+const $defaultAuthAccountId = createStore<AccountId | null>(null);
+persistLocal({ store: $defaultAuthAccountId, key: 'address-book-default-auth-account-id', sync: true });
+
 const $lastAuthedAccountId = createStore<AccountId | null>(null);
 persist({ store: $lastAuthedAccountId, key: 'address-book-last-authed-account-id' });
 
@@ -174,10 +179,11 @@ sample({
     selectedId: $selectedAccountId,
     authState: $authState,
     lastAuthedId: $lastAuthedAccountId,
+    defaultAccountId: $defaultAuthAccountId,
   },
   filter: ({ accounts, selectedId }) => accounts.length > 0 && selectedId === null,
-  fn: ({ accounts, authState, lastAuthedId }) => {
-    const priorId = authState?.accountId ?? lastAuthedId;
+  fn: ({ accounts, authState, lastAuthedId, defaultAccountId }) => {
+    const priorId = authState?.accountId ?? lastAuthedId ?? defaultAccountId;
     const prior = priorId ? accounts.find(a => a.accountId === priorId) : undefined;
 
     return (prior ?? accounts[0]!).accountId;
@@ -293,12 +299,20 @@ sample({
   target: $authState,
 });
 
-// Must stay declared before the connectCompleted sample below — it has to read
-// $selectedChainId before the connectCompleted-triggered reset overwrites it.
+// Both samples must stay declared before the connectCompleted sample below — they have to
+// read $selectedChainId / $selectedAccountId before the connectCompleted-triggered reset
+// overwrites them.
 sample({
   clock: verifySignatureFx.done,
   source: $selectedChainId,
   target: $defaultAuthChainId,
+});
+
+sample({
+  clock: verifySignatureFx.done,
+  source: $selectedAccountId,
+  filter: nonNullable,
+  target: $defaultAuthAccountId,
 });
 
 const signInSucceeded = createEvent();
@@ -498,5 +512,6 @@ export const authModel = {
     checkSessionFx,
     verifySignatureFx,
     $defaultAuthChainId,
+    $defaultAuthAccountId,
   },
 };
