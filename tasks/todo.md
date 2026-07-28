@@ -130,6 +130,22 @@ Drove the renderer at https://localhost:3000 against the existing dev wallet (`p
 - ⚠️ **A washed-out, right-shifted first screenshot was an automation artifact, not a bug**: the automated tab reports `visibilityState: "hidden"`, so `requestAnimationFrame` is throttled and the Tabs carousel spring freezes mid-transition (panel opacities summed to exactly 1.0). Untouched Governance froze the same way. Forcing the settled transform rendered everything correctly. Do not "fix" this.
 - **Not verified in browser**: the validator-selection modal, and frames F5/F6/F7/F10 (claim drill-down, position drawer, unbond, draft toast). All need a funded staking account — this dev wallet holds 1.13 DOT against a 250 DOT minimum bond. Covered by 73 unit/model tests plus a render smoke test; real visual conformance is Phase 5 e2e work.
 
+## Phase 5 — e2e ✅ (commit 85a1a91b6) — 6 tests, all passing against live chains
+Pattern follows `cases/dashboard`: watch-only wallets holding **real, verified** funded addresses; no keys, no signing.
+Test accounts (queried from Polkadot Asset Hub directly, era 2244 — not guessed):
+- `13Xo4xYdMRQQoWD7TA9yCDHG1BXqQFvnjeGvU6LHhRhUsBhQ` — 8.1M DOT, **16 nominations** (chain max), exposed by 9 validators → Active.
+- `12G1TaAHobt2qZ1zAPVmF122NrTMCDpC4nXuubddkQjTiScD` — 1.2M DOT active + **a 500K DOT chunk matured at era 1402** → exercises the unbonding footer, the withdrawable chip and the Redeem drill-down.
+Live chain also confirmed the design's numbers are real: `maxExposurePageSize` 512, `minNominatorBond` 250 DOT, `bondingDuration` 28 eras.
+Covered: S1 populated KPI row + positions row (Active pill, `N of 16`, share %), S2 drawer watch-only variant (asserts the **absence** of every action chip + the data-only note), S3 rewards chart controls, S4 KPI breakdown modals, S5 unbonding footer → positions/unbonding drill-down, S6 empty state (zeros not skeletons, no `.spektr-skeleton`, CTA present).
+Assertions are shape-based (regex/counts), never live amounts.
+
+**Uncovered by e2e, and why** — a watch-only wallet cannot sign and no funded signing wallet exists: F7 unbond/add-stake, F8 start staking, F10 draft toast, the validator-selection modal, and the action half of the positions drill-down (all reachable only from action chips watch-only never renders). F5 claim drill-down is *not* signing-blocked but both live stashes currently have zero unclaimed payouts, so it would only show its empty message — worth adding once a stash with pending payouts is picked. Multisig/draft rows, CSV export and the 20+ row sticky scroll need fixture wallets a single-account watch-only profile cannot produce.
+
+**Test hooks the app is missing** (reported, not hacked around): no `TEST_IDS.STAKING` block, so KPI headline/subline/footer are reached as nth `> div` children; the rewards-chart total line is unselectable; staking modals all share the ui-kit default `Modal` testid; and the dnd-kit wrapper puts a `role="button"` around every widget whose accessible name concatenates its contents, forcing `exact: true` on in-widget role queries.
+
+## Fixed: numeric zero vanished from the UI (commit 77ba6df48)
+`shared/ui/Typography/common/TextBase` bailed on `!children`, so a **numeric `0` rendered nothing**. The Active-nominations KPI passes a raw count, so the empty dashboard showed a blank where "0" belongs. Narrowed the guard to `null | undefined | '' | false` — every other case keeps its current behaviour — and added the first tests for `TextBase` (7 cases). Whole suite (2565) green after the change.
+
 ## Found bug in the OLD flow — needs a decision (not fixed; that page is out of scope)
 `features/staking-unstake` chills at `leftAmount.lte(minBond)` — `model/form-model.ts:218`, `:349`, `model/form-model-shards.ts:357`. Unbonding down to **exactly** the minimum bond leaves a still-valid nominating position, so wrapping `chill` there drops the user's nominations for no reason and they stop earning until they re-nominate. The new `staking-amount-flow` uses strict `<` (plus "a full unbond always chills, even when the minimum is unknown"). The fix is `lte` → `lt` at three sites; no test encodes the current behaviour. Left untouched because the old Staking page was explicitly scoped out — needs a go-ahead.
 
