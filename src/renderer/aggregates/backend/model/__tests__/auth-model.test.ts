@@ -134,14 +134,18 @@ describe('authModel — persisted default account', () => {
     createdAt: 0,
   });
 
-  it('preselects the persisted default account on modal open', async () => {
-    const scope = fork({
+  const createScopeWithAccounts = (defaultAccountId: AccountId) => {
+    return fork({
       values: [
         [walletModel.__test.$rawWallets, [vaultWallet]],
         [accounts.__test.$list, [createVaultAccount('1', TEST_ACCOUNTS[0]), createVaultAccount('2', TEST_ACCOUNTS[1])]],
-        [authModel.__test.$defaultAuthAccountId, TEST_ACCOUNTS[1]],
+        [authModel.__test.$defaultAuthAccountId, defaultAccountId],
       ],
     });
+  };
+
+  it('preselects the persisted default account on modal open', async () => {
+    const scope = createScopeWithAccounts(TEST_ACCOUNTS[1]);
 
     await allSettled(backendConfigurationModel.events.modalOpened, { scope });
 
@@ -149,13 +153,7 @@ describe('authModel — persisted default account', () => {
   });
 
   it('falls back to the first account when the saved account is gone', async () => {
-    const scope = fork({
-      values: [
-        [walletModel.__test.$rawWallets, [vaultWallet]],
-        [accounts.__test.$list, [createVaultAccount('1', TEST_ACCOUNTS[0]), createVaultAccount('2', TEST_ACCOUNTS[1])]],
-        [authModel.__test.$defaultAuthAccountId, TEST_ACCOUNTS[2]],
-      ],
-    });
+    const scope = createScopeWithAccounts(TEST_ACCOUNTS[2]);
 
     await allSettled(backendConfigurationModel.events.modalOpened, { scope });
 

@@ -64,6 +64,8 @@ persistLocal({ store: $defaultAuthChainId, key: 'address-book-default-auth-chain
 
 // Account of the last successful sign-in. Unlike $lastAuthedAccountId it survives sign-out
 // and source disconnect, so reconnecting preselects the account the user used before.
+// A separate store is required: $lastAuthedAccountId must keep resetting on logout because
+// the session-expiry heuristic reads it (session check returns null + non-null id → expired).
 const $defaultAuthAccountId = createStore<AccountId | null>(null);
 persistLocal({ store: $defaultAuthAccountId, key: 'address-book-default-auth-account-id', sync: true });
 
