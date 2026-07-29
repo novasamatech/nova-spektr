@@ -19,23 +19,11 @@ const storage = vi.mocked(stakingPallet.storage);
 
 const polkadotAh = { chainId: AssetHubChains.POLKADOT_AH } as Chain;
 
-// 10% pool reward rate: 1000 minted per era × 365.25 eras/year against 3_652_500 staked.
+// 10% pool reward rate: 1000 paid to stakers per era × 365.25 eras/year against 3_652_500 staked.
 const TOTAL_STAKED = 3_652_500;
 const ERA_REWARD = 1000;
 
-const mockApi = (withReward = true): ApiPromise =>
-  ({
-    call: {
-      inflation: withReward
-        ? {
-            experimentalIssuancePredictionInfo: vi
-              .fn()
-              .mockResolvedValue({ toJSON: () => ({ nextMint: [String(ERA_REWARD), '0'] }) }),
-          }
-        : undefined,
-    },
-    query: {},
-  }) as unknown as ApiPromise;
+const mockApi = (): ApiPromise => ({ call: {}, query: {} }) as unknown as ApiPromise;
 
 const alice = '0x01' as AccountId;
 const bob = '0x02' as AccountId;
@@ -46,7 +34,7 @@ describe('getValidatorsApy', () => {
     vi.clearAllMocks();
     consts.sessionsPerEra.mockReturnValue(6);
     storage.erasTotalStake.mockResolvedValue(new BN(TOTAL_STAKED));
-    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
+    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: new BN(ERA_REWARD) }]);
   });
 
   test('pays a higher rate to validators holding less than the average stake', async () => {
@@ -82,8 +70,10 @@ describe('getValidatorsApy', () => {
   });
 
   test('returns an empty map when the chain reports no reward data', async () => {
+    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
+
     const apy = await apyService.getValidatorsApy({
-      api: mockApi(false),
+      api: mockApi(),
       timelineApi: null,
       chain: polkadotAh,
       era: 100,

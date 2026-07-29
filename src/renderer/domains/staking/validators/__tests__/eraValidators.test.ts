@@ -37,17 +37,13 @@ const bob = '0x02' as AccountId;
 const CHAIN_ID = AssetHubChains.POLKADOT_AH;
 const ERA = 100;
 
-// 10% pool reward rate: 1000 minted per 24h era against 3_652_500 staked.
+// 10% pool reward rate: 1000 paid to stakers per 24h era against 3_652_500 staked.
 const TOTAL_STAKED = 3_652_500;
 const VALIDATOR_STAKE = String(TOTAL_STAKED / 2);
 
-const mockApi = (withReward = true): ApiPromise =>
+const mockApi = (): ApiPromise =>
   ({
-    call: {
-      inflation: withReward
-        ? { experimentalIssuancePredictionInfo: vi.fn().mockResolvedValue({ toJSON: () => ({ nextMint: ['1000'] }) }) }
-        : undefined,
-    },
+    call: {},
     query: {},
     genesisHash: { toHex: () => CHAIN_ID },
   }) as unknown as ApiPromise;
@@ -91,7 +87,7 @@ describe('validatorsService.getEraValidators', () => {
     storage.unappliedSlashKeys.mockResolvedValue([]);
     storage.slashingSpans.mockResolvedValue([]);
     storage.erasTotalStake.mockResolvedValue(new BN(TOTAL_STAKED));
-    storage.erasValidatorReward.mockResolvedValue([{ era: ERA - 1, reward: null }]);
+    storage.erasValidatorReward.mockResolvedValue([{ era: ERA - 1, reward: new BN(1000) }]);
   });
 
   test('should compose exposure, preferences and reward points into an era validator', async () => {
@@ -231,7 +227,9 @@ describe('validatorsService.getEraValidators', () => {
   });
 
   test('should leave the apy unknown when the chain reports no reward data', async () => {
-    const result = await getEraValidators({ api: mockApi(false), overviews: overviews([[alice, {}]]) });
+    storage.erasValidatorReward.mockResolvedValue([{ era: ERA - 1, reward: null }]);
+
+    const result = await getEraValidators({ api: mockApi(), overviews: overviews([[alice, {}]]) });
 
     expect(result[alice]?.apy).toBeNull();
   });
