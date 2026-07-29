@@ -556,3 +556,48 @@ structurally dead and the composite could not exceed 0.75.
 
 **Verification:** `pnpm types:go` clean, 2610 unit tests, 223 integration tests, feature-map OK, eslint 0 errors, every
 static `t()` key resolves.
+
+## Staking page: "Select accounts" permanently disabled (2026-07-29)
+
+Reported from the running app: on the old `/staking` page the actions control read "Select accounts" and was greyed out,
+with no way to select anything.
+
+**The button is not a picker.** `pages/Staking/ui/Actions.tsx` renders the operations dropdown; "Select accounts" is the
+label it falls back to when `stakes.length === 0`, meaning "tick an account in the list below first". Its `disabled` is
+`isStakingLoading || noStakes || wrongOverlaps`.
+
+**Why nothing could be ticked.** `NominatorItem.tsx:44` renders the row checkbox only when `nominatorsLength > 1` — with
+a single account there is nothing to choose between, so the selection is meant to be automatic. That automatic selection
+was a `sample` in `aggregates/staking-accounts/model.ts` clocked on `stakingNetwork.$selectedChainId` and
+`walletSelect.$selectedWallet`, reading `$accountIds` from `source`.
+
+`$accountIds` fills in asynchronously — `$accounts` combines `walletSelect.$selectedAccounts` (wallet accounts from
+storage) with `stakingNetwork.$chain` (from the network config). At startup both clocks fire while `$accountIds` is
+still `[]`, the fn computes `[]`, and **nothing ever recomputes it** when the accounts land: the account list is not a
+clock. Single-account wallet ⇒ no checkbox ⇒ no selection ⇒ every staking action disabled, permanently.
+
+**Fix — the selection is derived, not sampled.** `$pickedNominators` now holds the user's explicit ticks;
+`$selectedNominators` is a `combine` of that with `$accountIds` and the active wallet. It keeps an explicit pick as long
+as those accounts still exist on this wallet and chain, and otherwise falls back to `getDefaultSelection`. Being
+derived, it recomputes with the account list by construction — the whole class of "clocked before the data arrived" is
+gone, which also matches the repo's effector guidance ("the less the sample, the better").
+
+`getDefaultSelection` also replaces the old wallet-type whitelist, which was a denylist by omission:
+
+- exactly one account → select it, whatever the wallet type (nothing to choose between);
+- several accounts on a wallet that signs with exactly one (multisig, proxied, WalletConnect/Nova, the three extensions)
+  → the first, as before;
+- multishard vault → nothing, the user picks via the checkboxes the rows do render.
+
+The old code also had `[accountIds[0]!]` on a possibly-empty list, which would have produced `[undefined]`.
+
+**Test gap, stated plainly.** `model.test.ts` covers `getDefaultSelection` directly (12 cases). The store-level path is
+_not_ covered: `$accounts` runs through `accountService.isAccountAvailableOnChain`, whose DI `anyOf` registry resolves
+empty under `fork()` unless handlers are seeded in-scope (the pitfall already recorded for the transfer-myself-xcm
+test). Seeding that here was more plumbing than this out-of-scope page warranted; the recompute-on-arrival property is
+structural to `combine` rather than something the sample-based version got wrong by degree.
+
+**Not verified in the browser.** Worth a click-through on a single-account wallet before merging.
+
+**Verification:** `pnpm types:go` clean, 2622 unit tests, 223 integration tests (one pre-existing flake in
+`fellowship-evidence`, a 15s timeout, passes on rerun), eslint 0 errors.
