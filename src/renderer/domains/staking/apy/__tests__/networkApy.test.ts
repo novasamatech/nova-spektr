@@ -16,29 +16,22 @@ vi.mock('@/shared/pallet/staking', () => ({
 const consts = vi.mocked(stakingPallet.consts);
 const storage = vi.mocked(stakingPallet.storage);
 
-// Polkadot Asset Hub-like figures (observed onchain): a fixed per-era staker mint
-// of 130 162 DOT over a 24h era, against ~873.9M DOT staked → ~5.44% APR.
+// Polkadot Asset Hub-like figures: a per-era staker reward of 130 162 DOT over
+// a 24h era, against ~873.9M DOT staked → ~5.44% APR.
 const TO_STAKERS = '1301621489239150';
 const TOTAL_STAKED = '8739307348715573817';
 
 type ApiOverrides = {
-  toStakers?: string | number | null;
-  withInflationApi?: boolean;
   totalIssuance?: string | null;
+  predictionCall?: ReturnType<typeof vi.fn>;
 };
 
-const mockApi = ({ toStakers = TO_STAKERS, withInflationApi = true, totalIssuance = null }: ApiOverrides = {}) => {
-  const inflation = withInflationApi
-    ? {
-        experimentalIssuancePredictionInfo: vi.fn().mockResolvedValue({
-          toJSON: () => ({ issuance: '0x0', nextMint: [toStakers, '229697909865732'] }),
-        }),
-      }
-    : undefined;
-
+const mockApi = ({ totalIssuance = null, predictionCall }: ApiOverrides = {}) => {
   const balances = totalIssuance
     ? { totalIssuance: vi.fn().mockResolvedValue({ toString: () => totalIssuance }) }
     : undefined;
+
+  const inflation = predictionCall ? { experimentalIssuancePredictionInfo: predictionCall } : undefined;
 
   return { call: { inflation }, query: { balances } } as unknown as ApiPromise;
 };
@@ -63,10 +56,10 @@ describe('getNetworkApy', () => {
     vi.clearAllMocks();
     consts.sessionsPerEra.mockReturnValue(6);
     storage.erasTotalStake.mockResolvedValue(new BN(TOTAL_STAKED));
-    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
+    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: new BN(TO_STAKERS) }]);
   });
 
-  test('annualises the per-era staker mint over the era duration', async () => {
+  test('annualises the last completed era staker reward over the era duration', async () => {
     const apy = await apyService.getNetworkApy({
       api: mockApi(),
       timelineApi: relayApi(),
@@ -76,6 +69,7 @@ describe('getNetworkApy', () => {
     });
 
     // 1301621489239150 × 365.25 / 8739307348715573817 × 100
+    expect(storage.erasValidatorReward).toHaveBeenCalledWith(expect.anything(), [99]);
     expect(apy).toEqual('5.44');
   });
 
@@ -92,18 +86,21 @@ describe('getNetworkApy', () => {
     expect(apy).toEqual('4.90');
   });
 
-  test('falls back to the last completed era reward when the inflation API is missing', async () => {
-    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: new BN(TO_STAKERS) }]);
+  test('ignores the issuance prediction API whose nextMint is the total era emission since the DAP reform', async () => {
+    const predictionCall = vi.fn().mockResolvedValue({
+      // ~2.21× the staker reward - the pre-DAP interpretation would overstate APY.
+      toJSON: () => ({ issuance: '0x0', nextMint: ['2879160367447112', '0'] }),
+    });
 
     const apy = await apyService.getNetworkApy({
-      api: mockApi({ withInflationApi: false }),
+      api: mockApi({ predictionCall }),
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
       validators: validators(0),
     });
 
-    expect(storage.erasValidatorReward).toHaveBeenCalledWith(expect.anything(), [99]);
+    expect(predictionCall).not.toHaveBeenCalled();
     expect(apy).toEqual('5.44');
   });
 
@@ -133,8 +130,10 @@ describe('getNetworkApy', () => {
   });
 
   test('falls back to the NPoS curve when the chain reports no era reward at all', async () => {
+    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
+
     const apy = await apyService.getNetworkApy({
-      api: mockApi({ withInflationApi: false, totalIssuance: '17478614697431147634' }),
+      api: mockApi({ totalIssuance: '17478614697431147634' }),
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
@@ -146,8 +145,10 @@ describe('getNetworkApy', () => {
   });
 
   test('returns null when no staker reward can be resolved', async () => {
+    storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
+
     const apy = await apyService.getNetworkApy({
-      api: mockApi({ withInflationApi: false }),
+      api: mockApi(),
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,

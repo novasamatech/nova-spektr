@@ -8,9 +8,9 @@ const PERBILL = 1_000_000_000;
 /**
  * Yearly inflation predicted by the classic NPoS reward curve.
  *
- * Only used as a fallback when the chain exposes neither the inflation runtime
- * API nor a realized era payout - chains with a fixed inflation model (Polkadot
- * after ref. 1139) are not described by this curve.
+ * Only used as a fallback when the chain reports no realized era payout -
+ * chains with a fixed inflation model (Polkadot after ref. 1139) are not
+ * described by this curve.
  */
 export function calculateYearlyInflation(stakedPortion: number): number {
   const calculatedInflation =

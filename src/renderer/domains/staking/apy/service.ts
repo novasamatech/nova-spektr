@@ -39,12 +39,6 @@ export const apyService = {
   getValidatorsApy,
 };
 
-type IssuancePredictionCall = () => Promise<{ toJSON: () => unknown }>;
-
-function hasKey<K extends string>(value: unknown, key: K): value is Record<K, unknown> {
-  return typeof value === 'object' && value !== null && key in value;
-}
-
 /**
  * Era duration in milliseconds.
  *
@@ -70,63 +64,18 @@ function getEraDurationMs(api: ApiPromise, timelineApi: ApiPromise | null | unde
   return FALLBACK_ERA_DURATION_MS[chain.chainId] ?? DEFAULT_ERA_DURATION_MS;
 }
 
-function parsePlanck(value: unknown): BigNumber | null {
-  if (typeof value === 'number') return new BigNumber(value);
-  if (typeof value === 'string') {
-    const parsed = value.startsWith('0x') ? new BigNumber(value.slice(2), 16) : new BigNumber(value);
-
-    return parsed.isFinite() ? parsed : null;
-  }
-
-  return null;
-}
-
-// Reads `nextMint = [toStakers, toTreasury]` from the inflation prediction result.
-function readStakersMint(json: unknown): BigNumber | null {
-  if (!hasKey(json, 'nextMint')) return null;
-
-  const { nextMint } = json;
-  if (!Array.isArray(nextMint) || nextMint.length === 0) return null;
-
-  return parsePlanck(nextMint[0]);
-}
-
-// Resolves the `inflation.experimentalIssuancePredictionInfo` runtime call if the chain exposes it.
-function getIssuancePredictionCall(api: ApiPromise): IssuancePredictionCall | null {
-  if (!hasKey(api.call, 'inflation')) return null;
-
-  const { inflation } = api.call;
-  if (!hasKey(inflation, 'experimentalIssuancePredictionInfo')) return null;
-
-  const predict = inflation.experimentalIssuancePredictionInfo;
-
-  // The signature cannot be inferred from the dynamically-typed runtime api.
-  return typeof predict === 'function' ? (predict as IssuancePredictionCall) : null;
-}
-
 /**
- * Per-era reward minted to stakers (validators + nominators), before
- * commission.
+ * Per-era reward paid to stakers (validators + nominators), before commission.
  *
- * Uses the `inflation.experimentalIssuancePredictionInfo` runtime API, which
- * the runtime documents as the recommended source over re-deriving the onchain
- * logic and which reflects the chain's real inflation model (fixed on Polkadot,
- * curve-based on Kusama). Falls back to the last completed era's realized
- * payout when the runtime API is unavailable.
+ * Reads the last completed era's realized payout (`erasValidatorReward`) - the
+ * exact budget nominator payouts draw from. The
+ * `inflation.experimentalIssuancePredictionInfo` runtime API is deliberately
+ * not used: since the Dynamic Allocation Pool reform (fellows-runtimes v2.3.0,
+ * 2026-06) its `nextMint` reports the total era emission on Polkadot, of which
+ * stakers only receive the DAP staker allocation (~45%) - treating it as the
+ * staker reward overstates APY ~2.2×.
  */
 async function getStakersEraReward(api: ApiPromise, era: EraIndex): Promise<BigNumber | null> {
-  const predict = getIssuancePredictionCall(api);
-
-  if (predict) {
-    try {
-      const info = await predict();
-      const toStakers = readStakersMint(info.toJSON());
-      if (toStakers && toStakers.isGreaterThan(0)) return toStakers;
-    } catch (error) {
-      console.warn('inflation prediction API failed, falling back to era reward', error);
-    }
-  }
-
   try {
     const [entry] = await stakingPallet.storage.erasValidatorReward(api, [Math.max(era - 1, 0)]);
     if (entry?.reward) return new BigNumber(entry.reward.toString());
