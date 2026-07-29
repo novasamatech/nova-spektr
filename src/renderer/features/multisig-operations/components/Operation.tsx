@@ -235,14 +235,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             </div>
 
             <div className={cnTw(operationColumns.status, 'flex justify-center')}>
-              <Tooltip open={operation.status === 'pending' && operation.awaitingOutcome ? undefined : false}>
-                <Tooltip.Trigger>
-                  <div className="inline-flex">
-                    <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
-                  </div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>{t('operation.status.awaitingOutcomeDescription')}</Tooltip.Content>
-              </Tooltip>
+              <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
             </div>
 
             <div className={cnTw(operationColumns.actions, 'flex justify-end')}>
