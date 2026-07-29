@@ -162,6 +162,10 @@ Clicking a holdings row opens a breakdown modal:
   are recomputed against the scoped sum, and the header shows the scoped total with a colored dot + type label next to
   the row count. The per-row allocation bar keeps showing the full four-category split — under a filter it is what
   explains the rest of that address's holding.
+- The per-row bars give **"vesting that has no slice"** the same treatment as the distribution bar: vesting riding on
+  reserved funds joins no segment but is drawn as a hatched marker (with the same 6px visibility floor) across the
+  segments it covers, and the legend's Vested entry — hatch-swatched under overlap — prints the **whole** vesting lock,
+  so its figure matches the row amount the Vested filter selected rather than the partition's capped slice.
 - Shares inside the modals are **rounded down** to one decimal, so a column can visibly sum to slightly under 100%.
 
 ## Lifecycle

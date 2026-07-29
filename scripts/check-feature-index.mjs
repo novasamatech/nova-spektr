@@ -162,8 +162,10 @@ if (changedFlagIndex !== -1) {
       layer: match[1],
       name: match[2],
       codeChanged: false,
+      specChanged: false,
     };
     if (match[3] !== 'README.md') module.codeChanged = true;
+    else module.specChanged = true;
     changedModules.set(key, module);
   }
 
@@ -187,7 +189,11 @@ if (changedFlagIndex !== -1) {
     if (!module.codeChanged) continue;
 
     // code changed → the spec must be re-reviewed: its "Last reviewed" date
-    // must move past the date in the merge base (a new spec always passes)
+    // must move past the date in the merge base (a new spec always passes).
+    // Same-day exception: a follow-up landing the day the base was already
+    // reviewed cannot move a day-granular date, so an equal date passes when
+    // the spec file itself was edited in this change — the edit is the
+    // evidence of the re-review the date can no longer carry.
     let baseReadme = null;
     try {
       baseReadme = execFileSync('git', ['show', `${mergeBase}:src/renderer/${module.layer}/${module.name}/README.md`], {
@@ -200,11 +206,15 @@ if (changedFlagIndex !== -1) {
     }
     const baseDate = baseReadme?.match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
     const currentDate = readFileSync(readmePath, 'utf8').match(REVIEWED_DATE_PATTERN)?.[1] ?? null;
-    if (baseDate !== null && (currentDate === null || currentDate <= baseDate)) {
-      errors.push(
-        `${module.layer}/${module.name} code changed but the spec's "Last reviewed" date was not bumped — ` +
-          `run the feature-specs skill to review the spec and bump the date`,
-      );
+    if (baseDate !== null) {
+      const dateBumped =
+        currentDate !== null && (currentDate > baseDate || (currentDate === baseDate && module.specChanged));
+      if (!dateBumped) {
+        errors.push(
+          `${module.layer}/${module.name} code changed but the spec's "Last reviewed" date was not bumped — ` +
+            `run the feature-specs skill to review the spec and bump the date`,
+        );
+      }
     }
   }
 }

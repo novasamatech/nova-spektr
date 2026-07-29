@@ -111,12 +111,12 @@ describe('computeAssetRowAllocations', () => {
 
     expect(result.size).toBe(1);
     const alloc = result.get('acc1')!;
-    expect(alloc.transferable.pct).toBeCloseTo(75, 0); // 900/1200 * 100
-    expect(alloc.transferable.raw).toBe('900');
-    expect(alloc.reserved.pct).toBeCloseTo(16.67, 0); // 200/1200 * 100
-    expect(alloc.reserved.fiat).toBe('200');
-    expect(alloc.locked.pct).toBeCloseTo(8.33, 0); // 100/1200 * 100
-    expect(alloc.vested.pct).toBe(0);
+    expect(alloc.types.transferable.pct).toBeCloseTo(75, 0); // 900/1200 * 100
+    expect(alloc.types.transferable.raw).toBe('900');
+    expect(alloc.types.reserved.pct).toBeCloseTo(16.67, 0); // 200/1200 * 100
+    expect(alloc.types.reserved.fiat).toBe('200');
+    expect(alloc.types.locked.pct).toBeCloseTo(8.33, 0); // 100/1200 * 100
+    expect(alloc.types.vested.pct).toBe(0);
   });
 
   test('carves the vesting lock out of the locked amount', () => {
@@ -147,11 +147,11 @@ describe('computeAssetRowAllocations', () => {
     });
 
     const alloc = result.get('acc1')!;
-    expect(alloc.vested.raw).toBe('300');
-    expect(alloc.vested.fiat).toBe('300');
-    expect(alloc.vested.pct).toBeCloseTo(30, 0);
-    expect(alloc.locked.raw).toBe('100');
-    expect(alloc.locked.pct).toBeCloseTo(10, 0);
+    expect(alloc.types.vested.raw).toBe('300');
+    expect(alloc.types.vested.fiat).toBe('300');
+    expect(alloc.types.vested.pct).toBeCloseTo(30, 0);
+    expect(alloc.types.locked.raw).toBe('100');
+    expect(alloc.types.locked.pct).toBeCloseTo(10, 0);
   });
 
   test('caps vested by the locked amount', () => {
@@ -181,9 +181,9 @@ describe('computeAssetRowAllocations', () => {
     });
 
     const alloc = result.get('acc1')!;
-    expect(alloc.vested.raw).toBe('100');
-    expect(alloc.locked.raw).toBe('0');
-    expect(alloc.locked.pct).toBe(0);
+    expect(alloc.types.vested.raw).toBe('100');
+    expect(alloc.types.locked.raw).toBe('0');
+    expect(alloc.types.locked.pct).toBe(0);
   });
 
   test('returns 100% transferable when no locks or reserves', () => {
@@ -204,10 +204,10 @@ describe('computeAssetRowAllocations', () => {
     });
 
     const alloc = result.get('acc1')!;
-    expect(alloc.transferable.pct).toBeCloseTo(100, 0);
-    expect(alloc.locked.pct).toBe(0);
-    expect(alloc.reserved.pct).toBe(0);
-    expect(alloc.vested.pct).toBe(0);
+    expect(alloc.types.transferable.pct).toBeCloseTo(100, 0);
+    expect(alloc.types.locked.pct).toBe(0);
+    expect(alloc.types.reserved.pct).toBe(0);
+    expect(alloc.types.vested.pct).toBe(0);
   });
 
   test('omits accounts with zero balance from result', () => {
@@ -256,10 +256,144 @@ describe('computeAssetRowAllocations', () => {
     // chain2: transferable = 400, reserved = 0, total = 400
     // combined: transferable = 900, reserved = 100, total = 1100, locked = 100
     const alloc = result.get('acc1')!;
-    expect(alloc.transferable.pct).toBeCloseTo(81.8, 0);
-    expect(alloc.transferable.raw).toBe('900');
-    expect(alloc.reserved.pct).toBeCloseTo(9.1, 0);
-    expect(alloc.locked.pct).toBeCloseTo(9.1, 0);
+    expect(alloc.types.transferable.pct).toBeCloseTo(81.8, 0);
+    expect(alloc.types.transferable.raw).toBe('900');
+    expect(alloc.types.reserved.pct).toBeCloseTo(9.1, 0);
+    expect(alloc.types.locked.pct).toBeCloseTo(9.1, 0);
+  });
+});
+
+describe('vesting overlap (vesting lock riding on reserved funds)', () => {
+  test('reports vesting fully covered by a hold as overlap, not as a partition slice', () => {
+    // staking wallet on a holdAndFreezes chain: reserved (hold) covers the whole
+    // vesting lock. transferable = 1000 - max(0, 500-10000) = 1000, total = 11000,
+    // locked = 0 -> partition vested = 0, overlap = 500
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 10000,
+        frozen: 500,
+        vestingLock: 500,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeAssetRowAllocations({
+      accountIds: ['acc1'],
+      priceId: 'polkadot',
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get('acc1')!;
+    expect(alloc.types.vested.pct).toBe(0);
+    expect(alloc.vestedOverlap.raw).toBe('500');
+    expect(alloc.vestedOverlap.fiat).toBe('500');
+    expect(alloc.vestedOverlap.pct).toBeCloseTo((500 / 11000) * 100, 1);
+    expect(alloc.vestedTotal).toEqual({ raw: '500', fiat: '500' });
+  });
+
+  test('splits vesting between the partition slice and the overlap', () => {
+    // transferable = 1000 - max(0, 600-200) = 600, total = 1200
+    // locked total = 1200 - 600 - 200 = 400 -> partition vested = min(600, 400) = 400
+    // vested total = min(600, 1200) = 600 -> overlap = 200
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 200,
+        frozen: 600,
+        vestingLock: 600,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeAssetRowAllocations({
+      accountIds: ['acc1'],
+      priceId: 'polkadot',
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get('acc1')!;
+    expect(alloc.types.vested.raw).toBe('400');
+    expect(alloc.vestedOverlap.raw).toBe('200');
+    expect(alloc.vestedTotal).toEqual({ raw: '600', fiat: '600' });
+  });
+
+  test('reports zero overlap when the vesting lock fits in locked', () => {
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 0,
+        frozen: 400,
+        vestingLock: 300,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeAssetRowAllocations({
+      accountIds: ['acc1'],
+      priceId: 'polkadot',
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get('acc1')!;
+    expect(alloc.vestedOverlap.pct).toBe(0);
+    expect(alloc.vestedTotal).toEqual({ raw: '300', fiat: '300' });
+  });
+
+  test('chain rows carry the overlap too', () => {
+    const balances = [
+      makeBalance({
+        accountId: 'acc1',
+        chainId: 'chain1',
+        assetId: 0,
+        free: 1000,
+        reserved: 10000,
+        frozen: 500,
+        vestingLock: 500,
+      }),
+    ];
+    const balanceMap = Object.fromEntries(balances.map((b) => [b.id, b]));
+    const chains = makeChains([{ chainId: 'chain1', assetId: 0, priceId: 'polkadot', symbol: 'DOT', precision: 0 }]);
+    const prices = makePrices([{ priceId: 'polkadot', coingeckoId: 'usd', price: 1 }]);
+
+    const result = computeChainRowAllocations({
+      assetIds: [0],
+      chainId: 'chain1' as any,
+      accountIds: ['acc1'],
+      balanceMap: balanceMap as any,
+      chains: chains as any,
+      prices,
+      currency: makeCurrency(),
+    });
+
+    const alloc = result.get(0)!;
+    expect(alloc.types.vested.pct).toBe(0);
+    expect(alloc.vestedOverlap.raw).toBe('500');
+    expect(alloc.vestedTotal).toEqual({ raw: '500', fiat: '500' });
   });
 });
 
@@ -287,9 +421,9 @@ describe('computeChainRowAllocations', () => {
     // acc2: transferable=500, reserved=0, total=500
     // combined: transferable=1400, reserved=200, total=1700, locked=100
     const alloc = result.get(0)!;
-    expect(alloc.transferable.pct).toBeCloseTo(82.4, 0);
-    expect(alloc.reserved.pct).toBeCloseTo(11.8, 0);
-    expect(alloc.locked.pct).toBeCloseTo(5.9, 0);
+    expect(alloc.types.transferable.pct).toBeCloseTo(82.4, 0);
+    expect(alloc.types.reserved.pct).toBeCloseTo(11.8, 0);
+    expect(alloc.types.locked.pct).toBeCloseTo(5.9, 0);
   });
 
   test('carves the vesting lock out of the locked amount', () => {
@@ -321,10 +455,10 @@ describe('computeChainRowAllocations', () => {
     });
 
     const alloc = result.get(0)!;
-    expect(alloc.vested).toEqual({ pct: 30, raw: '300', fiat: '300' });
-    expect(alloc.locked).toEqual({ pct: 10, raw: '100', fiat: '100' });
-    expect(alloc.transferable).toEqual({ pct: 60, raw: '600', fiat: '600' });
-    expect(alloc.reserved.pct).toBe(0);
+    expect(alloc.types.vested).toEqual({ pct: 30, raw: '300', fiat: '300' });
+    expect(alloc.types.locked).toEqual({ pct: 10, raw: '100', fiat: '100' });
+    expect(alloc.types.transferable).toEqual({ pct: 60, raw: '600', fiat: '600' });
+    expect(alloc.types.reserved.pct).toBe(0);
   });
 
   test('omits assets with zero balance', () => {

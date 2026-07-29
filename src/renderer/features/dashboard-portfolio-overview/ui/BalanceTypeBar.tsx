@@ -4,10 +4,11 @@ import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatAsset } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Loader } from '@/shared/ui';
-import { ALLOCATION_COLORS, VESTED_HATCH } from '@/shared/ui/chart-constants';
+import { ALLOCATION_COLORS, ALLOCATION_MARKER_MIN_PX, VESTED_HATCH } from '@/shared/ui/chart-constants';
 import { type CurrencyItem } from '@/domains/price';
 import { type AllocationData } from '../hooks/useBalanceAllocation';
-import { type BalanceType, BALANCE_TYPES } from '../lib/balanceTypes';
+import { type BalanceType, BALANCE_TYPES, makeByType } from '../lib/balanceTypes';
+import { computeOverlapBarLayout } from '../lib/computeOverlapBarLayout';
 
 import { Price } from './Price';
 
@@ -19,10 +20,6 @@ type Props = {
   onToggleType: (type: BalanceType) => void;
   onClear: () => void;
 };
-
-// Same floor the bar's segments use, so a trace of vesting stays visible instead
-// of collapsing to a sub-pixel span nobody can find.
-const MARKER_MIN_PX = 6;
 
 export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedType, onToggleType, onClear }: Props) => {
   const { t } = useI18n();
@@ -44,36 +41,12 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
   // figure on the chip. Only a chip with no priced rows behind it cannot filter.
   const isFilterable = (type: BalanceType) => allocation.types[type].pct > 0 || (type === 'vested' && hasOverlap);
 
-  /**
-   * With an overlap the vested amount stops being a slice: it sits on top of
-   * reserved, and of whatever it froze inside locked. So it folds back into the
-   * segments it covers — keeping the bar a true partition — and is drawn as a
-   * marker across them instead.
-   */
-  const barSegments = BALANCE_TYPES.flatMap((type) => {
-    if (hasOverlap && type === 'vested') return [];
-
-    const pct =
-      hasOverlap && type === 'locked'
-        ? allocation.types.locked.pct + allocation.types.vested.pct
-        : allocation.types[type].pct;
-
-    return pct > 0 ? [{ type, pct }] : [];
+  // Fold + marker-span geometry shared with the detail modals' row bars.
+  const { segments: barSegments, overlapSpan } = computeOverlapBarLayout({
+    types: makeByType((type) => allocation.types[type].pct),
+    overlapPct: allocation.vestedOverlap.pct,
+    hasOverlap,
   });
-
-  // The vesting span is contiguous and straddles the reserved/locked boundary:
-  // it reaches left into reserved by the overlap, and right into locked by the
-  // part that did freeze unreserved funds. Clamped, since the segments carry a
-  // 6px floor that percentages alone don't know about.
-  const overlapSpan = hasOverlap
-    ? {
-        left: Math.max(
-          0,
-          allocation.types.transferable.pct + allocation.types.reserved.pct - allocation.vestedOverlap.pct,
-        ),
-        width: Math.min(100, allocation.vestedOverlap.pct + allocation.types.vested.pct),
-      }
-    : null;
 
   const renderChipValue = (type: BalanceType) => {
     if (type !== 'vested') {
@@ -160,9 +133,9 @@ export const BalanceTypeBar = memo(({ allocation, currency, syncing, selectedTyp
                 // (the span itself is bounded by the total), so clamping the
                 // start by exactly that floor keeps the marker inside the bar
                 // instead of hanging past its rounded end.
-                left: `min(${overlapSpan.left}%, calc(100% - ${MARKER_MIN_PX}px))`,
+                left: `min(${overlapSpan.left}%, calc(100% - ${ALLOCATION_MARKER_MIN_PX}px))`,
                 width: `${overlapSpan.width}%`,
-                minWidth: `${MARKER_MIN_PX}px`,
+                minWidth: `${ALLOCATION_MARKER_MIN_PX}px`,
                 backgroundImage: VESTED_HATCH,
               }}
             />
