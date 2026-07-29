@@ -4,7 +4,6 @@ import { memo, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText, HelpText } from '@/shared/ui';
-import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
@@ -17,6 +16,7 @@ import { type BalanceType } from '../lib/balanceTypes';
 import { type RowAllocation, computeChainRowAllocations } from '../lib/computeRowAllocations';
 
 import { AllocationBarWithLegend } from './AllocationBarWithLegend';
+import { BalanceTypeBadge } from './BalanceTypeBadge';
 import { Price } from './Price';
 
 type ChainTableRow = ChainAssetRow & { allocation: RowAllocation | null };
@@ -125,17 +125,7 @@ export const ChainDetailModal = memo(({ chainHolding, accountIds, balanceType, c
               <FootnoteText className="text-text-tertiary">
                 {t('dashboard.portfolioOverview.chainDetail.assetCount', { count: chainHolding.assetCount })}
               </FootnoteText>
-              {balanceType && (
-                <span className="flex items-center gap-1">
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: ALLOCATION_COLORS[balanceType] }}
-                  />
-                  <FootnoteText className="text-text-tertiary">
-                    {t(`dashboard.portfolioOverview.balanceType.${balanceType}`)}
-                  </FootnoteText>
-                </span>
-              )}
+              {balanceType && <BalanceTypeBadge type={balanceType} />}
             </div>
           </div>
           <div className="shrink-0">
