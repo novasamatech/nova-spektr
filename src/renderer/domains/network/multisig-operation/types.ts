@@ -53,6 +53,12 @@ export type MultisigOperation = {
   indexCreated: number;
   events: MultisigEvent[];
   timestamp: number;
+  /**
+   * Operation left on-chain storage but no terminal event was caught — the real
+   * outcome is unknown until the indexer reports. Only meaningful while status
+   * is 'pending'.
+   */
+  awaitingOutcome?: boolean;
 };
 
 export type MultisigTransaction = {

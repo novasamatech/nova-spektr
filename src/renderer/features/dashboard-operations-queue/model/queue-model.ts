@@ -38,7 +38,8 @@ export function filterAwaitingSignature(
   if (multisigByAccountId.size === 0) return [];
 
   return operations.filter((op) => {
-    if (op.status !== MultisigOperationStatus.Pending) return false;
+    // awaitingOutcome: already resolved on-chain, only the final status is unknown — nothing to sign
+    if (op.status !== MultisigOperationStatus.Pending || op.awaitingOutcome) return false;
     const multisig = multisigByAccountId.get(op.multisigAccountId);
     if (!multisig || !accountUtils.isAnyMultisigAccount(multisig)) return false;
 

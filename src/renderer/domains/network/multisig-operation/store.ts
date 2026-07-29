@@ -343,18 +343,22 @@ const $completedLiveOperations = combine(
 
     for (const op of removedOperations) {
       const events = eventsByOperationId[op.id] ?? [];
+      const newEvents = uniqBy(op.events.concat(events.map(e => e.event)), e => e.id);
 
       // The status must come from a terminal on-chain event: a caught rejection,
       // or a MultisigExecuted (the only event carrying an executionResult). A
       // storage entry that disappeared while only approvals were caught did
       // resolve, but we don't know how — labeling it "executed" would mislabel a
-      // missed cancellation and hide the executor's signature. Leave it out and
-      // let the indexer report the outcome.
+      // missed cancellation and hide the executor's signature. Until the indexer
+      // reports the outcome, keep it visible as pending with the awaitingOutcome
+      // marker; the merge in $liveOperations lets the resolved version replace it.
       const isRejected = events.some(e => e.event.status === 'reject');
       const executionResult = events.find(e => nonNullable(e.executionResult))?.executionResult;
-      if (!isRejected && nullable(executionResult)) continue;
+      if (!isRejected && nullable(executionResult)) {
+        completed.push({ ...op, events: newEvents, status: 'pending', awaitingOutcome: true });
+        continue;
+      }
 
-      const newEvents = uniqBy(op.events.concat(events.map(e => e.event)), e => e.id);
       const newStatus = isRejected ? 'cancelled' : executionResult === 'error' ? 'error' : 'executed';
       completed.push({ ...op, events: newEvents, status: newStatus });
     }
@@ -368,7 +372,8 @@ const $completedLiveOperations = combine(
  *
  * - $onChainOperations: pending operations from chain storage (disappears when
  *   completed)
- * - $completedLiveOperations: just-completed operations from event subscriptions
+ * - $completedLiveOperations: operations that left chain storage — resolved via
+ *   caught terminal events, or pending + awaitingOutcome when none was caught
  * - $offChainOperations: completed operations from indexer (~30s delayed)
  * - $cachedOperations: IndexedDB cache for fast initial render
  */

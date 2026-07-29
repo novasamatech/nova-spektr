@@ -272,14 +272,43 @@ describe('multisigOperation store', () => {
       expect(await deriveStatus([completion(rejectEvent, null), completion(approveEvent, 'error')])).toBe('cancelled');
     });
 
-    it('does not resolve a removed operation when only an approval was caught', async () => {
+    it('keeps a removed operation pending when only an approval was caught', async () => {
       // A MultisigApproval carries no executionResult — the entry vanished from
       // storage, but whether it executed or was cancelled is unknown here.
-      expect(await deriveStatus([completion(approveEvent, null)])).toBeUndefined();
+      expect(await deriveStatus([completion(approveEvent, null)])).toBe('pending');
     });
 
-    it('does not resolve a removed operation when no completion event was caught', async () => {
-      expect(await deriveStatus([])).toBeUndefined();
+    it('keeps a removed operation pending when no completion event was caught', async () => {
+      expect(await deriveStatus([])).toBe('pending');
+    });
+
+    it('marks an unresolved removed operation as awaiting outcome and unions caught approvals', async () => {
+      const storageEvent: MultisigEvent = { id: 'e-storage', status: 'approve' } as unknown as MultisigEvent;
+      const opWithEvents = { ...baseOp, events: [storageEvent] };
+
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$removedFromChainStorageOperations, [opWithEvents]],
+          [$completionEvents, [completion(approveEvent, null)]],
+        ]),
+      });
+
+      const [derived] = scope.getState(multisigOperation.__test.$completedLiveOperations);
+      expect(derived?.awaitingOutcome).toBe(true);
+      expect(derived?.events.map(e => e.id).sort()).toEqual(['e-approve', 'e-storage']);
+    });
+
+    it('does not mark a resolved operation as awaiting outcome', async () => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$removedFromChainStorageOperations, [baseOp]],
+          [$completionEvents, [completion(approveEvent, 'success')]],
+        ]),
+      });
+
+      const [derived] = scope.getState(multisigOperation.__test.$completedLiveOperations);
+      expect(derived?.status).toBe('executed');
+      expect(derived?.awaitingOutcome).toBeUndefined();
     });
 
     it('appends the executor approval to the storage-derived events', async () => {

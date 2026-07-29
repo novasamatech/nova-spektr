@@ -249,6 +249,26 @@ describe('multisig operation service', () => {
       expect(merged?.status).toBe('cancelled');
     });
 
+    it('clears awaitingOutcome once the merged status is resolved', () => {
+      const offChain = makeOperation({ status: 'executed' });
+      const live = makeOperation({ awaitingOutcome: true });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.status).toBe('executed');
+      expect(merged?.awaitingOutcome).toBeUndefined();
+    });
+
+    it('keeps awaitingOutcome while both sides are still pending', () => {
+      const oldPending = makeOperation({ events: [makeEvent('e-init', 100)] });
+      const updatedAwaiting = makeOperation({ awaitingOutcome: true, events: [makeEvent('e-init', 100)] });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([oldPending], [updatedAwaiting]);
+
+      expect(merged?.status).toBe('pending');
+      expect(merged?.awaitingOutcome).toBe(true);
+    });
+
     it('prefers the old-side event content on id collision (real per-event block over storage-derived)', () => {
       const offChain = makeOperation({ status: 'executed', events: [makeEvent('e-middle', 200)] });
       const live = makeOperation({ events: [makeEvent('e-middle', 100)] });

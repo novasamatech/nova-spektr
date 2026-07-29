@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-29
 
 ## Overview
 
@@ -17,10 +17,9 @@ a shared description, and (when the address book is connected) nudging the signa
 The list is a **table**: a sticky column header (Operation / Value / Submitter / Initiator / Description) with sortable
 columns sits above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The
 **Initiator** column is hidden on narrower windows (shown at ≥1536px) so the extra column never forces horizontal
-scroll. The **Description** header
-label is shown only once the external address book has been connected (descriptions are address-book data) — the same
-gate that reveals the drafts section; until then the column area stays blank. Saved **drafts** awaiting submission
-appear as the first collapsible section under the same table header on the Pending tab.
+scroll. The **Description** header label is shown only once the external address book has been connected (descriptions
+are address-book data) — the same gate that reveals the drafts section; until then the column area stays blank. Saved
+**drafts** awaiting submission appear as the first collapsible section under the same table header on the Pending tab.
 
 ## Who can use it / when it applies
 
@@ -125,7 +124,20 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
   operation's description.
 - **Status** — a bordered pill: **"X of Y signed"** while pending, **Executed** or **Rejected** once resolved.
 - **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
-  external multisig).
+  external multisig). An operation [awaiting its final status](#awaiting-the-final-status) shows an **Updating status**
+  loader here instead.
+
+### Awaiting the final status
+
+An operation can leave on-chain storage — meaning it resolved — while the app did not catch the terminal event that says
+_how_ (executed or rejected); this happens when the connection drops in the window between approvals and execution.
+Guessing would mislabel a cancellation and hide the executor's signature, so the row stays in **In progress** with its
+"X of Y signed" pill, and the Actions cell renders an **Updating status** spinner whose tooltip explains: _waiting for
+the final status — it will be updated automatically when network data is received_. Because the on-chain entry is
+already gone, signing it would fail: Approve / Reject / Add call data are withheld, _Notify remaining signers_ hides
+itself, and the operation is excluded from the dashboard's [operations queue](../dashboard-operations-queue/README.md).
+Once the indexer (or a late-caught event) reports the real outcome, the row resolves to Executed / Rejected like any
+other operation.
 
 There is no share button on the row — sharing lives in the expanded Signatories panel header. Expanding a row reveals
 three panels:
@@ -384,8 +396,7 @@ The list can be narrowed by **search** and five **filters**:
   operation, or who is assigned to submit a draft — and the call hash. Addresses are matched with the prefix the row
   renders them with. One matcher serves both operation and draft rows; the one asymmetry left is that an operation's
   description is displayed but not searchable (it is fetched only for already-filtered operations, so matching on it
-  would be circular), while a draft's is. See
-  [`operations-search`](../../aggregates/operations-search/README.md).
+  would be circular), while a draft's is. See [`operations-search`](../../aggregates/operations-search/README.md).
 - **Date range** — a from/to (or from-only) interval.
 - **Status** — Drafts / In progress / Completed / Rejected / Hidden. Drafts and hidden operations obey the same logic as
   the regular statuses: with no status selected the scope behaves as before (drafts visible on Pending, hidden ops
@@ -393,9 +404,8 @@ The list can be narrowed by **search** and five **filters**:
   drafts section, **Hidden** surfaces hidden operations in their own section. Beyond the Status gate, draft rows honor
   the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (submitter,
   initiator, description or address) — while an active transaction-type or proxy-type filter puts every draft out of
-  scope (a draft's call may be
-  absent or undecoded), so the drafts section and the merged "All operations" count stay consistent with the filtered
-  list.
+  scope (a draft's call may be absent or undecoded), so the drafts section and the merged "All operations" count stay
+  consistent with the filtered list.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.
@@ -455,6 +465,9 @@ operation, cancelling it.
 - **Network unreachable / operation gone** — approving, rejecting, or deep-linking surfaces an explanatory modal
   (network not available, connection timeout, account or operation not found, already signed) rather than failing
   silently.
+- **Missed terminal event** — the operation resolved on-chain but the app didn't catch how; the row enters the
+  [awaiting-the-final-status](#awaiting-the-final-status) state (pending pill, _Updating status_ loader, no signing
+  actions) until the indexer reports the outcome.
 - **Nudge rejected** — authorization (403 — only a signatory who signed), per-multisig rate-limit (429 — shown as "next
   one available in N minutes/hours"), the operation not yet synced by the backend (404), or delivery failure are each
   turned into an explanatory toast; nothing is sent when no signer is still pending.

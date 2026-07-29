@@ -1,6 +1,6 @@
 # Operations Queue
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-16
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-29
 
 ## Overview
 
@@ -9,7 +9,7 @@ that are blocked on the user personally — **Drafts** waiting to be submitted o
 **Awaiting signature** from a signatory they control — into one date-grouped list, each row deep-linking to the full
 operation view.
 
-The card is deliberately an *action* queue, not a history: an item appears only while the user can still do something
+The card is deliberately an _action_ queue, not a history: an item appears only while the user can still do something
 about it, and leaves the moment they (or a co-signatory) do. Anything already in flight or finished belongs to the
 Operations page, not here.
 
@@ -26,15 +26,15 @@ Operations page, not here.
 
 ## States / scenarios
 
-| State           | When it appears                                        | What the user sees                                      |
-| --------------- | ------------------------------------------------------ | ------------------------------------------------------- |
-| Hidden          | `operationsQueueWidget` flag off                       | No card at all                                          |
-| No selection    | No accounts selected                                   | Title + "Select accounts above" prompt                  |
-| Loading         | Drafts available but not yet fetched                   | Title only; neither subsection nor the empty state      |
-| Empty           | Loaded, and both subsections are empty                 | Title + "Nothing awaiting your action"                  |
-| Drafts only     | Scoped drafts exist, nothing awaits signature          | Drafts subsection (accent count badge)                  |
-| Signatures only | Ops await the user, no drafts (or drafts unavailable)  | Awaiting-signature subsection (negative count badge)    |
-| Both            | Both sets non-empty                                    | Drafts first, then Awaiting signature; the list scrolls |
+| State           | When it appears                                       | What the user sees                                      |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------- |
+| Hidden          | `operationsQueueWidget` flag off                      | No card at all                                          |
+| No selection    | No accounts selected                                  | Title + "Select accounts above" prompt                  |
+| Loading         | Drafts available but not yet fetched                  | Title only; neither subsection nor the empty state      |
+| Empty           | Loaded, and both subsections are empty                | Title + "Nothing awaiting your action"                  |
+| Drafts only     | Scoped drafts exist, nothing awaits signature         | Drafts subsection (accent count badge)                  |
+| Signatures only | Ops await the user, no drafts (or drafts unavailable) | Awaiting-signature subsection (negative count badge)    |
+| Both            | Both sets non-empty                                   | Drafts first, then Awaiting signature; the list scrolls |
 
 Each subsection carries a count badge, and both are omitted rather than shown at zero — an empty subsection header would
 read as a state to resolve when there is nothing to do.
@@ -61,11 +61,13 @@ button with no explanation is the state this gating exists to avoid.
 
 ### Which operations await signature
 
-An operation is queued only when **all** of these hold: it is still `Pending`, its multisig account is in the current
-selection, and the user controls at least one signatory that can still act on it. That last check is the load-bearing
-one — it excludes operations the user has *already* approved, operations where they hold no signatory at all, and
-signatories on chains the account cannot use. Watch-only signatories never count: they cannot sign, so surfacing the
-operation as actionable would be a lie.
+An operation is queued only when **all** of these hold: it is still `Pending`, it is not
+[awaiting its final status](../multisig-operations/README.md#awaiting-the-final-status) (such an operation already
+resolved on-chain — only the outcome is unknown, so there is nothing left to sign), its multisig account is in the
+current selection, and the user controls at least one signatory that can still act on it. That last check is the
+load-bearing one — it excludes operations the user has _already_ approved, operations where they hold no signatory at
+all, and signatories on chains the account cannot use. Watch-only signatories never count: they cannot sign, so
+surfacing the operation as actionable would be a lie.
 
 Rows show the operation's method, chain, multisig name, description, transfer amount where one can be extracted, and the
 approval status, plus the same approve/reject actions as the Operations page.
