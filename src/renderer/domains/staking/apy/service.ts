@@ -74,16 +74,15 @@ function getEraDurationMs(api: ApiPromise, timelineApi: ApiPromise | null | unde
  * 2026-06) its `nextMint` reports the total era emission on Polkadot, of which
  * stakers only receive the DAP staker allocation (~45%) - treating it as the
  * staker reward overstates APY ~2.2×.
+ *
+ * Returns `null` when the chain genuinely reports no reward for the era; throws
+ * when the query fails, so a transient error is never mistaken for a chain
+ * without era payouts.
  */
 async function getStakersEraReward(api: ApiPromise, era: EraIndex): Promise<BigNumber | null> {
-  try {
-    const [entry] = await stakingPallet.storage.erasValidatorReward(api, [Math.max(era - 1, 0)]);
-    if (entry?.reward) return new BigNumber(entry.reward.toString());
-  } catch (error) {
-    console.warn(error);
-  }
+  const [entry] = await stakingPallet.storage.erasValidatorReward(api, [Math.max(era - 1, 0)]);
 
-  return null;
+  return entry?.reward ? new BigNumber(entry.reward.toString()) : null;
 }
 
 async function getTotalStaked(api: ApiPromise, era: EraIndex): Promise<BigNumber | null> {
@@ -131,14 +130,24 @@ type AvgRewardPercentParams = {
  * length (`reward × erasPerYear / totalStaked`), which is correct for both the
  * legacy NPoS inflation curve (Kusama) and the fixed inflation model (Polkadot,
  * ref. 1139). The curve is only re-derived when the chain reports no era reward
- * at all.
+ * at all; a failed reward query leaves the APY unknown instead - on Polkadot
+ * the curve is known to overstate ~2.7×, and a wrong value would be cached for
+ * the rest of the era.
  */
 async function getAvgRewardPercent(params: AvgRewardPercentParams): Promise<number | null> {
   const { api, timelineApi, chain, era, totalStaked } = params;
 
   if (!totalStaked.isFinite() || totalStaked.isLessThanOrEqualTo(0)) return null;
 
-  const stakersEraReward = await getStakersEraReward(api, era);
+  let stakersEraReward: BigNumber | null;
+  try {
+    stakersEraReward = await getStakersEraReward(api, era);
+  } catch (error) {
+    console.warn('era reward query failed, leaving the apy unknown', error);
+
+    return null;
+  }
+
   if (stakersEraReward?.isGreaterThan(0)) {
     const erasPerYear = MILLISECONDS_PER_YEAR / getEraDurationMs(api, timelineApi, chain);
 

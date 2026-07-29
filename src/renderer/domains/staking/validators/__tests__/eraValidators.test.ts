@@ -37,7 +37,7 @@ const bob = '0x02' as AccountId;
 const CHAIN_ID = AssetHubChains.POLKADOT_AH;
 const ERA = 100;
 
-// 10% pool reward rate: 1000 minted per 24h era against 3_652_500 staked.
+// 10% pool reward rate: 1000 paid to stakers per 24h era against 3_652_500 staked.
 const TOTAL_STAKED = 3_652_500;
 const VALIDATOR_STAKE = String(TOTAL_STAKED / 2);
 

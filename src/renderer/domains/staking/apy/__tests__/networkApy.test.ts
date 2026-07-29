@@ -144,6 +144,21 @@ describe('getNetworkApy', () => {
     expect(apy).toEqual('15.00');
   });
 
+  test('leaves the apy unknown when the era reward query fails instead of guessing via the curve', async () => {
+    storage.erasValidatorReward.mockRejectedValue(new Error('disconnected'));
+
+    const apy = await apyService.getNetworkApy({
+      // Issuance is available, so the curve fallback would produce a value if reached.
+      api: mockApi({ totalIssuance: '17478614697431147634' }),
+      timelineApi: relayApi(),
+      chain: polkadotAh,
+      era: 100,
+      validators: validators(0),
+    });
+
+    expect(apy).toBeNull();
+  });
+
   test('returns null when no staker reward can be resolved', async () => {
     storage.erasValidatorReward.mockResolvedValue([{ era: 99, reward: null }]);
 
