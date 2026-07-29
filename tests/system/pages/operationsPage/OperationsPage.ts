@@ -11,6 +11,8 @@ import { type OperationsPageElements } from '../_elements/OperationsPageElements
 const DRAFTS_SECTION_TITLE = 'Drafts';
 const SUBMIT_BUTTON = 'Submit';
 const ADD_CALL_DATA_BUTTON = 'Add call data';
+const UPDATING_STATUS_LABEL = 'Updating status';
+const AWAITING_OUTCOME_TOOLTIP = 'Waiting for the final status';
 
 /** The subset of a built scenario that `seedAndOpen` actually consumes. */
 type SeededOperations = Pick<BuiltData, 'walletRows' | 'accountRows' | 'operationRecords'>;
@@ -219,12 +221,12 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
     await step('Expect the awaiting-outcome operation to stay pending without signing actions', async () => {
       const row = this.operationRow(operationId);
 
-      await expect(row.getByText('Updating status')).toBeVisible();
+      await expect(row.getByText(UPDATING_STATUS_LABEL)).toBeVisible();
       await expect(row.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
       await expect(row.getByRole('button', { name: 'Reject', exact: true })).toHaveCount(0);
 
-      await row.getByText('Updating status').hover();
-      await expect(this.page.getByText('Waiting for the final status')).toBeVisible();
+      await row.getByText(UPDATING_STATUS_LABEL).hover();
+      await expect(this.page.getByText(AWAITING_OUTCOME_TOOLTIP)).toBeVisible();
     });
   }
 
