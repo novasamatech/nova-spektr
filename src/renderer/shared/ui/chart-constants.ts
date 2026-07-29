@@ -57,3 +57,10 @@ export const ALLOCATION_COLORS = {
  * segment's own colour stays legible underneath in both themes.
  */
 export const VESTED_HATCH = `repeating-linear-gradient(135deg, ${ALLOCATION_COLORS.vested}d9 0 3px, #ffffff59 3px 6px)`;
+
+/**
+ * Floor for the {@link VESTED_HATCH} marker (and the segments it sits over): a
+ * trace of vesting inside a large balance would otherwise collapse to a
+ * sub-pixel span nobody can find.
+ */
+export const ALLOCATION_MARKER_MIN_PX = 6;

@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-29
 
 ## Overview
 
@@ -34,17 +34,17 @@ mode, so its position is a default rather than a guarantee.
 
 ## States / scenarios
 
-| State                | When it appears                                                   | What the user sees                                                                            |
-| -------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Fiat off             | Global "show fiat" toggle is off                                  | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings    |
-| No selection         | No accounts selected                                              | Title + "Select accounts above to view your balance"                                          |
-| Loading              | Prices/currency not resolved, or no balance record has landed yet | Skeleton mirroring the final layout                                                           |
-| No tokens            | Prices resolved, selection holds nothing priced and no vesting    | Title + `$0` + vesting slot + a centered "No tokens to show" message                          |
-| Overview             | Data ready                                                        | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list      |
-| Balance-type filter  | A bar segment or chip clicked                                     | Donut and list re-scope to that balance type; scope label + color follow; "Show all" clears   |
-| Donut hover          | Pointer over a donut segment                                      | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring |
-| Asset / chain detail | A holdings row is clicked                                         | Modal with a per-address (asset view) or per-asset (chain view) breakdown                     |
-| Syncing              | Any selected chain is still connecting                            | A small spinner beside the distribution label; the numbers keep updating as balances arrive   |
+| State                | When it appears                                                   | What the user sees                                                                                         |
+| -------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Fiat off             | Global "show fiat" toggle is off                                  | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings                 |
+| No selection         | No accounts selected                                              | Title + "Select accounts above to view your balance"                                                       |
+| Loading              | Prices/currency not resolved, or no balance record has landed yet | Skeleton mirroring the final layout                                                                        |
+| No tokens            | Prices resolved, selection holds nothing priced and no vesting    | Title + `$0` + vesting slot + a centered "No tokens to show" message                                       |
+| Overview             | Data ready                                                        | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list                   |
+| Balance-type filter  | A bar segment or chip clicked                                     | Donut, list and detail modals re-scope to that balance type; scope label + color follow; "Show all" clears |
+| Donut hover          | Pointer over a donut segment                                      | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring              |
+| Asset / chain detail | A holdings row is clicked                                         | Modal with a per-address (asset view) or per-asset (chain view) breakdown                                  |
+| Syncing              | Any selected chain is still connecting                            | A small spinner beside the distribution label; the numbers keep updating as balances arrive                |
 
 The card has **no error state**: missing prices degrade into the loading / suppressed states above. The injected vesting
 callout brings its own error boundary precisely because this slot offers none.
@@ -157,6 +157,15 @@ Clicking a holdings row opens a breakdown modal:
   fallback. Each row shows its amount, fiat value, and share, plus a **per-row allocation bar with a legend** breaking
   that address's holding into the same four categories (transferable / reserved / locked / vested).
 - **Chain detail** (from the By Chain view) lists one row **per asset** on that chain.
+- The modals **inherit the active balance-type filter**: rows carry only that type's amount and fiat (through the same
+  `splitBalanceForHoldings` buckets the lists are filtered by), addresses/assets holding none of it are dropped, shares
+  are recomputed against the scoped sum, and the header shows the scoped total with a colored dot + type label next to
+  the row count. The per-row allocation bar keeps showing the full four-category split — under a filter it is what
+  explains the rest of that address's holding.
+- The per-row bars give **"vesting that has no slice"** the same treatment as the distribution bar: vesting riding on
+  reserved funds joins no segment but is drawn as a hatched marker (with the same 6px visibility floor) across the
+  segments it covers, and the legend's Vested entry — hatch-swatched under overlap — prints the **whole** vesting lock,
+  so its figure matches the row amount the Vested filter selected rather than the partition's capped slice.
 - Shares inside the modals are **rounded down** to one decimal, so a column can visibly sum to slightly under 100%.
 
 ## Lifecycle

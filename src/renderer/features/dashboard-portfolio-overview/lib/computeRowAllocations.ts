@@ -4,7 +4,7 @@ import { type Balance, type Chain, type ChainId } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
 import { type PriceObject } from '@/domains/price';
 
-import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType } from './balanceTypes';
+import { type BalanceType, BALANCE_TYPES, makeByType, splitBalanceByType, vestingOverlapBN } from './balanceTypes';
 
 export type AllocationSegment = {
   pct: number;
@@ -12,7 +12,22 @@ export type AllocationSegment = {
   fiat: string;
 };
 
-export type RowAllocation = Record<BalanceType, AllocationSegment>;
+export type RowAllocation = {
+  types: Record<BalanceType, AllocationSegment>;
+  /**
+   * Vesting that rides on reserved funds — see {@link vestingOverlapBN}. Same
+   * contract as `AllocationData.vestedOverlap`: not one of `types` (those sum
+   * to the row total and drive the bar's geometry), `pct` is expressed against
+   * the same total so it can be drawn as a marker over the segments it covers.
+   */
+  vestedOverlap: AllocationSegment;
+  /**
+   * Everything under a vesting schedule — `types.vested` plus the overlap. What
+   * the legend prints, so the figure matches the holdings row the Vested filter
+   * selected.
+   */
+  vestedTotal: { raw: string; fiat: string };
+};
 
 type AssetAllocParams = {
   accountIds: string[];
@@ -33,33 +48,59 @@ type ChainAllocParams = {
   currency: { coingeckoId: string };
 };
 
-type ByTypeAccumulator = Record<BalanceType, { raw: BigNumber; fiat: BigNumber }>;
+type Amounts = { raw: BigNumber; fiat: BigNumber };
 
-const makeAccumulator = (): ByTypeAccumulator => makeByType(() => ({ raw: new BigNumber(0), fiat: new BigNumber(0) }));
+type RowAccumulator = {
+  types: Record<BalanceType, Amounts>;
+  overlap: Amounts;
+};
 
-function accumulate(acc: ByTypeAccumulator, balance: Balance, price: number, precision: number) {
+const makeAmounts = (): Amounts => ({ raw: new BigNumber(0), fiat: new BigNumber(0) });
+
+const makeAccumulator = (): RowAccumulator => ({ types: makeByType(makeAmounts), overlap: makeAmounts() });
+
+function addAmounts(amounts: Amounts, raw: string, price: number, precision: number) {
+  amounts.raw = amounts.raw.plus(raw);
+  amounts.fiat = amounts.fiat.plus(getRoundedValue(raw, price, precision));
+}
+
+function accumulate(acc: RowAccumulator, balance: Balance, price: number, precision: number) {
   const split = splitBalanceByType(balance);
   for (const type of BALANCE_TYPES) {
     if (split[type].isZero()) continue;
 
-    const raw = split[type].toString();
-    acc[type].raw = acc[type].raw.plus(raw);
-    acc[type].fiat = acc[type].fiat.plus(getRoundedValue(raw, price, precision));
+    addAmounts(acc.types[type], split[type].toString(), price, precision);
+  }
+
+  const overlap = vestingOverlapBN(balance);
+  if (!overlap.isZero()) {
+    addAmounts(acc.overlap, overlap.toString(), price, precision);
   }
 }
 
-function toAllocation(acc: ByTypeAccumulator): RowAllocation | null {
+function toAllocation(acc: RowAccumulator): RowAllocation | null {
+  // The overlap stays out of the total: it doubles funds already counted under
+  // `reserved`/`locked`, adding it would inflate every percentage.
   let totalFiat = new BigNumber(0);
   for (const type of BALANCE_TYPES) {
-    totalFiat = totalFiat.plus(acc[type].fiat);
+    totalFiat = totalFiat.plus(acc.types[type].fiat);
   }
   if (totalFiat.isZero()) return null;
 
-  return makeByType((type) => ({
-    pct: acc[type].fiat.div(totalFiat).multipliedBy(100).toNumber(),
-    raw: acc[type].raw.toFixed(0),
-    fiat: acc[type].fiat.toString(),
-  }));
+  const toSegment = (amounts: Amounts): AllocationSegment => ({
+    pct: amounts.fiat.div(totalFiat).multipliedBy(100).toNumber(),
+    raw: amounts.raw.toFixed(0),
+    fiat: amounts.fiat.toString(),
+  });
+
+  return {
+    types: makeByType((type) => toSegment(acc.types[type])),
+    vestedOverlap: toSegment(acc.overlap),
+    vestedTotal: {
+      raw: acc.types.vested.raw.plus(acc.overlap.raw).toFixed(0),
+      fiat: acc.types.vested.fiat.plus(acc.overlap.fiat).toString(),
+    },
+  };
 }
 
 export function computeAssetRowAllocations(params: AssetAllocParams): Map<string, RowAllocation> {
@@ -69,7 +110,7 @@ export function computeAssetRowAllocations(params: AssetAllocParams): Map<string
   const accountIdSet = new Set(accountIds);
 
   // Group balances by accountId, filtering to matching priceId
-  const grouped = new Map<string, ByTypeAccumulator>();
+  const grouped = new Map<string, RowAccumulator>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
@@ -108,7 +149,7 @@ export function computeChainRowAllocations(params: ChainAllocParams): Map<number
   const chain = chains[chainId];
   if (!chain) return result;
 
-  const grouped = new Map<number, ByTypeAccumulator>();
+  const grouped = new Map<number, RowAccumulator>();
 
   for (const balance of Object.values(balanceMap)) {
     if (!accountIdSet.has(balance.accountId)) continue;
