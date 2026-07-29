@@ -46,7 +46,7 @@ export function applyFilters(
     if (filters.minApy !== null && (validator.apy === null || validator.apy < filters.minApy)) return false;
     if (filters.maxCommission !== null && validator.commission > filters.maxCommission) return false;
     if (minOwnStake !== null && parseStake(validator.ownStake).lt(minOwnStake)) return false;
-    if (filters.hideIdle && validator.blocksAuthored === 0) return false;
+    if (filters.hideIdle && validator.eraPoints === 0) return false;
     if (filters.hasIdentity && identitiesKnown && !hasOnChainIdentity(validator.accountId, identityParents)) {
       return false;
     }

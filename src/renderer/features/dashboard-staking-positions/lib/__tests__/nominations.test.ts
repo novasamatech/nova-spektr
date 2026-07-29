@@ -25,7 +25,6 @@ function eraValidator(overrides: Partial<EraValidator> = {}): EraValidator {
     maxNominatorsRewarded: 512,
     slashed: false,
     eraPoints: 120,
-    blocksAuthored: null,
     apy: 14,
     elected: true,
     ...overrides,

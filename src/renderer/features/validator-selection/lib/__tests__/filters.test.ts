@@ -35,7 +35,7 @@ describe('hasOnChainIdentity', () => {
 
 describe('applyFilters', () => {
   it('keeps everything when no bound is set', () => {
-    const validators = [makeValidator(1, { slashed: true, blocksAuthored: 0, apy: null })];
+    const validators = [makeValidator(1, { slashed: true, apy: null })];
 
     expect(applyFilters(validators, OPEN_FILTERS, identityParents)).toEqual(validators);
   });
@@ -80,17 +80,10 @@ describe('applyFilters', () => {
     expect(ids(result)).toEqual([accountId(1)]);
   });
 
-  it('hides validators that authored zero blocks, but keeps unknown block counts', () => {
-    const validators = [
-      makeValidator(1, { blocksAuthored: 0 }),
-      makeValidator(2, { blocksAuthored: null }),
-      makeValidator(3, { blocksAuthored: 4 }),
-    ];
+  it('hides validators that earned no reward points last era', () => {
+    const validators = [makeValidator(1, { eraPoints: 0 }), makeValidator(2, { eraPoints: 4 })];
 
-    expect(ids(applyFilters(validators, withFilters({ hideIdle: true }), identityParents))).toEqual([
-      accountId(2),
-      accountId(3),
-    ]);
+    expect(ids(applyFilters(validators, withFilters({ hideIdle: true }), identityParents))).toEqual([accountId(2)]);
   });
 
   it('keeps only validators with an on-chain identity', () => {
@@ -108,13 +101,13 @@ describe('applyFilters', () => {
   it('combines every bound', () => {
     const validators = [
       // survives everything
-      makeValidator(1, { apy: 20, commission: 2, ownStake: '500', blocksAuthored: 3 }),
+      makeValidator(1, { apy: 20, commission: 2, ownStake: '500' }),
       // no identity
-      makeValidator(4, { apy: 20, commission: 2, ownStake: '500', blocksAuthored: 3 }),
+      makeValidator(4, { apy: 20, commission: 2, ownStake: '500' }),
       // apy too low
-      makeValidator(2, { apy: 4, commission: 2, ownStake: '500', blocksAuthored: 3 }),
+      makeValidator(2, { apy: 4, commission: 2, ownStake: '500' }),
       // slashed
-      makeValidator(2, { apy: 20, commission: 2, ownStake: '500', blocksAuthored: 3, slashed: true }),
+      makeValidator(2, { apy: 20, commission: 2, ownStake: '500', slashed: true }),
     ];
 
     const result = applyFilters(

@@ -3,7 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { keys } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { perbillToPercent } from '../apy/calculator';
 import { apyService } from '../apy/service';
 import { exposureService } from '../exposures/service';
@@ -31,15 +31,13 @@ export const validatorsService = {
   getValidatorsList,
   getMaxValidators,
   getNominators,
-  getCurrentSession,
-  getAuthoredBlocks,
 };
 
 type EraValidatorsParams = {
   api: ApiPromise;
   chainId: ChainId;
   era: EraIndex;
-  /** Relay-chain api. Enables the authored-blocks probe. */
+  /** Relay-chain api. Used by the APY calculation for era timing. */
   timelineApi?: ApiPromise | null;
   /** Era exposure overviews, when already resolved by `exposuresResource`. */
   overviews?: ExposureOverviewMap;
@@ -80,11 +78,10 @@ async function getEraValidators(params: EraValidatorsParams): Promise<EraValidat
     ];
   });
 
-  const [eraPoints, slashed, apyMap, blocksAuthored] = await Promise.all([
+  const [eraPoints, slashed, apyMap] = await Promise.all([
     getEraPoints(api, era),
     getSlashedValidators(api, era, accountIds),
     apyService.getValidatorsApy({ api, timelineApi, chain: { chainId }, era, validators: baseValidators }),
-    resolveAuthoredBlocks(timelineApi, accountIds),
   ]);
 
   const result: EraValidatorMap = {};
@@ -94,7 +91,6 @@ async function getEraValidators(params: EraValidatorsParams): Promise<EraValidat
       maxNominatorsRewarded: Number.isFinite(maxExposurePageSize) ? maxExposurePageSize : null,
       slashed: slashed.has(validator.accountId),
       eraPoints: eraPoints[validator.accountId] ?? 0,
-      blocksAuthored: blocksAuthored?.[validator.accountId] ?? null,
       apy: apyMap[validator.accountId] ?? null,
       elected: true,
     } satisfies EraValidator;
@@ -158,68 +154,26 @@ async function getNominators(api: ApiPromise, stash: AccountId): Promise<Validat
 }
 
 /**
- * Current session index of the timeline (relay) chain.
- */
-async function getCurrentSession(timelineApi: ApiPromise): Promise<number | null> {
-  const query = timelineApi.query['session']?.['currentIndex'];
-  if (!query) return null;
-
-  try {
-    return pjsSchema.u32.parse(await query());
-  } catch (error) {
-    console.warn(error);
-
-    return null;
-  }
-}
-
-/**
- * Blocks authored by each validator in the given session.
+ * Reward points of the last **completed** era, not of `era` itself.
  *
- * `imOnline` only exists on relay chains, so this must be probed on the
- * timeline api - Asset Hub has no such pallet. Returns `null` when the counter
- * is unavailable, so callers can distinguish "zero blocks" from "unknown".
+ * On staking-async runtimes (every Asset Hub, which is where staking lives) the
+ * relay reports points to the staking chain per session, not per block.
+ * Measured on Polkadot AH: `ErasRewardPoints[activeEra]` is `0` for the whole
+ * first session of an era - four of every twenty-four hours the table read as a
+ * column of zeros - and only reaches its final value when the era closes. The
+ * value in between is a partial tally that under-reports whoever has not been
+ * in a closed session yet.
+ *
+ * The previous era is complete and identical for everyone, which is the only
+ * basis on which comparing validators means anything. (polkadot-js apps reads
+ * the active era through `api.derive.staking.currentPoints` and shows the same
+ * zeros; it is not a pattern worth copying.)
  */
-async function getAuthoredBlocks(
-  timelineApi: ApiPromise,
-  session: number,
-  validators: AccountId[],
-): Promise<Record<AccountId, number> | null> {
-  const query = timelineApi.query['imOnline']?.['authoredBlocks'];
-  if (!query || validators.length === 0) return null;
-
-  try {
-    const raw = await query.multi(validators.map(validator => [session, validator]));
-    const counts = pjsSchema.vec(pjsSchema.u32).parse(raw);
-
-    const result: Record<AccountId, number> = {};
-    for (const [index, validator] of validators.entries()) {
-      result[validator] = counts[index] ?? 0;
-    }
-
-    return result;
-  } catch (error) {
-    console.warn(error);
-
-    return null;
-  }
-}
-
-async function resolveAuthoredBlocks(
-  timelineApi: ApiPromise | null | undefined,
-  validators: AccountId[],
-): Promise<Record<AccountId, number> | null> {
-  if (!timelineApi) return null;
-
-  const session = await getCurrentSession(timelineApi);
-  if (session === null) return null;
-
-  return getAuthoredBlocks(timelineApi, session, validators);
-}
-
 async function getEraPoints(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, number>> {
+  if (era <= 0) return {};
+
   try {
-    const points = await stakingPallet.storage.erasRewardPoints(api, era);
+    const points = await stakingPallet.storage.erasRewardPoints(api, era - 1);
 
     const result: Record<AccountId, number> = {};
     for (const { key, value } of points.individual) {
@@ -322,7 +276,6 @@ function createUnknownValidator(accountId: AccountId): EraValidator {
     maxNominatorsRewarded: null,
     slashed: false,
     eraPoints: 0,
-    blocksAuthored: null,
     apy: null,
     elected: true,
   };

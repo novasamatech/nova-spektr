@@ -44,16 +44,16 @@ nominates today" and never "this is what you were about to change it to".
 
 ## States / scenarios
 
-| State           | When it appears                                      | What the user sees                                                           |
-| --------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Loading         | The elected set of the network has not arrived       | Table skeleton                                                               |
-| Browsing        | The set has arrived                                  | Sorted table, meta line ("600 active validators · era 1,712")                |
-| Preselected     | Opened from change-nominations                       | The account's current nominations already checked                            |
-| Narrowed        | A filter, a toggle or a search query is active       | Fewer rows; "Showing 10 of 600"; a dot on the filter button                  |
-| Empty           | No validator matches the search or the filters       | "No validators match your search or filters" + "Clear search and filters"    |
-| At the limit    | As many validators picked as the chain allows        | Further rows cannot be added; already-picked ones can still be removed       |
-| Detail open     | A row is opened                                      | The validator's score breakdown — commission, self stake, blocks, era points |
-| Ready to submit | At least one validator picked, and the mode can sign | CTA enabled; "8 of 12 selected shown · est. set APY 15.9%"                   |
+| State           | When it appears                                      | What the user sees                                                        |
+| --------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| Loading         | The elected set of the network has not arrived       | Table skeleton                                                            |
+| Browsing        | The set has arrived                                  | Sorted table, meta line ("600 active validators · era 1,712")             |
+| Preselected     | Opened from change-nominations                       | The account's current nominations already checked                         |
+| Narrowed        | A filter, a toggle or a search query is active       | Fewer rows; "Showing 10 of 600"; a dot on the filter button               |
+| Empty           | No validator matches the search or the filters       | "No validators match your search or filters" + "Clear search and filters" |
+| At the limit    | As many validators picked as the chain allows        | Further rows cannot be added; already-picked ones can still be removed    |
+| Detail open     | A row is opened                                      | The validator's score breakdown — APY, commission, self stake, era points |
+| Ready to submit | At least one validator picked, and the mode can sign | CTA enabled; "8 of 12 selected shown · est. set APY 15.9%"                |
 
 ### What the row badges mean
 
@@ -78,11 +78,23 @@ row carried it.
 
 ### What "recommended" is ranked on
 
-Not APY alone. Each candidate is scored `0..1` on five metrics — estimated APY, commission, self stake, block production
-and era points — normalised against the other candidates of that era, and the ranking sorts by a weighted blend of them
-(`SCORE_WEIGHTS` in `domains/staking/recommendations`). APY leads at 0.4 because it is the return the user is actually
-buying, but it cannot decide alone: a headline APY earned behind a large commission, or on a validator with no stake of
-its own in the position, is not the same offer as one earned without either.
+Not APY alone. Each candidate is scored `0..1` on four metrics — estimated APY, commission, self stake and era points —
+normalised against the other candidates of that era, and the ranking sorts by a weighted blend of them (`SCORE_WEIGHTS`
+in `domains/staking/recommendations`). APY leads at 0.4 because it is the return the user is actually buying, but it
+cannot decide alone: a headline APY earned behind a large commission, or on a validator with no stake of its own in the
+position, is not the same offer as one earned without either.
+
+There is no separate block-production metric, and no Blocks column. Authored-block counts came from
+`imOnline.authoredBlocks`, and that pallet no longer exists in the Polkadot runtime — the column could only ever render
+"—". Era points are the surviving liveness signal and carry that weight instead; they pay for backing and approval as
+well as authoring, so they measure more of what a validator actually does. (Deriving blocks from points was considered
+and rejected: on Polkadot an era pays out ~52M points across ~600 validators, orders of magnitude more than the ~14,400
+blocks in a day, because para-validation dominates. Any points-to-blocks ratio would be invented.)
+
+**Era points are the last _completed_ era's**, not the running one. On staking-async runtimes the relay reports points
+per session, so the active era reads `0` for everyone through its whole first session — four of every twenty-four hours
+on Polkadot — and is a partial tally for the rest of it. The previous era is complete and identical for everyone, which
+is the only basis on which comparing validators means anything.
 
 The "Why recommended" card renders exactly these numbers, `Overall` first. The card and the ordering come from one
 function on purpose — an explanation that can disagree with the decision it explains is worse than none.

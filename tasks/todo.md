@@ -504,3 +504,55 @@ APY known at all, and `overall` being exactly the weighted sum.
 
 **Verification:** `pnpm types:go` clean, 2616 unit tests, 223 integration tests, feature-map OK (132 modules), eslint 0
 errors on changed files, every static `t()` key resolves.
+
+## Era points and the Blocks column (2026-07-29)
+
+Reported from the running app: every validator showed `Era pts 0` and `Blocks —`. Two separate causes, both verified
+against live Polkadot / Polkadot Asset Hub rather than reasoned about.
+
+### Era points — the active era is the wrong era to read
+
+`getEraPoints` read `erasRewardPoints(activeEra)`. On staking-async runtimes the relay reports points to the staking
+chain **per session**, not per block. Measured on Polkadot AH by replaying historical blocks:
+
+| observed at          | activeEra | points for that era     |
+| -------------------- | --------- | ----------------------- |
+| 30 min into era 2246 | 2246      | `total=0`, 0 entries    |
+| 4.5 h into era 2245  | 2245      | 34,323,140              |
+| 12.5 h into era 2245 | 2245      | 43,003,140              |
+| era 2245 closed      | 2245      | 51,716,660, 599 entries |
+
+So the active era reads `0` for its whole first session — four of every twenty-four hours on Polkadot — and is a partial
+tally the rest of the time. Fixed by reading the last **completed** era (`era - 1`), which is complete and identical for
+everyone; that is also what the design's "last era" wording already implied.
+
+polkadot-js apps has the same bug: `api.derive.staking.currentPoints` is `erasRewardPoints(activeEra)`
+(`@polkadot/api-derive/staking/currentPoints.js`), so its staking-async page shows the same zeros. Not a pattern to
+copy.
+
+### Blocks — `imOnline` no longer exists
+
+The column needed `imOnline.authoredBlocks` on the timeline chain. Probed both ends: `imOnline pallet present: false` on
+the Polkadot relay (spec 2003002) **and** on Polkadot AH. The pallet was removed from the runtime, so the column could
+only ever render `—`.
+
+In `../apps` "Produced blocks" is the same dead path — `api.query.imOnline.authoredBlocks(currentSession, stash)`, gated
+behind `!!(api.query.imOnline?.authoredBlocks)` so the badge simply never renders. The other block-related thing there,
+`byAuthor` in `react-hooks/src/ctx/BlockAuthors.tsx`, is the _number of the last block_ a validator authored while the
+tab was open (from `subscribeNewHeads`), not a count — not what this column means.
+
+**The fallback recorded earlier in this file — `round(eraPoints / 20)` — was rejected.** Live data kills it: an era pays
+~51.7M points across 599 validators (~86k each), while a day holds ~14,400 blocks in total. Era points are dominated by
+para-validation (backing/approval), not authoring, so any points-to-blocks ratio would be invented.
+
+**Decision (user): remove the column, move its weight to era points.** Removed `EraValidator.blocksAuthored`,
+`getAuthoredBlocks`/`resolveAuthoredBlocks`/`getCurrentSession`, the table column and its sort key, the detail row, the
+`blockProduction` score and the `blocksUnavailable` string. `SCORE_WEIGHTS` is now APY 0.4 / commission 0.2 / self stake
+0.15 / **era points 0.25** (0.10 + the 0.15 that was block production) — still sums to 1, so `overall` can reach 100%
+again. The "hide idle" filter now means "earned no reward points last era" instead of "authored zero blocks".
+
+This also explains the `Overall 70%` in the screenshot: with era points 0 and blocks unknown, two of five metrics were
+structurally dead and the composite could not exceed 0.75.
+
+**Verification:** `pnpm types:go` clean, 2610 unit tests, 223 integration tests, feature-map OK, eslint 0 errors, every
+static `t()` key resolves.

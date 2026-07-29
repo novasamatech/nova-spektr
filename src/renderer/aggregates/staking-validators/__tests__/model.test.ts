@@ -55,7 +55,6 @@ const makeValidator = (index: number, overrides: Partial<EraValidator> = {}): Er
   maxNominatorsRewarded: 512,
   slashed: false,
   eraPoints: 100,
-  blocksAuthored: null,
   apy: 10,
   elected: true,
   ...overrides,

@@ -14,7 +14,7 @@ import { type AnyAccount } from '@/domains/network';
  */
 export type SigningMode = 'local' | 'draft' | 'watchOnly';
 
-export type SortColumn = 'validator' | 'eraPoints' | 'blocks' | 'nominators' | 'ownStake' | 'commission' | 'apy';
+export type SortColumn = 'validator' | 'eraPoints' | 'nominators' | 'ownStake' | 'commission' | 'apy';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -35,7 +35,7 @@ export type FiltersState = {
   maxCommission: number | null;
   /** Minimum validator self stake, in planck. `null` - no bound. */
   minOwnStake: string | null;
-  /** Drops validators that authored zero blocks. Unknown block counts stay. */
+  /** Drops validators that earned no reward points in the last completed era. */
   hideIdle: boolean;
   hasIdentity: boolean;
   neverSlashed: boolean;

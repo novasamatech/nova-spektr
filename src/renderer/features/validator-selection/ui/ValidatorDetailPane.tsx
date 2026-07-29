@@ -110,14 +110,6 @@ export const ValidatorDetailPane = () => {
               <FootnoteText>{validator.eraPoints.toLocaleString()}</FootnoteText>
             </DetailRow>
 
-            <DetailRow label={t('staking.validatorSelection.detail.blocks')}>
-              <FootnoteText className={nullable(validator.blocksAuthored) ? 'text-text-tertiary' : undefined}>
-                {nullable(validator.blocksAuthored)
-                  ? t('staking.validatorSelection.blocksUnavailable')
-                  : validator.blocksAuthored.toLocaleString()}
-              </FootnoteText>
-            </DetailRow>
-
             <DetailRow label={t('staking.validatorSelection.detail.nominators')}>
               <FootnoteText>{validator.nominatorCount.toLocaleString()}</FootnoteText>
             </DetailRow>
@@ -204,7 +196,6 @@ const WhyRecommended = ({ score }: WhyRecommendedProps) => {
       <ScoreBar label={t('staking.validatorSelection.detail.scoreApy')} value={score.apy} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreCommission')} value={score.commission} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreSelfStake')} value={score.selfStake} />
-      <ScoreBar label={t('staking.validatorSelection.detail.scoreBlockProduction')} value={score.blockProduction} />
       <ScoreBar label={t('staking.validatorSelection.detail.scoreEraPoints')} value={score.eraPoints} />
     </div>
   );

@@ -62,8 +62,6 @@ function getComparator(
         );
     case 'eraPoints':
       return (left, right) => applyDirection(left.eraPoints - right.eraPoints, direction);
-    case 'blocks':
-      return (left, right) => compareNullableNumber(left.blocksAuthored, right.blocksAuthored, direction);
     case 'nominators':
       return (left, right) => applyDirection(left.nominatorCount - right.nominatorCount, direction);
     case 'ownStake':

@@ -52,19 +52,15 @@ describe('sortValidators', () => {
     expect(ids(sorted)).toEqual([accountId(3), accountId(2), accountId(1)]);
   });
 
-  it('keeps unknown block counts last in both directions', () => {
-    const validators = [
-      makeValidator(1, { blocksAuthored: null }),
-      makeValidator(2, { blocksAuthored: 7 }),
-      makeValidator(3, { blocksAuthored: 0 }),
-    ];
+  it('sinks an unknown value in both directions rather than reading it as zero', () => {
+    const validators = [makeValidator(1, { apy: null }), makeValidator(2, { apy: 7 }), makeValidator(3, { apy: 0 })];
 
-    expect(ids(sortValidators(validators, { column: 'blocks', direction: 'desc' }))).toEqual([
+    expect(ids(sortValidators(validators, { column: 'apy', direction: 'desc' }))).toEqual([
       accountId(2),
       accountId(3),
       accountId(1),
     ]);
-    expect(ids(sortValidators(validators, { column: 'blocks', direction: 'asc' }))).toEqual([
+    expect(ids(sortValidators(validators, { column: 'apy', direction: 'asc' }))).toEqual([
       accountId(3),
       accountId(2),
       accountId(1),

@@ -24,7 +24,6 @@ function createValidator(accountId: AccountId, overrides: Partial<EraValidator> 
     maxNominatorsRewarded: 512,
     slashed: false,
     eraPoints: 0,
-    blocksAuthored: null,
     apy: null,
     elected: true,
     ...overrides,
@@ -196,13 +195,13 @@ describe('recommendationsService.recommendValidators', () => {
 
   describe('ordering', () => {
     it('should let a cheaper, better-run validator outrank a higher apy', () => {
-      // APY carries 0.4 of the score, the other four carry 0.6 together, so a
+      // APY carries 0.4 of the score, the other three carry 0.6 together, so a
       // validator that wins every one of them beats a 20%-better APY. This is
       // the whole point of ranking on a blend: a headline APY earned behind a
       // large commission is not the same offer as one earned without it.
       const validators = [
-        createValidator(alice, { apy: 12, commission: 20, ownStake: '1', blocksAuthored: 0, eraPoints: 10 }),
-        createValidator(bob, { apy: 10, commission: 0, ownStake: '1000', blocksAuthored: 20, eraPoints: 900 }),
+        createValidator(alice, { apy: 12, commission: 20, ownStake: '1', eraPoints: 10 }),
+        createValidator(bob, { apy: 10, commission: 0, ownStake: '1000', eraPoints: 900 }),
       ];
 
       const result = recommendationsService.recommendValidators(validators, {}, createOpenCriteria());
@@ -212,8 +211,8 @@ describe('recommendationsService.recommendValidators', () => {
 
     it('should still put a clearly better apy first when the other metrics are close', () => {
       const validators = [
-        createValidator(alice, { apy: 4, commission: 5, ownStake: '100', blocksAuthored: 5, eraPoints: 100 }),
-        createValidator(bob, { apy: 14, commission: 6, ownStake: '95', blocksAuthored: 5, eraPoints: 95 }),
+        createValidator(alice, { apy: 4, commission: 5, ownStake: '100', eraPoints: 100 }),
+        createValidator(bob, { apy: 14, commission: 6, ownStake: '95', eraPoints: 95 }),
       ];
 
       const result = recommendationsService.recommendValidators(validators, {}, createOpenCriteria());
@@ -482,44 +481,6 @@ describe('recommendationsService.getScoreBreakdown', () => {
     });
   });
 
-  describe('blockProduction', () => {
-    it('should normalise against the largest authored block count', () => {
-      const idle = createValidator(alice, { blocksAuthored: 0 });
-      const busy = createValidator(bob, { blocksAuthored: 8 });
-      const middle = createValidator(charlie, { blocksAuthored: 2 });
-      const all = [idle, busy, middle];
-
-      expect(recommendationsService.getScoreBreakdown(idle, all).blockProduction).toBe(0);
-      expect(recommendationsService.getScoreBreakdown(busy, all).blockProduction).toBe(1);
-      expect(recommendationsService.getScoreBreakdown(middle, all).blockProduction).toBe(0.25);
-    });
-
-    it('should treat an unknown count as zero while the set knows blocks', () => {
-      const unknown = createValidator(alice, { blocksAuthored: null, eraPoints: 100 });
-      const known = createValidator(bob, { blocksAuthored: 4, eraPoints: 1 });
-      const all = [unknown, known];
-
-      expect(recommendationsService.getScoreBreakdown(unknown, all).blockProduction).toBe(0);
-    });
-
-    it('should fall back to era points when the whole set reports no blocks', () => {
-      const validator = createValidator(alice, { blocksAuthored: null, eraPoints: 30 });
-      const all = [validator, createValidator(bob, { blocksAuthored: null, eraPoints: 60 })];
-
-      const score = recommendationsService.getScoreBreakdown(validator, all);
-
-      expect(score.blockProduction).toBe(0.5);
-      expect(score.blockProduction).toBe(score.eraPoints);
-    });
-
-    it('should score 0 when nobody authored a block', () => {
-      const validator = createValidator(alice, { blocksAuthored: 0 });
-      const all = [validator, createValidator(bob, { blocksAuthored: 0 })];
-
-      expect(recommendationsService.getScoreBreakdown(validator, all).blockProduction).toBe(0);
-    });
-  });
-
   describe('eraPoints', () => {
     it('should normalise against the largest era points', () => {
       const validator = createValidator(alice, { eraPoints: 250 });
@@ -537,13 +498,12 @@ describe('recommendationsService.getScoreBreakdown', () => {
   });
 
   it('should score everything 0 against an empty set', () => {
-    const validator = createValidator(alice, { commission: 5, ownStake: '10', blocksAuthored: 3, eraPoints: 7 });
+    const validator = createValidator(alice, { commission: 5, ownStake: '10', eraPoints: 7 });
 
     expect(recommendationsService.getScoreBreakdown(validator, [])).toEqual({
       apy: 0,
       commission: 0,
       selfStake: 0,
-      blockProduction: 0,
       eraPoints: 0,
       overall: 0,
     });
@@ -555,10 +515,9 @@ describe('recommendationsService.getScoreBreakdown', () => {
       apy: 20,
       commission: 0,
       ownStake: '100',
-      blocksAuthored: 10,
       eraPoints: 100,
     });
-    const worst = createValidator(bob, { apy: 0, commission: 20, ownStake: '0', blocksAuthored: 0, eraPoints: 0 });
+    const worst = createValidator(bob, { apy: 0, commission: 20, ownStake: '0', eraPoints: 0 });
 
     const bestScore = recommendationsService.getScoreBreakdown(best, [best, worst]);
     const worstScore = recommendationsService.getScoreBreakdown(worst, [best, worst]);
@@ -570,7 +529,7 @@ describe('recommendationsService.getScoreBreakdown', () => {
   it('should weight apy at four tenths of overall', () => {
     // Identical on every metric but APY: the gap between a perfect and a zero
     // APY is exactly the APY weight.
-    const shared = { commission: 5, ownStake: '100', blocksAuthored: 5, eraPoints: 50 };
+    const shared = { commission: 5, ownStake: '100', eraPoints: 50 };
     const high = createValidator(alice, { ...shared, apy: 10 });
     const low = createValidator(bob, { ...shared, apy: 0 });
 
@@ -590,9 +549,9 @@ describe('recommendationsService.getScoreBreakdown', () => {
 
   it('should keep every metric within 0..1', () => {
     const validators = [
-      createValidator(alice, { commission: 0, ownStake: '900719925474099100', blocksAuthored: 12, eraPoints: 900 }),
-      createValidator(bob, { commission: 100, ownStake: '1', blocksAuthored: 0, eraPoints: 0 }),
-      createValidator(charlie, { commission: 33, ownStake: '450359962737049550', blocksAuthored: 5, eraPoints: 450 }),
+      createValidator(alice, { commission: 0, ownStake: '900719925474099100', eraPoints: 900 }),
+      createValidator(bob, { commission: 100, ownStake: '1', eraPoints: 0 }),
+      createValidator(charlie, { commission: 33, ownStake: '450359962737049550', eraPoints: 450 }),
     ];
 
     for (const validator of validators) {

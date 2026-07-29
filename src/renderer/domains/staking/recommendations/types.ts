@@ -46,9 +46,7 @@ export type ScoreBreakdown = {
   commission: number;
   /** Self stake relative to the largest self stake in the set. */
   selfStake: number;
-  /** Authored blocks relative to the set, era points when blocks are unknown. */
-  blockProduction: number;
-  /** Era reward points relative to the largest in the set. */
+  /** Last completed era's reward points, relative to the largest in the set. */
   eraPoints: number;
   /** Weighted sum of the metrics above - what the ranking sorts by. */
   overall: number;

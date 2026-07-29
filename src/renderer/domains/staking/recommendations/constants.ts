@@ -18,16 +18,20 @@ export const DEFAULT_RECOMMENDATION_CRITERIA: Omit<RecommendationCriteria, 'limi
  * decide alone: a validator can post a high APY on a thin, volatile exposure or
  * behind a commission it is free to raise tomorrow. Commission is the second
  * weight because it is the one number the validator controls directly; self
- * stake is the operator's own risk in the position; block production and era
- * points are the liveness evidence, weighted lower because they move with the
- * era and recover on their own.
+ * stake is the operator's own risk in the position; era points are the liveness
+ * evidence, weighted lowest because they move with the era and recover on their
+ * own.
+ *
+ * Era points carry the weight that used to be split with a separate
+ * block-production metric. Authored-block counts came from `imOnline`, which no
+ * longer exists in the Polkadot runtime, and era points are the surviving
+ * liveness signal - they pay for backing and approval as well as authoring.
  */
 export const SCORE_WEIGHTS = {
   apy: 0.4,
   commission: 0.2,
   selfStake: 0.15,
-  blockProduction: 0.15,
-  eraPoints: 0.1,
+  eraPoints: 0.25,
 } as const;
 
 /**

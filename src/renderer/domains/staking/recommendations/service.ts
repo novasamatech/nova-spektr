@@ -127,19 +127,12 @@ function createScorer(all: EraValidator[]): (validator: EraValidator) => ScoreBr
   const maxApy = getMaxNumber(all.map(v => v.apy ?? 0));
   const maxCommission = getMaxNumber(all.map(v => v.commission));
   const maxPoints = getMaxNumber(all.map(v => v.eraPoints));
-  const maxBlocks = getMaxNumber(all.map(v => v.blocksAuthored ?? 0));
-  // Authored blocks are only readable on chains with the `imOnline` pallet.
-  // When the whole set reports `null`, era points stand in as the liveness proxy.
-  const blocksKnown = all.some(v => v.blocksAuthored !== null);
 
   const maxOwn = all.reduce((max, v) => {
     const stake = parseStake(v.ownStake);
 
     return stake.gt(max) ? stake : max;
   }, new BN(0));
-
-  const scoreEraPoints = (validator: EraValidator) =>
-    maxPoints <= 0 ? 0 : clampScore(validator.eraPoints / maxPoints);
 
   return (validator: EraValidator): ScoreBreakdown => {
     const apy = maxApy <= 0 ? 0 : clampScore((validator.apy ?? 0) / maxApy);
@@ -155,23 +148,16 @@ function createScorer(all: EraValidator[]): (validator: EraValidator) => ScoreBr
       ? 0
       : clampScore(parseStake(validator.ownStake).muln(SCORE_PRECISION).div(maxOwn).toNumber() / SCORE_PRECISION);
 
-    const eraPoints = scoreEraPoints(validator);
-
-    const blockProduction = !blocksKnown
-      ? eraPoints
-      : maxBlocks <= 0
-        ? 0
-        : clampScore((validator.blocksAuthored ?? 0) / maxBlocks);
+    const eraPoints = maxPoints <= 0 ? 0 : clampScore(validator.eraPoints / maxPoints);
 
     const overall = clampScore(
       apy * SCORE_WEIGHTS.apy +
         commission * SCORE_WEIGHTS.commission +
         selfStake * SCORE_WEIGHTS.selfStake +
-        blockProduction * SCORE_WEIGHTS.blockProduction +
         eraPoints * SCORE_WEIGHTS.eraPoints,
     );
 
-    return { apy, commission, selfStake, blockProduction, eraPoints, overall };
+    return { apy, commission, selfStake, eraPoints, overall };
   };
 }
 

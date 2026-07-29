@@ -3727,11 +3727,9 @@
         "recommended": "rec",
         "slashed": "slashed"
       },
-      "blocksUnavailable": "This network doesn\u2019t report block counts",
       "nominatorsOfCap": "{nominators} / {cap}",
       "column": {
         "apy": "APY",
-        "blocks": "Blocks",
         "commission": "Comm.",
         "eraPoints": "Era pts",
         "nominators": "Nominators",
@@ -3750,13 +3748,12 @@
         "title": "Recommendation criteria"
       },
       "detail": {
-        "blocks": "Blocks last era",
         "close": "Close details",
         "commission": "Commission",
         "displayName": "Display name",
         "elected": "Elected",
         "email": "Email",
-        "eraPoints": "Era points",
+        "eraPoints": "Era points (last era)",
         "estimatedApy": "Estimated APY",
         "identityTitle": "On-chain identity",
         "nominators": "Nominators",
@@ -3765,7 +3762,6 @@
         "placeholder": "Pick a validator from the list to see its numbers.",
         "riskTitle": "Worth knowing",
         "scoreApy": "Estimated APY",
-        "scoreBlockProduction": "Block production",
         "scoreCommission": "Commission",
         "scoreEraPoints": "Era points",
         "scoreOverall": "Overall",
@@ -3783,7 +3779,7 @@
         "anyPlaceholder": "Any",
         "done": "Done",
         "hasIdentity": "Has on-chain identity",
-        "hideIdle": "Hide idle (0 blocks last era)",
+        "hideIdle": "Hide idle (no reward points last era)",
         "maxCommission": "Max commission %",
         "minApy": "Min APY %",
         "minOwnStake": "Min own stake",

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import {
@@ -14,7 +14,6 @@ import {
   ScrollArea,
   Skeleton,
   Table,
-  Tooltip,
 } from '@/shared/ui-kit';
 import { type EraValidator } from '@/domains/staking';
 import { type SortColumn, getDisplayedLabel, getValidatorFlag } from '../lib';
@@ -29,7 +28,7 @@ const UNKNOWN_VALUE = '—';
 
 const SKELETON_ROW_COUNT = 8;
 
-const SORT_COLUMNS: SortColumn[] = ['validator', 'eraPoints', 'blocks', 'nominators', 'ownStake', 'commission', 'apy'];
+const SORT_COLUMNS: SortColumn[] = ['validator', 'eraPoints', 'nominators', 'ownStake', 'commission', 'apy'];
 
 function isSortColumn(value: string): value is SortColumn {
   return SORT_COLUMNS.some((column) => column === value);
@@ -47,7 +46,6 @@ type ValidatorRow = {
   selection: EraValidator | null;
   validator: EraValidator | null;
   eraPoints: number | null;
-  blocks: number | null;
   nominators: number | null;
   ownStake: string | null;
   commission: number | null;
@@ -59,7 +57,6 @@ const SKELETON_ROWS: ValidatorRow[] = Array.from({ length: SKELETON_ROW_COUNT },
   selection: null,
   validator: null,
   eraPoints: null,
-  blocks: null,
   nominators: null,
   ownStake: null,
   commission: null,
@@ -72,7 +69,6 @@ function toRow(validator: EraValidator): ValidatorRow {
     selection: validator,
     validator,
     eraPoints: validator.eraPoints,
-    blocks: validator.blocksAuthored,
     nominators: validator.nominatorCount,
     ownStake: validator.ownStake,
     commission: validator.commission,
@@ -202,34 +198,6 @@ export const ValidatorTable = () => {
           ) : (
             <div className="text-right tabular-nums">{row.eraPoints.toLocaleString()}</div>
           ),
-      },
-      {
-        key: 'blocks',
-        title: numericTitle(t('staking.validatorSelection.column.blocks')),
-        sortable: true,
-        width: '10%',
-        render: (_, row) => {
-          if (nullable(row.validator)) return <Skeleton width="60%" height="16px" />;
-
-          // No `imOnline` pallet on this chain - "0 blocks" would be a claim the
-          // chain never made, so the cell says it does not know instead.
-          if (nullable(row.blocks)) {
-            return (
-              <Tooltip>
-                <Tooltip.Trigger>
-                  <div className="text-right text-text-tertiary tabular-nums">{UNKNOWN_VALUE}</div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>{t('staking.validatorSelection.blocksUnavailable')}</Tooltip.Content>
-              </Tooltip>
-            );
-          }
-
-          return (
-            <div className={cnTw('text-right tabular-nums', row.blocks === 0 && 'text-text-warning')}>
-              {row.blocks.toLocaleString()}
-            </div>
-          );
-        },
       },
       {
         key: 'nominators',

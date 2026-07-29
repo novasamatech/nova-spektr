@@ -25,14 +25,12 @@ export type EraValidator = {
    */
   maxNominatorsRewarded: number | null;
   slashed: boolean;
-  /** Era reward points earned so far, `0` when the validator has none. */
-  eraPoints: number;
   /**
-   * Blocks authored in the current session, read from `imOnline` on the
-   * timeline (relay) chain. `null` when the chain has no `imOnline` pallet or
-   * no timeline api was provided - the UI decides the fallback label.
+   * Reward points earned in the last completed era, `0` when the validator
+   * earned none. This is the network's liveness signal: authoring, backing and
+   * approval all pay into it.
    */
-  blocksAuthored: number | null;
+  eraPoints: number;
   /** APY in percent, `null` when the chain reports no reward data. */
   apy: number | null;
   elected: true;

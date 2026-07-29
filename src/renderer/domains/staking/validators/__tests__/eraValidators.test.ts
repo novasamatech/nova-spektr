@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { TypeRegistry } from '@polkadot/types';
 import { BN } from '@polkadot/util';
 
 import { stakingPallet } from '@/shared/pallet/staking';
@@ -31,9 +30,6 @@ vi.mock('@/shared/pallet/staking', () => ({
 
 const consts = vi.mocked(stakingPallet.consts);
 const storage = vi.mocked(stakingPallet.storage);
-
-const registry = new TypeRegistry();
-const u32 = (value: number) => registry.createType('u32', value);
 
 const alice = '0x01' as AccountId;
 const bob = '0x02' as AccountId;
@@ -117,7 +113,6 @@ describe('validatorsService.getEraValidators', () => {
       maxNominatorsRewarded: 512,
       slashed: false,
       eraPoints: 40,
-      blocksAuthored: null,
       apy: 18,
       elected: true,
     });
@@ -253,43 +248,6 @@ describe('validatorsService.getEraValidators', () => {
 
     expect(storage.erasStakersOverview).toHaveBeenCalledWith(expect.anything(), ERA);
     expect(result[alice]?.totalStake).toEqual(VALIDATOR_STAKE);
-  });
-
-  test('should count the blocks authored in the current session of the timeline chain', async () => {
-    const multi = vi.fn().mockResolvedValue([u32(12), u32(0)]);
-    const timelineApi = {
-      consts: {},
-      query: {
-        session: { currentIndex: vi.fn().mockResolvedValue(u32(7)) },
-        imOnline: { authoredBlocks: { multi } },
-      },
-    } as unknown as ApiPromise;
-
-    const result = await getEraValidators({
-      timelineApi,
-      overviews: overviews([
-        [alice, {}],
-        [bob, {}],
-      ]),
-    });
-
-    expect(multi).toHaveBeenCalledWith([
-      [7, alice],
-      [7, bob],
-    ]);
-    expect(result[alice]?.blocksAuthored).toEqual(12);
-    expect(result[bob]?.blocksAuthored).toEqual(0);
-  });
-
-  test('should leave the authored blocks unknown when the timeline chain has no imOnline pallet', async () => {
-    const timelineApi = {
-      consts: {},
-      query: { session: { currentIndex: vi.fn().mockResolvedValue(u32(7)) } },
-    } as unknown as ApiPromise;
-
-    const result = await getEraValidators({ timelineApi, overviews: overviews([[alice, {}]]) });
-
-    expect(result[alice]?.blocksAuthored).toBeNull();
   });
 });
 

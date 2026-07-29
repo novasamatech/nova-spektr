@@ -60,7 +60,6 @@ function createValidator(accountId: AccountId): EraValidator {
     maxNominatorsRewarded: 512,
     slashed: false,
     eraPoints: 100,
-    blocksAuthored: null,
     apy: 15,
     elected: true,
   };
