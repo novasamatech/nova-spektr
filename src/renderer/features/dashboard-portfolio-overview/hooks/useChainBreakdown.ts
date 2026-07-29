@@ -3,11 +3,12 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
-import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { getRoundedValue, totalAmountBN } from '@/shared/lib/utils';
 import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type BalanceType, splitBalanceForHoldings } from '../lib/balanceTypes';
 
 export type ChainAssetRow = {
   assetId: number;
@@ -28,7 +29,11 @@ export type ChainBreakdownData = {
   rows: ChainAssetRow[];
 };
 
-export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): ChainBreakdownData => {
+export const useChainBreakdown = (
+  chainId: ChainId,
+  accountIds: string[],
+  balanceType: BalanceType | null,
+): ChainBreakdownData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
   const currency = useUnit(currencySelect.$activeCurrency);
@@ -65,8 +70,10 @@ export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): Chain
       const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
       if (!priceItem) continue;
 
-      const rawBN = totalAmountBN(balance);
-      const fiat = getRoundedValue(totalAmount(balance), priceItem.price, asset.precision);
+      // Same buckets the holdings list is filtered by, so the assets shown
+      // here are exactly the ones contributing to the scoped list row.
+      const rawBN = balanceType ? splitBalanceForHoldings(balance)[balanceType] : totalAmountBN(balance);
+      const fiat = getRoundedValue(rawBN.toString(), priceItem.price, asset.precision);
 
       const existing = groupMap.get(asset.assetId);
       if (existing) {
@@ -118,5 +125,5 @@ export const useChainBreakdown = (chainId: ChainId, accountIds: string[]): Chain
     }
 
     return { rows };
-  }, [chainId, accountIds, balanceMap, chains, prices, currency]);
+  }, [chainId, accountIds, balanceMap, chains, prices, currency, balanceType]);
 };

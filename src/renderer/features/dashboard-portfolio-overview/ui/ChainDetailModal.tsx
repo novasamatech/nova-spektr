@@ -4,6 +4,7 @@ import { memo, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
 import { FootnoteText, HelpText } from '@/shared/ui';
+import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { AssetIcon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
@@ -12,6 +13,7 @@ import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { type ChainAssetRow, useChainBreakdown } from '../hooks/useChainBreakdown';
 import { type ChainHolding } from '../hooks/useChainHoldings';
+import { type BalanceType } from '../lib/balanceTypes';
 import { type RowAllocation, computeChainRowAllocations } from '../lib/computeRowAllocations';
 
 import { AllocationBarWithLegend } from './AllocationBarWithLegend';
@@ -22,13 +24,14 @@ type ChainTableRow = ChainAssetRow & { allocation: RowAllocation | null };
 type Props = {
   chainHolding: ChainHolding;
   accountIds: string[];
+  balanceType: BalanceType | null;
   currency: CurrencyItem | null;
   onClose: () => void;
 };
 
-export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onClose }: Props) => {
+export const ChainDetailModal = memo(({ chainHolding, accountIds, balanceType, currency, onClose }: Props) => {
   const { t } = useI18n();
-  const { rows } = useChainBreakdown(chainHolding.chainId, accountIds);
+  const { rows } = useChainBreakdown(chainHolding.chainId, accountIds, balanceType);
 
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
@@ -118,9 +121,22 @@ export const ChainDetailModal = memo(({ chainHolding, accountIds, currency, onCl
           <img src={chainHolding.chainIcon} alt={chainHolding.chainName} width={32} height={32} className="shrink-0" />
           <div className="min-w-0 flex-1">
             <FootnoteText className="font-bold">{chainHolding.chainName}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              {t('dashboard.portfolioOverview.chainDetail.assetCount', { count: chainHolding.assetCount })}
-            </FootnoteText>
+            <div className="flex items-center gap-1.5">
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.portfolioOverview.chainDetail.assetCount', { count: chainHolding.assetCount })}
+              </FootnoteText>
+              {balanceType && (
+                <span className="flex items-center gap-1">
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: ALLOCATION_COLORS[balanceType] }}
+                  />
+                  <FootnoteText className="text-text-tertiary">
+                    {t(`dashboard.portfolioOverview.balanceType.${balanceType}`)}
+                  </FootnoteText>
+                </span>
+              )}
+            </div>
           </div>
           <div className="shrink-0">
             <FootnoteText align="right" className="font-bold tabular-nums">

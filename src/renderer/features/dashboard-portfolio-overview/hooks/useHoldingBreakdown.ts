@@ -2,11 +2,12 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { getRoundedValue, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { getRoundedValue, totalAmountBN } from '@/shared/lib/utils';
 import { useAssetsPrices } from '@/domains/price';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { type BalanceType, splitBalanceForHoldings } from '../lib/balanceTypes';
 
 export type BreakdownRow = {
   accountId: string;
@@ -28,7 +29,12 @@ export type BreakdownData = {
 
 type EntryLike = { accountId: string; name: string; address: string };
 
-export const useHoldingBreakdown = (priceId: string, accountIds: string[], allEntries: EntryLike[]): BreakdownData => {
+export const useHoldingBreakdown = (
+  priceId: string,
+  accountIds: string[],
+  allEntries: EntryLike[],
+  balanceType: BalanceType | null,
+): BreakdownData => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const chains = useUnit(networkModel.$chains);
   const currency = useUnit(currencySelect.$activeCurrency);
@@ -67,8 +73,10 @@ export const useHoldingBreakdown = (priceId: string, accountIds: string[], allEn
       const priceItem = prices[asset.priceId]?.[currency.coingeckoId];
       if (!priceItem) continue;
 
-      const rawBN = totalAmountBN(balance);
-      const fiat = getRoundedValue(totalAmount(balance), priceItem.price, asset.precision);
+      // Same buckets the holdings list is filtered by, so the accounts shown
+      // here are exactly the ones contributing to the scoped list row.
+      const rawBN = balanceType ? splitBalanceForHoldings(balance)[balanceType] : totalAmountBN(balance);
+      const fiat = getRoundedValue(rawBN.toString(), priceItem.price, asset.precision);
 
       const existing = groupMap.get(balance.accountId);
       if (existing) {
@@ -117,5 +125,5 @@ export const useHoldingBreakdown = (priceId: string, accountIds: string[], allEn
     }
 
     return { rows };
-  }, [priceId, accountIds, balanceMap, chains, prices, currency, allEntries]);
+  }, [priceId, accountIds, balanceMap, chains, prices, currency, allEntries, balanceType]);
 };
