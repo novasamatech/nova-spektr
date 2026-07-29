@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
@@ -114,33 +115,37 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
 
         <Box gap={4}>
           <Box direction="row" gap={4}>
-            <VotingButtonWithTooltip
-              variant="negative"
-              icon="negative"
-              disabled={!isCanVote}
-              votes={memberVoteWeight}
-              voteImpact={userVotesImpact}
-              isVoted={isTransactionInBasket ? inBasket.nay : alreadyVotedNay}
-              checked={isTransactionInBasket ? inBasket.nay : alreadyVotedNay}
-              fullWidth
-              onClick={setNayDecision}
-            >
-              {t('fellowship.voting.notGood')}
-            </VotingButtonWithTooltip>
+            <div data-testid={TEST_IDS.FELLOWSHIP.VOTE_NAY_BUTTON} className="flex-1">
+              <VotingButtonWithTooltip
+                variant="negative"
+                icon="negative"
+                disabled={!isCanVote}
+                votes={memberVoteWeight}
+                voteImpact={userVotesImpact}
+                isVoted={isTransactionInBasket ? inBasket.nay : alreadyVotedNay}
+                checked={isTransactionInBasket ? inBasket.nay : alreadyVotedNay}
+                fullWidth
+                onClick={setNayDecision}
+              >
+                {t('fellowship.voting.notGood')}
+              </VotingButtonWithTooltip>
+            </div>
 
-            <VotingButtonWithTooltip
-              variant="positive"
-              icon="positive"
-              disabled={!isCanVote}
-              votes={memberVoteWeight}
-              voteImpact={userVotesImpact}
-              isVoted={isTransactionInBasket ? inBasket.aye : alreadyVotedAye}
-              checked={isTransactionInBasket ? inBasket.aye : alreadyVotedAye}
-              fullWidth
-              onClick={setAyeDecision}
-            >
-              {t('fellowship.voting.good')}
-            </VotingButtonWithTooltip>
+            <div data-testid={TEST_IDS.FELLOWSHIP.VOTE_AYE_BUTTON} className="flex-1">
+              <VotingButtonWithTooltip
+                variant="positive"
+                icon="positive"
+                disabled={!isCanVote}
+                votes={memberVoteWeight}
+                voteImpact={userVotesImpact}
+                isVoted={isTransactionInBasket ? inBasket.aye : alreadyVotedAye}
+                checked={isTransactionInBasket ? inBasket.aye : alreadyVotedAye}
+                fullWidth
+                onClick={setAyeDecision}
+              >
+                {t('fellowship.voting.good')}
+              </VotingButtonWithTooltip>
+            </div>
           </Box>
           {canVote && !hasRequiredRank ? (
             <FootnoteText className="text-center">{t('fellowship.voting.errors.rankThreshold')}</FootnoteText>

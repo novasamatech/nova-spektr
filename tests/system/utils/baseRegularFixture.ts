@@ -1,6 +1,6 @@
 import { type BrowserContext, type Page, test as base } from '@playwright/test';
-import { step } from 'allure-js-commons';
 import * as allure from 'allure-js-commons';
+import { step } from 'allure-js-commons';
 
 import { AssetsPageElements } from '../pages/_elements/AssetsPageElements';
 import { LoginPageElements } from '../pages/_elements/LoginPageElements';

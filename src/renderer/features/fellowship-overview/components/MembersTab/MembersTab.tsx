@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react';
 
 import { $features } from '@/shared/config/features';
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
@@ -88,6 +89,7 @@ export const MembersTab = memo((_props: MembersTabProps) => {
             value={searchQuery}
             height="sm"
             width="full"
+            testId={TEST_IDS.FELLOWSHIP.MEMBERS_SEARCH}
             onChange={setSearchQuery}
           />
         </div>

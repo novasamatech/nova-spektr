@@ -1,0 +1,7 @@
+{
+  "fellowship": {
+    "network": "collectives",
+    "endpoint": "wss://sys.ibp.network/collectives-polkadot",
+    "block": 8351024
+  }
+}

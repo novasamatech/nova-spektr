@@ -27,11 +27,20 @@ type TableProps<T> = {
   data: T[];
   className?: string;
   cellAlign?: CellAlign;
+  rowTestId?: string;
   onSort?: (key: keyof T, direction: SortDirection) => void;
   onRowClick?: (item: T, index: number) => void;
 };
 
-const TableComponent = <T,>({ columns, data, className, cellAlign = 'middle', onSort, onRowClick }: TableProps<T>) => {
+const TableComponent = <T,>({
+  columns,
+  data,
+  className,
+  cellAlign = 'middle',
+  rowTestId,
+  onSort,
+  onRowClick,
+}: TableProps<T>) => {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -110,6 +119,7 @@ const TableComponent = <T,>({ columns, data, className, cellAlign = 'middle', on
             <tr
               key={index}
               className={cnTw('table-row', onRowClick && 'cursor-pointer')}
+              data-testid={rowTestId}
               onClick={onRowClick ? () => onRowClick(item, index) : undefined}
             >
               {columns.map(column => (

@@ -1,0 +1,91 @@
+name: Run system tests - fellowship (chopsticks)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ALLURE_JOB_RUN_ID:
+        type: string
+        description: ALLURE_JOB_RUN_ID service parameter. Leave blank.
+        required: false
+      ALLURE_USERNAME:
+        type: string
+        description: ALLURE_USERNAME service parameter. Leave blank.
+        required: false
+  pull_request:
+    paths:
+      - 'tests/system/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
+  CI: true
+  ALLURE_ENDPOINT: https://nova.testops.cloud/
+  ALLURE_PROJECT_ID: 1
+  ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+  ALLURE_JOB_RUN_ID: ${{ github.event.inputs.ALLURE_JOB_RUN_ID }}
+  ALLURE_RESULTS: allure-results
+  OCTOPUS_BASE_URL: https://octopus-dev.k8s-2.novasama-tech.org
+
+jobs:
+  system-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: ⚙️ Install test dependencies
+        uses: ./.github/workflows/install-test
+
+      - name: 🔗 Provision Octopus chopsticks session
+        run: |
+          CONFIG=$(jq '.fellowship' tests/system/data/chopsticks.json)
+          PAYLOAD=$(echo "$CONFIG" | jq '. + {"ttl_minutes": 60, "created_by": "ci-fellowship"}')
+
+          RESPONSE=$(curl -sf -X POST "$OCTOPUS_BASE_URL/api/v1/sessions" \
+            -H "Authorization: Bearer ${{ secrets.OCTOPUS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          SESSION_ID=$(echo "$RESPONSE" | jq -r '.id')
+          WS_URL=$(echo "$RESPONSE" | jq -r '.external_ws_endpoint')
+
+          if [ -z "$SESSION_ID" ] || [ "$SESSION_ID" = "null" ]; then
+            echo "::error::Failed to parse session ID from Octopus response: $RESPONSE"
+            exit 1
+          fi
+          if [ -z "$WS_URL" ] || [ "$WS_URL" = "null" ]; then
+            echo "::error::Failed to parse external_ws_endpoint from Octopus response: $RESPONSE"
+            exit 1
+          fi
+
+          echo "OCTOPUS_SESSION_ID=$SESSION_ID" >> $GITHUB_ENV
+          echo "CUSTOM_COLLECTIVES_NODE_URL=$WS_URL" >> $GITHUB_ENV
+          echo "Octopus session $SESSION_ID provisioned: $WS_URL"
+
+      - name: ⏳ Wait for chopsticks session to be ready
+        run: node tests/system/utils/wait-for-chopsticks.mjs "$OCTOPUS_SESSION_ID" "$CUSTOM_COLLECTIVES_NODE_URL"
+        env:
+          OCTOPUS_TOKEN: ${{ secrets.OCTOPUS_TOKEN }}
+
+      - name: Run System Tests - Fellowship
+        uses: ./.github/workflows/run-system-tests
+        with:
+          telegram_token: ${{ secrets.TELEGRAM_TOKEN }}
+          telegram_to: ${{ secrets.TELEGRAM_TO }}
+          test_grep: '@fellowship'
+
+      - name: 🧹 Terminate Octopus session
+        if: always()
+        run: |
+          if [ -n "$OCTOPUS_SESSION_ID" ] && [ "$OCTOPUS_SESSION_ID" != "null" ]; then
+            curl -sf -X DELETE "$OCTOPUS_BASE_URL/api/v1/sessions/$OCTOPUS_SESSION_ID" \
+              -H "Authorization: Bearer ${{ secrets.OCTOPUS_TOKEN }}" || true
+            echo "Session $OCTOPUS_SESSION_ID terminated"
+          fi

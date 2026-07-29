@@ -1,5 +1,6 @@
 import { type ReactNode, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -104,7 +105,10 @@ export const OngoingReferendumVoting = ({
         props={{
           referendumId: referendum.id,
           children: (
-            <div className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
+            <div
+              className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4"
+              data-testid={TEST_IDS.FELLOWSHIP.TASK_ITEM}
+            >
               <Box alignSelf="flex-start" shrink={0}>
                 <TaskBadge proposal={referendum.proposal} />
               </Box>
