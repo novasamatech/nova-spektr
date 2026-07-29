@@ -2,6 +2,7 @@ import { type DecodedTransaction, CryptoType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 
 import { multisigOperationService } from './service';
+import { type MultisigEvent, type MultisigOperation } from './types';
 
 const PROXIED_ACCOUNT = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
@@ -186,6 +187,76 @@ describe('multisig operation service', () => {
         call: makeDecodedTransaction('proxy', 'proxy', { real: PROXIED_ACCOUNT }),
       });
       expect(multisigOperationService.extractProxiedAccountId(tx)).toBeUndefined();
+    });
+  });
+
+  describe('mergeMultisigOperations', () => {
+    const makeEvent = (id: string, blockCreated: number): MultisigEvent =>
+      ({
+        id,
+        accountId: '0x00',
+        status: 'approve',
+        blockCreated,
+        indexCreated: 0,
+        timestamp: 0,
+      }) as unknown as MultisigEvent;
+
+    const makeOperation = (overrides: Partial<MultisigOperation> = {}): MultisigOperation =>
+      ({
+        id: 'op-1',
+        status: 'pending',
+        callHash: '0xhash',
+        callData: null,
+        transaction: null,
+        section: null,
+        method: null,
+        blockCreated: 100,
+        indexCreated: 0,
+        events: [],
+        timestamp: 0,
+        ...overrides,
+      }) as unknown as MultisigOperation;
+
+    it('unions events from both sides on merge', () => {
+      // Indexer knows the initiation and the executor's approval; the live
+      // snapshot knows the initiation and a middle approval the indexer lost.
+      const offChain = makeOperation({
+        status: 'executed',
+        events: [makeEvent('e-init', 100), makeEvent('e-exec', 300)],
+      });
+      const live = makeOperation({ events: [makeEvent('e-init', 100), makeEvent('e-middle', 200)] });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.events.map(e => e.id).sort()).toEqual(['e-exec', 'e-init', 'e-middle']);
+    });
+
+    it('does not let a pending live version shadow a resolved one', () => {
+      const offChain = makeOperation({ status: 'executed', events: [makeEvent('e-init', 100)] });
+      const live = makeOperation({ events: [makeEvent('e-init', 100), makeEvent('e-middle', 200)] });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.status).toBe('executed');
+    });
+
+    it('keeps the updated side status when it is resolved', () => {
+      const offChain = makeOperation({ status: 'executed' });
+      const live = makeOperation({ status: 'cancelled' });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.status).toBe('cancelled');
+    });
+
+    it('prefers the old-side event content on id collision (real per-event block over storage-derived)', () => {
+      const offChain = makeOperation({ status: 'executed', events: [makeEvent('e-middle', 200)] });
+      const live = makeOperation({ events: [makeEvent('e-middle', 100)] });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.events).toHaveLength(1);
+      expect(merged?.events[0]?.blockCreated).toBe(200);
     });
   });
 });

@@ -271,5 +271,30 @@ describe('multisigOperation store', () => {
     it('marks a MultisigCancelled as cancelled, taking precedence over a failed execution', async () => {
       expect(await deriveStatus([completion(rejectEvent, null), completion(approveEvent, 'error')])).toBe('cancelled');
     });
+
+    it('does not resolve a removed operation when only an approval was caught', async () => {
+      // A MultisigApproval carries no executionResult — the entry vanished from
+      // storage, but whether it executed or was cancelled is unknown here.
+      expect(await deriveStatus([completion(approveEvent, null)])).toBeUndefined();
+    });
+
+    it('does not resolve a removed operation when no completion event was caught', async () => {
+      expect(await deriveStatus([])).toBeUndefined();
+    });
+
+    it('appends the executor approval to the storage-derived events', async () => {
+      const storageEvent: MultisigEvent = { id: 'e-storage', status: 'approve' } as unknown as MultisigEvent;
+      const opWithEvents = { ...baseOp, events: [storageEvent] };
+
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$removedFromChainStorageOperations, [opWithEvents]],
+          [$completionEvents, [completion(approveEvent, 'success')]],
+        ]),
+      });
+
+      const [derived] = scope.getState(multisigOperation.__test.$completedLiveOperations);
+      expect(derived?.events.map(e => e.id).sort()).toEqual(['e-approve', 'e-storage']);
+    });
   });
 });
