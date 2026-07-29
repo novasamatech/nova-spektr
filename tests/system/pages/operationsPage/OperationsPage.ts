@@ -12,6 +12,9 @@ const DRAFTS_SECTION_TITLE = 'Drafts';
 const SUBMIT_BUTTON = 'Submit';
 const ADD_CALL_DATA_BUTTON = 'Add call data';
 
+/** The subset of a built scenario that `seedAndOpen` actually consumes. */
+type SeededOperations = Pick<BuiltData, 'walletRows' | 'accountRows' | 'operationRecords'>;
+
 export class OperationsPage extends BasePage<OperationsPageElements> {
   /**
    * Seeds the multisig/flexible wallets + accounts (Dexie `spektr`) and the
@@ -19,7 +22,7 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
    * blocks all RPC websockets so the live subscription never overwrites the
    * seeded cache, then opens the Operations view.
    */
-  public async seedAndOpen(built: BuiltData): Promise<OperationsPage> {
+  public async seedAndOpen(built: SeededOperations): Promise<OperationsPage> {
     return step('Seed multisig operations and open the Operations view', async () => {
       // Boot the app once so both IndexedDB databases (and the effector store) exist.
       await this.goto(this.pageElements.onboardingUrl);
@@ -199,6 +202,29 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
   public async expectPendingCount(count: number): Promise<void> {
     await step(`Expect the Pending tab count to be ${count}`, async () => {
       await expect(this.page.getByRole('tab', { name: new RegExp(`Pending\\s*${count}`) })).toBeVisible();
+    });
+  }
+
+  public operationRow(operationId: string): Locator {
+    return this.page.locator(`[data-operation-id="${operationId}"]`);
+  }
+
+  /**
+   * An awaiting-outcome operation (removed from chain storage without a caught
+   * terminal event) stays in the pending list, but instead of the signing
+   * actions it renders an "Updating status" loader whose tooltip explains that
+   * the final status arrives with network data.
+   */
+  public async expectAwaitingOutcomeOperation(operationId: string): Promise<void> {
+    await step('Expect the awaiting-outcome operation to stay pending without signing actions', async () => {
+      const row = this.operationRow(operationId);
+
+      await expect(row.getByText('Updating status')).toBeVisible();
+      await expect(row.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
+      await expect(row.getByRole('button', { name: 'Reject', exact: true })).toHaveCount(0);
+
+      await row.getByText('Updating status').hover();
+      await expect(this.page.getByText('Waiting for the final status')).toBeVisible();
     });
   }
 
