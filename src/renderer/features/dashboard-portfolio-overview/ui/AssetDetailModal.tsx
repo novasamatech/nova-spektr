@@ -14,9 +14,11 @@ import { currencySelect } from '@/aggregates/currency-select';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type BreakdownRow, useHoldingBreakdown } from '../hooks/useHoldingBreakdown';
 import { type Holding } from '../hooks/useHoldings';
+import { type BalanceType } from '../lib/balanceTypes';
 import { type RowAllocation, computeAssetRowAllocations } from '../lib/computeRowAllocations';
 
 import { AllocationBarWithLegend } from './AllocationBarWithLegend';
+import { BalanceTypeBadge } from './BalanceTypeBadge';
 import { Price } from './Price';
 import { PriceChangeIndicator } from './PriceChangeIndicator';
 
@@ -28,13 +30,14 @@ type Props = {
   holding: Holding;
   accountIds: string[];
   allEntries: EntryLike[];
+  balanceType: BalanceType | null;
   currency: CurrencyItem | null;
   onClose: () => void;
 };
 
-export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currency, onClose }: Props) => {
+export const AssetDetailModal = memo(({ holding, accountIds, allEntries, balanceType, currency, onClose }: Props) => {
   const { t } = useI18n();
-  const { rows } = useHoldingBreakdown(holding.priceId, accountIds, allEntries);
+  const { rows } = useHoldingBreakdown(holding.priceId, accountIds, allEntries, balanceType);
   const addressCount = rows.length;
   const { formatted, suffix } = formatBalance(holding.totalRaw, holding.precision);
 
@@ -127,9 +130,12 @@ export const AssetDetailModal = memo(({ holding, accountIds, allEntries, currenc
           <AssetIcon asset={holding} size={32} />
           <div className="min-w-0 flex-1">
             <FootnoteText className="font-bold">{holding.symbol}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              {t('dashboard.portfolioOverview.assetDetail.addressCount', { count: addressCount })}
-            </FootnoteText>
+            <div className="flex items-center gap-1.5">
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.portfolioOverview.assetDetail.addressCount', { count: addressCount })}
+              </FootnoteText>
+              {balanceType && <BalanceTypeBadge type={balanceType} />}
+            </div>
           </div>
           <div className="shrink-0">
             <FootnoteText align="right" className="font-bold tabular-nums">

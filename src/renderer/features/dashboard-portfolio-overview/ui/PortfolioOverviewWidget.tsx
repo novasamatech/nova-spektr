@@ -83,9 +83,6 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
     return () => clearTimeout(id);
   }, [accountKey]);
 
-  const selectedHolding = holdings.find((h) => h.priceId === selectedPriceId) ?? null;
-  const selectedChainHolding = chainHoldings.find((h) => h.chainId === selectedChainId) ?? null;
-
   const switchToAssetView = useCallback(() => setViewMode('asset'), []);
   const switchToChainView = useCallback(() => setViewMode('chain'), []);
   const toggleBalanceType = useCallback((type: BalanceType) => {
@@ -140,6 +137,12 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
 
     return { chainRows: rows, chainScopeTotal: scopeTotal.toString() };
   }, [chainHoldings, balanceTypeFilter]);
+
+  // Resolved against the scoped rows, not the raw holdings: with a filter
+  // active the modal header must show the same amounts as the row that was
+  // clicked, and its breakdown is scoped to the same balance type.
+  const selectedHolding = assetRows.find((h) => h.priceId === selectedPriceId) ?? null;
+  const selectedChainHolding = chainRows.find((h) => h.chainId === selectedChainId) ?? null;
 
   // fiat display is off — the fiat-driven breakdown (total, allocation, donut)
   // has nothing to show, but the injected vesting block is token-denominated
@@ -296,6 +299,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           holding={selectedHolding}
           accountIds={accountIds}
           allEntries={allEntries}
+          balanceType={balanceTypeFilter}
           currency={currency}
           onClose={closeAssetDetail}
         />
@@ -305,6 +309,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <ChainDetailModal
           chainHolding={selectedChainHolding}
           accountIds={accountIds}
+          balanceType={balanceTypeFilter}
           currency={currency}
           onClose={closeChainDetail}
         />
