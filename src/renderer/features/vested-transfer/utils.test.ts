@@ -181,19 +181,13 @@ describe('vestedTransferUtils', () => {
       expect(result.data).toHaveLength(1000);
     });
 
-    // Unlike multi-transfer, parseCSV has no explicit "too many rows" rejection: it caps the
-    // underlying csv-parse `to` option at MAX_CSV_ROWS + 1 and silently truncates, returning
-    // success with 1001 rows rather than surfacing an error. This is a real behavioural gap
-    // against the README's "1000 rows" limit (see report).
-    test('silently truncates to 1001 rows instead of rejecting when more rows are present', async () => {
+    test('rejects a file exceeding the row limit instead of truncating it', async () => {
       const dataRows = Array.from({ length: 1500 }, (_, index) => `addr${index},1000,100,10`).join('\n');
       const file = csvFile(`target,locked,starting_block,per_block\n${dataRows}\n`);
 
       const result = await vestedTransferUtils.parseCSV(file);
 
-      expect(result.success).toBe(true);
-      if (!result.success) return;
-      expect(result.data).toHaveLength(1001);
+      expect(result.success).toBe(false);
     });
   });
 
