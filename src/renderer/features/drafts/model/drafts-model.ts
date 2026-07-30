@@ -41,9 +41,9 @@ sample({
   target: draftsResource.start,
 });
 
-// Clear on disconnect
+// Clear on disconnect and on sign-out — backend drafts must not outlive the session
 sample({
-  clock: backendConfigurationModel.events.urlCleared,
+  clock: merge([backendConfigurationModel.events.urlCleared, authModel.events.signOutClicked]),
   target: draftsResource.resetDrafts,
 });
 
@@ -66,34 +66,48 @@ type DraftDiff = {
   updated: Draft[];
 };
 
-const draftChanges = pairwise(draftsResource.$cache).map(({ prev, current }): DraftDiff => {
-  // Skip initial population (first fetch or reconnect after resetDrafts)
-  if (prev.length === 0) return { added: [], removed: [], updated: [] };
+// Marks the cache transition caused by resetDrafts so it never reads as
+// "all drafts removed": on disconnect/sign-out drafts simply disappear, silently.
+// The marker is read through a sample (sampler phase) — reading it inside the
+// pairwise `.map` would race the pure-phase cache reset on the same event.
+const $cacheWasReset = createStore(false).on(draftsResource.resetDrafts, () => true);
 
-  const prevMap = new Map(prev.map((d) => [d.id, d]));
-  const currentMap = new Map(current.map((d) => [d.id, d]));
+const draftChanges = sample({
+  clock: pairwise(draftsResource.$cache),
+  source: $cacheWasReset,
+  fn: (wasReset, { prev, current }): DraftDiff => {
+    // Skip reset transitions and initial population (first fetch or reconnect after resetDrafts)
+    if (wasReset || prev.length === 0) return { added: [], removed: [], updated: [] };
 
-  const added: Draft[] = [];
-  const updated: Draft[] = [];
-  const removed: Draft[] = [];
+    const prevMap = new Map(prev.map((d) => [d.id, d]));
+    const currentMap = new Map(current.map((d) => [d.id, d]));
 
-  for (const draft of current) {
-    const old = prevMap.get(draft.id);
-    if (!old) {
-      added.push(draft);
-    } else if (old.updatedAt !== draft.updatedAt) {
-      updated.push(draft);
+    const added: Draft[] = [];
+    const updated: Draft[] = [];
+    const removed: Draft[] = [];
+
+    for (const draft of current) {
+      const old = prevMap.get(draft.id);
+      if (!old) {
+        added.push(draft);
+      } else if (old.updatedAt !== draft.updatedAt) {
+        updated.push(draft);
+      }
     }
-  }
 
-  for (const draft of prev) {
-    if (!currentMap.has(draft.id)) {
-      removed.push(draft);
+    for (const draft of prev) {
+      if (!currentMap.has(draft.id)) {
+        removed.push(draft);
+      }
     }
-  }
 
-  return { added, removed, updated };
+    return { added, removed, updated };
+  },
 });
+
+// The reset marker is consumed by the diff above; clearing it here (after the
+// sampler-phase read) keeps subsequent fetch diffs notifying as usual.
+$cacheWasReset.reset(draftChanges);
 
 function createDraftNotification(draft: Draft, titleKey: string): CreateDraftNotificationParams {
   const draftLink = `${Paths.OPERATIONS}?draftId=${draft.id}`;

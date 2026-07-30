@@ -5,7 +5,7 @@ import { storageService } from '@/shared/api/storage';
 import { type ChainId, NotificationType } from '@/shared/core';
 import { type Draft, draftsResource, draftsService } from '@/domains/backend';
 import { notificationModel } from '@/entities/notification';
-import { backendConfigurationModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 
 // Imported for its side effects: the module wires poll → diff → notifications on load.
 import './drafts-model';
@@ -194,6 +194,30 @@ describe('draftsModel · cache reset', () => {
 
     expect(scope.getState(draftsResource.$cache)).toEqual([]);
     expect(scope.getState(draftsResource.$loaded)).toBe(false);
+  });
+
+  it('urlCleared empties a populated cache without raising removed notifications', async () => {
+    const scope = fork();
+    await fetchArrived(scope, [makeDraft('d1'), makeDraft('d2')]);
+
+    const listener = watchNotifications(scope);
+    await allSettled(backendConfigurationModel.events.urlCleared, { scope });
+
+    expect(scope.getState(draftsResource.$cache)).toEqual([]);
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('signOutClicked resets the drafts cache silently', async () => {
+    const scope = fork();
+    await fetchArrived(scope, [makeDraft('d1')]);
+    expect(scope.getState(draftsResource.$loaded)).toBe(true);
+
+    const listener = watchNotifications(scope);
+    await allSettled(authModel.events.signOutClicked, { scope });
+
+    expect(scope.getState(draftsResource.$cache)).toEqual([]);
+    expect(scope.getState(draftsResource.$loaded)).toBe(false);
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it('the first fetch after a reset is treated as initial population — no notification spam', async () => {
