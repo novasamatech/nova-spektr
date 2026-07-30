@@ -105,8 +105,7 @@ const createScope = () =>
   fork({
     values: new Map()
       .set(networkModel.$apis, { [CHAIN]: {} as unknown as ApiPromise })
-      // `addProxiesFx.doneData` reduces INTO the current `$proxies` object (in-place
-      // mutation) — give every scope its own object so state can't bleed across forks.
+      // Give every scope its own `$proxies` object so tests stay isolated.
       .set(proxyModel.$proxies, {}),
   });
 
@@ -253,9 +252,7 @@ describe('contactProxiesModel', () => {
       respondWithGraph([{ proxied: SEED, proxy: MULTISIG }]);
       mirrorOnChain([{ proxied: SEED, delegate: MULTISIG }]);
       // Keep the live `proxyModel.$proxies` layer empty (persisting fails) so the map
-      // observes the localStorage-cached layer alone. Live-layer cleanup on urlCleared
-      // is currently dead code: its sample filter reads `$contactProxiedIds` after the
-      // same event already reset it — tracked outside this test.
+      // observes the localStorage-cached layer alone.
       vi.spyOn(storageService.proxies, 'createAll').mockResolvedValue(undefined);
 
       const scope = createScope();
@@ -266,6 +263,21 @@ describe('contactProxiesModel', () => {
 
       await allSettled(backendConfigurationModel.events.urlCleared, { scope });
 
+      expect(scope.getState(contactProxiesModel.$contactProxyMap)).toEqual({});
+    });
+
+    it('urlCleared removes contact-sourced proxies from the live layer and storage', async () => {
+      respondWithGraph([{ proxied: SEED, proxy: MULTISIG }]);
+      mirrorOnChain([{ proxied: SEED, delegate: MULTISIG }]);
+
+      const scope = createScope();
+      await receiveContacts(scope, [plainContact, multisigContact]);
+      expect(scope.getState(proxyModel.$proxies)[SEED]).toHaveLength(1);
+
+      await allSettled(backendConfigurationModel.events.urlCleared, { scope });
+
+      expect(storageService.proxies.deleteAll).toHaveBeenCalledWith([1]);
+      expect(scope.getState(proxyModel.$proxies)).toEqual({});
       expect(scope.getState(contactProxiesModel.$contactProxyMap)).toEqual({});
     });
   });
