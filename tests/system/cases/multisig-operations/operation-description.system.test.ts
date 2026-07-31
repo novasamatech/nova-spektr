@@ -13,7 +13,11 @@ const story = 'Operation shows its backend description';
 
 const BACKEND_URL = 'https://mock-address-book.e2e';
 
-test.describe('Multisig Operations — operation description', { tag: ['@regress'] }, () => {
+test.describe('Multisig Operations — operation description', { tag: ['@regress', '@pr'] }, () => {
+  // The DESCRIPTION column hides below the wide-table breakpoint — match the
+  // awaiting-outcome spec's viewport so the asserted cell is actually visible.
+  test.use({ viewport: { width: 1600, height: 900 } });
+
   let scenario: OperationWithDescriptionScenario;
 
   test.beforeAll(async () => {
