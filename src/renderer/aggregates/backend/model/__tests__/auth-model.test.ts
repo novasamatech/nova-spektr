@@ -101,7 +101,7 @@ describe('authModel — persisted default chain', () => {
     // scope busy, so allSettled never resolves — poll the store instead of awaiting it.
     void allSettled(authModel.__test.verifySignatureFx, {
       scope,
-      params: { baseUrl: 'https://backend.test', accountId: '0x00', challengeId: 'challenge', signature: '0x01' },
+      params: { baseUrl: BACKEND_URL, accountId: '0x00', challengeId: 'challenge', signature: '0x01' },
     });
 
     await vi.waitFor(() => {
@@ -173,7 +173,7 @@ describe('authModel — persisted default account', () => {
     // scope busy, so allSettled never resolves — poll the store instead of awaiting it.
     void allSettled(authModel.__test.verifySignatureFx, {
       scope,
-      params: { baseUrl: 'https://backend.test', accountId: '0x00', challengeId: 'challenge', signature: '0x01' },
+      params: { baseUrl: BACKEND_URL, accountId: '0x00', challengeId: 'challenge', signature: '0x01' },
     });
 
     await vi.waitFor(() => {
@@ -185,7 +185,7 @@ describe('authModel — persisted default account', () => {
     const scope = fork({
       values: [
         [authModel.__test.$defaultAuthAccountId, TEST_ACCOUNTS[0]],
-        [backendConfigurationModel.$backendUrl, 'https://backend.test'],
+        [backendConfigurationModel.$backendUrl, BACKEND_URL],
       ],
       handlers: [[authModel.__test.logoutFx, () => undefined]],
     });
@@ -229,10 +229,10 @@ describe('authModel — login flow', () => {
     void allSettled(authModel.events.connectTriggered, { scope });
 
     await vi.waitFor(() => {
-      expect(challengeSpy).toHaveBeenCalledWith('https://backend.test', TEST_ACCOUNTS[0]);
+      expect(challengeSpy).toHaveBeenCalledWith(BACKEND_URL, TEST_ACCOUNTS[0]);
     });
     // The draft URL is normalized (trailing slash trimmed) and saved as the backend URL.
-    expect(scope.getState(backendConfigurationModel.$backendUrl)).toBe('https://backend.test');
+    expect(scope.getState(backendConfigurationModel.$backendUrl)).toBe(BACKEND_URL);
     expect(scope.getState(authModel.$authStep)).toBe('signing');
 
     // Challenge response reached the signing flow.
@@ -249,7 +249,7 @@ describe('authModel — login flow', () => {
       expect(scope.getState(authModel.$isAuthenticated)).toBe(true);
     });
     expect(verifyHandler).toHaveBeenCalledWith({
-      baseUrl: 'https://backend.test',
+      baseUrl: BACKEND_URL,
       accountId: TEST_ACCOUNTS[0],
       challengeId: 'challenge-1',
       signature: '0x01',

@@ -93,9 +93,12 @@ export class MultiTransferModalWindow {
   }
 
   /** Row-level issues render as an error alert listing each failing row. */
-  public async expectInvalidAddressIssue(row: number): Promise<void> {
+  public async expectInvalidAddressIssue(row: number, errorCount = 1): Promise<void> {
     await step(`Expect an invalid-address error for row ${row}`, async () => {
-      await expect(this.page.getByText(new RegExp(`Found 1 error`))).toBeVisible();
+      // multiTransfer.errors.csv.errorTitle_one / errorTitle_other
+      const errorSummary = errorCount === 1 ? `Found ${errorCount} error` : `Found ${errorCount} errors`;
+
+      await expect(this.page.getByText(errorSummary)).toBeVisible();
       await expect(this.page.getByText(new RegExp(`Row ${row}.*${INVALID_ADDRESS_ERROR}`))).toBeVisible();
     });
   }
