@@ -13,9 +13,6 @@ on:
         required: false
   schedule:
     - cron: '0 6 * * *' # 9:00 GMT+3
-  pull_request:
-    paths:
-      - 'tests/system/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

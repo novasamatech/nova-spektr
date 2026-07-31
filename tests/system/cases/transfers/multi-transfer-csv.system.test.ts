@@ -27,7 +27,7 @@ const BAD_ADDRESS_CSV = `recipient,amount\nnot-a-valid-address,10000000000\n`;
  * flow runs hermetically: RPC websockets are blocked, the wallets come from the
  * shared transfers database dump.
  */
-test.describe('Multi-transfer — CSV upload validation', { tag: ['@regress'] }, () => {
+test.describe('Multi-transfer — CSV upload validation', { tag: ['@regress', '@pr'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });

@@ -7,7 +7,7 @@ const story = 'Multisig Vault onboarding';
 const regularMultisigType = MultisigModalElements.regularMultisigType;
 const flexibleMultisigType = MultisigModalElements.flexibleMultisigType;
 
-test.describe('Multisig Vault onboarding', { tag: ['@regress'] }, () => {
+test.describe('Multisig Vault onboarding', { tag: ['@regress', '@pr'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });

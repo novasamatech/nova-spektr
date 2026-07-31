@@ -18,7 +18,7 @@ const VAULT_ACCOUNT_NAME = 'polkadotVaultAllNetworks';
  * Address Book) or reachable. All runs are hermetic: RPC websockets are blocked
  * and the backend host is fully mocked.
  */
-test.describe('Address Book — backend connection health check', { tag: ['@regress'] }, () => {
+test.describe('Address Book — backend connection health check', { tag: ['@regress', '@pr'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });

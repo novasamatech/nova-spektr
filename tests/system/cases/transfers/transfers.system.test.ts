@@ -10,7 +10,7 @@ import { proxyTransferTestCase, transferConstants, transferTestCases } from '../
 const feature = 'Transfers';
 const story = 'Transfers tests';
 
-test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
+test.describe('Regular transfers', { tag: ['@regular-transfers', '@live'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });

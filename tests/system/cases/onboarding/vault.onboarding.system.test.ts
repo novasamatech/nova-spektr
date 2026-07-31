@@ -2,7 +2,7 @@ import * as allure from 'allure-js-commons';
 
 import { expect, setupTestMetadata, test } from '../../utils/baseRegularFixture';
 
-test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
+test.describe('Polkadot Vault onboarding', { tag: ['@regress', '@pr'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata('Onboarding', 'Onboarding via Polkadot Vault');
   });
