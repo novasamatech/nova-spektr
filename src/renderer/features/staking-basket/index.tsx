@@ -45,6 +45,7 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.RESTAKE]: t('operations.titles.restake'),
     [TransactionType.DESTINATION]: t('operations.titles.destination'),
     [TransactionType.UNSTAKE]: t('operations.titles.unstake'),
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: t('operations.titles.payoutStakers'),
   };
 
   return Title[transaction.type];
@@ -59,6 +60,7 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.RESTAKE]: t('operations.modalTitles.restakeOn'),
     [TransactionType.DESTINATION]: t('operations.modalTitles.destinationOn'),
     [TransactionType.UNSTAKE]: t('operations.modalTitles.unstakeOn'),
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: t('operations.modalTitles.payoutStakersOn'),
   };
 
   return Title[transaction.type];
@@ -73,6 +75,7 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
     [TransactionType.RESTAKE]: 'returnToStakeMst',
     [TransactionType.DESTINATION]: 'destinationMst',
     [TransactionType.UNSTAKE]: 'unstakeMst',
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: 'redeemMst',
   };
 
   return Icon[transaction.type];

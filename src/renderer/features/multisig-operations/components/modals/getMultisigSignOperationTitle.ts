@@ -51,6 +51,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.RESTAKE]: () => 'operations.modalTitles.restakeOn',
   [TransactionType.DESTINATION]: () => 'operations.modalTitles.destinationOn',
   [TransactionType.UNSTAKE]: () => 'operations.modalTitles.unstakeOn',
+  [TransactionType.PAYOUT_STAKERS_BY_PAGE]: () => 'operations.modalTitles.payoutStakersOn',
   // Technical
   [TransactionType.CHILL]: () => 'operations.modalTitles.unstakeOn',
   [TransactionType.BATCH_ALL]: () => 'operations.modalTitles.unknownOn',

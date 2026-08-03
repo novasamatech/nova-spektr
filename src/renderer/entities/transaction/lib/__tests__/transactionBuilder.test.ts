@@ -1,5 +1,5 @@
-import { TransactionType } from '@/shared/core';
-import { transactionBuilder } from '../transactionBuilder';
+import { type Address, TransactionType } from '@/shared/core';
+import { MAX_PAYOUT_CALLS_PER_BATCH, transactionBuilder } from '../transactionBuilder';
 
 import {
   TEST_ACCOUNT_ID,
@@ -287,6 +287,92 @@ describe('entities/transaction/lib/transactionBuilder', () => {
           expect(transaction.args.palletName).toBe('assets');
         });
       });
+    });
+  });
+
+  describe('buildPayoutStakers', () => {
+    const chain = createMockChain();
+    const validatorA = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as Address;
+    const validatorB = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as Address;
+
+    it('should build bare PAYOUT_STAKERS_BY_PAGE transaction for a single payout', () => {
+      const transaction = transactionBuilder.buildPayoutStakers({
+        chain,
+        accountId: TEST_ACCOUNT_ID,
+        payouts: [{ validatorStash: validatorA, era: 100, page: 0 }],
+      });
+
+      expect(transaction.type).toBe(TransactionType.PAYOUT_STAKERS_BY_PAGE);
+      expect(transaction.chainId).toBe(chain.chainId);
+      expect(transaction.accountId).toBe(TEST_ACCOUNT_ID);
+      expect(transaction.args).toEqual({ validatorStash: validatorA, era: 100, page: 0 });
+    });
+
+    it('should wrap multiple payouts in BATCH_ALL', () => {
+      const transaction = transactionBuilder.buildPayoutStakers({
+        chain,
+        accountId: TEST_ACCOUNT_ID,
+        payouts: [
+          { validatorStash: validatorA, era: 100, page: 0 },
+          { validatorStash: validatorB, era: 101, page: 1 },
+        ],
+      });
+
+      expect(transaction.type).toBe(TransactionType.BATCH_ALL);
+      expect(transaction.args.transactions).toHaveLength(2);
+      for (const innerTx of transaction.args.transactions) {
+        expect(innerTx.type).toBe(TransactionType.PAYOUT_STAKERS_BY_PAGE);
+      }
+    });
+
+    it('should sort payouts by era ascending, then by validator', () => {
+      const transaction = transactionBuilder.buildPayoutStakers({
+        chain,
+        accountId: TEST_ACCOUNT_ID,
+        payouts: [
+          { validatorStash: validatorB, era: 101, page: 0 },
+          { validatorStash: validatorB, era: 100, page: 0 },
+          { validatorStash: validatorA, era: 101, page: 0 },
+        ],
+      });
+
+      const args = transaction.args.transactions.map((tx: { args: Record<string, unknown> }) => tx.args);
+      expect(args).toEqual([
+        { validatorStash: validatorB, era: 100, page: 0 },
+        { validatorStash: validatorA, era: 101, page: 0 },
+        { validatorStash: validatorB, era: 101, page: 0 },
+      ]);
+    });
+
+    it('should throw when payouts list is empty', () => {
+      expect(() => {
+        transactionBuilder.buildPayoutStakers({ chain, accountId: TEST_ACCOUNT_ID, payouts: [] });
+      }).toThrow();
+    });
+
+    it('should throw when payouts exceed MAX_PAYOUT_CALLS_PER_BATCH', () => {
+      const payouts = Array.from({ length: MAX_PAYOUT_CALLS_PER_BATCH + 1 }, (_, index) => ({
+        validatorStash: validatorA,
+        era: index,
+        page: 0,
+      }));
+
+      expect(() => {
+        transactionBuilder.buildPayoutStakers({ chain, accountId: TEST_ACCOUNT_ID, payouts });
+      }).toThrow();
+    });
+
+    it('should accept exactly MAX_PAYOUT_CALLS_PER_BATCH payouts', () => {
+      const payouts = Array.from({ length: MAX_PAYOUT_CALLS_PER_BATCH }, (_, index) => ({
+        validatorStash: validatorA,
+        era: index,
+        page: 0,
+      }));
+
+      const transaction = transactionBuilder.buildPayoutStakers({ chain, accountId: TEST_ACCOUNT_ID, payouts });
+
+      expect(transaction.type).toBe(TransactionType.BATCH_ALL);
+      expect(transaction.args.transactions).toHaveLength(MAX_PAYOUT_CALLS_PER_BATCH);
     });
   });
 });
