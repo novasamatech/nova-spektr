@@ -770,6 +770,258 @@
       "range90d": "90D",
       "errorMessage": "Failed to load price data",
       "retry": "Retry"
+    },
+    "staking": {
+      "draftToast": {
+        "title": "Draft created",
+        "summary": "{operation} · {signer} · {network}. Sign it in Drafts.",
+        "viewDrafts": "View drafts →",
+        "operation": {
+          "claim": "Claim {amount}",
+          "newPosition": "New position {amount}",
+          "unbond": "Unbond {amount}",
+          "addStake": "Add stake {amount}",
+          "changeValidators": "Change validators",
+          "redeem": "Redeem {amount}"
+        }
+      },
+      "kpi": {
+        "title": "Staking",
+        "exportCsv": "Export CSV",
+        "actionUnavailable": "This action is not connected to a transaction flow yet.",
+        "empty": {
+          "title": "No staking positions",
+          "description": "The selected accounts are not staking on any network yet."
+        },
+        "columns": {
+          "account": "Account",
+          "address": "Address",
+          "network": "Network",
+          "asset": "Asset",
+          "earned": "Earned",
+          "unclaimed": "Unclaimed",
+          "eras": "Eras",
+          "staked": "Staked",
+          "unbonding": "Unbonding",
+          "redeemable": "Redeemable",
+          "actions": "Actions",
+          "payoutId": "Payout ID",
+          "block": "Block",
+          "date": "Date (UTC)",
+          "payoutType": "Type",
+          "amount": "Amount",
+          "validator": "Validator",
+          "allocated": "Allocated",
+          "status": "Status"
+        },
+        "totalStaked": {
+          "title": "Total staked",
+          "unbonding": "Unbonding",
+          "redeemLink": "Redeem →"
+        },
+        "apy": {
+          "title": "Est. APY",
+          "value": "{apy}%",
+          "unknown": "—",
+          "subline_one": "stake-weighted · {count} earning position",
+          "subline_other": "stake-weighted · {count} earning positions",
+          "detailTitle": "Estimated APY breakdown"
+        },
+        "nominations": {
+          "title": "Nominated validators",
+          "count_one": "{count} validator",
+          "count_other": "{count} validators",
+          "subline_one": "validators · {count} backed this era",
+          "subline_other": "validators · {count} backed this era",
+          "detailTitle": "Nomination spread",
+          "nominatorColumn": "Nominator",
+          "validatorColumn": "Validator",
+          "statusColumn": "Status",
+          "nominatorsValue_one": "{count} account",
+          "nominatorsValue_other": "{count} accounts",
+          "status": {
+            "active": "active",
+            "waiting": "not elected",
+            "droppedOut": "no stake"
+          },
+          "filter": {
+            "all": "All {count}",
+            "active": "Active {count}",
+            "droppedOut": "No stake {count}",
+            "waiting": "Not elected {count}"
+          },
+          "donutCaption": "Stake behind each validator, this era",
+          "allocatedTotal": "Bonded",
+          "idle": "Backing nobody",
+          "unknown": "—",
+          "footerCounts": "{total} nominations across {accounts} accounts · {active} active, {dropped} with no stake, {waiting} not elected",
+          "empty": "This selection nominates nothing yet.",
+          "emptyTitle": "No nominations"
+        },
+        "rewards": {
+          "title": "Rewards",
+          "subline": "{amounts} · {days}d",
+          "sublineNoFiat": "last {days}d",
+          "unclaimed": "Unclaimed",
+          "claimLink": "Claim →",
+          "claimWindowHint": "Staking rewards can only be claimed for the last {eras} eras. Once an era falls out of that window its reward expires and cannot be recovered.",
+          "detailTitle": "Rewards by validator",
+          "unclaimedTotal": "Unclaimed total",
+          "oldestExpires_one": "oldest expires in {count}d",
+          "oldestExpires_other": "oldest expires in {count}d",
+          "eraCount_one": "{count} era",
+          "eraCount_other": "{count} eras",
+          "validatorColumn": "Validator",
+          "nominatorsColumn": "My nominators",
+          "earnedColumn": "Earned",
+          "claim": "Claim",
+          "claimAll": "Claim all",
+          "noSigner": "No account of this wallet can sign on {network}.",
+          "donutCaption": "Earned per validator over the period",
+          "attributing": "Working out which validator earned what…",
+          "receivedInPeriod": "Received in period: {fiat}",
+          "allNetworks": "All networks",
+          "validatorCount_one": "{count} validator",
+          "validatorCount_other": "{count} validators",
+          "outstanding_one": "{fiat} outstanding across {count} validator",
+          "outstanding_other": "{fiat} outstanding across {count} validators",
+          "nothingInPeriod": "No rewards attributed in this window.",
+          "scanningPayouts": "Checking what is still unclaimed…",
+          "nothingToClaim": "Nothing outstanding — every payout of the last {eras} eras is claimed.",
+          "period": {
+            "7d": "7d",
+            "30d": "30d",
+            "all": "All time"
+          }
+        },
+        "positions": {
+          "detailTitle": "Staking positions",
+          "redeem": "Redeem",
+          "unbond": "Unbond",
+          "readyChip": "{amount} ready",
+          "unbondingChip": "{amount} · {days}d {hours}h",
+          "unbondingErasChip_one": "{amount} · {count} era",
+          "unbondingErasChip_other": "{amount} · {count} eras",
+          "footerTotals": "{amounts} · {fiat}"
+        }
+      },
+      "rewardsChart": {
+        "title": "Rewards",
+        "assetSwitch": "Rewards asset",
+        "rangeSwitch": "Rewards period",
+        "range": {
+          "7d": "7d",
+          "30d": "30d",
+          "90d": "90d",
+          "1y": "1y"
+        },
+        "rangeSummary": {
+          "7d": "last 7 days",
+          "30d": "last 30 days",
+          "90d": "last 90 days",
+          "1y": "last 12 months"
+        },
+        "empty": {
+          "title": "No rewards yet",
+          "description": "Start staking to see your reward history"
+        },
+        "tooltip": {
+          "dayWithEra": "{date} · era {era}",
+          "week": "Week of {date}",
+          "total": "Total",
+          "noRewards": "No rewards in this period"
+        }
+      },
+      "positions": {
+        "title": "Positions",
+        "newPosition": "New position",
+        "noValue": "—",
+        "viewOnly": "view only",
+        "localWallet": "Local wallet",
+        "multisigChip": "{threshold}/{total}",
+        "multisigHint": "Multisig — {threshold} of {total} signatures required",
+        "draftHint_one": "{count} pending draft",
+        "draftHint_other": "{count} pending drafts",
+        "columns": {
+          "account": "Account",
+          "staked": "Staked",
+          "share": "Share",
+          "status": "Status",
+          "apy": "APY",
+          "validators": "Validators",
+          "unclaimed": "Unclaimed"
+        },
+        "status": {
+          "active": "Active",
+          "waiting": "Waiting",
+          "inactive": "Inactive",
+          "bonded": "Bonded"
+        },
+        "statusHint": {
+          "active": "Backed by elected validators this era — this stake is earning.",
+          "waiting": "Nominations are in. The next election decides whether they take effect.",
+          "inactive": "Nominating, but nothing backs this stake in the current era.",
+          "bonded": "Bonded without nominations, so it earns nothing. Pick validators to start earning.",
+          "notElected": "None of the nominated validators was elected for the current era.",
+          "notExposed": "The nominated validators were elected, but this stake is not in their exposure."
+        },
+        "validatorsValue": "{active} of {total}",
+        "expiry": {
+          "days": "{days}d left",
+          "expiring": "expires now",
+          "hint": "Unclaimed rewards are lost once their era leaves the chain's history."
+        },
+        "scrollHint_one": "{count} position",
+        "scrollHint_other": "{count} positions · scroll for more",
+        "empty": {
+          "title": "No staking positions yet",
+          "description": "Stake DOT and KSM directly from your accounts — including multisig and Address Book accounts via drafts.",
+          "action": "Start staking",
+          "learnMore": "Learn how staking works"
+        },
+        "detail": {
+          "stats": {
+            "staked": "Staked",
+            "status": "Status",
+            "apy": "Est. APY",
+            "share": "Share of chain",
+            "unclaimed": "Unclaimed",
+            "validators": "Validators"
+          },
+          "unbonding": "Unbonding",
+          "unbondingLeft": "{days}d {hours}h left",
+          "unbondingReady": "Ready to withdraw",
+          "unbondingUnlock": "→ {date}",
+          "unbondingEras_one": "{count} era left",
+          "unbondingEras_other": "{count} eras left",
+          "actions": {
+            "claim": "Claim {amount}",
+            "claimEmpty": "Claim",
+            "addStake": "Add stake",
+            "unbond": "Unbond",
+            "changeValidators": "Change validators",
+            "notWired": "This action is not connected to a transaction flow yet.",
+            "nothingInPeriod": "No rewards attributed in this window.",
+            "scanningPayouts": "Checking what is still unclaimed…",
+            "nothingToClaim": "Nothing to claim on this position."
+          },
+          "watchOnlyNote": "Watch-only account — data only. Actions are unavailable by design, not disabled.",
+          "nominations": {
+            "title": "Nominations",
+            "validator": "Validator",
+            "status": "Status",
+            "ourStake": "Our stake",
+            "commission": "Comm.",
+            "apy": "APY",
+            "eraPoints": "Era pts",
+            "active": "active",
+            "waiting": "waiting",
+            "droppedOut": "dropped out",
+            "footer": "{total} nominations · {active} active, {waiting} waiting, {dropped} dropped out",
+            "empty": "This account nominates no validators yet."
+          }
+        }
+      }
     }
   },
   "delegate": {
@@ -2815,7 +3067,8 @@
       "vestedTransferOn": "Vested transfer on",
       "verifyProxy": "Verify proxy",
       "verifyProxyOn": "Verify proxy on",
-      "vote": "Vote { asset } on"
+      "vote": "Vote { asset } on",
+      "payoutStakersOn": "Claim Rewards on"
     },
     "noOperationsFilters": "Try to use different keywords or adjust filters",
     "noOperationsTitle": "No operations found",
@@ -2883,7 +3136,8 @@
       "unstake": "Unstake",
       "vest": "Claim vested",
       "vestedTransfer": "Vested transfer",
-      "vote": "Vote"
+      "vote": "Vote",
+      "payoutStakers": "Claim Rewards"
     },
     "editProxy": {
       "title": "Edit flexible multisig",
@@ -3576,6 +3830,88 @@
         "metaNoEra": "{count} active validators",
         "searchPlaceholder": "Search name or address",
         "showSelected": "Show selected"
+      }
+    },
+    "newPosition": {
+      "accountLabel": "Stake from",
+      "accountPlaceholder": "Select an account",
+      "amountLabel": "Amount to stake",
+      "availableLabel": "Available",
+      "belowMinimumDescription": "A nomination needs at least {minimum} bonded. Below that the network rejects the whole transaction.",
+      "belowMinimumTitle": "Below the minimum stake",
+      "cancelButton": "Cancel",
+      "confirm": {
+        "rewardsDestination": "Rewards go to",
+        "staking": "Staking",
+        "validators": "Validators",
+        "validatorsCount_one": "{count} validator",
+        "validatorsCount_other": "{count} validators"
+      },
+      "continueButton": "Continue",
+      "incorrectAddressError": "Enter a valid address",
+      "maxButton": "Max",
+      "networkLabel": "Network",
+      "networkPlaceholder": "Select a network",
+      "payoutAccountPlaceholder": "Payout account",
+      "restakeRewards": "Restake rewards",
+      "rewardsDestinationLabel": "Rewards destination",
+      "title": "New staking position",
+      "transferableRewards": "Pay rewards to an account"
+    },
+    "amountFlow": {
+      "addStakeInfoDescription": "Added funds start earning from the next era. They stay bonded until you unbond them.",
+      "addStakeInfoTitle": "Starts earning next era",
+      "amountLabel": "Amount",
+      "availableLabel": "Available:",
+      "belowMinimumDescription": "Remaining stake ({remaining}) is below the {minimum} minimum active bond — the position would stop earning. Unbond everything, or leave at least {minimum}.",
+      "belowMinimumTitle": "Below the minimum active bond",
+      "cancelButton": "Cancel",
+      "confirm": {
+        "addingToStake": "Adding to stake",
+        "chillHint": "Your nominations are withdrawn together with this unbond, because too little would stay bonded to keep nominating.",
+        "resultingStake": "Stake after operation",
+        "unbonding": "Unbonding"
+      },
+      "continueButton": "Continue",
+      "maxButton": "Max",
+      "remainingStaked": "remaining staked: {amount}",
+      "stakedLabel": "Staked:",
+      "title": {
+        "addStake": "Add stake",
+        "unbond": "Unbond"
+      },
+      "unbondingInfoDescription": "Unbonding takes ~{eras} eras. No rewards are earned while unbonding.",
+      "unbondingInfoDescriptionWithDate": "Unbonding takes ~{eras} eras — funds unlock around {date}. No rewards are earned while unbonding.",
+      "unbondingInfoTitle": "Unbonding period",
+      "unlockingLimitDescription": "This account already has {count} chunks unbonding, the most the network allows. Withdraw an unlocked chunk before unbonding again.",
+      "unlockingLimitTitle": "No unbonding slots left"
+    },
+    "claimRewards": {
+      "hint": "Rewards go straight to the stash's transferable balance. Anyone can send this call — the rewards reach the nominators either way.",
+      "hintBatched": "This claim is too large for one transaction, so it is split into {total} of them. You sign each in turn, and they are submitted together.",
+      "labels": {
+        "rewards": "Rewards to claim",
+        "scope": "Covering",
+        "transactions": "Transactions"
+      },
+      "otherNetworksHint_one": "Rewards on {count} other account are on a different network and were left out of this claim. Claim them from that network separately.",
+      "otherNetworksHint_other": "Rewards on {count} other accounts are on different networks and were left out of this claim. Claim them from those networks separately.",
+      "otherNetworksTitle": "Other networks not included",
+      "scopeValue": "{validators} validators across {eras} eras",
+      "title": "Claim rewards"
+    },
+    "confirmFlow": {
+      "hint": {
+        "changeValidators": "The new set replaces your current nominations from the next era. Your stake stays bonded the whole time.",
+        "redeem": "Withdraws every chunk that has finished unbonding. The funds land in this account's transferable balance."
+      },
+      "labels": {
+        "redeeming": "Redeeming",
+        "validators": "New validators"
+      },
+      "title": {
+        "changeValidators": "Change validators",
+        "redeem": "Redeem"
       }
     }
   },

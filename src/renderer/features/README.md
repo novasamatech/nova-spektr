@@ -69,7 +69,12 @@ notes.
 ## Staking
 
 - `staking-navigation` (no spec planned)
+- [`staking-amount-flow`](./staking-amount-flow/README.md)
 - `staking-basket`
+- [`staking-claim-rewards`](./staking-claim-rewards/README.md)
+- [`staking-confirm-flow`](./staking-confirm-flow/README.md)
+- [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
+- [`staking-new-position-flow`](./staking-new-position-flow/README.md)
 - `staking-bond-extra`
 - [`staking-bond-nominate`](./staking-bond-nominate/README.md)
 - [`staking-nominate`](./staking-nominate/README.md)
@@ -81,6 +86,7 @@ notes.
 - [`validator-selection`](./validator-selection/README.md)
 - [`staking-accounts`](../aggregates/staking-accounts/README.md) (aggregate)
 - `staking-network` (aggregate)
+- [`staking-positions`](../aggregates/staking-positions/README.md) (aggregate)
 - [`staking-validators`](../aggregates/staking-validators/README.md) (aggregate)
 
 > See also: [`dashboard-staking`](#dashboard) — staking summary on the dashboard.
@@ -178,6 +184,9 @@ notes.
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
 - `dashboard-price-charts`
 - `dashboard-staking`
+- [`dashboard-staking-kpi`](./dashboard-staking-kpi/README.md)
+- [`dashboard-staking-positions`](./dashboard-staking-positions/README.md)
+- [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)
 
 > See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
 > the Portfolio Overview card.
