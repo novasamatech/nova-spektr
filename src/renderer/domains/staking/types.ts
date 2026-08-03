@@ -13,8 +13,19 @@ export type RewardSource = {
   addressPrefix: number;
 };
 
+/**
+ * One payout as the indexer recorded it, not an aggregate.
+ *
+ * `id` is the indexer's own `block-event-address` key and `blockNumber` the
+ * block the payout landed in — carried through untouched so an export can be
+ * reconciled against the chain. `type` separates a reward from a slash, which
+ * the chart sums together but a spreadsheet must be able to tell apart.
+ */
 export type MonthlyRewardRecord = {
+  id: string;
   address: string;
   amount: string;
   timestamp: number;
+  blockNumber: number;
+  type: string;
 };

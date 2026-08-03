@@ -20,6 +20,17 @@ type RequestFn<Params, Response> = (params: Params, signal: AbortSignal) => Resp
 
 interface QueryResource<Params, Response, Cache> extends Resource<Params, Response, Cache> {
   fetch: Effect<Params, Response>;
+  /**
+   * Drops the in-memory response for a key so the next `fetch`/`start` really
+   * goes to the network instead of being answered from the `staleAfter`
+   * window.
+   *
+   * Needed when something outside the resource is known to have changed the
+   * answer — a transaction landing on chain, say — well before the TTL is up.
+   * Without it a refetch inside the window is a no-op: the request cache
+   * short-circuits it and `$cache` never gets a new value pushed into it.
+   */
+  invalidate: Effect<Params, void>;
   $pending: Store<Record<ResourceRequestKey, boolean>>;
 }
 
@@ -109,6 +120,10 @@ function build<Params, Response, Cache>({
     return bounded(params).then(({ response }) => response);
   });
 
+  const invalidateFx = createEffect((params: Params) => {
+    requestsCache.delete(createKey(params));
+  });
+
   const abortFx = createEffect((key: ResourceRequestKey) => {
     const abortController = abortControllers.get(key);
     if (abortController) {
@@ -139,6 +154,27 @@ function build<Params, Response, Cache>({
     target: abortFx,
   });
 
+  // Per-key in-flight tracking. `requestFx` is pooled by key, so a second
+  // request for a key already in flight joins the running one instead of
+  // starting another - the flag simply stays raised until it settles.
+  $pending
+    .on(requestFx, (pending, params) => ({ ...pending, [createKey(params)]: true }))
+    .on([requestFx.done, requestFx.fail], (pending, { params }) => {
+      const key = createKey(params);
+      if (!pending[key]) return pending;
+
+      const { [key]: _settled, ...rest } = pending;
+
+      return rest;
+    })
+    .on(abortFx, (pending, key) => {
+      if (!pending[key]) return pending;
+
+      const { [key]: _aborted, ...rest } = pending;
+
+      return rest;
+    });
+
   return {
     createKey,
     push: readonly(push),
@@ -147,6 +183,7 @@ function build<Params, Response, Cache>({
     stop,
 
     fetch: fetchFx,
+    invalidate: invalidateFx,
     $pending: readonly($pending),
   };
 }

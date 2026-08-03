@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
-import { type Chain, type ExternalType } from '@/shared/core';
+import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { keys, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { AssetHubChains } from '../constants';
@@ -33,7 +33,71 @@ function collectRewardSources(
   }
 }
 
-export { collectRewardSources, isAssetHubChain };
+/**
+ * How much of the chain graph is walked when looking for a chain's reward
+ * sources.
+ *
+ * - `staking-chain` — the caller already knows `chain` is where the stake lives
+ *   (a position's chain, the chain a claim landed on). Everything the chain
+ *   itself and its relay can answer with is taken, with no question of whether
+ *   the chain happens to be an Asset Hub.
+ * - `chain-family` — `chain` comes from a plain chain list and may sit on either
+ *   side of the staking migration, so the relation has to be derived rather
+ *   than assumed.
+ */
+type RewardSourceScope = 'staking-chain' | 'chain-family';
+
+/**
+ * Every subquery endpoint that can answer for `chain`'s staking rewards.
+ *
+ * An Asset Hub needs more than one. Staking moved to the hub from its relay
+ * chain, so rewards earned before the migration are only in the _relay's_
+ * staking indexer, while what came after is served by the hub's own staking and
+ * history indexers. Reading a single endpoint makes a stake look like it earned
+ * nothing on one side of the migration date.
+ *
+ * The reverse walk — from a chain down to the Asset Hubs that name it as their
+ * parent — is `chain-family` only. It exists because those callers iterate a
+ * chain list and can hand us the _relay_, whose post-migration rewards now live
+ * on its hub; a `staking-chain` caller already holds the hub itself, so walking
+ * down from it would only pull in unrelated parachains.
+ */
+function collectChainRewardSources(
+  chain: Chain,
+  chainsMap: Record<ChainId, Chain>,
+  scope: RewardSourceScope,
+): RewardSource[] {
+  const uniqueSources = new Map<string, RewardSource>();
+
+  collectRewardSources(chain, ExternalType.STAKING, uniqueSources);
+
+  if (scope === 'staking-chain' || isAssetHubChain(chain)) {
+    collectRewardSources(chain, ExternalType.HISTORY, uniqueSources);
+
+    if (chain.parentId) {
+      collectRewardSources(chainsMap[chain.parentId], ExternalType.STAKING, uniqueSources);
+    }
+  }
+
+  if (scope === 'chain-family') {
+    for (const candidate of Object.values(chainsMap)) {
+      if (candidate.parentId !== chain.chainId) continue;
+      if (!isAssetHubChain(candidate)) continue;
+
+      collectRewardSources(candidate, ExternalType.HISTORY, uniqueSources);
+    }
+  }
+
+  return [...uniqueSources.values()];
+}
+
+export { collectChainRewardSources, collectRewardSources, isAssetHubChain };
+
+/**
+ * Pure helpers for callers that need reward sources for **several** chains at
+ * once and therefore cannot go through the per-chain `useRewardSources` hook.
+ */
+export const rewardsService = { collectChainRewardSources, collectRewardSources, isAssetHubChain };
 
 const GET_TOTAL_REWARDS = `
   query Rewards($addresses: [String!]) {
@@ -70,9 +134,12 @@ const GET_MONTHLY_REWARDS = `
       orderBy: TIMESTAMP_ASC
     ) {
       nodes {
+        id
         address
         amount
         timestamp
+        blockNumber
+        type
       }
     }
   }
@@ -101,9 +168,12 @@ type PeriodRewardsQuery = {
 type MonthlyRewardsQuery = {
   accountRewards: {
     nodes: {
+      id: string;
       address: string;
       amount: string;
       timestamp: string;
+      blockNumber: number;
+      type: string;
     }[];
   };
 };
@@ -220,9 +290,12 @@ export const fetchMonthlyRewards = async ({
 
         for (const node of nodes) {
           allRecords.push({
+            id: node.id,
             address: node.address,
             amount: node.amount,
             timestamp: Number(node.timestamp),
+            blockNumber: Number(node.blockNumber),
+            type: node.type,
           });
         }
       } catch (error) {

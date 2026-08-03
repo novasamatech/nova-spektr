@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { type Chain, type ChainId, ExternalType } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
 import { type MonthlyRewardRecord, type RewardSource, type RewardsMap } from '../types';
@@ -13,36 +13,21 @@ import {
   rewardsCacheKey,
   stakingRewardsResource,
 } from './resource';
-import { collectRewardSources, isAssetHubChain } from './service';
+import { collectChainRewardSources } from './service';
 
 const EMPTY_MAP: RewardsMap = {};
 const EMPTY_RECORDS: MonthlyRewardRecord[] = [];
 
-const useRewardSources = (chain: Chain | null, chainsMap: Record<ChainId, Chain>): RewardSource[] => {
+/**
+ * The subquery endpoints a chain's rewards can be read from — an Asset Hub also
+ * inherits its relay chain's staking indexer, which is where pre-migration
+ * history lives.
+ */
+export const useRewardSources = (chain: Chain | null, chainsMap: Record<ChainId, Chain>): RewardSource[] => {
   return useMemo<RewardSource[]>(() => {
     if (!chain) return [];
 
-    const uniqueSources = new Map<string, RewardSource>();
-
-    collectRewardSources(chain, ExternalType.STAKING, uniqueSources);
-
-    if (isAssetHubChain(chain)) {
-      collectRewardSources(chain, ExternalType.HISTORY, uniqueSources);
-
-      if (chain.parentId) {
-        collectRewardSources(chainsMap[chain.parentId], ExternalType.STAKING, uniqueSources);
-      }
-    }
-
-    for (const candidate of Object.values(chainsMap)) {
-      if (candidate.parentId !== chain.chainId) continue;
-
-      if (!isAssetHubChain(candidate)) continue;
-
-      collectRewardSources(candidate, ExternalType.HISTORY, uniqueSources);
-    }
-
-    return Array.from(uniqueSources.values());
+    return collectChainRewardSources(chain, chainsMap, 'chain-family');
   }, [chain, chainsMap]);
 };
 
@@ -64,7 +49,9 @@ export const useStakingRewards = (
     params,
     defaultValue: EMPTY_MAP,
     map: (cache: Record<string, RewardsMap>, p: StakingRewardsParams) => {
-      const cached = cache[rewardsCacheKey(p.chainId, p.since)];
+      // The key covers the account set, so a hit answers for exactly these
+      // accounts - `?? '0'` is now only the service's own "nothing earned".
+      const cached = cache[rewardsCacheKey(p.chainId, p.accounts, p.since)];
       if (!cached) return undefined;
 
       const merged: RewardsMap = {};
