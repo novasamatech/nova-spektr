@@ -13,9 +13,36 @@ const $activeTab = createStore('overview');
 const $editMode = createStore(false);
 $editMode.on(editModeToggled, (state) => !state);
 
-const $widgetOrder = createStore<Record<string, string[]>>({});
-persist({ store: $widgetOrder, key: 'dashboard-widget-order', sync: true });
-$widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
+const $savedWidgetOrder = createStore<Record<string, string[]>>({});
+persist({ store: $savedWidgetOrder, key: 'dashboard-widget-order', sync: true });
+$savedWidgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
+
+/**
+ * Widgets that used to be one and are now several, keyed by the DI key the old
+ * one was saved under.
+ *
+ * A saved layout survives the split: the grid drops keys it no longer knows and
+ * appends unknown widgets at the end, so without this the four staking cards
+ * would silently jump below everything the user had arranged. Expanding the old
+ * key in place keeps them where they were.
+ */
+const WIDGET_SPLITS: Record<string, string[]> = {
+  'feature: dashboard/staking-kpi': [
+    'feature: dashboard/staking-total-staked',
+    'feature: dashboard/staking-apy',
+    'feature: dashboard/staking-nominations',
+    'feature: dashboard/staking-rewards',
+  ],
+};
+
+const $widgetOrder = $savedWidgetOrder.map((saved) => {
+  const migrated: Record<string, string[]> = {};
+  for (const [tab, order] of Object.entries(saved)) {
+    migrated[tab] = order.flatMap((key) => WIDGET_SPLITS[key] ?? [key]);
+  }
+
+  return migrated;
+});
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
