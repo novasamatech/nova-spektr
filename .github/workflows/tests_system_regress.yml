@@ -11,12 +11,14 @@ on:
         type: string
         description: ALLURE_USERNAME service parameter. Leave blank.
         required: false
+      TEST_GREP:
+        type: string
+        description: Playwright --grep pattern. Use '@live' for the live-network suites excluded from the rotation.
+        required: false
+        default: '@regress'
   push:
     branches:
       - 'dev'
-  pull_request:
-    paths:
-      - 'tests/system/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -50,5 +52,5 @@ jobs:
         with:
           telegram_token: ${{ secrets.TELEGRAM_TOKEN }}
           telegram_to: ${{ secrets.TELEGRAM_TO }}
-          test_grep: '@regress'
+          test_grep: ${{ github.event.inputs.TEST_GREP || '@regress' }}
 

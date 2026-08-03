@@ -326,8 +326,11 @@ sample({
   target: $contactProxiedIds,
 });
 
-// Clean up contact-sourced proxies when backend URL is cleared
-sample({
+// Clean up contact-sourced proxies when backend URL is cleared.
+// The snapshot must be taken through a derived event: resetting $contactProxiedIds
+// directly on urlCleared would run in the pure phase BEFORE this sample reads the
+// store, so the filter would always see an empty set and the cleanup would never fire.
+const contactProxiesCleanupRequested = sample({
   clock: backendConfigurationModel.events.urlCleared,
   source: { proxies: proxyModel.$proxies, contactProxiedIds: $contactProxiedIds },
   filter: ({ contactProxiedIds }) => contactProxiedIds.size > 0,
@@ -342,10 +345,14 @@ sample({
 
     return toRemove;
   },
+});
+
+sample({
+  clock: contactProxiesCleanupRequested,
   target: proxyModel.events.proxiesRemoved,
 });
 
-$contactProxiedIds.on(backendConfigurationModel.events.urlCleared, () => new Set());
+$contactProxiedIds.on(contactProxiesCleanupRequested, () => new Set());
 
 export const contactProxiesModel = {
   $isLoading: fetchContactProxiesFx.pending,

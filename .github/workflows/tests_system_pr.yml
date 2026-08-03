@@ -1,0 +1,40 @@
+name: Run system tests - PR
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: '--max-old-space-size=8192'
+  CI: true
+
+jobs:
+  system-tests-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: ⚙️ Install test dependencies
+        uses: ./.github/workflows/install-test
+
+      # Hermetic subset only (@pr): mocked-db / mocked-backend specs and onboarding,
+      # no live-network transaction suites — see tests/system/README.md.
+      - name: Run System Tests - PR subset
+        run: npx playwright test --grep '@pr'
+
+      - name: Upload playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-pr
+          path: playwright-report
+          retention-days: 7

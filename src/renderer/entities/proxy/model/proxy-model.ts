@@ -46,16 +46,17 @@ sample({
   source: $proxies,
   filter: (_, proxiesToAdd) => Boolean(proxiesToAdd),
   fn: (proxies, proxiesToAdd) => {
-    return proxiesToAdd!.reduce<ProxyStore>((acc, proxyAccount) => {
-      const existing = acc[proxyAccount.proxiedAccountId];
-      if (existing) {
-        existing.push(proxyAccount);
-      } else {
-        acc[proxyAccount.proxiedAccountId] = [proxyAccount];
-      }
+    // Never mutate the current state: effector skips ref-equal updates and the
+    // default store object would leak mutations across fork scopes.
+    return proxiesToAdd!.reduce<ProxyStore>(
+      (acc, proxyAccount) => {
+        const existing = acc[proxyAccount.proxiedAccountId];
+        acc[proxyAccount.proxiedAccountId] = existing ? [...existing, proxyAccount] : [proxyAccount];
 
-      return acc;
-    }, proxies);
+        return acc;
+      },
+      { ...proxies },
+    );
   },
   target: $proxies,
 });

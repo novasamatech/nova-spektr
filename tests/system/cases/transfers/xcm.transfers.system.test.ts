@@ -6,7 +6,7 @@ import { transferConstants, xcmTransferTestCases } from '../../utils/transferTes
 const feature = 'Transfers';
 const story = 'Transfers tests';
 
-test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
+test.describe('XCM transfers', { tag: ['@xcm-transfers', '@live'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });
