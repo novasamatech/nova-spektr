@@ -214,6 +214,12 @@ async function parseCSV(file: File): Promise<ParseResult> {
         return value === '' ? undefined : value;
       },
     });
+
+    // `to` caps reading at MAX_CSV_ROWS + 1 — an extra row means the file exceeds the limit
+    if (data.length > MAX_CSV_ROWS) {
+      throw new Error(`Too many rows: the file exceeds the ${MAX_CSV_ROWS}-row limit.`);
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error('CSV parsing error:', error);

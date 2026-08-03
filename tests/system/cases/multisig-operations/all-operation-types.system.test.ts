@@ -8,7 +8,7 @@ import { type BuiltData, buildMultisigOperations } from '../../utils/buildMultis
 const feature = 'Multisig Operations';
 const story = 'All operation types render';
 
-test.describe('Multisig Operations — all operation types', { tag: ['@regress'] }, () => {
+test.describe('Multisig Operations — all operation types', { tag: ['@regress', '@pr'] }, () => {
   let built: BuiltData;
 
   test.beforeAll(async () => {

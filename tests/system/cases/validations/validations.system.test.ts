@@ -6,7 +6,7 @@ import { Validation, validationConstants as constants } from '../../utils/valida
 const feature = 'Validations';
 const story = 'Validations tests';
 
-test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => {
+test.describe('Validations tests', { tag: ['@live', '@validations'] }, () => {
   test.beforeEach(async () => {
     await setupTestMetadata(feature, story);
   });

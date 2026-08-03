@@ -9,7 +9,7 @@ import { type AwaitingOutcomeScenario, buildAwaitingOutcomeScenario } from '../.
 const feature = 'Multisig Operations';
 const story = 'Operation awaiting its final status stays pending';
 
-test.describe('Multisig Operations — awaiting outcome', { tag: ['@regress'] }, () => {
+test.describe('Multisig Operations — awaiting outcome', { tag: ['@regress', '@pr'] }, () => {
   // Wide enough for the actions column (with the updating-status loader) to be
   // fully visible without horizontal scroll.
   test.use({ viewport: { width: 1600, height: 900 } });

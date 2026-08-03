@@ -10,7 +10,7 @@ const story = 'Drafts section renders across types';
 
 const BACKEND_URL = 'https://mock-address-book.e2e';
 
-test.describe('Multisig Operations — drafts section', { tag: ['@regress'] }, () => {
+test.describe('Multisig Operations — drafts section', { tag: ['@regress', '@pr'] }, () => {
   let scenario: DraftScenario;
 
   test.beforeAll(async () => {

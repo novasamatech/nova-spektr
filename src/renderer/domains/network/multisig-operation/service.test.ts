@@ -1,8 +1,12 @@
-import { type DecodedTransaction, CryptoType } from '@/shared/core';
+import { type DecodedTransaction, type MultisigAccount, AccountType, CryptoType, SigningType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { createAccountId, kusamaChainId, polkadotChain } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountService } from '../account/service';
+import { type AnyAccount } from '../account/types';
 
 import { multisigOperationService } from './service';
-import { type MultisigEvent, type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation, MultisigEventStatus } from './types';
 
 const PROXIED_ACCOUNT = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
 
@@ -277,6 +281,197 @@ describe('multisig operation service', () => {
 
       expect(merged?.events).toHaveLength(1);
       expect(merged?.events[0]?.blockCreated).toBe(200);
+    });
+  });
+
+  describe('findActionableSignatories', () => {
+    const sigA = createAccountId('actionable-a');
+    const sigB = createAccountId('actionable-b');
+    const sigC = createAccountId('actionable-c');
+    const multisigId = createAccountId('actionable-multisig');
+
+    const makeApproveEvent = (accountId: AccountId): MultisigEvent =>
+      ({
+        id: `approve-${accountId}`,
+        accountId,
+        status: MultisigEventStatus.Approve,
+        blockCreated: 100,
+        indexCreated: 0,
+        timestamp: 0,
+      }) as unknown as MultisigEvent;
+
+    const makeMultisigAccount = (
+      signatories: { accountId: AccountId; id?: number }[],
+      threshold = 2,
+    ): MultisigAccount => ({
+      id: 'multisig-account',
+      type: 'universal',
+      name: 'multisig',
+      walletId: 100,
+      accountId: multisigId,
+      accountType: AccountType.MULTISIG,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.MULTISIG,
+      signatories,
+      threshold,
+      createdAt: 0,
+    });
+
+    const makeWalletAccount = (
+      accountId: AccountId,
+      walletId: number,
+      signingType: SigningType = SigningType.POLKADOT_VAULT,
+    ): AnyAccount => ({
+      id: `acct-${accountId}-${walletId}`,
+      type: 'universal',
+      name: 'signatory',
+      walletId,
+      accountId,
+      cryptoType: CryptoType.SR25519,
+      signingType,
+      createdAt: 0,
+    });
+
+    // The anyOf has no registered handlers in unit tests, so availability would
+    // resolve to `false` for everything — seed the same chain-matching handler
+    // the account domain tests use.
+    beforeEach(() => {
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
+    });
+
+    afterEach(() => {
+      accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+    });
+
+    it('returns all eligible signatory accounts so the user can pick one to sign with', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }, { accountId: sigC }]);
+      const accountA = makeWalletAccount(sigA, 1);
+      const accountB = makeWalletAccount(sigB, 2);
+      // sigC has no wallet account — not controlled by the user
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [] },
+        multisig,
+        [accountA, accountB],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([accountA, accountB]);
+    });
+
+    it('returns every wallet account holding the same signatory key', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }]);
+      const vaultAccount = makeWalletAccount(sigA, 1);
+      const walletConnectAccount = makeWalletAccount(sigA, 2, SigningType.WALLET_CONNECT);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [] },
+        multisig,
+        [vaultAccount, walletConnectAccount],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([vaultAccount, walletConnectAccount]);
+    });
+
+    it('excludes signatories that already approved', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }]);
+      const accountA = makeWalletAccount(sigA, 1);
+      const accountB = makeWalletAccount(sigB, 2);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [makeApproveEvent(sigA)] },
+        multisig,
+        [accountA, accountB],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([accountB]);
+    });
+
+    it('excludes watch-only accounts', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }]);
+      const watchOnlyA = makeWalletAccount(sigA, 1, SigningType.WATCH_ONLY);
+      const accountB = makeWalletAccount(sigB, 2);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [] },
+        multisig,
+        [watchOnlyA, accountB],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([accountB]);
+    });
+
+    it('excludes accounts not available on the operation chain', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }]);
+      // sigA lives on Kusama only — checked against Polkadot it must drop out
+      const kusamaOnlyA: AnyAccount = {
+        id: `acct-${sigA}-kusama`,
+        type: 'chain',
+        name: 'signatory',
+        walletId: 1,
+        chainId: kusamaChainId,
+        accountId: sigA,
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+        createdAt: 0,
+      };
+      const accountB = makeWalletAccount(sigB, 2);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [] },
+        multisig,
+        [kusamaOnlyA, accountB],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([accountB]);
+    });
+
+    it('respects a signatory pinned to a specific wallet', () => {
+      // Signatory entry pins walletId 2 — the same key held in wallet 1 must not match
+      const multisig = makeMultisigAccount([{ accountId: sigA, id: 2 }]);
+      const wrongWallet = makeWalletAccount(sigA, 1);
+      const pinnedWallet = makeWalletAccount(sigA, 2);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [] },
+        multisig,
+        [wrongWallet, pinnedWallet],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([pinnedWallet]);
+    });
+
+    it('returns empty when no signatory can act', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }]);
+      const accountA = makeWalletAccount(sigA, 1);
+      const watchOnlyB = makeWalletAccount(sigB, 2, SigningType.WATCH_ONLY);
+
+      const actionable = multisigOperationService.findActionableSignatories(
+        { events: [makeApproveEvent(sigA)] },
+        multisig,
+        [accountA, watchOnlyB],
+        polkadotChain,
+      );
+
+      expect(actionable).toEqual([]);
+    });
+
+    it('returns empty when the chain is unknown', () => {
+      const multisig = makeMultisigAccount([{ accountId: sigA }]);
+      const accountA = makeWalletAccount(sigA, 1);
+
+      expect(multisigOperationService.findActionableSignatories({ events: [] }, multisig, [accountA], null)).toEqual(
+        [],
+      );
     });
   });
 });

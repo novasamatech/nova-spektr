@@ -7,7 +7,7 @@ import { expect, setupTestMetadata, test } from '../../utils/baseRegularFixture'
 test.describe(
   'Watch only wallet onboarding',
   {
-    tag: '@regress',
+    tag: ['@regress', '@pr'],
   },
   () => {
     test.beforeEach(async () => {

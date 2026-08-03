@@ -1,6 +1,6 @@
 # Multisig Wallet Create
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-18
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
 
 ## Overview
 

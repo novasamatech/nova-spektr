@@ -151,6 +151,9 @@ export async function buildDraftScenario(backendUrl: string): Promise<DraftScena
 
     const baseDraft = (id: string, createdOffset: number) => ({
       id,
+      // The backend joins the linked operation onto every draft; `null` = not yet
+      // on chain. The schema requires the field (nullable, not optional).
+      operation: null,
       chainId: ASSET_HUB_CHAIN_ID,
       createdBy: sessionAccount.accountId,
       createdByContact: { name: regularSigs[0]!.seed, accountId: sessionAccount.accountId },
