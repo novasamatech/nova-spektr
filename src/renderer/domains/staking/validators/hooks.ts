@@ -1,40 +1,65 @@
-import { type ChainId, type NullableMap } from '@/shared/core';
+import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
 import { type ValidatorMap } from '../types';
 
+import { mapEraValidatorsToLegacy } from './helpers';
 import {
-  type ApyResourceParams,
   type NominatorsResourceParams,
   type ValidatorsResourceParams,
-  apyResource,
   nominatorsCacheKey,
   nominatorsResource,
   validatorsResource,
 } from './resource';
+import { type EraValidatorMap } from './types';
 
-const EMPTY_MAP: ValidatorMap = {};
+// Re-exported so the domain keeps a single import surface for staking hooks.
+export { useNetworkApy } from '../apy/hooks';
 
+const EMPTY_LEGACY_MAP: ValidatorMap = {};
+const EMPTY_ERA_MAP: EraValidatorMap = {};
+
+/**
+ * `timelineApi` only enriches the result, so it must not gate the request the
+ * way `nonNullableMap` would.
+ */
+function resolveParams(params: NullableMap<ValidatorsResourceParams>): ValidatorsResourceParams | null {
+  const { chainId, api, era, timelineApi } = params;
+  const required = { chainId, api, era };
+
+  return nonNullableMap(required) ? { ...required, timelineApi } : null;
+}
+
+/**
+ * Era validators in the legacy `Validator` shape from `@/shared/core`.
+ *
+ * @deprecated Prefer `useEraValidators` - it exposes reward points, page counts
+ *   and authored blocks that the legacy shape drops.
+ */
 export const useValidators = (params: NullableMap<ValidatorsResourceParams>) => {
   return useResource(validatorsResource, {
-    params: nonNullableMap(params) ? params : null,
-    defaultValue: EMPTY_MAP,
-    map: (cache: Record<ChainId, ValidatorMap>, p: ValidatorsResourceParams) => cache[p.chainId] ?? EMPTY_MAP,
+    params: resolveParams(params),
+    defaultValue: EMPTY_LEGACY_MAP,
+    map: (cache, { chainId }) => {
+      const validators = cache[chainId];
+
+      return validators ? mapEraValidatorsToLegacy(validators, chainId) : undefined;
+    },
+  });
+};
+
+export const useEraValidators = (params: NullableMap<ValidatorsResourceParams>) => {
+  return useResource(validatorsResource, {
+    params: resolveParams(params),
+    defaultValue: EMPTY_ERA_MAP,
+    map: (cache, { chainId }) => cache[chainId],
   });
 };
 
 export const useNominators = (params: NullableMap<NominatorsResourceParams>) => {
   return useResource(nominatorsResource, {
     params: nonNullableMap(params) ? params : null,
-    defaultValue: EMPTY_MAP,
-    map: (cache, p: NominatorsResourceParams) => cache[nominatorsCacheKey(p.chainId, p.stash)] ?? EMPTY_MAP,
-  });
-};
-
-export const useNetworkApy = (params: NullableMap<ApyResourceParams>) => {
-  return useResource(apyResource, {
-    params: nonNullableMap(params) ? params : null,
-    defaultValue: undefined as string | undefined,
-    map: (cache, { chainId }) => cache[chainId] ?? undefined,
+    defaultValue: EMPTY_LEGACY_MAP,
+    map: (cache, { chainId, stash }) => cache[nominatorsCacheKey(chainId, stash)],
   });
 };

@@ -591,6 +591,7 @@ describe('account service', () => {
             name: 'Identity Name',
             email: '',
             image: '',
+            website: '',
           },
         },
       };
@@ -616,6 +617,7 @@ describe('account service', () => {
             name: 'Identity Name',
             email: '',
             image: '',
+            website: '',
           },
         },
       };
@@ -744,6 +746,7 @@ describe('account service', () => {
             name: 'Identity Name',
             email: '',
             image: '',
+            website: '',
           },
         },
       };
@@ -974,6 +977,7 @@ describe('account service', () => {
             name: 'Identity Name',
             email: '',
             image: '',
+            website: '',
           },
         },
       };
@@ -1123,6 +1127,7 @@ describe('account service', () => {
             name: 'Identity Name',
             email: '',
             image: '',
+            website: '',
           },
         },
       };

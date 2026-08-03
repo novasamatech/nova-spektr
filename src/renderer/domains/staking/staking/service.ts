@@ -5,18 +5,23 @@ import { getExpectedBlockTime, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type StakingMap } from '../types';
 
+/**
+ * Resolves the controller of every account, so the ledger can be read by the
+ * key it is actually stored under.
+ *
+ * Failures are propagated on purpose. Returning an empty list instead used to
+ * make the caller subscribe to no keys at all, which answered with an empty
+ * ledger map - indistinguishable from "none of these accounts are bonded" for
+ * every consumer of the chain-keyed cache, the unstake and withdraw validations
+ * included. A subscription that cannot be set up must fail, not answer
+ * wrongly.
+ */
 async function getControllers(api: ApiPromise, accounts: AccountId[]): Promise<AccountId[]> {
-  try {
-    const controllers = await api.query.staking.bonded.multi(accounts);
+  const controllers = await api.query.staking.bonded.multi(accounts);
 
-    return controllers.map((controller, index) =>
-      controller.isNone ? accounts[index]! : toAccountId(controller.unwrap().toString()),
-    );
-  } catch (error) {
-    console.warn(error);
-
-    return [];
-  }
+  return controllers.map((controller, index) =>
+    controller.isNone ? accounts[index]! : toAccountId(controller.unwrap().toString()),
+  );
 }
 
 type LedgerUnlock = { value: { toString(): string }; era: { toString(): string } };
@@ -74,8 +79,8 @@ async function listenToLedger(
     try {
       callback(buildStakingMap(chainId, data, accounts, controllers));
     } catch (error) {
-      console.warn(error);
-      callback({});
+      // Same reason as above: an empty map would be read as an answer.
+      console.error('failed to build the staking ledger map', error);
     }
   });
 }

@@ -1,27 +1,34 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createStore } from 'effector';
 
-import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
+import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { exposuresResource } from '../exposures/resource';
 import { type ValidatorMap } from '../types';
 
-import { getNetworkApy, validatorsService } from './service';
+import { validatorsService } from './service';
+import { type EraValidatorMap } from './types';
 
 export type ValidatorsResourceParams = {
   chainId: ChainId;
   api: ApiPromise;
   era: EraIndex;
+  /** Relay-chain api. Optional: enables the authored-blocks probe. */
+  timelineApi?: ApiPromise | null;
 };
 
-const $validatorsCache = createStore<Record<ChainId, ValidatorMap>>({});
+const $validatorsCache = createStore<Record<ChainId, EraValidatorMap>>({});
 
 export const validatorsResource = createQueryResource<ValidatorsResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('validators')
-  .request<ValidatorMap>(({ api, era }) => {
-    return validatorsService.getValidatorsWithInfo(api, era);
+  .request<EraValidatorMap>(async ({ chainId, api, era, timelineApi }) => {
+    // Reuses the exposures cache - the overviews are the same prefix read.
+    const overviews = await exposuresResource.fetch({ chainId, api, era });
+
+    return validatorsService.getEraValidators({ api, chainId, era, timelineApi, overviews });
   })
   .cache({
     store: $validatorsCache,
@@ -64,31 +71,3 @@ export const nominatorsResource = createQueryResource<NominatorsResourceParams>(
   .build();
 
 export { cacheKey as nominatorsCacheKey };
-
-export type ApyResourceParams = {
-  api: ApiPromise;
-  // Relay-chain api, used to derive the era duration (Asset Hub has no Babe pallet).
-  timelineApi: ApiPromise;
-  chain: Chain;
-  chainId: ChainId;
-  era: EraIndex;
-};
-
-const $apyCache = createStore<Record<ChainId, string | null>>({});
-
-export const apyResource = createQueryResource<ApyResourceParams>({
-  key: ({ chainId, era }) => [chainId, String(era)],
-})
-  .name('networkApy')
-  .request<string | null>(async ({ api, timelineApi, chain, era }) => {
-    const validatorMap = await validatorsService.getValidatorsWithInfo(api, era);
-    const validators = Object.values(validatorMap).filter(v => v.commission !== undefined);
-
-    return getNetworkApy({ api, timelineApi, chain, era, validators });
-  })
-  .cache({
-    store: $apyCache,
-    map: (state, apy, { chainId }) => ({ ...state, [chainId]: apy }),
-    staleAfter: Number.POSITIVE_INFINITY,
-  })
-  .build();
