@@ -16,6 +16,10 @@ type Props = {
   payload?: TooltipPayloadItem[];
 };
 
+/**
+ * @deprecated Used only by the deprecated charts and detail modals of this
+ *   feature; the migrated widgets carry their own tooltips.
+ */
 export const ChartTooltip = memo(({ active, payload }: Props) => {
   if (!active || !payload?.length) return null;
 

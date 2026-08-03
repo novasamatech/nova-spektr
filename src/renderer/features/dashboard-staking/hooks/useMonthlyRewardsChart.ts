@@ -192,6 +192,10 @@ function computeSegments(bars: MonthlyBarData[], accounts: AccountInfo[], mode: 
   }
 }
 
+/**
+ * @deprecated Superseded by `features/dashboard-staking-rewards-chart`.
+ *   Reachable only from the deprecated `MonthlyRewardsWidget`.
+ */
 export const useMonthlyRewardsChart = (
   accountIds: string[],
   allEntries: { accountId: string; name: string }[],

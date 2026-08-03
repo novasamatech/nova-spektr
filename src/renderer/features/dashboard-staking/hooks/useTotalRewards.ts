@@ -45,6 +45,10 @@ function sumRewards(rewardsMap: RewardsMap, accountIds: AccountId[]): BigNumber 
   return total;
 }
 
+/**
+ * @deprecated Superseded by `useStakingKpi().rewardsFiat` / `rewardAmounts` in
+ *   `features/dashboard-staking-kpi`.
+ */
 export const useTotalRewards = (accountIds: string[], since?: number): TotalRewardsData => {
   const chains = useUnit(networkModel.$chains);
   const fiatFlag = useUnit(currencySelect.$fiatFlag);

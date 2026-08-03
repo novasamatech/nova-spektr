@@ -33,6 +33,12 @@ const toggleButtonClass = 'flex-1 cursor-pointer rounded px-3 py-1 text-footnote
 const activeClass = 'bg-white text-text-primary shadow-sm';
 const inactiveClass = 'text-text-tertiary hover:text-text-secondary';
 
+/**
+ * @deprecated Superseded by the Rewards card of
+ *   `features/dashboard-staking-kpi`. No longer injected into any slot — kept
+ *   only until the staking tab migration is finished. See the note in
+ *   `features/dashboard-staking/index.ts`.
+ */
 export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [timeRange, setTimeRange] = useState<RewardsTimeRange>('all');

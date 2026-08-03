@@ -30,6 +30,7 @@ export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { type LabelVariant, Label } from './Label/Label';
 export { Modal, useModalOverlay } from './Modal/Modal';
+export { Drawer, useDrawerOverlay } from './Drawer/Drawer';
 export { type Step, StepIndicator } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';

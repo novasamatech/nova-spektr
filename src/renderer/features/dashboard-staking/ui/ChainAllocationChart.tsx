@@ -22,6 +22,11 @@ type Props = {
   chains: ChainEntry[];
 };
 
+/**
+ * @deprecated Superseded by `DonutBreakdown` of
+ *   `features/dashboard-staking-kpi`. Reachable only from the deprecated
+ *   overview and rewards widgets.
+ */
 export const ChainAllocationChart = memo(({ chains }: Props) => {
   const filtered = chains
     .map((c, i) => ({

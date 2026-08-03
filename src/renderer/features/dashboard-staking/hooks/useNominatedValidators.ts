@@ -17,6 +17,11 @@ type NominatedValidatorsResult = {
   pending: boolean;
 };
 
+/**
+ * @deprecated The nominated and actively backing validators of a position come
+ *   from `aggregates/staking-positions` (`$positions[].activeValidators`),
+ *   which reads them once for every chain instead of per open modal.
+ */
 export const useNominatedValidators = (chainId: ChainId, stash: AccountId | null): NominatedValidatorsResult => {
   const api = useApi(chainId);
   const chain = useChain(chainId);
