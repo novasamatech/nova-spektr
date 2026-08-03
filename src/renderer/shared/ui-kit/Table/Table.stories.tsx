@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
+import { useMemo, useState } from 'react';
 
-import { type Column, Table } from './Table';
+import { type Column, type TableSort, Table } from './Table';
 
 type SampleData = {
   id: number;
@@ -78,6 +79,47 @@ export default meta;
 type Story = StoryObj<typeof Table<SampleData>>;
 
 export const Default: Story = {};
+
+export const DefaultSort: Story = {
+  args: {
+    defaultSort: { column: 'rank', direction: 'asc' },
+  },
+};
+
+export const ControlledSorting: Story = {
+  render(args) {
+    const [sort, setSort] = useState<TableSort | null>({ column: 'name', direction: 'asc' });
+
+    const sortedData = useMemo(() => {
+      if (!sort) return sampleData;
+
+      const key = columns.find(column => String(column.key) === sort.column)?.key;
+      if (!key) return sampleData;
+
+      return [...sampleData].sort((a, b) => {
+        const comparison = a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0;
+
+        return sort.direction === 'asc' ? comparison : -comparison;
+      });
+    }, [sort]);
+
+    return <Table {...args} data={sortedData} sort={sort} onSortChange={setSort} />;
+  },
+};
+
+export const RowStates: Story = {
+  args: {
+    getRowKey: item => String(item.id),
+    rowProps: item => ({
+      disabled: item.status === 'inactive',
+      selected: item.id === 2,
+    }),
+    onRowClick: item => {
+      // eslint-disable-next-line no-console
+      console.log('row click', item.id);
+    },
+  },
+};
 
 export const WithCustomRender: Story = {
   args: {

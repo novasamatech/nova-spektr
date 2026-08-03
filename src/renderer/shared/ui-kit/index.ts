@@ -40,7 +40,7 @@ export { ProgressWithDividers } from './ProgressWithDividers/ProgressWithDivider
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { RadioGroup } from './RadioGroup/RadioGroup';
-export { type Column, type SortDirection, Table } from './Table';
+export { type Column, type SortDirection, type TableRowProps, type TableSort, Table } from './Table';
 export { Indicator } from './Indicator/Indicator';
 export { NotificationProvider, useNotification } from './NotificationContext';
 export { Speedometer } from './Speedometer/Speedomenter';
