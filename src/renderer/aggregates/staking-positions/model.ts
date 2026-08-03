@@ -1,0 +1,519 @@
+import { type ApiPromise } from '@polkadot/api';
+import {
+  type EventCallable,
+  type Store,
+  combine,
+  createEffect,
+  createEvent,
+  createStore,
+  sample,
+  scopeBind,
+} from 'effector';
+
+import { type Chain, type ChainId, type EraIndex, type Wallet } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type ResourceRequestKey } from '@/shared/query';
+import { type AnyAccount, accountService } from '@/domains/network';
+import {
+  type DerivePositionInput,
+  type EraAnchor,
+  AssetHubChains,
+  era as eraModel,
+  exposurePagesCacheKey,
+  exposures as exposuresModel,
+  nominations as nominationsModel,
+  positionsService,
+  staking as stakingModel,
+  validators as validatorsModel,
+} from '@/domains/staking';
+import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+
+import { summarizePositions } from './lib/summary';
+
+const { eraResource, eraProgressResource } = eraModel;
+const { exposuresResource, exposurePagesResource } = exposuresModel;
+const { nominationsResource, minBondResource } = nominationsModel;
+const { validatorsResource } = validatorsModel;
+const { stakingResource } = stakingModel;
+
+const reset = createEvent();
+
+/**
+ * Follow these addresses on top of the selected wallet's own accounts.
+ *
+ * The dashboard's account selection is not a wallet: it also carries address
+ * book entries, which have no local account object at all. Passing the whole
+ * set on every selection change is the contract — the store below replaces its
+ * content rather than accumulating it.
+ */
+const trackAccountIds = createEvent<AccountId[]>();
+
+// --- Resource pools ---
+//
+// The `shared/query` resources are ref-counted pools: every `start` must be
+// matched by a `stop` with the very same key, or the underlying subscription
+// (or in-flight request) outlives the thing that asked for it. Instead of
+// scattering that bookkeeping, every resource driven here goes through one
+// pool binding that diffs the desired request list against the started keys.
+//
+// That diff is the *only* writer of subscription state, teardown included -
+// `reset` empties the request lists instead of stopping keys behind the diff's
+// back. Two writers over one snapshot of the started keys would race: `reset`
+// also drops the tracked ids, which changes the request lists in the very same
+// tick, so one of them would double-stop a key or leave a freshly started one
+// behind.
+
+type PooledResource<Params> = {
+  start: EventCallable<Params>;
+  stop: EventCallable<ResourceRequestKey>;
+  createKey: (params: Params) => ResourceRequestKey;
+};
+
+type ResourcePool = {
+  $activeKeys: Store<ResourceRequestKey[]>;
+};
+
+function bindResourcePool<Params>(resource: PooledResource<Params>, $requests: Store<Params[]>): ResourcePool {
+  const $activeKeys = createStore<ResourceRequestKey[]>([]);
+
+  const syncFx = createEffect(({ requests, activeKeys }: { requests: Params[]; activeKeys: ResourceRequestKey[] }) => {
+    const start = scopeBind(resource.start, { safe: true });
+    const stop = scopeBind(resource.stop, { safe: true });
+
+    const desired = new Map<ResourceRequestKey, Params>();
+    for (const request of requests) {
+      const key = resource.createKey(request);
+      if (!desired.has(key)) {
+        desired.set(key, request);
+      }
+    }
+
+    const active = new Set(activeKeys);
+
+    for (const key of active) {
+      if (!desired.has(key)) {
+        stop(key);
+      }
+    }
+
+    for (const [key, request] of desired) {
+      if (!active.has(key)) {
+        start(request);
+      }
+    }
+
+    return [...desired.keys()];
+  });
+
+  sample({
+    clock: $requests,
+    source: $activeKeys,
+    fn: (activeKeys, requests) => ({ requests, activeKeys }),
+    target: syncFx,
+  });
+
+  $activeKeys.on(syncFx.doneData, (_, keys) => keys);
+
+  return { $activeKeys };
+}
+
+// --- Staking chains ---
+//
+// The dashboard is multi-chain: every Asset Hub the running config actually
+// knows about, never a hardcoded pair. Westend Asset Hub only exists in dev
+// configs, so the intersection with `networkModel.$chains` is what decides.
+
+const $stakingChains = networkModel.$chains.map(chains =>
+  Object.values(AssetHubChains)
+    .map(chainId => chains[chainId])
+    .filter(nonNullable),
+);
+
+// --- Accounts per chain ---
+
+type ChainAccounts = {
+  chain: Chain;
+  chainId: ChainId;
+  accountIds: AccountId[];
+};
+
+/**
+ * A Polkadot Vault base account shadows its own chain accounts, so it is
+ * dropped whenever the wallet has derived ones - mirrors the Staking page.
+ */
+function filterWalletAccounts(accounts: AnyAccount[], wallet: Wallet | null): AnyAccount[] {
+  if (!walletUtils.isPolkadotVault(wallet) || accounts.length <= 1) {
+    return accounts;
+  }
+
+  return accounts.filter(account => !accountUtils.isVaultBaseAccount(account));
+}
+
+/**
+ * Addresses tracked on top of the selected wallet, kept sorted and deduplicated
+ * so an identical selection never churns the pooled subscriptions - the account
+ * list is part of every ledger and nominations key.
+ */
+const $trackedAccountIds = createStore<AccountId[]>([], {
+  updateFilter: (next, current) =>
+    next.length !== current.length || next.some((accountId, index) => accountId !== current[index]),
+});
+
+$trackedAccountIds.on(trackAccountIds, (_, accountIds) => [...new Set(accountIds)].sort());
+$trackedAccountIds.reset(reset);
+
+/**
+ * `reset` means "this aggregate wants nothing", which empties every request
+ * list and lets the pool binding release the lot. It is not permanent: tracking
+ * accounts again re-arms it, and that is exactly what the dashboard's staking
+ * widgets do when they mount.
+ */
+const $torndown = createStore(false);
+
+$torndown.on(reset, () => true).reset(trackAccountIds);
+
+const $chainAccounts = combine(
+  {
+    chains: $stakingChains,
+    wallet: walletSelect.$selectedWallet,
+    selectedAccounts: walletSelect.$selectedAccounts,
+    trackedAccountIds: $trackedAccountIds,
+    torndown: $torndown,
+  },
+  ({ chains, wallet, selectedAccounts, trackedAccountIds, torndown }): ChainAccounts[] => {
+    if (torndown) return [];
+
+    const walletAccounts = filterWalletAccounts(selectedAccounts, wallet);
+
+    return chains.map(chain => {
+      // A wallet account carries its own key scheme and chain binding, so it
+      // only joins the chains that can actually hold it.
+      const accountIds = new Set(
+        walletAccounts
+          .filter(account => accountService.isAccountAvailableOnChain(account, chain))
+          .map(account => account.accountId),
+      );
+
+      // A tracked id is a bare address with no account object behind it, so the
+      // full availability check has nothing to run against - but its key scheme
+      // is checkable, and it must be checked. An Ethereum-style 20 byte id
+      // cannot be a stash on an AccountId32 chain, and `staking.bonded.multi`
+      // rejects the *whole* batch when a single key is unencodable: one such
+      // address-book row left every chain's ledger map empty and the dashboard
+      // loading forever.
+      // An address that is both a wallet account and a tracked one collapses
+      // into a single entry here, and therefore into a single subscription.
+      for (const accountId of trackedAccountIds) {
+        if (!accountService.isAccountSchemeMatchChain(accountId, chain)) continue;
+
+        accountIds.add(accountId);
+      }
+
+      return { chain, chainId: chain.chainId, accountIds: [...accountIds] };
+    });
+  },
+);
+
+// --- Requestable chains (connected api + at least one account) ---
+
+type ChainRequest = ChainAccounts & {
+  api: ApiPromise;
+  /** Relay-chain api - era timing and the authored-blocks probe live there. */
+  timelineApi: ApiPromise;
+};
+
+const $chainRequests = combine(
+  { chainAccounts: $chainAccounts, apis: networkModel.$apis },
+  ({ chainAccounts, apis }): ChainRequest[] => {
+    const requests: ChainRequest[] = [];
+
+    for (const entry of chainAccounts) {
+      const api = apis[entry.chainId];
+      if (nullable(api) || entry.accountIds.length === 0) continue;
+
+      const parentApi = entry.chain.parentId ? apis[entry.chain.parentId] : null;
+
+      requests.push({ ...entry, api, timelineApi: parentApi ?? api });
+    }
+
+    return requests;
+  },
+);
+
+// --- (chain, accounts) driven resources ---
+
+const $stakingRequests = $chainRequests.map(requests =>
+  requests.map(({ chainId, api, accountIds }) => ({ chainId, api, accounts: accountIds })),
+);
+
+const $nominationsRequests = $chainRequests.map(requests =>
+  requests.map(({ chainId, api, accountIds }) => ({ chainId, api, stashes: accountIds })),
+);
+
+const $chainOnlyRequests = $chainRequests.map(requests => requests.map(({ chainId, api }) => ({ chainId, api })));
+
+bindResourcePool(stakingResource, $stakingRequests);
+bindResourcePool(nominationsResource, $nominationsRequests);
+bindResourcePool(minBondResource, $chainOnlyRequests);
+bindResourcePool(eraResource, $chainOnlyRequests);
+
+// --- Active era per chain ---
+
+const $eras = combine($chainAccounts, eraResource.$cache, (chainAccounts, cache) => {
+  const eras: Record<ChainId, EraIndex> = {};
+
+  for (const { chainId } of chainAccounts) {
+    const era = cache[chainId];
+    if (nonNullable(era)) {
+      eras[chainId] = era;
+    }
+  }
+
+  return eras;
+});
+
+// --- (chain, era) driven resources ---
+//
+// The era is part of every key below, so a new era yields a new key and the
+// pool binding stops the previous one - no leaked refcount across eras.
+
+type EraChainRequest = ChainRequest & { era: EraIndex };
+
+const $eraChainRequests = combine($chainRequests, $eras, (requests, eras): EraChainRequest[] =>
+  requests.flatMap(request => {
+    const era = eras[request.chainId];
+
+    return nonNullable(era) ? [{ ...request, era }] : [];
+  }),
+);
+
+const $exposuresRequests = $eraChainRequests.map(requests =>
+  requests.map(({ chainId, api, era }) => ({ chainId, api, era })),
+);
+
+const $validatorsRequests = $eraChainRequests.map(requests =>
+  requests.map(({ chainId, api, era, timelineApi }) => ({ chainId, api, era, timelineApi })),
+);
+
+const $eraProgressRequests = $eraChainRequests.map(requests =>
+  requests.map(({ chainId, api, era, timelineApi, chain }) => ({ chainId, api, era, timelineApi, chain })),
+);
+
+bindResourcePool(exposuresResource, $exposuresRequests);
+bindResourcePool(validatorsResource, $validatorsRequests);
+bindResourcePool(eraProgressResource, $eraProgressRequests);
+
+// --- Nominated validators per chain ---
+//
+// Exposure pages are read for the union of what the chain's accounts nominate.
+// The union is kept in its own store behind a content check: the nominations
+// cache is a live subscription and re-emits on every block, and a fresh array
+// on each tick would otherwise churn the pooled exposure-pages subscription.
+
+const $nominatedValidatorsSource = combine(
+  $chainAccounts,
+  nominationsResource.$cache,
+  (chainAccounts, cache): Record<ChainId, AccountId[]> => {
+    const result: Record<ChainId, AccountId[]> = {};
+
+    for (const { chainId, accountIds } of chainAccounts) {
+      const chainNominations = cache[chainId];
+      if (nullable(chainNominations)) continue;
+
+      const union = new Set<AccountId>();
+      for (const accountId of accountIds) {
+        for (const target of chainNominations[accountId]?.targets ?? []) {
+          union.add(target);
+        }
+      }
+
+      if (union.size > 0) {
+        result[chainId] = [...union].sort();
+      }
+    }
+
+    return result;
+  },
+);
+
+function isSameValidatorMap(a: Record<ChainId, AccountId[]>, b: Record<ChainId, AccountId[]>): boolean {
+  const entries = Object.entries(a);
+  const other = new Map(Object.entries(b));
+
+  if (entries.length !== other.size) return false;
+
+  return entries.every(([chainId, left]) => {
+    const right = other.get(chainId);
+
+    return nonNullable(right) && left.length === right.length && left.every((value, index) => value === right[index]);
+  });
+}
+
+const $nominatedValidators = createStore<Record<ChainId, AccountId[]>>({});
+
+sample({
+  clock: $nominatedValidatorsSource,
+  source: $nominatedValidators,
+  filter: (current, next) => !isSameValidatorMap(current, next),
+  fn: (_, next) => next,
+  target: $nominatedValidators,
+});
+
+const $exposurePagesRequests = combine($eraChainRequests, $nominatedValidators, (requests, nominated) =>
+  requests.flatMap(({ chainId, api, era }) => {
+    const validators = nominated[chainId];
+
+    return nonNullable(validators) && validators.length > 0 ? [{ chainId, api, era, validators }] : [];
+  }),
+);
+
+bindResourcePool(exposurePagesResource, $exposurePagesRequests);
+
+// --- Positions ---
+
+const EMPTY_VALIDATORS: AccountId[] = [];
+
+const $positions = combine(
+  {
+    chainAccounts: $chainAccounts,
+    ledgers: stakingResource.$cache,
+    nominations: nominationsResource.$cache,
+    exposurePages: exposurePagesResource.$cache,
+    validators: validatorsResource.$cache,
+    eras: $eras,
+    eraProgress: eraProgressResource.$cache,
+    nominated: $nominatedValidators,
+  },
+  ({ chainAccounts, ledgers, nominations, exposurePages, validators, eras, eraProgress, nominated }) => {
+    const inputs: DerivePositionInput[] = [];
+
+    for (const { chainId, accountIds } of chainAccounts) {
+      const activeEra = eras[chainId];
+      if (nullable(activeEra)) continue;
+
+      const chainLedgers = ledgers[chainId];
+      if (nullable(chainLedgers)) continue;
+
+      const chainNominations = nominations[chainId] ?? {};
+      const chainValidators = validators[chainId] ?? null;
+      const pagesKey = exposurePagesCacheKey(chainId, activeEra, nominated[chainId] ?? EMPTY_VALIDATORS);
+      const chainExposures = exposurePages[pagesKey] ?? {};
+
+      const progress = eraProgress[chainId];
+      const eraAnchor: EraAnchor | null =
+        nonNullable(progress) && progress.era === activeEra
+          ? { eraStartMs: progress.eraStartMs, eraDurationMs: progress.eraDurationMs }
+          : null;
+
+      for (const accountId of accountIds) {
+        const stake = chainLedgers[accountId];
+        if (nullable(stake)) continue;
+
+        inputs.push({
+          accountId,
+          chainId,
+          stake,
+          nomination: chainNominations[accountId] ?? null,
+          exposures: chainExposures,
+          validators: chainValidators,
+          activeEra,
+          eraAnchor,
+        });
+      }
+    }
+
+    return positionsService.derivePositions(inputs);
+  },
+);
+
+// --- Summary ---
+//
+// The maths lives in `lib/summary` as a pure function: the KPI row summarizes a
+// *subset* of these positions (its own account picker), and both must answer
+// with the same rules.
+
+const $summary = $positions.map(summarizePositions);
+
+// --- Minimum nominator bond ---
+
+const $minNominatorBond = combine($stakingChains, minBondResource.$cache, (chains, cache) => {
+  const result: Record<ChainId, string> = {};
+
+  for (const { chainId } of chains) {
+    const minBond = cache[chainId];
+    if (nonNullable(minBond)) {
+      result[chainId] = minBond;
+    }
+  }
+
+  return result;
+});
+
+// --- Pending ---
+//
+// A chain resolves as soon as its ledger map has landed - the ledger
+// subscription writes an entry for every requested account, `undefined`
+// included, so "no positions here" is an answer, not an unfinished load.
+
+const $pending = combine(
+  {
+    chainAccounts: $chainAccounts,
+    ledgers: stakingResource.$cache,
+    nominations: nominationsResource.$cache,
+    eras: $eras,
+    connections: networkModel.$connections,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chainAccounts, ledgers, nominations, eras, connections, statuses }) => {
+    return chainAccounts.some(({ chainId, accountIds }) => {
+      if (accountIds.length === 0) return false;
+
+      // A chain that will never answer must not hold the whole dashboard.
+      const connection = connections[chainId];
+      if (nonNullable(connection) && networkUtils.isDisabledConnection(connection)) return false;
+
+      const status = statuses[chainId];
+      if (nonNullable(status) && networkUtils.isErrorStatus(status)) return false;
+
+      if (nullable(eras[chainId])) return true;
+
+      const chainLedgers = ledgers[chainId];
+      if (nullable(chainLedgers)) return true;
+
+      // The cache is chain-keyed and outlives the subscription key, so "a map
+      // exists" is not "this map answers for the accounts being asked about".
+      // Without the coverage check a wallet switch, or a newly tracked
+      // address-book row, reads the previous set's map as a finished answer and
+      // renders the empty state instead of a skeleton.
+      if (accountIds.some(accountId => !(accountId in chainLedgers))) return true;
+
+      const bonded = accountIds.filter(accountId => nonNullable(chainLedgers[accountId]));
+      if (bonded.length === 0) return false;
+
+      const chainNominations = nominations[chainId];
+      if (nullable(chainNominations)) return true;
+
+      return bonded.some(accountId => !(accountId in chainNominations));
+    });
+  },
+);
+
+export const stakingPositions = {
+  $stakingChains,
+  $chainAccounts,
+  $nominatedValidators,
+  $trackedAccountIds,
+
+  $positions,
+  $summary,
+  $minNominatorBond,
+  $pending,
+
+  trackAccountIds,
+  reset,
+};
+
+export type { ChainAccounts };
