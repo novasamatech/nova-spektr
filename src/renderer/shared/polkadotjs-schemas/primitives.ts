@@ -1,5 +1,7 @@
 import {
   Bytes,
+  CodecMap,
+  Compact,
   Data,
   GenericAccountId,
   GenericEthereumAccountId,
@@ -8,6 +10,7 @@ import {
   StorageKey,
   Struct,
   Text,
+  Tuple,
   bool,
   i64,
   u128,
@@ -28,6 +31,41 @@ export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[
   return z.instanceof(StorageKey).transform((value) => {
     return argsSchema.parse(value.args);
   });
+};
+
+/**
+ * Parses a polkadot.js `Tuple` codec by positional access. Composes with
+ * `storageKeySchema` for storage maps keyed by codec tuples.
+ */
+export const codecTupleSchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
+  const itemsSchema = z.tuple(schema);
+
+  return z.instanceof(Tuple).transform((value) => {
+    return itemsSchema.parse(Array.from(value));
+  });
+};
+
+/**
+ * Parses a polkadot.js `BTreeMap`/`HashMap` (`CodecMap`) into a list of
+ * key/value pairs.
+ */
+export const btreeMapSchema = <const K extends z.ZodTypeAny, const V extends z.ZodTypeAny>(
+  keySchema: K,
+  valueSchema: V,
+) => {
+  const entrySchema = z.object({ key: keySchema, value: valueSchema });
+
+  return z.instanceof(CodecMap).transform((map) => {
+    return Array.from(map.entries(), ([key, value]) => entrySchema.parse({ key, value }));
+  });
+};
+
+/**
+ * Unwraps a `Compact`-encoded codec and parses the inner value (e.g.
+ * `Compact<u128>` fields of staking structs).
+ */
+export const compactSchema = <const T extends z.ZodType>(schema: T) => {
+  return z.instanceof(Compact).transform((value): z.infer<T> => schema.parse(value.unwrap()));
 };
 
 export const nullSchema = z.instanceof(Null).transform((value) => value.toPrimitive());
