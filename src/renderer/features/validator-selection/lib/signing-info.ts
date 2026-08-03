@@ -13,14 +13,15 @@ type SigningModeParams = {
 /**
  * Which of the three shapes the picker takes for the **initiator's wallet**.
  *
- * Not a signer check, and deliberately not `isSignerAccount`. That predicate
- * asks whether _this account_ can put a signature on an extrinsic itself; this
- * asks whether the operation has any way of leaving the screen at all, and the
- * two disagree exactly where delegation is involved. A proxied account carries
+ * Deliberately **not** the "can this account sign?" rule the signing-path graph
+ * terminates at (`signingType !== WATCH_ONLY`). That one asks whether _this
+ * account_ can put a signature on an extrinsic itself; this asks whether the
+ * operation has any way of leaving the screen at all, and the two disagree
+ * exactly where delegation is involved. A proxied account carries
  * `SigningType.WATCH_ONLY` and a multisig account cannot sign alone, yet both
- * open a perfectly ordinary picker — the signing-path graph walks from them to
- * a real key. Narrowing this to the signer rule would lock those wallets into a
- * read-only table.
+ * open a perfectly ordinary picker — the graph walks from them to a real key.
+ * Narrowing this to the signer rule would lock those wallets into a read-only
+ * table.
  *
  * What it does exclude is the watch-only _wallet_: nothing in it delegates
  * anywhere, so no path exists from any of its accounts, and the picker is a

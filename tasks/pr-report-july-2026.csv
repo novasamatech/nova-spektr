@@ -1,0 +1,63 @@
+Month,Feature,PR,Link
+,,Feat: Configurable Matrix Room Sync Interval + Pre-delivery Room State Refresh (SPEK-687),https://github.com/novasamatech/address-book-backend/pull/181
+,,Fix: Deduplicate Matrix Overview Recipients By MatrixUserId,https://github.com/novasamatech/address-book-backend/pull/184
+,,Fix: Nudge Without Requiring An Operation Row + Report No-matrix-id Signers,https://github.com/novasamatech/address-book-backend/pull/185
+,,Feat: Signatory-only Manual Notifications With Per-multisig Rate Limit,https://github.com/novasamatech/address-book-backend/pull/187
+,,Fix: Send Overview To All Eligible Recipients Regardless Of Room State (SPEK-692),https://github.com/novasamatech/address-book-backend/pull/189
+,Admin Panel,Fix: Show Multisig Contact Name With Link On Operations Page (SPEK-690),https://github.com/novasamatech/address-book-backend/pull/186
+,,Feat: Add Nudge Button With Popconfirm To Operations List (SPEK-691),https://github.com/novasamatech/address-book-backend/pull/188
+,Chain Support,Fix: Scan All Supported Chains During Multisig Sync (SPEK-688),https://github.com/novasamatech/address-book-backend/pull/182
+,,"Feat: Retry Timed-out Chains Node By Node, Raise Multisig Sync Timeout, Drop Phala",https://github.com/novasamatech/address-book-backend/pull/192
+,API & Infrastructure,Pin Scaleway/action-scw-secret To Last Working Commit,https://github.com/novasamatech/address-book-backend/pull/190
+,,Feat: Universal Sync-run Journal With Startup Catch-up And Manual Triggers,https://github.com/novasamatech/address-book-backend/pull/191
+July 2026,Release v2.10.4,,https://github.com/novasamatech/nova-spektr/releases/tag/v2.10.4
+,Multisig Operations,Feat: Notify Remaining Signers Of A Multisig Operation,https://github.com/novasamatech/nova-spektr/pull/5939
+,Release v2.10.5,,https://github.com/novasamatech/nova-spektr/releases/tag/v2.10.5
+,Multisig Operations,Fix: Multisig Operation Handling With Execution Results,https://github.com/novasamatech/nova-spektr/pull/5942
+,Improvements,Feat: Return Westend Via Asset Hub,https://github.com/novasamatech/nova-spektr/pull/5941
+,Fixes / Support,Fix: Tolerate Null LastProcessedHeight In Account Sync Indexer Metadata,https://github.com/novasamatech/nova-spektr/pull/5943
+,Release v2.11.0,,https://github.com/novasamatech/nova-spektr/releases/tag/v2.11.0
+,Multisig Operations,Feat: Multisig Operations Table Redesign + All-types E2E,https://github.com/novasamatech/nova-spektr/pull/5949
+,Drafts,Fix: Submit Draft Confirm Page Multisig Deposit,https://github.com/novasamatech/nova-spektr/pull/5945
+,Signing,Fix: ‘No Account To Sign Operation’ Error,https://github.com/novasamatech/nova-spektr/pull/5946
+,Address Book,Fix: Resolve Address Book Names For Polkadot Vault Derived Accounts,https://github.com/novasamatech/nova-spektr/pull/5947
+,Dashboard,Feat: Vesting Schedules,https://github.com/novasamatech/nova-spektr/pull/5948
+,Account Management,Fix: Polkadot Vault Derivation Keys Editing,https://github.com/novasamatech/nova-spektr/pull/5950
+,Improvements,Docs: Specs For Operation-details Features,https://github.com/novasamatech/nova-spektr/pull/5951
+,Release v2.11.1,,https://github.com/novasamatech/nova-spektr/releases/tag/v2.11.1
+,Drafts,Fix: Submitted Drafts Showing In Both Drafts And In Progress,https://github.com/novasamatech/nova-spektr/pull/5955
+,Dashboard,Feat: Rework Dashboard Portfolio Overview With Balance-type Filter (SPEK-693),https://github.com/novasamatech/nova-spektr/pull/5954
+,,Fix: Portfolio Overview Vesting Scope And Empty States,https://github.com/novasamatech/nova-spektr/pull/5960
+,Security,Feat: Unknown Recipient Warnings For Transfers And Multisig Operations,https://github.com/novasamatech/nova-spektr/pull/5959
+,Improvements,CI: Move Feature Map Check To Separate Workflow,https://github.com/novasamatech/nova-spektr/pull/5958
+,Fixes / Support,Fix: Teleport Recipient List And Myself Button For Key-set Wallets,https://github.com/novasamatech/nova-spektr/pull/5952
+,,Fix: Search Accounts By Displayed Names In Multisig And Account Pickers,https://github.com/novasamatech/nova-spektr/pull/5956
+,Release v2.11.2,,https://github.com/novasamatech/nova-spektr/releases/tag/v2.11.2
+,Multisig Operations,Feat: Add Operations Search Aggregate For Improved Query Matching,https://github.com/novasamatech/nova-spektr/pull/5965
+,,Feat: Add Initiator Column To Drafts And Multisig Operations Tables,https://github.com/novasamatech/nova-spektr/pull/5966
+,Dashboard,Feat: Show Vested Chip When The Vesting Lock Rides On Reserved Funds,https://github.com/novasamatech/nova-spektr/pull/5963
+,,Fix: Keep Vesting Schedules In Memory When The Dashboard Account Filter Changes,https://github.com/novasamatech/nova-spektr/pull/5962
+,,Fix: Hold Portfolio Overview Skeleton Until Balances Arrive On Cold Start,https://github.com/novasamatech/nova-spektr/pull/5964
+,,Fix: Apply Balance Type Filter To Portfolio Detail Modals,https://github.com/novasamatech/nova-spektr/pull/5971
+,,Fix: Show Vesting Overlap In Detail Modal Allocation Bars,https://github.com/novasamatech/nova-spektr/pull/5972
+,Account Management,Fix: Validate And Name The Selected Key For Key-set Wallets,https://github.com/novasamatech/nova-spektr/pull/5957
+,Release v2.11.3,,"in development, release date - early august"
+,Multisig Operations,Fix: Derive Live Multisig Completion Status Only From Terminal Events,https://github.com/novasamatech/nova-spektr/pull/5968
+,,Fix: Keep Awaiting-outcome Multisig Operations Visible As Pending,https://github.com/novasamatech/nova-spektr/pull/5969
+,Address Book,Feat: Remember Last Used Account For Address Book Pairing,https://github.com/novasamatech/nova-spektr/pull/5967
+,Address book. Release v1.3.3,,https://github.com/novasamatech/address-book-backend/releases/tag/v1.3.3
+,Admin Panel,"Fix: Drop Duplicated Bullet In Operations List, Scope Nudge To One Operation",https://github.com/novasamatech/address-book-backend/pull/193
+,Address book. Release v1.3.4,,https://github.com/novasamatech/address-book-backend/releases/tag/v1.3.4
+,Notifications,"Feat: Notification Schedules Panel With Manual Triggers, Next-run API And Sync Observability",https://github.com/novasamatech/address-book-backend/pull/197
+,,"Fix: Refresh Matrix Room Membership Before Test, Nudge And Fast-alert Sends",https://github.com/novasamatech/address-book-backend/pull/196
+,Chain Support,Fix: Contain Polkadot-api ChainHead Destroy Race That Crashed The Service,https://github.com/novasamatech/address-book-backend/pull/195
+,API & Infrastructure,Fix: Fetch Scaleway Secrets By Path To Avoid List Permission Error,https://github.com/novasamatech/address-book-backend/pull/194
+,Address book. Release v1.4.0,,https://github.com/novasamatech/address-book-backend/releases/tag/v1.4.0
+,Draft Operations,Feat: Link Drafts To Operations During Multisig Sync,https://github.com/novasamatech/address-book-backend/pull/199
+,Admin Panel,Fix: User-friendly Error When The Backend Is Unreachable,https://github.com/novasamatech/address-book-backend/pull/198
+,Address book. Release v1.4.1,,https://github.com/novasamatech/address-book-backend/releases/tag/v1.4.1
+,Contact Management,Fix: Enforce Contact Reachability On Bulk Import To Match Single-update Authz,https://github.com/novasamatech/address-book-backend/pull/201
+,Notifications,Fix: Daily Notifications,https://github.com/novasamatech/address-book-backend/pull/200
+,Address book. Release v1.4.2,,https://github.com/novasamatech/address-book-backend/releases/tag/v1.4.2
+,Auth / Users,"Feat: Admin Users — Delete/Restore With Tabs, List Filters, Manage-roles Permission",https://github.com/novasamatech/address-book-backend/pull/202
+,Roles,"Feat: Admin Roles — Permission Descriptions, Row Grouping, Notifications Label",https://github.com/novasamatech/address-book-backend/pull/203

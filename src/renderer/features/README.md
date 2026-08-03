@@ -71,8 +71,8 @@ notes.
 - `staking-navigation` (no spec planned)
 - `staking-basket`
 - `staking-bond-extra`
-- `staking-bond-nominate`
-- `staking-nominate`
+- [`staking-bond-nominate`](./staking-bond-nominate/README.md)
+- [`staking-nominate`](./staking-nominate/README.md)
 - [`staking-operation-details`](./staking-operation-details/README.md)
 - `staking-payee`
 - `staking-restake`

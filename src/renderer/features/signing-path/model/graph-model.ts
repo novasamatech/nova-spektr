@@ -1,6 +1,6 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
+import { type ChainId, type DecodedTransaction, SigningType, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { entries, nullable } from '@/shared/lib/utils';
@@ -13,7 +13,6 @@ import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
-import { collectSignerAccountIds } from '../lib/signer-accounts';
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
@@ -122,12 +121,12 @@ const $multisigByAccountId = combine(
 );
 
 // AccountIds the user actually owns and that can sign (i.e. the leaf set
-// `findSignatories` would consider). Used by the restrictToOwn graph mode to
-// hide any path that doesn't terminate at one of these. The rule itself lives
-// in `collectSignerAccountIds` so consumers that predict what this graph will
-// find can share it instead of restating it — see that JSDoc for why the
-// verdict is read off the account and not off its wallet.
-const $ownSignerAccountIds = accounts.$list.map<Set<AccountId>>((list) => collectSignerAccountIds(list));
+// `findSignatories` would consider). Watch-only is excluded because it can't
+// produce signatures. Used by the restrictToOwn graph mode to hide any path
+// that doesn't terminate at one of these.
+const $ownSignerAccountIds = accounts.$list.map<Set<AccountId>>(
+  (list) => new Set(list.filter((a) => a.signingType !== SigningType.WATCH_ONLY).map((a) => a.accountId)),
+);
 
 const $pureProxyAccountIds = accounts.$list.map<Set<AccountId>>((list) => {
   const result = new Set<AccountId>();
