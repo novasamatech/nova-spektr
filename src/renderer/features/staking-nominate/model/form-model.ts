@@ -27,7 +27,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { createSigningPathModel } from '@/features/signing-path';
-import { validatorsModel } from '@/features/staking';
+import { validatorSelectionModel } from '@/features/validator-selection';
 import { type FormSubmitEvent } from '../lib/types';
 
 type NetworkStore = {
@@ -50,7 +50,7 @@ const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
-const $validators = restore(validatorsModel.output.formSubmitted, []);
+const $validators = restore(validatorSelectionModel.output.formSubmitted, []);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {

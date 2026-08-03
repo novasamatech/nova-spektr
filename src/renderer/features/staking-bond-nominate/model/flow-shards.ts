@@ -25,7 +25,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
-import { validatorsModel } from '@/features/staking';
+import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { type BondNominateDataShards, type FeeData, type WalletData, Step } from '../lib/types';
 import { bondNominateUtils } from '../lib/utils';
 
@@ -168,7 +168,7 @@ sample({
 });
 
 sample({
-  clock: [$maxValidators.updates, formModelShards.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModelShards.formChanged, validatorSelectionModel.output.formSubmitted],
   source: {
     step: $step,
     bondData: $bondNominateData,
@@ -287,22 +287,33 @@ sample({
   target: stepChanged,
 });
 
+// The shards flow bonds several shard accounts at once, so there is no single
+// acting account to name unless exactly one shard is selected — the header chip
+// stays empty rather than presenting the first shard as the whole operation.
+// This flow has no draft mode, so the signing info the footer reads never
+// applies here.
 sample({
   clock: formModelShards.formSubmitted,
   source: $walletData,
   filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
-  fn: ({ chain }) => ({
-    event: { chain, asset: getRelaychainAsset(chain.assets)! },
+  fn: ({ chain, wallet, shards }) => ({
+    event: {
+      chain,
+      asset: getRelaychainAsset(chain.assets)!,
+      signingMode: getSigningMode({ isDraftMode: false, wallet }),
+      initiator: shards.length === 1 ? shards[0] : undefined,
+      initiatorWallet: wallet,
+    },
     step: Step.VALIDATORS,
   }),
   target: spread({
-    event: validatorsModel.events.formInitiated,
+    event: validatorSelectionModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: {
     bondData: $bondNominateData,
     feeData: $feeData,
@@ -399,7 +410,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModelShards.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModelShards.formCleared, validatorSelectionModel.events.formCleared],
 });
 
 sample({

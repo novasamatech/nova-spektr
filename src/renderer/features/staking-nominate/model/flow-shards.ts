@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
-import { validatorsService } from '@/domains/staking';
+import { nominations, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -21,7 +21,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { nominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { validatorsModel } from '@/features/staking';
+import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { type FeeData, type NominateData, type WalletData, Step } from '../lib/types';
 import { nominateUtils } from '../lib/utils';
 
@@ -156,7 +156,7 @@ sample({
 });
 
 sample({
-  clock: [$maxValidators.updates, formModelShards.output.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModelShards.output.formChanged, validatorSelectionModel.output.formSubmitted],
   source: {
     step: $step,
     nominateData: $nominateData,
@@ -264,22 +264,41 @@ sample({
   target: stepChanged,
 });
 
+// Several shards change nominations in one go here, and each shard nominates
+// its own set — there is only one honest answer to "who is acting" and "what is
+// nominated today" when exactly one shard is selected. This flow has no draft
+// mode, so no signing info applies.
 sample({
   clock: formModelShards.output.formSubmitted,
-  source: $walletData,
-  filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
-  fn: ({ chain }) => ({
-    event: { chain, asset: getRelaychainAsset(chain.assets)! },
-    step: Step.VALIDATORS,
-  }),
+  source: {
+    walletData: $walletData,
+    nominationsCache: nominations.nominationsResource.$cache,
+  },
+  filter: ({ walletData }) => nonNullable(walletData),
+  fn: ({ walletData, nominationsCache }) => {
+    const { chain, wallet, shards } = walletData!;
+    const singleShard = shards.length === 1 ? shards[0] : undefined;
+
+    return {
+      event: {
+        chain,
+        asset: getRelaychainAsset(chain.assets)!,
+        signingMode: getSigningMode({ isDraftMode: false, wallet }),
+        initiator: singleShard,
+        initiatorWallet: wallet,
+        nominatedIds: singleShard ? nominationsCache[chain.chainId]?.[singleShard.accountId]?.targets : undefined,
+      },
+      step: Step.VALIDATORS,
+    };
+  },
   target: spread({
-    event: validatorsModel.events.formInitiated,
+    event: validatorSelectionModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: validatorsModel.output.formSubmitted,
+  clock: validatorSelectionModel.output.formSubmitted,
   source: {
     nominateData: $nominateData,
     feeData: $feeData,
@@ -376,7 +395,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModelShards.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModelShards.events.formCleared, validatorSelectionModel.events.formCleared],
 });
 
 sample({

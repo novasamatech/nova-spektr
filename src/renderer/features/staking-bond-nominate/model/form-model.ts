@@ -28,7 +28,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
-import { validatorsModel } from '@/features/staking';
+import { validatorSelectionModel } from '@/features/validator-selection';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -71,7 +71,7 @@ const $multisigDeposit = restore(multisigDepositChanged, null);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
-const $validators = restore(validatorsModel.output.formSubmitted, []);
+const $validators = restore(validatorSelectionModel.output.formSubmitted, []);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {

@@ -68,7 +68,6 @@ notes.
 
 ## Staking
 
-- `staking`
 - `staking-navigation` (no spec planned)
 - `staking-basket`
 - `staking-bond-extra`
@@ -79,8 +78,10 @@ notes.
 - `staking-restake`
 - `staking-unstake`
 - `staking-withdraw`
+- [`validator-selection`](./validator-selection/README.md)
 - `staking-accounts` (aggregate)
 - `staking-network` (aggregate)
+- [`staking-validators`](../aggregates/staking-validators/README.md) (aggregate)
 
 > See also: [`dashboard-staking`](#dashboard) — staking summary on the dashboard.
 
