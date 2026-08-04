@@ -28,8 +28,12 @@ export const NominateForm = ({ onGoBack }: Props) => {
     submit();
   };
 
+  // `w-full`, not the fixed `w-modal`: the host opens this in an `mdlg` dialog,
+  // so a hard 27.5rem left a strip of dead space down the right-hand side and
+  // pulled the action row away from the edge. Every other staking form already
+  // fills its dialog.
   return (
-    <div className="flex w-modal flex-col gap-4 px-5 pb-4">
+    <div className="flex w-full flex-col gap-4 px-5 pb-4">
       <DraftModeCard isOn={isDraftMode} onToggle={formModel.events.toggleDraftMode} />
       {isDraftMode && network && (
         <DraftSigningPath
