@@ -1,11 +1,11 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { isObject } from 'lodash';
-import { type PropsWithChildren, type ReactNode, Children, createContext, useContext, useState } from 'react';
+import { type PropsWithChildren, type ReactNode, createContext, useContext, useState } from 'react';
 
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { useTheme } from '../Theme/useTheme';
+import { splitDialogChildren } from '../_helpers/dialogChildren';
 
 import './Modal.css';
 
@@ -15,7 +15,7 @@ export const useModalOverlay = () => useContext(ModalOverlayContext);
 
 type Props = {
   isOpen?: boolean;
-  size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
+  size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | '3xl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   testId?: string;
   preventOutsideClick?: boolean;
@@ -34,16 +34,11 @@ const Root = ({
   const { portalContainer } = useTheme();
   const [overlay, setOverlay] = useState<HTMLElement | null>(null);
 
-  const arrayChildren = Children.toArray(children);
-  const triggerNode = arrayChildren.find(child => {
-    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
-  });
-  const modalNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
-
-  const hasTitle =
-    modalNodes.find(child => {
-      return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
-    }) !== null;
+  const {
+    triggerNode,
+    contentNodes: modalNodes,
+    hasTitle,
+  } = splitDialogChildren(children, { trigger: Trigger, title: Title });
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onToggle}>
@@ -73,6 +68,7 @@ const Root = ({
                   'w-modal-lg': size === 'lg',
                   'w-modal-xl': size === 'xl',
                   'w-modal-xxl': size === 'xxl',
+                  'w-modal-3xl': size === '3xl',
                   'w-full': size === 'full',
                   'w-fit': size === 'fit',
                   'h-fit': height === 'fit',

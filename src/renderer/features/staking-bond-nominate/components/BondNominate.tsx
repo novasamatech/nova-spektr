@@ -9,7 +9,7 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { BondNominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
-import { Validators } from '@/features/staking';
+import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { Step } from '../lib/types';
 import { bondNominateUtils } from '../lib/utils';
 import { bondNominateFlow } from '../model/flow';
@@ -36,6 +36,15 @@ export const BondNominate = () => {
   if (bondNominateUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
+  if (bondNominateUtils.isValidatorsStep(step)) {
+    return (
+      <ValidatorSelectionModal
+        isOpen={isModalOpen}
+        onGoBack={() => bondNominateFlow.stepChanged(Step.INIT)}
+        onClose={closeModal}
+      />
+    );
+  }
   if (bondNominateUtils.isBasketStep(step)) {
     return (
       <OperationResult
@@ -51,7 +60,7 @@ export const BondNominate = () => {
   return (
     <Modal
       isOpen={isModalOpen}
-      size={step === Step.VALIDATORS ? 'fit' : 'mdlg'}
+      size="mdlg"
       onToggle={(open) => {
         if (!open) {
           closeModal();
@@ -66,9 +75,6 @@ export const BondNominate = () => {
       </Modal.Title>
       <Modal.Content>
         {bondNominateUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-        {bondNominateUtils.isValidatorsStep(step) && (
-          <Validators onGoBack={() => bondNominateFlow.stepChanged(Step.INIT)} />
-        )}
         {bondNominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={

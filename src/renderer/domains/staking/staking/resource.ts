@@ -24,9 +24,14 @@ export const stakingResource = createSubscriptionResource<StakingResourceParams>
   })
   .cache({
     store: $stakingCache,
+    // Merged, not replaced: the key carries the account list but the cache is
+    // chain-keyed, so two live subscriptions on one chain with different account
+    // sets would otherwise overwrite each other and make the loser's positions
+    // disappear. `buildStakingMap` writes an explicit `undefined` for an
+    // unbonded account, so merging cannot resurrect a stale ledger.
     map: (state, staking, { chainId }) => ({
       ...state,
-      [chainId]: staking,
+      [chainId]: { ...state[chainId], ...staking },
     }),
   })
   .build();

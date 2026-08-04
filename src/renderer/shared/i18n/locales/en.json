@@ -671,7 +671,7 @@
       "noGovernance": "No governance activity found",
       "convictionDisplay": "{value}x",
       "governanceDetail": {
-        "title": "Governance \u2014 {chain}",
+        "title": "Governance — {chain}",
         "account": "Account",
         "locked": "Locked",
         "conviction": "Avg. conviction",
@@ -681,7 +681,7 @@
         "accountCount_other": "{count} voting accounts"
       },
       "trackDetail": {
-        "title": "Tracks \u2014 {account}",
+        "title": "Tracks — {account}",
         "track": "Track",
         "locked": "Locked",
         "conviction": "Conviction",
@@ -2235,17 +2235,17 @@
         "signed": "signed"
       },
       "flexibleMultisigCreatedTitle": "New flexible multisig wallet added",
-      "flexibleMultisigDescription": "<strong>{name}</strong>\u00a0on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
+      "flexibleMultisigDescription": "<strong>{name}</strong> on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
-      "multisigCreatedDescription": "<strong>{name}</strong> \u00a0with threshold { threshold } out of { signatoriesLength }",
+      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
       "multisigEventDetails": "by <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
-      "proxyCreatedDetails": "<chain />\u00a0 is now available for your <wallet><walletIcon /> {name}</wallet>\u00a0 to control {operations}",
+      "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
-      "proxyRemovedDetails": "<chain />\u00a0 is no longer available for your <wallet><walletIcon /> {name}</wallet>\u00a0 to control {operations}",
+      "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>\u00a0 with <address><identicon /> {address}</address>",
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
       "status": {
         "created": "created",
         "executed": "executed",
@@ -2406,7 +2406,7 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
-      "novaWalletDescription": "Seamless and secure transaction signing with Nova\u00a0Wallet, leading mobile application for Polkadot eco",
+      "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotExtensionDescription": "Multi-chain browser extension",
       "polkadotExtensionTitle": "Polkadot js extension",
@@ -3305,7 +3305,6 @@
       "aboutRewards": "About rewards",
       "accountLabel": "Account",
       "accountPlaceholder": "Select accounts",
-      "backButton": "Back",
       "continueButton": "Continue",
       "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please enter correct address",
@@ -3443,21 +3442,13 @@
     "validators": {
       "blockedPopoverSubtitle": "Nominators no longer accepted",
       "blockedPopoverTitle": "Blocked",
-      "continueButton": "Continue with selected validators: {selected}",
       "filterButton": "Filter",
       "filterByIdentity": "Having on-chain identity",
-      "filterNotOversubscribed": "Not oversubscribed",
       "filterNotSlashed": "Not slashed",
-      "maxValidatorsLabel": "(Max { max })",
       "nominatedTableHeader": "Nominated",
       "noValidatorsLabel": "No matching validators",
-      "oversubPopoverSubtitle": "Validator is oversubscribed",
-      "oversubPopoverTitle": "Oversubscribed",
       "ownStakeTableHeader": "Own stake",
       "rewardsTableHeader": "Rewards (APY)",
-      "searchPlaceholder": "Search",
-      "selectedValidatorsLabel": "Selected validators",
-      "selectValidatorButton": "Select at least one validator",
       "slashedPopoverSubtitle": "Validator has been slashed recently",
       "slashedPopoverTitle": "Slashed",
       "subtitle": "Validators",
@@ -3476,6 +3467,116 @@
       "confirmRedeemSubtitle": "Confirmation",
       "initRedeemSubtitle": "Redeem",
       "title": "Withdraw unstaked { asset } on"
+    },
+    "validatorSelection": {
+      "badge": {
+        "blocked": "blocked",
+        "cluster_ordinal_few": "{count}rd in cluster",
+        "cluster_ordinal_one": "{count}st in cluster",
+        "cluster_ordinal_other": "{count}th in cluster",
+        "cluster_ordinal_two": "{count}nd in cluster",
+        "noIdentity": "no identity",
+        "slashed": "slashed"
+      },
+      "scoreOutOfTen": "{score}/10",
+      "nominatorsOfCap": "{nominators} / {cap}",
+      "column": {
+        "apy": "APY",
+        "commission": "Comm.",
+        "eraPoints": "Era pts",
+        "score": "Score",
+        "nominators": "Nominators",
+        "ownStake": "Own stake",
+        "validator": "Validator"
+      },
+      "criteria": {
+        "close": "Close",
+        "excludeSlashed": "Exclude slashed",
+        "fillWithRecommended": "Fill with recommended",
+        "fillWithThese": "Fill with these",
+        "limitClusters": "Max {count} per identity cluster",
+        "requireIdentity": "Require on-chain identity",
+        "scoredOn": "Ranked by estimated APY, commission, self stake, block production and era points. Exclusions:",
+        "slotsNote": "{count} of {max} slots would be filled from the top of the list",
+        "title": "Recommendation criteria"
+      },
+      "detail": {
+        "close": "Close details",
+        "commission": "Commission",
+        "displayName": "Display name",
+        "elected": "Elected",
+        "email": "Email",
+        "eraPoints": "Era points (last era)",
+        "score": "Score",
+        "apyFormulaIntro": "Estimated APY is calculated with this formula:",
+        "apyFormulaNumerator": "era reward ÷ validators",
+        "apyFormulaDenominator": "this validator's total stake",
+        "apyFormulaTail": "× eras per year × (1 − commission)",
+        "apyFormulaNote": "The era reward is what the chain really paid stakers last era, so each network's own inflation rules are already inside the number.",
+        "scoreHint": "How this validator compares with the rest of the elected set. Blended from the metrics below, weighted towards APY.",
+        "estimatedApy": "Estimated APY",
+        "identityTitle": "Identity",
+        "nominators": "Nominators",
+        "notSet": "Not set",
+        "ownStake": "Own stake",
+        "placeholder": "Pick a validator from the list to see its numbers.",
+        "scoreApy": "Estimated APY",
+        "scoreCommission": "Commission",
+        "scoreEraPoints": "Era points",
+        "scoreSelfStake": "Self stake",
+        "totalStake": "Total stake",
+        "website": "Website"
+      },
+      "empty": {
+        "action": "Clear search and filters",
+        "description": "Try a different name, or relax the filters you set.",
+        "title": "No validators match your search or filters"
+      },
+      "filters": {
+        "anyPlaceholder": "Any",
+        "done": "Done",
+        "hasIdentity": "Has on-chain identity",
+        "hideIdle": "Hide idle (no reward points last era)",
+        "maxCommission": "Max commission %",
+        "minApy": "Min APY %",
+        "minOwnStake": "Min own stake",
+        "neverSlashed": "Never slashed",
+        "reset": "Reset",
+        "title": "Filters"
+      },
+      "footer": {
+        "back": "Back",
+        "continue": "Continue",
+        "draftRecipients": "Draft will be sent to {count} signatories",
+        "saveAsDraft": "Save as draft",
+        "showing": "Showing {shown} of {total}",
+        "signingAs": "Signing as {name}",
+        "signingAsMultisig": "Signing as {name} · {multisig}",
+        "viewNote": "{shown} of {selected} selected shown · est. set APY {apy}%",
+        "viewNoteNoApy": "{shown} of {selected} selected shown",
+        "watchOnly": "Watch-only account — review of current nominations, changes are disabled"
+      },
+      "badgeHint": {
+        "blocked": "This validator does not accept new nominations, so it cannot be picked.",
+        "cluster": "The same operator already runs better-paying validators in this list. Spreading nominations across operators limits the damage of any one of them being slashed.",
+        "elected": "In the active set for this era: it is producing and backing blocks right now, and its nominators earn rewards for the era.",
+        "noIdentity": "Nobody has registered an on-chain identity for it, so we cannot say who runs it.",
+        "slashed": "This validator was slashed inside the current defer window."
+      },
+      "selectedChip": "{selected} of {max} selected",
+      "signingMode": {
+        "draft": "Address Book · draft",
+        "local": "Local wallet",
+        "watchOnly": "Watch-only"
+      },
+      "title": "Choose validators",
+      "toolbar": {
+        "deselectAll": "Deselect all",
+        "meta": "{count} active validators · era {era}",
+        "metaNoEra": "{count} active validators",
+        "searchPlaceholder": "Search name or address",
+        "showSelected": "Show selected"
+      }
     }
   },
   "time": {

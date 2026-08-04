@@ -9,8 +9,9 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { NominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
-import { Validators } from '@/features/staking';
+import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { Step } from '../lib/types';
+import { useStashNominations } from '../lib/useStashNominations';
 import { nominateUtils } from '../lib/utils';
 import { nominateFlowShards } from '../model/flow-shards';
 
@@ -32,12 +33,23 @@ export const NominateShards = () => {
     nominateFlowShards.output.flowFinished,
   );
 
+  useStashNominations(walletData?.chain, walletData ? walletData.shards.map((shard) => shard.accountId) : null);
+
   if (!walletData) {
     return null;
   }
 
   if (nominateUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
+  if (nominateUtils.isValidatorsStep(step)) {
+    return (
+      <ValidatorSelectionModal
+        isOpen={isModalOpen}
+        onGoBack={() => nominateFlowShards.events.stepChanged(Step.INIT)}
+        onClose={closeModal}
+      />
+    );
   }
   if (nominateUtils.isBasketStep(step)) {
     return (
@@ -58,9 +70,6 @@ export const NominateShards = () => {
       </Modal.Title>
       <Modal.Content>
         {nominateUtils.isInitStep(step) && <NominateFormShards onGoBack={closeModal} />}
-        {nominateUtils.isValidatorsStep(step) && (
-          <Validators onGoBack={() => nominateFlowShards.events.stepChanged(Step.INIT)} />
-        )}
         {nominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={

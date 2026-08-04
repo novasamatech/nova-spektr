@@ -270,6 +270,32 @@ export const Large: Story = {
   ],
 };
 
+export const ThreeExtraLarge: Story = {
+  args: {
+    size: '3xl',
+  },
+  render(args) {
+    return (
+      <Modal {...args}>
+        <Modal.Title close>Hello! I am a modal</Modal.Title>
+        <Modal.Content>{exampleBox}</Modal.Content>
+      </Modal>
+    );
+  },
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <>
+          <Button onClick={() => onToggle(x => !x)}>Toggle Modal</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </>
+      );
+    },
+  ],
+};
+
 export const Full: Story = {
   args: {
     size: 'full',

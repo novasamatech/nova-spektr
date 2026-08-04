@@ -8,6 +8,7 @@ export type AccountIdentity = {
   subName?: string;
   email: string;
   image: string;
+  website: string;
   github?: string;
   matrix?: string;
 };

@@ -10,6 +10,7 @@
  * - **transaction/** - Transaction templates (native, asset, XCM, multisig)
  * - **governance/** - Governance fixtures (referendums, delegations, votes)
  * - **fellowship/** - Fellowship fixtures (members, referendums, salary)
+ * - **staking/** - Staking fixtures (Asset Hub chains, stashes, validators)
  *
  * @module tests/integrations/fixtures
  *
@@ -32,5 +33,6 @@ export * from './balance';
 export * from './chain';
 export * from './fellowship';
 export * from './governance';
+export * from './staking';
 export * from './transaction';
 export * from './wallet';

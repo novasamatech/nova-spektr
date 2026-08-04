@@ -68,19 +68,20 @@ notes.
 
 ## Staking
 
-- `staking`
 - `staking-navigation` (no spec planned)
 - `staking-basket`
 - `staking-bond-extra`
-- `staking-bond-nominate`
-- `staking-nominate`
+- [`staking-bond-nominate`](./staking-bond-nominate/README.md)
+- [`staking-nominate`](./staking-nominate/README.md)
 - [`staking-operation-details`](./staking-operation-details/README.md)
 - `staking-payee`
 - `staking-restake`
 - `staking-unstake`
 - `staking-withdraw`
-- `staking-accounts` (aggregate)
+- [`validator-selection`](./validator-selection/README.md)
+- [`staking-accounts`](../aggregates/staking-accounts/README.md) (aggregate)
 - `staking-network` (aggregate)
+- [`staking-validators`](../aggregates/staking-validators/README.md) (aggregate)
 
 > See also: [`dashboard-staking`](#dashboard) — staking summary on the dashboard.
 

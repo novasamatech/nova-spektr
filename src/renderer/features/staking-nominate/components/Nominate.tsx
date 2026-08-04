@@ -9,8 +9,9 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { NominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
-import { Validators } from '@/features/staking';
+import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { Step } from '../lib/types';
+import { useStashNominations } from '../lib/useStashNominations';
 import { nominateUtils } from '../lib/utils';
 import { nominateFlow } from '../model/flow';
 
@@ -29,12 +30,23 @@ export const Nominate = () => {
     nominateFlow.output.flowFinished,
   );
 
+  useStashNominations(walletData?.chain, walletData ? [walletData.initiator.accountId] : null);
+
   if (!walletData) {
     return null;
   }
 
   if (nominateUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  }
+  if (nominateUtils.isValidatorsStep(step)) {
+    return (
+      <ValidatorSelectionModal
+        isOpen={isModalOpen}
+        onGoBack={() => nominateFlow.events.stepChanged(Step.INIT)}
+        onClose={closeModal}
+      />
+    );
   }
   if (nominateUtils.isBasketStep(step)) {
     return (
@@ -49,15 +61,12 @@ export const Nominate = () => {
   }
 
   return (
-    <Modal size={nominateUtils.isValidatorsStep(step) ? 'fit' : 'mdlg'} isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="mdlg" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         {<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       </Modal.Title>
       <Modal.Content>
         {nominateUtils.isInitStep(step) && <NominateForm onGoBack={closeModal} />}
-        {nominateUtils.isValidatorsStep(step) && (
-          <Validators onGoBack={() => nominateFlow.events.stepChanged(Step.INIT)} />
-        )}
         {nominateUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={

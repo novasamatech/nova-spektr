@@ -54,6 +54,7 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
       name: parentIdentity.info.display,
       email: parentIdentity.info.email,
       image: parentIdentity.info.image,
+      website: parentIdentity.info.web,
       github: parentIdentity.info.github,
       matrix: parentIdentity.info.matrix,
     };
@@ -66,6 +67,8 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
         name: parentIdentity.info.display,
         email: parentIdentity.info.email,
         image: parentIdentity.info.image,
+        website: parentIdentity.info.web,
+        github: parentIdentity.info.github,
         matrix: parentIdentity.info.matrix,
       };
     }
