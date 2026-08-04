@@ -11,6 +11,7 @@ import { OperationSign, OperationSubmit } from '@/features/operations';
 import { NominateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { Step } from '../lib/types';
+import { useStashNominations } from '../lib/useStashNominations';
 import { nominateUtils } from '../lib/utils';
 import { nominateFlow } from '../model/flow';
 
@@ -28,6 +29,8 @@ export const Nominate = () => {
     nominateUtils.isBasketStep(step),
     nominateFlow.output.flowFinished,
   );
+
+  useStashNominations(walletData?.chain, walletData ? [walletData.initiator.accountId] : null);
 
   if (!walletData) {
     return null;
