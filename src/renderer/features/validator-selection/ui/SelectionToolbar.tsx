@@ -14,10 +14,11 @@ const { events } = validatorSelectionModel;
 export const SelectionToolbar = () => {
   const { t } = useI18n();
 
-  const { query, signingMode, selectedCount, meta } = useUnit({
+  const { query, signingMode, selectedCount, showSelectedOnly, meta } = useUnit({
     query: validatorSelectionModel.$query,
     signingMode: validatorSelectionModel.$signingMode,
     selectedCount: validatorSelectionModel.$selectedCount,
+    showSelectedOnly: validatorSelectionModel.$showSelectedOnly,
     meta: validatorSelectionModel.$meta,
   });
 
@@ -42,6 +43,19 @@ export const SelectionToolbar = () => {
       <FiltersPopover />
 
       <RecommendedSplitButton />
+
+      {/* Nothing picked means nothing to show, so the toggle is inert rather
+          than able to empty the table. The model turns it back off when the
+          last validator is unchecked. */}
+      <Button
+        variant="chip"
+        pallet={showSelectedOnly ? 'primary' : 'secondary'}
+        size="sm"
+        disabled={selectedCount === 0}
+        onClick={() => events.showSelectedOnlyChanged(!showSelectedOnly)}
+      >
+        {t('staking.validatorSelection.toolbar.showSelected')}
+      </Button>
 
       <Button
         variant="text"

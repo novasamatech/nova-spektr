@@ -40,6 +40,7 @@ const filtersChanged = createEvent<Partial<FiltersState>>();
 const filtersReset = createEvent();
 const criteriaChanged = createEvent<Partial<CriteriaFlags>>();
 const clearSearchAndFilters = createEvent();
+const showSelectedOnlyChanged = createEvent<boolean>();
 
 const fillWithRecommended = createEvent();
 const deselectAll = createEvent();
@@ -100,6 +101,20 @@ const $filters = createStore<FiltersState>(DEFAULT_FILTERS)
   // themselves narrowing.
   .on(clearSearchAndFilters, () => OPEN_FILTERS)
   .reset([formCleared, filtersReset]);
+
+/**
+ * "Show selected" - the quick way to review a pick without hunting for it in
+ * six hundred rows.
+ *
+ * It is a view over the selection, not a filter over the data, so it cannot
+ * survive an empty selection: the moment the last validator is unchecked the
+ * toggle turns itself off rather than leaving the user staring at an empty
+ * table with no obvious way back. `clearSearchAndFilters` drops it for the same
+ * reason it opens every other bound.
+ */
+const $showSelectedOnly = createStore(false)
+  .on(showSelectedOnlyChanged, (_, next) => next)
+  .reset([formCleared, filtersReset, clearSearchAndFilters]);
 
 const $selected = createStore<AccountId[]>(EMPTY_SELECTION)
   .on(formInitiated, (_, { nominatedIds }) => nominatedIds ?? EMPTY_SELECTION)
@@ -198,11 +213,26 @@ const $visibleValidators = combine(
     identityParents: stakingValidators.$identityParents,
     query: $query,
     displayed: $displayed,
+    showSelectedOnly: $showSelectedOnly,
+    selected: $selected,
   },
-  ({ validators, filters, identityParents, query, displayed }) => {
-    return searchValidators(applyFilters(validators, filters, identityParents), query, displayed);
+  ({ validators, filters, identityParents, query, displayed, showSelectedOnly, selected }) => {
+    const filtered = applyFilters(validators, filters, identityParents);
+    // Narrowed before search and filters are applied to it, so a query still
+    // searches within the pick rather than escaping it.
+    const scoped = showSelectedOnly ? filtered.filter((validator) => selected.includes(validator.accountId)) : filtered;
+
+    return searchValidators(scoped, query, displayed);
   },
 );
+
+// The toggle is a view over the selection, so an empty selection retires it.
+sample({
+  clock: $selected,
+  filter: (selected) => selected.length === 0,
+  fn: () => false,
+  target: showSelectedOnlyChanged,
+});
 
 const $filtersDiffer = $filters.map(filtersDiffer);
 
@@ -378,6 +408,7 @@ export const validatorSelectionModel = {
   $sort,
   $filters,
   $filtersDiffer,
+  $showSelectedOnly,
   $criteria: stakingValidators.$criteria,
 
   $displayedNames,
@@ -413,6 +444,7 @@ export const validatorSelectionModel = {
     filtersReset,
     criteriaChanged,
     clearSearchAndFilters,
+    showSelectedOnlyChanged,
     fillWithRecommended,
     deselectAll,
     validatorToggled,

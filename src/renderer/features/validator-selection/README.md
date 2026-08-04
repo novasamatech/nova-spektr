@@ -1,6 +1,6 @@
 # Validator Selection
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-04
 
 ## Overview
 
@@ -161,6 +161,15 @@ a result the user cannot visibly explain is worse than no result.
 
 Results keep the table's current order rather than being re-ranked by how well they matched. The user chose that sort;
 typing into the search box is a narrowing, not a re-sort.
+
+### Show selected
+
+A quick way to review a pick without hunting for it across six hundred rows: the table narrows to the checked
+validators. Search and the filters still apply _inside_ that narrowing, so a query looks within the pick rather than
+escaping it, and the sort is untouched — this is a view over the selection, not a re-ranking of it.
+
+It cannot outlive the selection it shows. With nothing checked the toggle is inert, and unchecking the last validator
+turns it off by itself: an empty table with an active "show selected" is a dead end the user has no obvious way out of.
 
 ### Filters vs. criteria
 

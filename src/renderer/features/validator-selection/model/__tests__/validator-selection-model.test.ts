@@ -286,6 +286,47 @@ describe('validatorSelectionModel table', () => {
     expect(visibleIds(scope)).toEqual([accountId(3), accountId(1), accountId(4), accountId(2)]);
   });
 
+  it('narrows to the picked validators while "show selected" is on', async () => {
+    const scope = forkWith(SCENARIO);
+
+    await initiate(scope, { nominatedIds: [accountId(1), accountId(3)] });
+    await allSettled(validatorSelectionModel.events.showSelectedOnlyChanged, { scope, params: true });
+
+    // Sorted order survives the narrowing - this is a view over the selection,
+    // not a re-ranking of it.
+    expect(visibleIds(scope)).toEqual([accountId(1), accountId(3)]);
+
+    await allSettled(validatorSelectionModel.events.showSelectedOnlyChanged, { scope, params: false });
+
+    expect(visibleIds(scope)).toEqual([accountId(2), accountId(1), accountId(3)]);
+  });
+
+  it('still searches inside the pick rather than escaping it', async () => {
+    const scope = forkWith(SCENARIO);
+
+    await initiate(scope, { nominatedIds: [accountId(1), accountId(3)] });
+    await allSettled(validatorSelectionModel.events.showSelectedOnlyChanged, { scope, params: true });
+    await allSettled(validatorSelectionModel.events.queryChanged, { scope, params: 'alpha' });
+
+    expect(visibleIds(scope)).toEqual([accountId(1)]);
+  });
+
+  it('turns itself off when the last picked validator is unchecked', async () => {
+    const scope = forkWith(SCENARIO);
+
+    await initiate(scope, { nominatedIds: [accountId(1)] });
+    await allSettled(validatorSelectionModel.events.showSelectedOnlyChanged, { scope, params: true });
+
+    expect(scope.getState(validatorSelectionModel.$showSelectedOnly)).toBe(true);
+
+    await allSettled(validatorSelectionModel.events.deselectAll, { scope });
+
+    // An empty selection with the view still on would be an empty table and no
+    // obvious way back.
+    expect(scope.getState(validatorSelectionModel.$showSelectedOnly)).toBe(false);
+    expect(visibleIds(scope)).toEqual([accountId(2), accountId(1), accountId(3)]);
+  });
+
   it('resets filters alone without touching the query', async () => {
     const scope = forkWith(SCENARIO);
 

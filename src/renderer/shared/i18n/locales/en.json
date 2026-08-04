@@ -3574,7 +3574,8 @@
         "deselectAll": "Deselect all",
         "meta": "{count} active validators · era {era}",
         "metaNoEra": "{count} active validators",
-        "searchPlaceholder": "Search name or address"
+        "searchPlaceholder": "Search name or address",
+        "showSelected": "Show selected"
       }
     }
   },
