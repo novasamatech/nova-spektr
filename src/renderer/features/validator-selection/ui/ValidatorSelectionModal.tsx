@@ -1,5 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { Modal } from '@/shared/ui-kit';
+import { useElectedValidators } from '@/aggregates/staking-validators';
 
 import { SelectionFooter } from './SelectionFooter';
 import { SelectionHeader } from './SelectionHeader';
@@ -19,6 +20,11 @@ type Props = {
  */
 export const ValidatorSelectionModal = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
+
+  // Nothing else asks for the elected set, and a host may keep this component
+  // mounted with `isOpen` false, so the request is tied to the screen actually
+  // being open rather than to the mount.
+  useElectedValidators(isOpen);
 
   return (
     <Modal

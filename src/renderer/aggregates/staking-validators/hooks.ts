@@ -3,9 +3,39 @@ import { useMemo } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type EraValidatorMap, type ScoreBreakdown, recommendationsService } from '@/domains/staking';
+import { type EraValidatorMap, type ScoreBreakdown, recommendationsService, useEraValidators } from '@/domains/staking';
+import { networkModel } from '@/entities/network';
 
 import { type CriteriaFlags, stakingValidators } from './model';
+
+/**
+ * Keeps the scoped chain's elected set loaded for as long as `enabled`.
+ *
+ * Every store below only _reads_ the elected set; this is the one place that
+ * asks for it. It is deliberately on demand: the read walks the whole era —
+ * ~600 validators plus their exposures, preferences, reward points and slashes
+ * — which is far too much to spend on the chance that somebody opens a
+ * validator screen. The request is keyed by (chain, era), so re-opening within
+ * the same era is answered from cache rather than refetched.
+ */
+export const useElectedValidators = (enabled: boolean) => {
+  const chainId = useUnit(stakingValidators.$chainId);
+  const chain = useUnit(stakingValidators.$chain);
+  const era = useUnit(stakingValidators.$era);
+  const apis = useUnit(networkModel.$apis);
+
+  const api = apis[chainId] ?? null;
+  // Asset Hub has no Babe pallet, so the APY behind each row needs the relay's
+  // era timing; without a relay connection the chain stands in for itself.
+  const timelineApi = (chain?.parentId ? apis[chain.parentId] : null) ?? api;
+
+  return useEraValidators({
+    chainId: enabled ? chainId : null,
+    api: enabled ? api : null,
+    era: enabled ? era : null,
+    timelineApi,
+  });
+};
 
 type StakingValidators = {
   validators: EraValidatorMap;
