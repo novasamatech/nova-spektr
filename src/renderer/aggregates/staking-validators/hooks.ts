@@ -3,7 +3,13 @@ import { useMemo } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type EraValidatorMap, type ScoreBreakdown, recommendationsService, useEraValidators } from '@/domains/staking';
+import {
+  type EraValidatorMap,
+  type ScoreBreakdown,
+  recommendationsService,
+  useActiveEra,
+  useEraValidators,
+} from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 
 import { type CriteriaFlags, stakingValidators } from './model';
@@ -11,17 +17,23 @@ import { type CriteriaFlags, stakingValidators } from './model';
 /**
  * Keeps the scoped chain's elected set loaded for as long as `enabled`.
  *
- * Every store below only _reads_ the elected set; this is the one place that
- * asks for it. It is deliberately on demand: the read walks the whole era —
- * ~600 validators plus their exposures, preferences, reward points and slashes
- * — which is far too much to spend on the chance that somebody opens a
- * validator screen. The request is keyed by (chain, era), so re-opening within
- * the same era is answered from cache rather than refetched.
+ * Every store below only _reads_ the elected set and the active era; this is
+ * the one place that asks for either. Both are deliberately on demand: the
+ * elected set walks the whole era — ~600 validators plus their exposures,
+ * preferences, reward points and slashes — which is far too much to spend on
+ * the chance that somebody opens a validator screen. The request is keyed by
+ * (chain, era), so re-opening within the same era is answered from cache rather
+ * than refetched.
+ *
+ * **The era subscription is part of that demand, not a precondition of it.**
+ * Nothing else on the Staking page subscribes to the active era — the dashboard
+ * does, so reading the cache alone appeared to work right up until someone
+ * opened the picker without passing through the dashboard first, and then the
+ * table waited for an era that was never going to arrive.
  */
 export const useElectedValidators = (enabled: boolean) => {
   const chainId = useUnit(stakingValidators.$chainId);
   const chain = useUnit(stakingValidators.$chain);
-  const era = useUnit(stakingValidators.$era);
   const apis = useUnit(networkModel.$apis);
 
   const api = apis[chainId] ?? null;
@@ -29,10 +41,15 @@ export const useElectedValidators = (enabled: boolean) => {
   // era timing; without a relay connection the chain stands in for itself.
   const timelineApi = (chain?.parentId ? apis[chain.parentId] : null) ?? api;
 
+  const scopedChainId = enabled ? chainId : null;
+  const scopedApi = enabled ? api : null;
+
+  const { data: era } = useActiveEra({ chainId: scopedChainId, api: scopedApi });
+
   return useEraValidators({
-    chainId: enabled ? chainId : null,
-    api: enabled ? api : null,
-    era: enabled ? era : null,
+    chainId: scopedChainId,
+    api: scopedApi,
+    era: era ?? null,
     timelineApi,
   });
 };
