@@ -79,7 +79,7 @@ notes.
 - `staking-unstake`
 - `staking-withdraw`
 - [`validator-selection`](./validator-selection/README.md)
-- `staking-accounts` (aggregate)
+- [`staking-accounts`](../aggregates/staking-accounts/README.md) (aggregate)
 - `staking-network` (aggregate)
 - [`staking-validators`](../aggregates/staking-validators/README.md) (aggregate)
 
