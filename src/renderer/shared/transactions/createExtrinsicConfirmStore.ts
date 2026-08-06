@@ -70,6 +70,23 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
       .filter(nonNullable);
   });
 
+  // An empty wallet list is startup state, not a failure — stay silent until it populates.
+  const $dropped = combine($store, wallets, (store, wallets): string | null => {
+    if (store.length === 0 || wallets.length === 0) return null;
+
+    for (const meta of store) {
+      if (!walletUtils.getWalletById(wallets, meta.initiator.walletId)) {
+        return `initiator wallet ${meta.initiator.walletId} not found`;
+      }
+
+      if (!walletUtils.getWalletById(wallets, meta.signatory.walletId)) {
+        return `signatory wallet ${meta.signatory.walletId} not found`;
+      }
+    }
+
+    return null;
+  });
+
   sample({
     clock: addConfirms,
     source: $store,
@@ -90,6 +107,7 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
 
   return {
     $confirms,
+    $dropped,
 
     init,
     addConfirms,
