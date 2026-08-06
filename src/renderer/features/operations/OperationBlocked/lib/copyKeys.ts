@@ -34,6 +34,13 @@ export const REASON_COPY_KEYS: Record<OperationBlockReasonKind, ReasonCopyKeys> 
     descriptionKey: 'operations.blocked.rateLimitedDescription',
     actions: ['changeNode', 'retry'],
   },
+  'node-unresponsive': {
+    titleKey: 'operations.blocked.nodeUnresponsiveTitle',
+    descriptionKey: 'operations.blocked.nodeUnresponsiveDescription',
+    // Change node first, matching `node-rate-limited`: retrying into a node that
+    // accepted the socket and then went quiet is unlikely to help.
+    actions: ['changeNode', 'retry'],
+  },
   'fee-unavailable': {
     titleKey: 'operations.blocked.feeUnavailableTitle',
     descriptionKey: 'operations.blocked.feeUnavailableDescription',

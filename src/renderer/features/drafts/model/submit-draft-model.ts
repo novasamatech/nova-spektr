@@ -571,14 +571,20 @@ const $confirmBlock = combine(
 );
 
 // The factory is pure and cannot read connection status itself.
+//
+// A CONNECTED chain that still hasn't answered after the full deadline is the
+// throttling signature: the node accepted the socket and then went quiet. That is
+// `node-unresponsive`, whose remediation leads with "change node" — the only thing
+// that actually helps. It must not fold into `internal` ("reload app", which throws
+// the session away and does not address the cause) nor into `network-unreachable`
+// (the socket is up). Tier 2 reaches the same conclusion once WsProvider's own
+// pending-request timeout rejects at t≈60s; this gets there 45 seconds sooner.
 const $timeoutReason = combine(
   { chain: $chain, statuses: networkModel.$connectionStatuses },
   ({ chain, statuses }): OperationBlockReason => {
     const status = nonNullable(chain) ? statuses[chain.chainId] : null;
 
-    return status === ConnectionStatus.CONNECTED
-      ? { kind: 'internal', detail: 'readiness timeout' }
-      : { kind: 'network-unreachable' };
+    return status === ConnectionStatus.CONNECTED ? { kind: 'node-unresponsive' } : { kind: 'network-unreachable' };
   },
 );
 
@@ -611,12 +617,66 @@ const { $readiness, retryRequested } = createOperationReadiness({
 
 // The socket can come back on its own while the user reads the error — `$apis`
 // keeps the same api object across a reconnect, so only the call needs repeating.
+//
+// Gated on the flow actually being blocked. `providerReconnected` only passes when
+// the status is not CONNECTED/CONNECTING and `autoConnectMs` is 5000, so a flapping
+// testnet emits a CONNECTED every 5-10s; retrying on each one re-arms both readiness
+// timers (resetting `$timedOut`), so the tier-3 backstop could be postponed forever
+// while the screen oscillated between blocked and spinner and the app hammered a
+// throttled node. A *pending* flow needs no rescue — it is already waiting and its
+// own timers are running.
+//
+// Reading `$readiness` in `source` while targeting `retryRequested`, which feeds the
+// readiness factory, is not a cycle: `source` is sampled, never a clock, so the
+// resulting recomputation of `$readiness` does not re-fire this sample.
 sample({
   clock: networkModel.output.connectionStatusChanged,
-  source: { chain: $chain, step: $step },
-  filter: ({ chain, step }, { chainId, status }) =>
-    step === Step.CONFIRM && nonNullable(chain) && chain.chainId === chainId && status === ConnectionStatus.CONNECTED,
+  source: { chain: $chain, step: $step, readiness: $readiness },
+  filter: ({ chain, step, readiness }, { chainId, status }) =>
+    step === Step.CONFIRM &&
+    readiness.status === 'blocked' &&
+    nonNullable(chain) &&
+    chain.chainId === chainId &&
+    status === ConnectionStatus.CONNECTED,
   target: retryRequested,
+});
+
+// --- Diagnostics ---
+
+// The original report of this flow hanging came with nothing but the reporter's
+// console, so the blocked verdict — kind plus the raw `detail` threaded through the
+// taxonomy — is logged there. `detail` is deliberately console-only: it is
+// untranslated and can carry an endpoint URL, so it never reaches the UI.
+const logBlockedReadinessFx = createEffect((reason: OperationBlockReason) => {
+  console.error(`[submit-draft] readiness blocked: ${reason.kind}${reason.detail ? ` — ${reason.detail}` : ''}`);
+});
+
+const $blockedReason = $readiness.map((readiness) => (readiness.status === 'blocked' ? readiness.reason : null));
+
+// Effector dedupes store updates by reference, which is not enough here: the
+// `$readiness` combine builds a fresh verdict object on every recompute, and tier 2
+// re-runs `classifyRpcError` each time, so any unrelated upstream update while the
+// flow stays blocked would re-emit an identical reason. Log on the transition only,
+// keyed by the verdict's content; clearing on recovery lets a later re-block speak up.
+const blockSignature = (reason: OperationBlockReason) => `${reason.kind}|${reason.detail ?? ''}`;
+
+const $loggedBlockSignature = createStore<string | null>(null, { serialize: 'ignore' });
+
+sample({
+  clock: $blockedReason,
+  source: $loggedBlockSignature,
+  filter: (logged, reason) => nonNullable(reason) && blockSignature(reason) !== logged,
+  fn: (_, reason) => reason!,
+  target: logBlockedReadinessFx,
+});
+
+$loggedBlockSignature.on(logBlockedReadinessFx, (_, reason) => blockSignature(reason));
+
+sample({
+  clock: $blockedReason,
+  filter: nullable,
+  fn: () => null,
+  target: $loggedBlockSignature,
 });
 
 // --- Flow lifecycle ---

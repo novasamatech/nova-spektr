@@ -1024,6 +1024,31 @@ describe('Submit Draft — submit & edit flows', () => {
         await expectEnabledChainIsNeverCalledDisabled(ConnectionStatus.CONNECTING);
       });
 
+      // The reporter's scenario: OnFinality accepted the socket and then throttled
+      // every request. The chain stays CONNECTED, so nothing ever rejects and no
+      // status change arrives — only the tier-3 backstop speaks. Folding that into
+      // `internal` would offer "Reload app", discarding the session without touching
+      // the cause; `node-unresponsive` leads with "Change node", the one remedy that
+      // helps. Tier 2 reaches the same verdict when WsProvider's own pending-request
+      // timeout rejects, but not before t≈60s.
+      it('blocks with node-unresponsive when a CONNECTED chain never answers', async () => {
+        env = await buildStalledNetworkEnv(ConnectionStatus.CONNECTED);
+
+        useReadinessTimers();
+        await startConfirm();
+
+        // Connected, enabled, and stuck on the very first requirement: no api ever
+        // arrives, so this is a live socket that simply stopped answering.
+        expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT - 1);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'node-unresponsive' } });
+      });
+
       it('control: a connection the user actually turned off blocks with network-disabled', async () => {
         env = await buildEnv([multisigDirect, signerAccount], (b) =>
           b

@@ -4,6 +4,10 @@ export type OperationBlockReasonKind =
   | 'network-disabled'
   | 'network-unreachable'
   | 'node-rate-limited'
+  // The socket is up but the node stopped answering requests — what throttling
+  // looks like from here. Distinct from `network-unreachable` (no socket) and
+  // from `internal` (unresolvable state, where "change node" would be nonsense).
+  | 'node-unresponsive'
   | 'signing-path-unresolved'
   | 'invalid-call-data'
   | 'no-signatory'

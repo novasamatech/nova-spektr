@@ -3174,6 +3174,8 @@
       "networkUnreachableTitle": "Can't reach {chain}",
       "noSignatoryDescription": "This operation needs one of your accounts selected as the signatory.",
       "noSignatoryTitle": "Choose an account to sign",
+      "nodeUnresponsiveDescription": "The node accepted the connection but stopped answering. Switching to another node usually fixes it.",
+      "nodeUnresponsiveTitle": "{chain} isn't responding",
       "rateLimitedDescription": "The request was refused because {chain} is busy. Switching to another node usually fixes it.",
       "rateLimitedTitle": "The network node is busy",
       "reload": "Reload app",
