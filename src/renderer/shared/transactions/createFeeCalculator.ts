@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { type BN } from '@polkadot/util';
-import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
+import { type Store, type UnitValue, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { takeLast } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -21,6 +21,10 @@ type FeeCalculationRequest = {
 export const createFeeCalculator = ({ active = createStore(true), extrinsic, api }: Params) => {
   const $fee = createStore<BN | null>(null);
   const $api = api ?? createStore<ApiPromise | null>(null);
+  const $error = createStore<Error | null>(null);
+  const retry = createEvent();
+
+  const toError = (value: unknown): Error => (value instanceof Error ? value : new Error(String(value)));
 
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic, api }: FeeCalculationRequest): Promise<BN | null> => {
@@ -51,7 +55,7 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
   });
 
   const feeRequested = sample({
-    clock: [extrinsic.updates, active.updates, $api.updates],
+    clock: [extrinsic.updates, active.updates, $api.updates, retry],
     source: { active, extrinsic, api: $api },
   }).filterMap(({ active, extrinsic, api }) => {
     if (!active) return undefined;
@@ -82,8 +86,15 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
     target: logErrorFx,
   });
 
+  // Aborts are the normal outcome of a superseded recalculation, not a failure.
+  $error
+    .on(fetchFeeFx.failData, (current, error) => (isAbortError(error) ? current : toError(error)))
+    .reset(fetchFeeFx.done, retry);
+
   return {
     $: $fee,
+    $error,
     $pending: fetchFeeFx.pending,
+    retry,
   };
 };
