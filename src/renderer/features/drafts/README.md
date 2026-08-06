@@ -248,6 +248,47 @@ with no multisig hop) are covered the same way as multisig ones.
 | Source picker, nothing to offer | The book is reachable but no address in it can start a draft here — a pinned position that is a plain contact, or no multisig at all | "No account available to create this draft" and the reason (naming the pinned address); **Open address book** only if the host passes `onLeaveFlow` (global-slot modals outlive navigation)                       |
 | Source picker, no permission    | The user lacks `operation-draft:write` but the flow opened in draft mode anyway                                                      | A notice instead of the picker: nothing can be prepared from the account; to act on it, add its key to a wallet                                                                                                   |
 
+### Why the confirm step can't open
+
+Reaching the confirm screen needs several things to line up: a live connection, a re-resolvable signing path, a wrapped
+extrinsic, a fee estimate, and a chosen signatory. Any one of them can fail to arrive — a node that is down, throttling
+or simply silent; a path whose accounts are gone; call data that no longer decodes. The step used to have a single
+observable state for all of it, "Preparing signing data…", with no timeout and no way out: a throttled node left the
+modal spinning until the user gave up.
+
+Waiting is now a verdict with three outcomes — **ready**, **preparing** (naming the step still outstanding) and
+**blocked** (naming a reason and offering the remediation that matches it):
+
+| Blocked because…              | When it appears                                                                                | What the user is offered       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------ |
+| The network is turned off     | The user disabled this chain in settings                                                       | Open network settings / Cancel |
+| The network can't be reached  | The socket is down or dropped, or a request failed on a disconnect                             | Try again / Change node        |
+| The node is busy              | The node refused a request with a rate-limit error                                             | Change node / Try again        |
+| The node isn't responding     | The socket is up but nothing came back before the deadline — the shape a throttling node takes | Change node / Try again        |
+| The fee couldn't be estimated | Fee estimation itself failed                                                                   | Try again / Change node        |
+| No signatory is chosen        | Valid signatories exist but none is selected                                                   | A signatory picker, plus Close |
+| The signing path is unusable  | The saved path can't be re-resolved against the current wallets                                | Close                          |
+| The call data isn't valid     | The draft's call can't be decoded on this chain                                                | Close                          |
+| Something went wrong          | An internal state the flow can't recover from (e.g. an initiator belonging to no wallet)       | Reload app / Close             |
+
+Three things decide when a verdict lands. Answers known without asking the network (disabled chain, unusable path,
+invalid call data, no signatory) are held back for a moment first, so a state that is merely still settling never
+flashes an error. An outright rejection from the node is reported as soon as it arrives, classified by what it says
+(rate limit, disconnect, fee failure). Anything that neither succeeds nor fails gets a **15-second deadline**, after
+which the verdict is read off the connection: still connected means the node isn't responding, otherwise the network
+can't be reached.
+
+Blocking is not final. **Try again** re-runs the outstanding steps with a fresh deadline, and a chain that reconnects on
+its own while the flow sits blocked retries it automatically — but only while it is blocked, so a flapping node can't
+keep resetting the deadline of a flow that is still legitimately preparing.
+
+**Render order** on the submit modal: the empty-wallet screen (no signatories at all) → a blocked verdict → the
+preparing spinner → the confirm screen. A blocked verdict outranks the spinner because it is terminal for that attempt.
+
+> **Behaviour change.** A block that arrives _after_ the confirm screen has rendered — a node going quiet mid-review,
+> say — now replaces the confirm screen with the blocked verdict. Previously the confirm screen stayed on screen and the
+> failure was only visible as a Sign button that would not enable.
+
 ## Sync & reconnect
 
 Drafts are a backend-backed shared cache; the client keeps it converged through a simple fetch-and-poll loop tied to the
