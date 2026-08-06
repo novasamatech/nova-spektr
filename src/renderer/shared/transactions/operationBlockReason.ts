@@ -1,14 +1,20 @@
 export type OperationStep = 'settling' | 'connecting' | 'resolving-path' | 'wrapping' | 'estimating-fee' | 'confirming';
 
-export type OperationBlockReason =
-  | { kind: 'network-disabled' }
-  | { kind: 'network-unreachable' }
-  | { kind: 'node-rate-limited' }
-  | { kind: 'signing-path-unresolved' }
-  | { kind: 'invalid-call-data' }
-  | { kind: 'no-signatory' }
-  | { kind: 'fee-unavailable' }
-  | { kind: 'internal'; detail?: string };
+export type OperationBlockReasonKind =
+  | 'network-disabled'
+  | 'network-unreachable'
+  | 'node-rate-limited'
+  | 'signing-path-unresolved'
+  | 'invalid-call-data'
+  | 'no-signatory'
+  | 'fee-unavailable'
+  | 'internal';
+
+export type OperationBlockReason = {
+  kind: OperationBlockReasonKind;
+  /** Original error text, when the reason came from a caught failure. */
+  detail?: string;
+};
 
 // Matched against the lowercased error message. `-32603` is deliberately absent:
 // it is the generic JSON-RPC "Internal error" code and means nothing on its own.
@@ -20,23 +26,40 @@ const DISCONNECT_MARKERS = [
   'disconnected from',
   'connection closed',
   'socket hang up',
+  // WsProvider's own pending-request timeout, e.g. "No response received from RPC endpoint in 60s".
+  'no response received',
+  'timeout',
+  'timed out',
 ];
 
+function extractErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+
+  return String(error ?? '');
+}
+
 export function classifyRpcError(error: unknown, step: OperationStep): OperationBlockReason {
-  const raw = error instanceof Error ? error.message : String(error ?? '');
+  const raw = extractErrorMessage(error);
+  const detail = raw || undefined;
   const message = raw.toLowerCase();
 
   if (RATE_LIMIT_MARKERS.some((marker) => message.includes(marker))) {
-    return { kind: 'node-rate-limited' };
+    return { kind: 'node-rate-limited', detail };
   }
 
   if (DISCONNECT_MARKERS.some((marker) => message.includes(marker))) {
-    return { kind: 'network-unreachable' };
+    return { kind: 'network-unreachable', detail };
   }
 
   if (step === 'estimating-fee') {
-    return { kind: 'fee-unavailable' };
+    return { kind: 'fee-unavailable', detail };
   }
 
-  return { kind: 'internal', detail: raw || 'unknown error' };
+  return { kind: 'internal', detail };
 }
