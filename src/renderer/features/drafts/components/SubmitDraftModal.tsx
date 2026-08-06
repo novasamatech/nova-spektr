@@ -127,10 +127,20 @@ const CallDataStep = () => {
 
 /**
  * Lives above the readiness early-returns so it stays reachable while the flow
- * is blocked — `no-signatory` offers no retry button, picking one here is the
- * only remediation. `retryReadiness` re-arms the readiness window: without it a
- * pick made after the 15s timeout would fall straight through to the timeout
- * verdict instead of showing progress on the newly selected route.
+ * is blocked on `no-signatory` — that reason offers no retry button, so picking
+ * an account here is the only remediation. Render it for that reason only: the
+ * other seven have nothing to do with the signatory, and offering the select
+ * next to "can't reach the network" reads as a suggested fix.
+ *
+ * `retryReadiness` re-arms the readiness window rather than routinely rescuing
+ * a pick. Usually it isn't needed — `confirmModel.init` is clocked on
+ * `$signatoryStore` and reads `$wrappedTx`/`$fee` from `source`, so with those
+ * already settled the pick resolves to `ready` in the same transaction. It
+ * matters when some _other_ requirement is still unsettled at pick time (most
+ * plausibly `$fee` stuck null with no error): `$timedOut` latches until
+ * re-armed, so the pick would clear the tier-1 block only to drop straight
+ * through to the tier-3 timeout verdict, reporting a timeout against a route
+ * chosen a moment ago.
  */
 const SignatoryPicker = () => {
   const { t } = useI18n();
@@ -361,7 +371,7 @@ const ConfirmStep = () => {
   if (readiness.status === 'blocked') {
     return (
       <>
-        <SignatoryPicker />
+        {readiness.reason.kind === 'no-signatory' && <SignatoryPicker />}
         <OperationBlocked
           reason={readiness.reason}
           chain={flowChain}
