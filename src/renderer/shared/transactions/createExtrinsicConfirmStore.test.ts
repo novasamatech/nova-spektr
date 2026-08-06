@@ -33,7 +33,7 @@ describe('createExtrinsicConfirmStore', () => {
     await allSettled(store.init, { scope, params: [makeInput(-2)] });
 
     expect(scope.getState(store.$confirms)).toHaveLength(0);
-    expect(scope.getState(store.$dropped)).toContain('-2');
+    expect(scope.getState(store.$dropped)).toBe('initiator wallet -2 not found');
   });
 
   it('reports why a confirm item was dropped when only the signatory wallet is missing', async () => {
@@ -43,7 +43,7 @@ describe('createExtrinsicConfirmStore', () => {
     await allSettled(store.init, { scope, params: [makeInput(1, -3)] });
 
     expect(scope.getState(store.$confirms)).toHaveLength(0);
-    expect(scope.getState(store.$dropped)).toContain('-3');
+    expect(scope.getState(store.$dropped)).toBe('signatory wallet -3 not found');
   });
 
   it('reports nothing while the wallet list is still empty', async () => {
