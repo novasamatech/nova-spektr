@@ -29,7 +29,7 @@ import { transactionService as entityTransactionService } from '@/entities/trans
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { OperationSign, OperationSubmit } from '@/features/operations';
+import { OperationBlocked, OperationSign, OperationSubmit } from '@/features/operations';
 import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -125,6 +125,49 @@ const CallDataStep = () => {
   );
 };
 
+/**
+ * Lives above the readiness early-returns so it stays reachable while the flow
+ * is blocked — `no-signatory` offers no retry button, picking one here is the
+ * only remediation. `retryReadiness` re-arms the readiness window: without it a
+ * pick made after the 15s timeout would fall straight through to the timeout
+ * verdict instead of showing progress on the newly selected route.
+ */
+const SignatoryPicker = () => {
+  const { t } = useI18n();
+
+  const signatories = useUnit(submitDraftModel.$signatories);
+  const selectedSignatory = useUnit(submitDraftModel.$signatoryStore);
+  const wallets = useUnit(walletModel.$wallets);
+
+  if (signatories.length < 2) return null;
+
+  return (
+    <div className="mx-5 mb-2">
+      <Field text={t('operations.drafts.submitSignatory')}>
+        <Select
+          height="md"
+          placeholder={t('operations.drafts.submitSignatory')}
+          value={selectedSignatory?.accountId ?? null}
+          onChange={(accountId) => {
+            submitDraftModel.signatoryChanged(signatories.find((s) => s.accountId === accountId) ?? null);
+            submitDraftModel.retryReadiness();
+          }}
+        >
+          {signatories.map((account) => (
+            <Select.Item key={account.accountId} value={account.accountId}>
+              <span className="flex w-full items-center gap-x-2">
+                <span className="truncate">
+                  {walletUtils.getWalletById(wallets, account.walletId)?.name ?? account.accountId}
+                </span>
+              </span>
+            </Select.Item>
+          ))}
+        </Select>
+      </Field>
+    </div>
+  );
+};
+
 const ConfirmStep = () => {
   const { t } = useI18n();
 
@@ -142,6 +185,10 @@ const ConfirmStep = () => {
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
+  // Named apart from the `chain` destructured off `confirm` below — this one is the
+  // flow's chain, available before (and when) a confirm item ever materialises.
+  const flowChain = useUnit(submitDraftModel.$chain);
+  const readiness = useUnit(submitDraftModel.$readiness);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const initiatorUnavailable = useUnit(submitDraftModel.$initiatorUnavailable);
   const validationErrors = useUnit(submitDraftModel.$validationErrors);
@@ -202,17 +249,6 @@ const ConfirmStep = () => {
     }
   }, [confirm, draft]);
 
-  const signatoryOptions = useMemo(() => {
-    return signatories.map((s) => {
-      const wallet = walletUtils.getWalletById(wallets, s.walletId);
-
-      return {
-        account: s,
-        walletName: wallet?.name ?? s.accountId,
-      };
-    });
-  }, [signatories, wallets]);
-
   const initiatorWallet = useMemo(() => {
     if (!draft || !wallets.length) return null;
 
@@ -232,7 +268,6 @@ const ConfirmStep = () => {
     });
   }, [draft, wallets]);
 
-  const showSignatorySelect = signatories.length > 1;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
   // The order of these screens is a rule of its own — see `resolveSubmitDraftScreen`.
@@ -320,6 +355,23 @@ const ConfirmStep = () => {
     );
   }
 
+  // After `noSignatories` (that screen is what keeps the model's `signatories.length > 0`
+  // guard on `no-signatory` honest) and before the spinner: a blocked verdict is terminal
+  // for this attempt, so it must win over "still preparing".
+  if (readiness.status === 'blocked') {
+    return (
+      <>
+        <SignatoryPicker />
+        <OperationBlocked
+          reason={readiness.reason}
+          chain={flowChain}
+          onRetry={() => submitDraftModel.retryReadiness()}
+          onClose={() => submitDraftModel.flowFinished()}
+        />
+      </>
+    );
+  }
+
   if (screen.kind === 'loading' || !confirm) {
     return (
       <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
@@ -333,11 +385,6 @@ const ConfirmStep = () => {
   const asset = getNativeAsset(chain.assets);
   const node = chain.nodes.at(0);
   const decodedLink = node && callData ? getPolkadotAppDecodedUrl(node.url, callData) : null;
-
-  const handleSignatoryChange = (accountId: string) => {
-    const found = signatories.find((s) => s.accountId === accountId) ?? null;
-    submitDraftModel.signatoryChanged(found);
-  };
 
   const signingPath = draft?.signingPath ?? [];
   // A recipient that is one of the user's own accounts resolves to its wallet name.
@@ -369,26 +416,7 @@ const ConfirmStep = () => {
         </div>
       )}
 
-      {showSignatorySelect && (
-        <div className="mx-5 mb-2">
-          <Field text={t('operations.drafts.submitSignatory')}>
-            <Select
-              height="md"
-              placeholder={t('operations.drafts.submitSignatory')}
-              value={selectedSignatory?.accountId ?? null}
-              onChange={handleSignatoryChange}
-            >
-              {signatoryOptions.map(({ account, walletName }) => (
-                <Select.Item key={account.accountId} value={account.accountId}>
-                  <span className="flex w-full items-center gap-x-2">
-                    <span className="truncate">{walletName}</span>
-                  </span>
-                </Select.Item>
-              ))}
-            </Select>
-          </Field>
-        </div>
-      )}
+      <SignatoryPicker />
 
       <Box padding={[4, 5]}>
         <dl className="flex w-full flex-col gap-y-4 text-footnote">
