@@ -5,19 +5,21 @@ import { t } from 'i18next';
 import { readonly } from 'patronum';
 import { toast } from 'sonner';
 
-import { type CallData, type Chain } from '@/shared/core';
+import { type CallData, type Chain, ConnectionStatus } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type ExtrinsicConfirmInfo,
+  type OperationBlockReason,
   createExtrinsicConfirmStore,
   createFeeCalculator,
   createMultisigDeposit,
+  createOperationReadiness,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  createWrappedTxStore,
 } from '@/shared/transactions';
-import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
   type Draft,
   type PathNode,
@@ -35,7 +37,7 @@ import {
   transactionService,
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
@@ -261,7 +263,11 @@ const $transactionToWrap = combine(
   ({ transaction, pathError }) => (pathError ? null : transaction),
 );
 
-const { $tx: $wrappedTx } = createWrappedTxStore({
+const {
+  $tx: $wrappedTx,
+  $error: $wrappedTxFailure,
+  retry: retryWrappedTx,
+} = createWrappedTxStore({
   api: $api,
   transaction: $transactionToWrap,
   route: $route,
@@ -333,7 +339,11 @@ sample({
   target: $wrappedExtrinsic,
 });
 
-const { $: $fee } = createFeeCalculator({
+const {
+  $: $fee,
+  $error: $feeFailure,
+  retry: retryFee,
+} = createFeeCalculator({
   extrinsic: $wrappedExtrinsic,
 });
 
@@ -504,6 +514,110 @@ const confirmModel = {
   init: confirmStore.init,
   startSigning: confirmStore.startSigning,
 };
+
+// --- Readiness of the confirm screen ---
+
+// Tier 1 blocks: answers we already know without waiting for any RPC.
+//
+// `network-disabled` MUST come from the connection type, NOT from
+// `$connectionStatuses`. `ConnectionStatus.DISCONNECTED` is both the initial value
+// for every chain (`network-model.ts:65` seeds the whole dictionary with it) and
+// the state after a socket drop (`:381`). Reading it here would claim "this network
+// is turned off" for a healthy chain that simply has not finished connecting yet,
+// and would hijack a genuine disconnect into the settings-page remediation instead
+// of retry/change-node. Only `connectionType === DISABLED` means the user turned it
+// off, and `networkUtils.isDisabledConnection` is the canonical check.
+//
+// Everything else — CONNECTING, DISCONNECTED, ERROR on an *enabled* chain — is
+// deliberately NOT a tier-1 block. It resolves itself on reconnect, or falls through
+// to the tier-3 timeout, which reports `network-unreachable` with the right actions.
+const $networkBlock = combine(
+  { chain: $chain, connections: networkModel.$connections },
+  ({ chain, connections }): OperationBlockReason | null => {
+    if (nullable(chain)) return null;
+
+    const connection = connections[chain.chainId];
+
+    return nonNullable(connection) && networkUtils.isDisabledConnection(connection)
+      ? { kind: 'network-disabled' }
+      : null;
+  },
+);
+
+const $pathBlock = $pathResolutionError.map((hasError): OperationBlockReason | null =>
+  hasError ? { kind: 'signing-path-unresolved' } : null,
+);
+
+const $callDataBlock = combine(
+  { failed: $extrinsicCreationFailed, pathError: $pathResolutionError },
+  ({ failed, pathError }): OperationBlockReason | null => (failed && !pathError ? { kind: 'invalid-call-data' } : null),
+);
+
+const $signatoryBlock = combine(
+  { signatories: $signatories, signatory: $signatoryStore },
+  ({ signatories, signatory }): OperationBlockReason | null =>
+    nullable(signatory) && signatories.length > 0 ? { kind: 'no-signatory' } : null,
+);
+
+// Gate on BOTH: a non-null `$dropped` does not imply `$confirms` is empty. With
+// several items one can drop while another stays usable, and tier 1 is evaluated
+// before the pending check — blocking on `$dropped` alone would hide a working
+// confirm screen. (Every call site inits a single item today, so this is
+// defensive, not currently observable.)
+const $confirmBlock = combine(
+  { dropped: confirmStore.$dropped, confirms: confirmStore.$confirms },
+  ({ dropped, confirms }): OperationBlockReason | null =>
+    nonNullable(dropped) && confirms.length === 0 ? { kind: 'internal', detail: dropped } : null,
+);
+
+// The factory is pure and cannot read connection status itself.
+const $timeoutReason = combine(
+  { chain: $chain, statuses: networkModel.$connectionStatuses },
+  ({ chain, statuses }): OperationBlockReason => {
+    const status = nonNullable(chain) ? statuses[chain.chainId] : null;
+
+    return status === ConnectionStatus.CONNECTED
+      ? { kind: 'internal', detail: 'readiness timeout' }
+      : { kind: 'network-unreachable' };
+  },
+);
+
+const $confirmReady = confirmModel.$confirms.map((confirms) => confirms.at(0) ?? null);
+
+// A plain store, NOT `$step.map(...)`. The factory uses `active` as a `sample`
+// clock, and a derived store used as a clock does not emit under `fork()` —
+// the readiness timers would silently never arm in tests. `stepChanged` is an
+// event, so clocking on it is safe.
+const $confirmActive = createStore(false);
+
+sample({
+  clock: stepChanged,
+  fn: (step) => step === Step.CONFIRM,
+  target: $confirmActive,
+});
+
+const { $readiness, retryRequested } = createOperationReadiness({
+  active: $confirmActive,
+  timeoutReason: $timeoutReason,
+  requirements: [
+    { key: 'connecting', store: $api, blocked: $networkBlock },
+    { key: 'resolving-path', store: $initiator, blocked: $pathBlock },
+    { key: 'wrapping', store: $wrappedTx, error: $wrappedTxFailure, blocked: $callDataBlock, retry: retryWrappedTx },
+    { key: 'estimating-fee', store: $fee, error: $feeFailure, retry: retryFee },
+    { key: 'confirming', store: $confirmReady, blocked: $signatoryBlock },
+    { key: 'confirming', store: $confirmReady, blocked: $confirmBlock },
+  ],
+});
+
+// The socket can come back on its own while the user reads the error — `$apis`
+// keeps the same api object across a reconnect, so only the call needs repeating.
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: { chain: $chain, step: $step },
+  filter: ({ chain, step }, { chainId, status }) =>
+    step === Step.CONFIRM && nonNullable(chain) && chain.chainId === chainId && status === ConnectionStatus.CONNECTED,
+  target: retryRequested,
+});
 
 // --- Flow lifecycle ---
 
@@ -878,6 +992,8 @@ export const submitDraftModel = {
   $isRiskAcknowledged,
   $recipientRiskAccepted,
   $savingCallData: submitCallDataFx.pending,
+  $readiness,
+  retryReadiness: retryRequested,
 
   flowStarted,
   flowFinished,
