@@ -1,3 +1,4 @@
+export { OperationBlocked } from './OperationBlocked';
 export { OperationSign, SigningSwitch } from './OperationSign';
 export { OperationSubmit } from './OperationSubmit';
 export { MultisigOperationDescriptionField } from './OperationsConfirm/common/MultisigOperationDescriptionField';
