@@ -24,8 +24,6 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
   const $error = createStore<Error | null>(null);
   const retry = createEvent();
 
-  const toError = (value: unknown): Error => (value instanceof Error ? value : new Error(String(value)));
-
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic, api }: FeeCalculationRequest): Promise<BN | null> => {
       if (nonNullable(api)) {
@@ -87,9 +85,13 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
   });
 
   // Aborts are the normal outcome of a superseded recalculation, not a failure.
-  $error
-    .on(fetchFeeFx.failData, (current, error) => (isAbortError(error) ? current : toError(error)))
-    .reset(fetchFeeFx.done, retry);
+  sample({
+    clock: fetchFeeFx.failData,
+    filter: (error) => !isAbortError(error),
+    target: $error,
+  });
+
+  $error.reset(fetchFeeFx.done, retry);
 
   return {
     $: $fee,

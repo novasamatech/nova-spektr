@@ -136,4 +136,18 @@ describe('createFeeCalculator', () => {
     expect(scope.getState($error)).toBeNull();
     expect(scope.getState($)?.toString()).toBe('99');
   });
+
+  it('preserves a non-Error rejection payload instead of stringifying it', async () => {
+    const failure = { message: 'WebSocket is not connected' };
+    vi.spyOn(transactionService, 'getExtrinsicFee').mockRejectedValueOnce(failure);
+
+    const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+    const { $error } = createFeeCalculator({ extrinsic: $extrinsic });
+
+    const scope = fork();
+    await allSettled($extrinsic, { scope, params: extrinsic });
+
+    expect(scope.getState($error)).toBe(failure);
+    expect(scope.getState($error)?.message).toBe('WebSocket is not connected');
+  });
 });
