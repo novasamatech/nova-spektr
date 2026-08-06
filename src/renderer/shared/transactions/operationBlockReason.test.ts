@@ -8,7 +8,11 @@ describe('classifyRpcError', () => {
       '-32603: Too Many Requests, Please apply on OnFinality API key or contact us to receive a higher rate limit',
     );
 
-    expect(classifyRpcError(error, 'wrapping')).toMatchObject({ kind: 'node-rate-limited' });
+    expect(classifyRpcError(error, 'wrapping')).toEqual({
+      kind: 'node-rate-limited',
+      detail:
+        '-32603: Too Many Requests, Please apply on OnFinality API key or contact us to receive a higher rate limit',
+    });
   });
 
   it('classifies a dropped websocket', () => {
@@ -20,7 +24,10 @@ describe('classifyRpcError', () => {
   it('classifies an abnormal closure', () => {
     expect(
       classifyRpcError(new Error('disconnected from wss://westend-rpc: 1006:: Abnormal Closure'), 'wrapping'),
-    ).toMatchObject({ kind: 'network-unreachable' });
+    ).toEqual({
+      kind: 'network-unreachable',
+      detail: 'disconnected from wss://westend-rpc: 1006:: Abnormal Closure',
+    });
   });
 
   it('classifies an RPC request timeout', () => {
@@ -36,8 +43,9 @@ describe('classifyRpcError', () => {
   });
 
   it('falls back to fee-unavailable when the fee step fails for an unknown reason', () => {
-    expect(classifyRpcError(new Error('Unable to retrieve fee'), 'estimating-fee')).toMatchObject({
+    expect(classifyRpcError(new Error('Unable to retrieve fee'), 'estimating-fee')).toEqual({
       kind: 'fee-unavailable',
+      detail: 'Unable to retrieve fee',
     });
   });
 
@@ -46,7 +54,7 @@ describe('classifyRpcError', () => {
   });
 
   it('tolerates non-Error values', () => {
-    expect(classifyRpcError(undefined, 'wrapping').kind).toBe('internal');
+    expect(classifyRpcError(undefined, 'wrapping')).toEqual({ kind: 'internal' });
   });
 
   it('reads the message off an object-shaped error', () => {
