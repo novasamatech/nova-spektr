@@ -419,7 +419,7 @@ describe('createOperationReadiness', () => {
     });
   });
 
-  it('does not report a timeout that fires after the screen closed', async () => {
+  it('stays unblocked after the screen closes, whether or not a timer survives', async () => {
     const $active = createStore(false);
     const { $readiness } = createOperationReadiness({
       active: $active,
@@ -432,7 +432,9 @@ describe('createOperationReadiness', () => {
     await vi.advanceTimersByTimeAsync(1_000);
     await activate(scope, $active, false);
 
-    // The timer armed on open is still pending and fires here, with nothing left on screen.
+    // Deactivation now cancels the armed timer outright, so nothing fires here. This
+    // guards the cancel itself: reinstate a surviving timer and the inactive
+    // short-circuit is the only thing left holding the verdict down.
     await vi.advanceTimersByTimeAsync(TIMEOUT);
 
     expect(scope.getState($readiness).status).not.toBe('blocked');
