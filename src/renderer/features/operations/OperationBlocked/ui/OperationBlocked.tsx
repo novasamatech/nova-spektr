@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
-import { type OperationBlockReason, type OperationBlockReasonKind } from '@/shared/transactions';
+import { type OperationBlockReason } from '@/shared/transactions';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { type ActionKind, ACTION_LABEL_KEYS, REASON_COPY_KEYS } from '../lib/copyKeys';
 
 type Props = {
   reason: OperationBlockReason;
@@ -14,69 +15,18 @@ type Props = {
   onClose: () => void;
 };
 
-type ActionKind = 'retry' | 'enableNetwork' | 'changeNode' | 'reload' | 'close' | 'cancel';
-
-type Copy = {
-  title: string;
-  description: string;
-  /** First entry is rendered as the primary button. */
-  actions: ActionKind[];
-};
-
 export const OperationBlocked = ({ reason, chain, onRetry, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
-  const chainName = chain?.name ?? '';
+  const chainName = chain?.name ?? t('operations.blocked.genericChain');
 
-  // A Record keyed by the reason kind, NOT a switch. Exhaustiveness here does not
-  // depend on an explicit return-type annotation: omit a kind and the compiler
-  // fails with TS2741 (missing property). A switch inside a component with an
-  // inferred return type silently widens to `Copy | undefined` instead.
-  const copyByReason: Record<OperationBlockReasonKind, Copy> = {
-    'network-disabled': {
-      title: t('operations.blocked.networkDisabledTitle', { chain: chainName }),
-      description: t('operations.blocked.networkDisabledDescription', { chain: chainName }),
-      actions: ['enableNetwork', 'cancel'],
-    },
-    'network-unreachable': {
-      title: t('operations.blocked.networkUnreachableTitle', { chain: chainName }),
-      description: t('operations.blocked.networkUnreachableDescription', { chain: chainName }),
-      actions: ['retry', 'changeNode'],
-    },
-    'node-rate-limited': {
-      title: t('operations.blocked.rateLimitedTitle'),
-      description: t('operations.blocked.rateLimitedDescription', { chain: chainName }),
-      actions: ['changeNode', 'retry'],
-    },
-    'fee-unavailable': {
-      title: t('operations.blocked.feeUnavailableTitle'),
-      description: t('operations.blocked.feeUnavailableDescription'),
-      actions: ['retry', 'changeNode'],
-    },
-    'no-signatory': {
-      title: t('operations.blocked.noSignatoryTitle'),
-      description: t('operations.blocked.noSignatoryDescription'),
-      actions: ['close'],
-    },
-    'signing-path-unresolved': {
-      title: t('operations.blocked.signingPathUnresolvedTitle'),
-      description: t('operations.blocked.signingPathUnresolvedDescription'),
-      actions: ['close'],
-    },
-    'invalid-call-data': {
-      title: t('operations.blocked.invalidCallDataTitle'),
-      description: t('operations.blocked.invalidCallDataDescription', { chain: chainName }),
-      actions: ['close'],
-    },
-    internal: {
-      title: t('operations.blocked.internalTitle'),
-      description: t('operations.blocked.internalDescription'),
-      actions: ['reload', 'close'],
-    },
+  const copyKeys = REASON_COPY_KEYS[reason.kind];
+  const copy = {
+    title: t(copyKeys.titleKey, { chain: chainName }),
+    description: t(copyKeys.descriptionKey, { chain: chainName }),
+    actions: copyKeys.actions,
   };
-
-  const copy = copyByReason[reason.kind];
 
   const runAction = (action: ActionKind) => {
     switch (action) {
@@ -100,27 +50,33 @@ export const OperationBlocked = ({ reason, chain, onRetry, onClose }: Props) => 
   };
 
   const label: Record<ActionKind, string> = {
-    retry: t('operations.blocked.retry'),
-    enableNetwork: t('operations.blocked.enableNetwork'),
-    changeNode: t('operations.blocked.changeNode'),
-    reload: t('operations.blocked.reload'),
-    close: t('operations.blocked.close'),
-    cancel: t('operations.blocked.cancel'),
+    retry: t(ACTION_LABEL_KEYS.retry),
+    enableNetwork: t(ACTION_LABEL_KEYS.enableNetwork),
+    changeNode: t(ACTION_LABEL_KEYS.changeNode),
+    reload: t(ACTION_LABEL_KEYS.reload),
+    close: t(ACTION_LABEL_KEYS.close),
+    cancel: t(ACTION_LABEL_KEYS.cancel),
   };
 
   return (
-    <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-      <Icon className="text-icon-warning" name="warnCutout" size={60} />
-      <SmallTitleText align="center">{copy.title}</SmallTitleText>
-      <FootnoteText className="text-center text-text-tertiary">{copy.description}</FootnoteText>
+    // This markup replaces the "Preparing signing data…" spinner in place; role="alert"
+    // announces the failure to screen-reader users who otherwise get no signal that the
+    // wait ended. Box doesn't forward arbitrary HTML attributes, so the role lives on a
+    // plain wrapper div.
+    <div role="alert">
+      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+        <Icon className="text-icon-warning" name="warnCutout" size={60} />
+        <SmallTitleText align="center">{copy.title}</SmallTitleText>
+        <FootnoteText className="text-center text-text-tertiary">{copy.description}</FootnoteText>
 
-      <div className="mt-2 flex gap-2">
-        {copy.actions.map((action, index) => (
-          <Button key={action} size="sm" variant={index === 0 ? 'fill' : 'text'} onClick={() => runAction(action)}>
-            {label[action]}
-          </Button>
-        ))}
-      </div>
-    </Box>
+        <div className="mt-2 flex gap-2">
+          {copy.actions.map((action, index) => (
+            <Button key={action} size="sm" variant={index === 0 ? 'fill' : 'text'} onClick={() => runAction(action)}>
+              {label[action]}
+            </Button>
+          ))}
+        </div>
+      </Box>
+    </div>
   );
 };
