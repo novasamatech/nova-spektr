@@ -5,11 +5,12 @@ import {
   allSettled,
   createEvent,
   createStore,
+  createWatch,
   fork,
 } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createOperationReadiness } from './createOperationReadiness';
+import { type OperationReadiness, createOperationReadiness } from './createOperationReadiness';
 import { type OperationBlockReason } from './operationBlockReason';
 
 const SETTLE = 500;
@@ -383,6 +384,72 @@ describe('createOperationReadiness', () => {
       status: 'blocked',
       reason: { kind: 'network-unreachable' },
     });
+  });
+
+  it('does not report a timeout that fires after the screen closed', async () => {
+    const $active = createStore(false);
+    const { $readiness } = createOperationReadiness({
+      active: $active,
+      requirements: [{ key: 'wrapping', store: createStore<string | null>(null) }],
+      timeoutReason,
+    });
+
+    const scope = fork();
+    await activate(scope, $active);
+    await vi.advanceTimersByTimeAsync(1_000);
+    await activate(scope, $active, false);
+
+    // The timer armed on open is still pending and fires here, with nothing left on screen.
+    await vi.advanceTimersByTimeAsync(TIMEOUT);
+
+    expect(scope.getState($readiness).status).not.toBe('blocked');
+    expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'wrapping' });
+  });
+
+  it('does not report a request that rejects after the screen closed', async () => {
+    const $active = createStore(false);
+    const $error = createStore<Error | null>(null);
+    const { $readiness } = createOperationReadiness({
+      active: $active,
+      requirements: [{ key: 'estimating-fee', store: createStore<string | null>(null), error: $error }],
+      timeoutReason,
+    });
+
+    const scope = fork();
+    await activate(scope, $active);
+    await activate(scope, $active, false);
+
+    // Nothing aborts the in-flight fee request when the modal closes, so it can still reject.
+    void allSettled($error, { scope, params: new Error('Too Many Requests') });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(scope.getState($readiness).status).not.toBe('blocked');
+    expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'estimating-fee' });
+  });
+
+  it('emits no update at all once the screen closed', async () => {
+    const $active = createStore(false);
+    const $error = createStore<Error | null>(null);
+    const { $readiness } = createOperationReadiness({
+      active: $active,
+      requirements: [{ key: 'wrapping', store: createStore<string | null>(null), error: $error }],
+      timeoutReason,
+    });
+
+    const scope = fork();
+    await activate(scope, $active);
+    await activate(scope, $active, false);
+
+    // Watch only what happens *after* the close, so the close itself is not counted.
+    const updates: OperationReadiness[] = [];
+    createWatch({ unit: $readiness, scope, fn: (value) => updates.push(value) });
+
+    void allSettled($error, { scope, params: new Error('Too Many Requests') });
+    await vi.advanceTimersByTimeAsync(TIMEOUT);
+
+    // A fresh object literal per recomputation would still emit, even carrying a benign
+    // payload — a consumer sampling `$readiness` for a toast or an analytics event would fire.
+    expect(updates).toEqual([]);
   });
 
   it('treats a flow with no requirements as ready', async () => {

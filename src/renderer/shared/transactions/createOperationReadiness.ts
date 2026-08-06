@@ -50,10 +50,10 @@ export const createOperationReadiness = ({
 }: Params) => {
   const retryRequested = createEvent();
 
-  // Stand-ins for requirements that declare no error/blocked channel. They are created once
-  // rather than per requirement because stores created at one source position all share a sid,
-  // and `serialize` rejects a scope holding two units with the same sid. `serialize: 'ignore'`
-  // covers the remaining case of several factory instances living in the same app.
+  // Stand-ins for requirements that declare no error/blocked channel. `serialize: 'ignore'` is
+  // what keeps them out of `serialize()`, which matters because stores created at one source
+  // position all share a sid and a scope cannot serialize two units with the same one. Creating
+  // them once rather than per requirement is a graph-size and readability choice on top.
   const $noError = createStore<Error | null>(null, { serialize: 'ignore' });
   const $noBlock = createStore<OperationBlockReason | null>(null, { serialize: 'ignore' });
 
@@ -61,8 +61,15 @@ export const createOperationReadiness = ({
   const $errors = combine(requirements.map((requirement) => requirement.error ?? $noError));
   const $blocks = combine(requirements.map((requirement) => requirement.blocked ?? $noBlock));
 
-  const $settled = createStore(false);
+  const $settleDelayElapsed = createStore(false);
   const $timedOut = createStore(false);
+
+  // One frozen verdict for "not on screen", returned by reference so that recomputations while
+  // the flow is closed are dropped by effector's identity check instead of emitting an update.
+  const firstStep = requirements.at(0)?.key;
+  const inactiveReadiness: OperationReadiness = nonNullable(firstStep)
+    ? { status: 'pending', step: firstStep }
+    : { status: 'ready' };
 
   const activated = sample({ clock: active, filter: (isActive) => isActive });
   const deactivated = sample({ clock: active, filter: (isActive) => !isActive });
@@ -73,7 +80,7 @@ export const createOperationReadiness = ({
   // attempt inherits whatever was left of the first deadline and can be declared timed out
   // seconds after it started. `debounce` clears the pending timeout before starting the new
   // one, and it keeps the canceller in a store, so it stays correct under `fork`.
-  $settled.on(debounce(armed, settleDelay), () => true).reset(armed, deactivated);
+  $settleDelayElapsed.on(debounce(armed, settleDelay), () => true).reset(armed, deactivated);
   $timedOut.on(debounce(armed, timeout), () => true).reset(armed, deactivated);
 
   for (const requirement of requirements) {
@@ -84,16 +91,25 @@ export const createOperationReadiness = ({
 
   const $readiness = combine(
     {
+      isActive: active,
       values: $values,
       errors: $errors,
       blocks: $blocks,
-      settled: $settled,
+      settleDelayElapsed: $settleDelayElapsed,
       timedOut: $timedOut,
       timeoutReason,
     },
-    ({ values, errors, blocks, settled, timedOut, timeoutReason }): OperationReadiness => {
-      // Tier 1 — deterministic, but only once the stores have had a tick to settle.
-      if (settled) {
+    ({ isActive, values, errors, blocks, settleDelayElapsed, timedOut, timeoutReason }): OperationReadiness => {
+      // Off screen there is no verdict to publish. Requests started while the flow was open stay
+      // in flight after it closes — a rejection lands on `error`, and the timeout fires ~15s
+      // later — and without this guard each would surface as a failure nobody can see or retry.
+      if (!isActive) {
+        return inactiveReadiness;
+      }
+
+      // Tier 1 — deterministic. Withheld until the settle delay elapses because some of these
+      // stores are momentarily empty on flow start, before their pre-select samples fire.
+      if (settleDelayElapsed) {
         for (const block of blocks) {
           if (nonNullable(block)) {
             return { status: 'blocked', reason: block };
