@@ -1,5 +1,15 @@
-import { type EventCallable, type Store, combine, createEvent, createStore, merge, sample } from 'effector';
-import { debounce } from 'patronum';
+import {
+  type EventCallable,
+  type Store,
+  type Unit,
+  attach,
+  combine,
+  createEvent,
+  createStore,
+  merge,
+  sample,
+  scopeBind,
+} from 'effector';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
@@ -9,6 +19,63 @@ export const OPERATION_SETTLE_DELAY = 500;
 // Longer than the deep-link flow's 10s (features/multisig-operations/model/constants.ts)
 // because this screen sits behind several RPC round trips: blockWeight + paymentInfo x2.
 export const OPERATION_READINESS_TIMEOUT = 15_000;
+
+type TimerHandle = ReturnType<typeof setTimeout>;
+
+type DetachedTimerParams = {
+  /** Schedules the timer, cancelling whatever the previous start scheduled. */
+  start: Unit<unknown>;
+  /** Drops the pending timer without scheduling a new one. */
+  cancel: Unit<unknown>;
+  timeout: number;
+};
+
+/**
+ * A one-shot timer that never parks the Effector scope.
+ *
+ * Patronum's `delay`, `debounce` and `interval` all wait _inside_ an effect, so
+ * that effect stays pending for the whole timeout. `allSettled` resolves only
+ * once every effect in the scope has finished, so any consumer awaiting it
+ * after opening the flow would block for the full 15s — the readiness timers
+ * would hold every test hostage. Here the effect only schedules the timer and
+ * returns immediately; the waiting happens out of band and reports back through
+ * a scope-bound event.
+ *
+ * The handle lives in a store, not a closure variable, so concurrent `fork()`
+ * scopes each cancel their own timer rather than trampling a shared one.
+ */
+const createDetachedTimer = ({ start, cancel, timeout }: DetachedTimerParams) => {
+  const fired = createEvent();
+  const scheduled = createEvent<TimerHandle>();
+
+  const $handle = createStore<TimerHandle | null>(null, { serialize: 'ignore' }).on(scheduled, (_, handle) => handle);
+
+  const scheduleFx = attach({
+    source: $handle,
+    effect: (previous) => {
+      if (nonNullable(previous)) {
+        clearTimeout(previous);
+      }
+
+      // `safe: true` keeps this working outside a scope too, which is how the app runs.
+      scheduled(setTimeout(scopeBind(fired, { safe: true }), timeout));
+    },
+  });
+
+  const cancelFx = attach({
+    source: $handle,
+    effect: (handle) => {
+      if (nonNullable(handle)) {
+        clearTimeout(handle);
+      }
+    },
+  });
+
+  sample({ clock: start, fn: () => undefined, target: scheduleFx });
+  sample({ clock: cancel, fn: () => undefined, target: cancelFx });
+
+  return fired;
+};
 
 export type OperationReadiness =
   | { status: 'ready' }
@@ -75,13 +142,14 @@ export const createOperationReadiness = ({
   const deactivated = sample({ clock: active, filter: (isActive) => !isActive });
   const armed = merge([activated, retryRequested]);
 
-  // `debounce`, not `delay`: every arm must cancel the clock started by the previous one.
-  // With `delay` a retry issued mid-window leaves the original timer running, so the retried
-  // attempt inherits whatever was left of the first deadline and can be declared timed out
-  // seconds after it started. `debounce` clears the pending timeout before starting the new
-  // one, and it keeps the canceller in a store, so it stays correct under `fork`.
-  $settleDelayElapsed.on(debounce(armed, settleDelay), () => true).reset(armed, deactivated);
-  $timedOut.on(debounce(armed, timeout), () => true).reset(armed, deactivated);
+  // Each arm cancels the clock the previous one started, so a retry issued mid-window gets a
+  // full fresh deadline instead of inheriting what was left of the old one. Closing the flow
+  // drops the pending timer outright, so it cannot fire into the next activation.
+  const settleDelayFired = createDetachedTimer({ start: armed, cancel: deactivated, timeout: settleDelay });
+  const timeoutFired = createDetachedTimer({ start: armed, cancel: deactivated, timeout });
+
+  $settleDelayElapsed.on(settleDelayFired, () => true).reset(armed, deactivated);
+  $timedOut.on(timeoutFired, () => true).reset(armed, deactivated);
 
   for (const requirement of requirements) {
     if (requirement.retry) {

@@ -18,19 +18,16 @@ const TIMEOUT = 15_000;
 
 const timeoutReason = createStore<OperationBlockReason>({ kind: 'network-unreachable' });
 
-// Arming the flow starts patronum's timer effects, and `allSettled` resolves only once every
-// effect in the scope has finished — under fake timers those timers never fire on their own,
-// so `await allSettled(...)` would deadlock. Effector propagates the update synchronously, so
-// launching without awaiting and then flushing microtasks with a zero-length tick observes
-// exactly the same state.
+// These plainly `await allSettled`, which is the point: the readiness timers must never leave
+// an effect pending in the scope. If arming the flow parked the scope — as it would with a
+// timer that waits inside an effect — every test in this file would hang for the full timeout
+// under fake timers, and so would every consumer's test.
 const activate = async (scope: Scope, $active: StoreWritable<boolean>, value = true) => {
-  void allSettled($active, { scope, params: value });
-  await vi.advanceTimersByTimeAsync(0);
+  await allSettled($active, { scope, params: value });
 };
 
 const emit = async (scope: Scope, event: EventCallable<void>) => {
-  void allSettled(event, { scope });
-  await vi.advanceTimersByTimeAsync(0);
+  await allSettled(event, { scope });
 };
 
 describe('createOperationReadiness', () => {
@@ -386,6 +383,42 @@ describe('createOperationReadiness', () => {
     });
   });
 
+  it('leaves no pending effect in the scope while its timers run', async () => {
+    const $active = createStore(false);
+    const { $readiness, retryRequested } = createOperationReadiness({
+      active: $active,
+      requirements: [{ key: 'wrapping', store: createStore<string | null>(null) }],
+      timeoutReason,
+    });
+
+    const scope = fork();
+
+    // Each of these would hang for the full timeout if the wait happened inside an effect:
+    // `allSettled` does not resolve until every effect in the scope has settled. That is what
+    // made every consumer's `await allSettled(flowStarted, ...)` block for 15s.
+    await allSettled($active, { scope, params: true });
+
+    // The timers really are outstanding — this did not resolve because nothing was scheduled.
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'wrapping' });
+
+    await allSettled(retryRequested, { scope });
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+    // Closing the flow drops them rather than leaving them to fire into the next activation.
+    await allSettled($active, { scope, params: false });
+    expect(vi.getTimerCount()).toBe(0);
+
+    // And an armed timer still reaches its deadline when the clock actually gets there.
+    await allSettled($active, { scope, params: true });
+    await vi.advanceTimersByTimeAsync(TIMEOUT);
+
+    expect(scope.getState($readiness)).toEqual({
+      status: 'blocked',
+      reason: { kind: 'network-unreachable' },
+    });
+  });
+
   it('does not report a timeout that fires after the screen closed', async () => {
     const $active = createStore(false);
     const { $readiness } = createOperationReadiness({
@@ -420,8 +453,7 @@ describe('createOperationReadiness', () => {
     await activate(scope, $active, false);
 
     // Nothing aborts the in-flight fee request when the modal closes, so it can still reject.
-    void allSettled($error, { scope, params: new Error('Too Many Requests') });
-    await vi.advanceTimersByTimeAsync(0);
+    await allSettled($error, { scope, params: new Error('Too Many Requests') });
 
     expect(scope.getState($readiness).status).not.toBe('blocked');
     expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'estimating-fee' });
@@ -444,7 +476,7 @@ describe('createOperationReadiness', () => {
     const updates: OperationReadiness[] = [];
     createWatch({ unit: $readiness, scope, fn: (value) => updates.push(value) });
 
-    void allSettled($error, { scope, params: new Error('Too Many Requests') });
+    await allSettled($error, { scope, params: new Error('Too Many Requests') });
     await vi.advanceTimersByTimeAsync(TIMEOUT);
 
     // A fresh object literal per recomputation would still emit, even carrying a benign
