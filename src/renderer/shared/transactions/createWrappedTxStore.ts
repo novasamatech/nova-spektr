@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, createEffect, createEvent, createStore, sample } from 'effector';
+import { type Store, type UnitValue, createEvent, createStore, sample } from 'effector';
 
+import { takeLast } from '@/shared/effector';
 import { nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction, transactionService } from '@/domains/network';
 
@@ -25,7 +26,18 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     return transactionService.wrapTransaction(transaction, route, api);
   };
 
-  const wrapTransactionFx = createEffect(wrapTransactionHandler);
+  // Wrapping is not idempotent-safe to run concurrently: it awaits a live RPC call
+  // (paymentInfo) that can hang for tens of seconds, so a stale run can still be
+  // in flight when a newer one (retry, or api/route settling) starts. takeLast
+  // aborts the previous run's outcome (success or failure) so it can never
+  // overwrite state set by a newer run.
+  const wrapTransactionFx = takeLast({
+    fn: wrapTransactionHandler,
+    key: () => 'wrapTransaction',
+  });
+
+  const isAbortError = (err: UnitValue<typeof wrapTransactionFx.failData>) =>
+    err && 'name' in err && err.name === 'AbortError';
 
   const wrapTransaction = sample({
     clock: [transaction, api, route, retry],
@@ -49,15 +61,23 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     target: $tx,
   });
 
-  // Without this the store keeps a stale wrapped tx after a failed retry, which
-  // would let the user sign a transaction built from outdated inputs.
+  // Without this the store keeps a stale wrapped tx after a failed re-wrap, which
+  // would let the user sign a transaction built from outdated inputs. AbortError is
+  // filtered out because it marks a run superseded by takeLast, not a real failure.
   sample({
-    clock: wrapTransactionFx.fail,
+    clock: wrapTransactionFx.failData,
+    filter: (error) => !isAbortError(error),
     fn: () => null,
     target: $tx,
   });
 
-  $error.on(wrapTransactionFx.failData, (_, error) => error).reset(wrapTransactionFx.done, retry);
+  sample({
+    clock: wrapTransactionFx.failData,
+    filter: (error) => !isAbortError(error),
+    target: $error,
+  });
+
+  $error.reset(wrapTransactionFx.done, retry);
 
   return {
     $tx,
