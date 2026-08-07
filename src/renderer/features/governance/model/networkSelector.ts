@@ -2,6 +2,7 @@ import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ChainId, type ConnectionStatus } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -109,7 +110,7 @@ const $hasAccount = combine(
 
     return activeWallet.accounts.some((account) => {
       const isNonBase = accountUtils.isNonBaseVaultAccount(account, activeWallet);
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
 
       return isNonBase && isChainMatch;
     });
