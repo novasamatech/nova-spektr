@@ -6,7 +6,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -16,6 +16,7 @@ import { polkadotVaultService } from './service';
 
 export { walletActionsSlot };
 export { polkadotVaultService };
+export type { DerivationKeyDraft, VaultDraftAccount, VaultScannedAccount } from './service';
 
 export const polkadotVaultWalletFeature = createFeature({
   name: 'wallet/polkadot vault',
@@ -24,28 +25,16 @@ export const polkadotVaultWalletFeature = createFeature({
 
 accountSDK(polkadotVaultWalletFeature, {
   actionPermission({ account }) {
-    return (
-      accountUtils.isVaultBaseAccount(account) ||
-      accountUtils.isVaultChainAccount(account) ||
-      accountUtils.isVaultShardAccount(account)
-    );
+    return polkadotVaultService.isVaultAccount(account);
   },
   availableOnChain({ account }) {
     return polkadotVaultService.isAvailableOnChain(account);
   },
   canSignMultipleTransactions({ account }) {
-    return (
-      accountUtils.isVaultBaseAccount(account) ||
-      accountUtils.isVaultChainAccount(account) ||
-      accountUtils.isVaultShardAccount(account)
-    );
+    return polkadotVaultService.isVaultAccount(account);
   },
   visualGraphNode({ account }) {
-    if (
-      accountUtils.isVaultBaseAccount(account) ||
-      accountUtils.isVaultChainAccount(account) ||
-      accountUtils.isVaultShardAccount(account)
-    ) {
+    if (polkadotVaultService.isVaultAccount(account)) {
       return {
         title: 'Polkadot Vault',
         color: '#EC007D',

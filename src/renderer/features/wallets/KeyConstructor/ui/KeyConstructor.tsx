@@ -1,11 +1,11 @@
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useKeyCombo } from '@/shared/lib/hooks';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+import { type VaultDraftAccount } from '@/features/polkadot-vault-wallet';
 import { type DerivationKeyDraft, constructorModel } from '../model/constructor-model';
 
 import { KeyItem } from './KeyItem';
@@ -17,7 +17,7 @@ const ADD_NEW_KEY_SHORTCUT = ['shift', 'enter'];
 type Props = {
   title: string;
   isOpen: boolean;
-  existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
+  existingKeys: VaultDraftAccount[];
   onClose: () => void;
   onConfirm: (keys: DerivationKeyDraft[]) => void;
 };

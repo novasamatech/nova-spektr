@@ -147,4 +147,25 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       ],
     });
   });
+
+  test('should parse a universal genesis section as an unscoped key', () => {
+    const fileContent = [
+      'version: 1',
+      'public address: 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      'genesis: universal',
+      '//anywhere: name [type]',
+      'genesis: 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      '//polkadot: name [type]',
+    ].join('\n');
+
+    const parsedData = importKeysUtils.parseTextFile(fileContent);
+
+    expect(parsedData?.derivationPaths).toEqual([
+      { derivationPath: '//anywhere', chainId: 'universal' },
+      {
+        derivationPath: '//polkadot',
+        chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      },
+    ]);
+  });
 });

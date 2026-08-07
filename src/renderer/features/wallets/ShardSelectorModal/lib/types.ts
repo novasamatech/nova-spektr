@@ -1,7 +1,20 @@
-import { type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type ChainId,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-export type ChainTuple = [ChainId | 'evm', (VaultChainAccount | VaultShardAccount)[]];
+export const EVM_GROUP_ID = 'evm';
+/** Group holding the keys the user did not scope to a network. */
+export const UNIVERSAL_GROUP_ID = 'universal';
+
+export type GroupId = ChainId | typeof EVM_GROUP_ID | typeof UNIVERSAL_GROUP_ID;
+
+export type SelectableAccount = VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount;
+
+export type ChainTuple = [GroupId, SelectableAccount[]];
 export type RootStruct = {
   rootAccountId: AccountId;
   rootAccountName: string;
@@ -9,7 +22,7 @@ export type RootStruct = {
 };
 
 export type RootToggleParams = { root: AccountId; value: boolean };
-export type ChainToggleParams = RootToggleParams & { chainId: ChainId | 'evm' };
+export type ChainToggleParams = RootToggleParams & { chainId: GroupId };
 export type AccountToggleParams = ChainToggleParams & { accountId: AccountId };
 
 export type CheckedCounter = {

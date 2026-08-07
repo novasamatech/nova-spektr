@@ -2,22 +2,20 @@ import { attach, combine, createApi, createEffect, createEvent, createStore, sam
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 
+import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import {
-  type Chain,
-  type ChainId,
-  type DraftAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
-import { DerivationError, TokenType, nullable, parseDerivation, validateDerivation } from '@/shared/lib/utils';
+  DerivationError,
+  TokenType,
+  nonNullable,
+  nullable,
+  parseDerivation,
+  validateDerivation,
+} from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { type DerivationKeyDraft, type VaultDraftAccount } from '@/features/polkadot-vault-wallet';
 
-export const DEFAULT_CHAIN = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f'; // Polkadot AH
-
-export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
-  groupId?: VaultShardAccount['groupId'];
-};
+export { type DerivationKeyDraft };
 
 export type Callbacks = {
   onConfirm: (keys: DerivationKeyDraft[]) => void;
@@ -29,7 +27,7 @@ const callbacksApi = createApi($callbacks, {
   reset: () => null,
 });
 
-const init = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const init = createEvent<VaultDraftAccount[]>();
 const addKey = createEvent();
 const removeKey = createEvent<string>();
 const updateKey = createEvent<[string, Partial<DerivationKeyDraft>]>();
@@ -42,9 +40,19 @@ const $hasChanged = createStore(false).reset(init);
 /** Keys the user has finished editing. A key not in here is still being typed. */
 const $touched = createStore<Record<string, boolean>>({}).reset(init);
 
-function getOtherDerivationPaths(keyId: string, chainId: ChainId, keys: Record<string, DerivationKeyDraft>) {
+/**
+ * Paths a key can collide with. A network-scoped key only clashes within its
+ * own network — plus every "All networks" key, which lives on that network too.
+ * An "All networks" key clashes with everything, for the same reason.
+ */
+function getOtherDerivationPaths(keyId: string, chainId: ChainId | null, keys: Record<string, DerivationKeyDraft>) {
   return Object.entries(keys)
-    .filter(([otherKeyId, otherKey]) => otherKeyId !== keyId && otherKey.chainId === chainId)
+    .filter(([otherKeyId, otherKey]) => {
+      if (otherKeyId === keyId) return false;
+      if (nullable(chainId) || nullable(otherKey.chainId)) return true;
+
+      return otherKey.chainId === chainId;
+    })
     .map(([, otherKey]) => otherKey.derivationPath);
 }
 
@@ -57,10 +65,16 @@ function getKeyValidationErrors(
   if (nullable(key)) return [];
 
   const { derivationPath, chainId } = key;
-  const chain = chains[chainId];
-  if (nullable(chain)) return [];
 
-  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
+  // An "All networks" key has no home network to take the scheme from, and an
+  // Ethereum derivation is inherently network-scoped — so it is always Substrate.
+  let isEthereumBased = false;
+  if (nonNullable(chainId)) {
+    const chain = chains[chainId];
+    if (nullable(chain)) return [];
+
+    isEthereumBased = networkUtils.isEthereumBased(chain.options);
+  }
 
   const otherPaths = getOtherDerivationPaths(keyId, chainId, keys);
   const { errors } = validateDerivation(derivationPath, { otherPaths, isEthereumBased });
@@ -89,9 +103,7 @@ const $errors = combine(
   },
 );
 
-function mergeShardedAccounts(
-  accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
-): DerivationKeyDraft[] {
+function mergeShardedAccounts(accounts: VaultDraftAccount[]): DerivationKeyDraft[] {
   const accountGroups = accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
   return accountGroups.flatMap((a) => {
     if (Array.isArray(a)) {
@@ -99,7 +111,7 @@ function mergeShardedAccounts(
       if (nullable(first)) return [];
       return [{ chainId: first.chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: first.groupId }];
     }
-    return [{ chainId: a.chainId, derivationPath: a.derivationPath }];
+    return [{ chainId: 'chainId' in a ? a.chainId : null, derivationPath: a.derivationPath }];
   });
 }
 
@@ -162,8 +174,10 @@ sample({
     produce(keys, (draft) => {
       const id = nanoid();
 
+      // New keys default to "All networks" — a derivation is a keypair and works
+      // everywhere; scoping it to one network is the deliberate exception.
       draft[id] = {
-        chainId: DEFAULT_CHAIN,
+        chainId: null,
         derivationPath: '',
       };
     }),

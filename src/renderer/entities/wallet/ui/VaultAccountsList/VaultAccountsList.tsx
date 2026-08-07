@@ -2,7 +2,13 @@ import { useUnit } from 'effector-react';
 import { entries, groupBy } from 'lodash';
 import { Fragment, memo, useMemo } from 'react';
 
-import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Separator } from '@/shared/ui';
@@ -12,27 +18,28 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '../../lib/account-utils';
 import { DerivedAccount } from '../Cards/DerivedAccount';
 
+type VaultAccountEntry = VaultChainAccount | VaultUniversalKeyAccount | VaultShardAccount[];
+
+type VaultAccountsMap = Partial<Record<string, VaultAccountEntry[]>>;
+
 type Props = {
   chains: Chain[];
-  accountsMap: Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]>;
+  accountsMap: VaultAccountsMap;
   className?: string;
   onShardClick?: (shards: VaultShardAccount[]) => void;
 };
 
 const EVM_GROUP_ID = 'evm' as const;
+const UNIVERSAL_GROUP_ID = 'universal' as const;
 
 const getConsensusChainId = (chain: Chain): string => {
   return networkUtils.isEthereumBased(chain.options) ? EVM_GROUP_ID : (chain.parentId ?? chain.chainId);
 };
 
-const buildChainGroups = (
-  chains: Chain[],
-  accountsMap: Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]>,
-  allChains: Record<ChainId, Chain>,
-) => {
+const buildChainGroups = (chains: Chain[], accountsMap: VaultAccountsMap, allChains: Record<ChainId, Chain>) => {
   const groupedByConsensus = groupBy(chains, getConsensusChainId);
 
-  return entries(groupedByConsensus)
+  const chainGroups = entries(groupedByConsensus)
     .map(([consensusChainId, consensusChains]) => {
       const accounts = consensusChains
         .map((chain) => accountsMap[chain.chainId])
@@ -51,6 +58,13 @@ const buildChainGroups = (
     })
     .filter(nonNullable)
     .toSorted((a) => (a.id === EVM_GROUP_ID ? 1 : 0));
+
+  // Keys with no network scope work everywhere, so they lead the list rather
+  // than sitting under one network's heading.
+  const universalAccounts = accountsMap[UNIVERSAL_GROUP_ID] ?? [];
+  if (universalAccounts.length === 0) return chainGroups;
+
+  return [{ id: UNIVERSAL_GROUP_ID, chain: UNIVERSAL_GROUP_ID, accounts: universalAccounts }, ...chainGroups];
 };
 
 const EvmChainTitle = () => {
@@ -63,6 +77,16 @@ const EvmChainTitle = () => {
         {t('walletDetails.vault.evmGroup')}
       </FootnoteText>
     </div>
+  );
+};
+
+const UniversalGroupTitle = () => {
+  const { t } = useI18n();
+
+  return (
+    <FootnoteText as="span" className="text-text-secondary uppercase">
+      {t('walletDetails.vault.universalGroup')}
+    </FootnoteText>
   );
 };
 
@@ -80,6 +104,8 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <span className="normal-case">
                 {group.chain === EVM_GROUP_ID ? (
                   <EvmChainTitle />
+                ) : group.chain === UNIVERSAL_GROUP_ID ? (
+                  <UniversalGroupTitle />
                 ) : group.chain ? (
                   <ChainTitle fontClass="text-text-secondary uppercase" chain={group.chain} />
                 ) : null}
@@ -90,13 +116,15 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               <ul className="pl-4">
                 {group.accounts.map((account) => {
                   const isSharded = accountUtils.isAccountWithShards(account);
-                  const chain = allChains[isSharded ? account[0]!.chainId : account.chainId]!;
+                  const scopedAccount = isSharded ? account[0]! : account;
+                  // Keys with no network scope have no chain to badge them with.
+                  const chain = 'chainId' in scopedAccount ? allChains[scopedAccount.chainId] : undefined;
                   const derivationPath = accountUtils.getDerivationPath(account);
 
                   return (
                     // A group spans a whole relay family, but derivation paths are only
                     // unique per chain — the path alone collides across chains.
-                    <li className="mb-2 last:mb-0" key={`${chain.chainId}-${derivationPath}`}>
+                    <li className="mb-2 last:mb-0" key={`${chain?.chainId ?? group.id}-${derivationPath}`}>
                       <DerivedAccount
                         account={account}
                         chain={chain}

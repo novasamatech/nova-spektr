@@ -1,28 +1,36 @@
 import { attach, createEvent, createStore, sample } from 'effector';
 
-import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Chain,
+  type ID,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
-import { type DerivationKeyDraft } from '@/features/wallets';
+import {
+  type DerivationKeyDraft,
+  type VaultDraftAccount,
+  type VaultScannedAccount,
+  polkadotVaultService,
+} from '@/features/polkadot-vault-wallet';
 
 type AccountsCreatedParams = {
   walletId: ID;
-  accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
+  accounts: VaultScannedAccount[];
 };
 const shardsSelected = createEvent<VaultShardAccount[]>();
 const shardsCleared = createEvent();
 const accountsCreated = createEvent<AccountsCreatedParams>();
 
-const keysRemoved = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
+const keysRemoved = createEvent<(VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount)[]>();
 const keysAdded = createEvent<DerivationKeyDraft[]>();
 
 const $shards = createStore<VaultShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
-const $keysToAdd = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>([]).reset(
-  accountsCreated,
-);
+const $keysToAdd = createStore<VaultDraftAccount[]>([]).reset(accountsCreated);
 
 const createAccountsFx = attach({ effect: accounts.createAccounts });
 
@@ -59,7 +67,6 @@ sample({
 });
 
 sample({
-  // @ts-expect-error some types misalignment (no accountId)
   clock: accountsCreated,
   fn: ({ accounts, walletId }) => {
     return accounts.map(account => ({ ...account, walletId }));

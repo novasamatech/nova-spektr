@@ -37,6 +37,7 @@ export type {
   VaultBaseAccount,
   VaultChainAccount,
   VaultShardAccount,
+  VaultUniversalKeyAccount,
   WatchOnlyAccount,
   WcAccount,
 } from './types/account';

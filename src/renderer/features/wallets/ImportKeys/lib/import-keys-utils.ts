@@ -3,17 +3,10 @@ import { t } from 'i18next';
 import { groupBy, unionBy } from 'lodash';
 import { parse } from 'yaml';
 
-import {
-  type Address,
-  type Chain,
-  type ChainId,
-  type DraftAccount,
-  type HexString,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
+import { type Address, type Chain, type ChainId, type HexString } from '@/shared/core';
 import {
   DerivationError,
+  UNIVERSAL_GENESIS,
   derivationTokensToString,
   entries,
   nullable,
@@ -23,6 +16,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkUtils } from '@/entities/network';
+import { type VaultDraftAccount } from '@/features/polkadot-vault-wallet';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
@@ -68,7 +62,7 @@ function isYamlStructureValid(result: unknown): result is ParsedImportFile {
 
   return Object.values(genesisHashes).every((hash: ImportFileChain) => {
     return Object.entries(hash).every(([key, value]) => {
-      const isChainValid = key.startsWith('0x');
+      const isChainValid = key.startsWith('0x') || key === UNIVERSAL_GENESIS;
       const hasChainKeys = Array.isArray(value) && value.every((keyObj) => 'key' in keyObj);
 
       return isChainValid && hasChainKeys;
@@ -113,6 +107,11 @@ function parseTextFile(fileContent: string): ParsedData | null {
   const derivationPaths = [];
   for (let i = 2; i < lines.length; i++) {
     const line = lines[i];
+    if (line === `genesis: ${UNIVERSAL_GENESIS}`) {
+      currentChainId = UNIVERSAL_GENESIS;
+      continue;
+    }
+
     const chainIdMatch = line?.match(/^genesis: (0x[a-fA-F0-9]{64})$/);
     if (chainIdMatch) {
       const chainId = chainIdMatch[1];
@@ -203,6 +202,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 
 function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<ChainId, Chain>): boolean {
   if (!derivation.derivationPath) return true;
+  if (derivation.chainId === UNIVERSAL_GENESIS) return false;
 
   const isChainParamValid = derivation.chainId && chains[derivation.chainId as ChainId];
 
@@ -220,7 +220,10 @@ function getDerivationError(
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
   if (!isShardedParamValid) errs.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
-  const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
+  // An unscoped key has no network to take the scheme from — and an Ethereum
+  // derivation is inherently network-scoped, so it is always Substrate.
+  const derivationChain =
+    derivation.chainId && derivation.chainId !== UNIVERSAL_GENESIS ? chains[derivation.chainId as ChainId] : null;
   const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
 
   const { isValid, errors } = validateDerivation(derivation.derivationPath, { isEthereumBased });
@@ -238,7 +241,10 @@ function getDerivationError(
   if (errs.length) return errs;
 }
 
-type DraftAccounts = (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+type DraftAccounts = VaultDraftAccount[];
+
+const toDraftChainId = (chainId: TypedImportedDerivation['chainId']): ChainId | null =>
+  chainId === UNIVERSAL_GENESIS ? null : chainId;
 
 function mergeChainDerivations(existingDerivations: DraftAccounts, importedDerivations: TypedImportedDerivation[]) {
   let addedKeys = 0;
@@ -248,7 +254,7 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
     if (!d.sharded) {
       acc.push({
         derivationPath: d.derivationPath,
-        chainId: d.chainId,
+        chainId: toDraftChainId(d.chainId),
       });
 
       return acc;
@@ -258,7 +264,7 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
         derivationPath: d.derivationPath + '//' + i,
-        chainId: d.chainId,
+        chainId: toDraftChainId(d.chainId),
         groupId,
       });
     }

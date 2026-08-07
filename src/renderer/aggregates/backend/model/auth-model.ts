@@ -94,7 +94,7 @@ const $signableAccounts = walletModel.$wallets.map((wallets): SignableAccount[] 
       wallet.accounts.flatMap((account): SignableAccount[] => {
         const isSignable = walletUtils.isSingleShard(wallet)
           ? accountUtils.isVaultBaseAccount(account)
-          : accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account);
+          : accountUtils.isVaultDerivedAccount(account);
 
         if (isSignable) {
           return [

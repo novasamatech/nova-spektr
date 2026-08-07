@@ -1,8 +1,9 @@
 import { allSettled, fork } from 'effector';
 
-import { type Chain, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Chain, type VaultShardAccount } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { type AnyAccount, accounts } from '@/domains/network';
+import { type VaultScannedAccount } from '@/features/polkadot-vault-wallet';
 import { vaultDetailsModel } from '../vault-details-model';
 
 describe('widgets/WalletDetails/model/vault-details-model', () => {
@@ -53,7 +54,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     const walletId = 1;
     const testAccounts = [{ type: 'chain', accountId: '0x00', walletId, name: 'My first shard' }];
 
-    const key = { type: 'chain', name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
+    const key = { type: 'chain', name: 'My second shard' } as unknown as VaultScannedAccount;
     const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
     const newAccount = { walletId, ...key };
 

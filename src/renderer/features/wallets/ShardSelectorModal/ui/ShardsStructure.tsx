@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -29,6 +30,7 @@ const EvmChainTitle = ({ fontClass }: { fontClass: string }) => {
 };
 
 export const ShardsStructure = () => {
+  const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
   const shardsStructure = useUnit(shardsModel.$shardsStructure);
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
@@ -80,9 +82,15 @@ export const ShardsStructure = () => {
                           <EvmChainTitle
                             fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
                           />
-                        ) : chains[chainId] ? (
+                        ) : chainId === shardsUtils.UNIVERSAL_GROUP_ID ? (
+                          <FootnoteText
+                            className={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+                          >
+                            {t('walletDetails.vault.universalGroup')}
+                          </FootnoteText>
+                        ) : chains[chainId as ChainId] ? (
                           <ChainTitle
-                            chain={chains[chainId]}
+                            chain={chains[chainId as ChainId]!}
                             fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
                           />
                         ) : null}
@@ -97,8 +105,10 @@ export const ShardsStructure = () => {
                 <Accordion.Content>
                   <div className="ml-6">
                     {accounts.map((account) => {
-                      const accountChain = chains[account.chainId];
-                      if (nullable(accountChain)) return null;
+                      // A key with no network scope has no chain to render against.
+                      const accountChain = 'chainId' in account ? chains[account.chainId] : undefined;
+                      if ('chainId' in account && nullable(accountChain)) return null;
+
                       return (
                         <div key={account.id} className="mt-2">
                           <SelectableShard

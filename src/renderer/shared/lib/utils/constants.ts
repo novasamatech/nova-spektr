@@ -50,6 +50,12 @@ export const RelayChains = {
   ROCOCO: '0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e',
 } as const satisfies Record<string, ChainId>;
 
+/**
+ * Marker used in the keys export/import file in place of a genesis hash, for
+ * keys the user did not scope to a network.
+ */
+export const UNIVERSAL_GENESIS = 'universal';
+
 // Some chains incorrectly use these, i.e. it is set to values such as 0 or even 2
 // Use a low minimum validity threshold to check these against
 export const THRESHOLD = BN_THOUSAND.div(BN_TWO);

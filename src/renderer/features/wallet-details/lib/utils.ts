@@ -2,7 +2,7 @@ import { type PolkadotVaultWallet } from '@/shared/core';
 import { accountUtils } from '@/entities/wallet';
 
 import { ForgetStep, ReconnectStep } from './constants';
-import { type VaultMap } from './types';
+import { type VaultMap, UNIVERSAL_KEYS_GROUP } from './types';
 
 export const wcDetailsUtils = {
   isNotStarted,
@@ -47,11 +47,11 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
   return accountGroups.reduce<VaultMap>((acc, account) => {
     const accountToInsert = accountUtils.isAccountWithShards(account) ? account[0] : account;
 
-    const chainId = accountToInsert?.chainId!;
-    if (acc[chainId]) {
-      acc[chainId]!.push(account);
+    const groupId = accountToInsert && 'chainId' in accountToInsert ? accountToInsert.chainId : UNIVERSAL_KEYS_GROUP;
+    if (acc[groupId]) {
+      acc[groupId]!.push(account);
     } else {
-      acc[chainId] = [account];
+      acc[groupId] = [account];
     }
 
     return acc;

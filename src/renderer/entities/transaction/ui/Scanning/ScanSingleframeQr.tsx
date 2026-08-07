@@ -73,10 +73,7 @@ export const ScanSingleframeQr = ({
     try {
       const blockTimeMs = getExpectedBlockTime(api, chain).toNumber();
 
-      const derivationPath =
-        accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
-          ? account.derivationPath
-          : null;
+      const derivationPath = accountUtils.isVaultDerivedAccount(account) ? account.derivationPath : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const {

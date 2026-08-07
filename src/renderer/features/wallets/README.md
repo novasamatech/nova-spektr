@@ -1,6 +1,6 @@
 # Wallets
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-14
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-07
 
 ## Overview
 
@@ -28,9 +28,15 @@ pairing a new one. Two groups live here:
 
 ### What a key is
 
-A key is a **chain plus a derivation path** — nothing else. The user never picks a "key type": the strings `main`,
+A key is a **derivation path**, optionally scoped to a chain. The user never picks a "key type": the strings `main`,
 `hot`, `public`, `sharded` offered as autocomplete chips are just text appended to the path, and every key the
-constructor produces is stored as a custom key. Crypto type (Ethereum vs sr25519) follows from the chosen chain.
+constructor produces is stored as a custom key.
+
+**New keys default to "All networks".** A derivation is a keypair and the same public key is valid everywhere, so
+scoping a key to one network is the deliberate exception, not the norm — the network dropdown leads with "All
+networks" and only a user who picks a network gets the old, scoped behaviour. An unscoped key is always sr25519; for
+an Ethereum key the user must pick an EVM network, since an Ethereum derivation cannot span both schemes. For a scoped
+key the crypto type still follows from the chosen chain.
 
 A path ending in a range token `0...N` is **sharded**: it expands into N+1 sibling keys (`//0`, `//1`, …) that stay
 grouped for balance display and signing.
@@ -54,11 +60,15 @@ the first error of a key is displayed.
 | Empty segment           | A segment between separators is missing (e.g. `//`)                       |
 | Soft derivation on EVM  | Ethereum chains don't support soft derivations — `//` (hard) only         |
 | Invalid shard range     | A shard range must produce at least 2 shards                              |
-| Duplicate               | The path is already in use **on that same chain** — choose another        |
+| Duplicate               | The path is already in use **in the same scope** — choose another        |
 
 **Duplicates are scoped to the exact chain.** The same path on two different chains is legitimate and is not an error,
 even when those chains share a relay chain. (This corrected an earlier rule that treated all chains under one relay
 chain — and all EVM chains — as a single namespace, which rejected valid keys.)
+
+An **"All networks" key lives on every network**, so it collides with the same path anywhere — and a scoped key
+collides with an unscoped key of the same path. Sharding stays network-scoped: a shard group is a per-network
+construct, so a sharded path always carries a chain.
 
 > ⚠️ **Known inconsistency:** the constructor enforces only a lower bound on shard count (≥ 2, no maximum), while the
 > file importer accepts 2–50. The `0...50` autocomplete chip expands to 51 shards — accepted by the constructor,
@@ -91,7 +101,8 @@ Deletions alone need no device confirmation and skip the QR step. Leaving the co
 Accepts a `.yaml` or a `.txt` file (a template is downloadable); the `.txt` form is exactly what Export writes, so
 export → import round-trips. The file's root public key must match the wallet's, otherwise "The public key doesn't
 match." Every bad path in the file is reported **together**, with the offending values listed, rather than one at a
-time. Rows for chains the app doesn't know are silently skipped.
+time. Rows for chains the app doesn't know are silently skipped; a `genesis: universal` section imports as "All
+networks" keys.
 
 Imported keys are **merged, never replaced**: duplicates — both inside the file and against the wallet's existing keys
 — are dropped and reported as a count. The success alert reads "{n} key(s) added for {m} network(s)".
@@ -141,8 +152,9 @@ Removing the last wallet drops the user back to onboarding (see below).
 ## Shard selector
 
 For Polkadot Vault wallets only; invisible for every other type. On the Assets page the user picks which derived
-accounts contribute to the displayed balances ("Your assets on: N accounts"). Accounts are grouped by chain — with EVM
-chains merged into one "EVM Compatible" group and parachains folded into their relay parent — each group showing a
+accounts contribute to the displayed balances ("Your assets on: N accounts"). Accounts are grouped by chain — keys with
+no network scope leading in an "All networks" group, EVM chains merged into one "EVM Compatible" group at the end and
+parachains folded into their relay parent — each group showing a
 `checked / total` count and a tri-state (checked / partial / unchecked) box. Search matches a derivation path or the
 chain-formatted address, and filters only what is displayed: selections made outside the current query are preserved.
 Everything is selected by default; the selection resets when the wallet or chain set changes and is **not persisted**.

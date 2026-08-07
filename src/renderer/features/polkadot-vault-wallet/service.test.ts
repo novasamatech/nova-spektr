@@ -79,6 +79,51 @@ const multisig: MultisigAccount = {
   signatories: [{ accountId: signerAccountId }, { accountId: otherSignatoryAccountId }],
 };
 
+describe('polkadotVaultService.createDraftAccount', () => {
+  const chains = { [polkadotChainId]: polkadotChain, [kusamaChainId]: kusamaChain };
+
+  it('builds a universal key when the draft is not scoped to a network', () => {
+    const account = polkadotVaultService.createDraftAccount({ chainId: null, derivationPath: '//main' }, chains);
+
+    expect(account).toMatchObject({
+      type: 'universal',
+      accountType: AccountType.UNIVERSAL_KEY,
+      cryptoType: CryptoType.SR25519,
+      derivationPath: '//main',
+    });
+    expect('chainId' in account).toBe(false);
+  });
+
+  it('keeps a chain key scoped when the user picked a network', () => {
+    const account = polkadotVaultService.createDraftAccount(
+      { chainId: kusamaChainId, derivationPath: '//kusama' },
+      chains,
+    );
+
+    expect(account).toMatchObject({
+      type: 'chain',
+      accountType: AccountType.CHAIN,
+      chainId: kusamaChainId,
+    });
+  });
+
+  it('builds a shard when the draft carries a group', () => {
+    const account = polkadotVaultService.createDraftAccount(
+      { chainId: kusamaChainId, derivationPath: '//kusama//0', groupId: 'group' },
+      chains,
+    );
+
+    expect(account).toMatchObject({ accountType: AccountType.SHARD, groupId: 'group' });
+  });
+
+  it('makes the universal key usable on any network', () => {
+    const account = polkadotVaultService.createDraftAccount({ chainId: null, derivationPath: '//main' }, chains);
+
+    // The draft has no accountId yet; availability only reads the account type.
+    expect(polkadotVaultService.isAvailableOnChain(account as never)).toBe(true);
+  });
+});
+
 describe('polkadotVaultService.isAvailableOnChain', () => {
   it('keeps the base account available on every chain', () => {
     expect(polkadotVaultService.isAvailableOnChain(baseAccount)).toEqual(true);

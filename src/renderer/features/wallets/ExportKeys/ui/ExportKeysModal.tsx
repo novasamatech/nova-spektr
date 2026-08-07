@@ -4,6 +4,7 @@ import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { type Address, type PolkadotVaultWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
@@ -44,9 +45,7 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
     store: accounts.$list,
     keys: [wallet.id],
     fn: (allAccounts, [walletId]) =>
-      accountService
-        .filterAccountsByWallet(allAccounts, walletId)
-        .filter((a) => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
+      accountService.filterAccountsByWallet(allAccounts, walletId).filter(accountUtils.isVaultDerivedAccount),
     // `fn` allocates a new array every run, so without this any unrelated change to
     // accounts.$list would re-encode the QR payload.
     updateFilter: (next, prev) => next.length !== prev.length || next.some((a, index) => a !== prev[index]),
@@ -56,7 +55,7 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
     const accountsMap = walletDetailsUtils.getVaultAccountsMap(walletAccounts);
     //todo sort these accounts
 
-    return Object.values(accountsMap).flat();
+    return Object.values(accountsMap).flat().filter(nonNullable);
   }, [walletAccounts]);
 
   const downloadKeysFile = () => {

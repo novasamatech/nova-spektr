@@ -35,6 +35,19 @@ export interface VaultShardAccount extends ChainAccount {
   publicKey?: string;
 }
 
+/**
+ * A derived Vault key that belongs to no particular network. A derivation is a
+ * keypair and the same public key is valid everywhere, so a key only carries a
+ * `chainId` when the user deliberately scopes it to one network; otherwise it
+ * is stored as this type and appears under "All networks".
+ */
+export interface VaultUniversalKeyAccount extends UniversalAccount {
+  accountType: AccountType.UNIVERSAL_KEY;
+  keyType: KeyType;
+  derivationPath: string;
+  publicKey?: string;
+}
+
 export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
@@ -106,6 +119,7 @@ export const enum AccountType {
   PROXIED = 'proxied',
   MULTISIG_SIGNATORY = 'multisig_signatory',
   FLEX_MULTISIG = 'flex_multisig',
+  UNIVERSAL_KEY = 'universal_key',
 }
 
 export const enum KeyType {

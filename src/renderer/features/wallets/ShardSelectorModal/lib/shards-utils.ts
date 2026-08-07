@@ -5,6 +5,7 @@ import {
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  type VaultUniversalKeyAccount,
 } from '@/shared/core';
 import { entries, isStringsMatchQuery, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -12,7 +13,14 @@ import { type AnyAccount } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
-import { type ChainTuple, type RootStruct, type SelectedStruct } from './types';
+import {
+  type ChainTuple,
+  type GroupId,
+  type RootStruct,
+  type SelectableAccount,
+  type SelectedStruct,
+  UNIVERSAL_GROUP_ID,
+} from './types';
 
 const EVM_GROUP_ID = 'evm' as const;
 
@@ -20,26 +28,36 @@ const getConsensusChainId = (chain: Chain): ChainId | typeof EVM_GROUP_ID => {
   return networkUtils.isEthereumBased(chain.options) ? EVM_GROUP_ID : (chain.parentId ?? chain.chainId);
 };
 
+/** The group a key belongs to: its relay family, EVM, or "no network scope". */
+const getAccountGroupId = (account: SelectableAccount, chains: Record<ChainId, Chain>): GroupId | null => {
+  if (!('chainId' in account)) return UNIVERSAL_GROUP_ID;
+
+  const chain = chains[account.chainId];
+
+  return chain ? getConsensusChainId(chain) : null;
+};
+
 function getFilteredAccounts(
-  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[],
+  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount)[],
   chains: Record<ChainId, Chain>,
   query = '',
-): (VaultChainAccount | VaultShardAccount)[] {
-  return accounts
-    .filter((a) => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a))
-    .filter((account) => {
-      if (!chains[account.chainId]) return false;
+): SelectableAccount[] {
+  return accounts.filter(accountUtils.isVaultDerivedAccount).filter((account) => {
+    if (nullable(getAccountGroupId(account, chains))) return false;
 
-      const address = toAddress(account.accountId, { prefix: chains[account.chainId]?.addressPrefix });
+    // An unscoped key has no home network, so its address is shown in the
+    // generic Substrate format — search must match that same string.
+    const prefix = 'chainId' in account ? chains[account.chainId]?.addressPrefix : undefined;
+    const address = toAddress(account.accountId, { prefix });
 
-      return isStringsMatchQuery(query, [account.derivationPath, address]);
-    });
+    return isStringsMatchQuery(query, [account.derivationPath, address]);
+  });
 }
 
 function getVaultChainsCounter(
   rootAccountId: AccountId,
   chains: Record<ChainId, Chain>,
-  shards: (VaultChainAccount | VaultShardAccount)[],
+  shards: SelectableAccount[],
 ): SelectedStruct {
   const root: SelectedStruct = {
     [rootAccountId]: getChainCounter(chains),
@@ -52,11 +70,10 @@ function getVaultChainsCounter(
   rootEntry.total = shards.length;
 
   for (const shard of shards) {
-    const chain = chains[shard.chainId];
-    if (!chain) continue;
+    const groupId = getAccountGroupId(shard, chains);
+    if (nullable(groupId)) continue;
 
-    const chainId = getConsensusChainId(chain);
-    const chainEntry = rootEntry[chainId];
+    const chainEntry = rootEntry[groupId];
     if (nullable(chainEntry)) continue;
 
     chainEntry.checked += 1;
@@ -73,9 +90,10 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
     total: 0,
   } as SelectedStruct[AccountId];
 
-  for (const chain of Object.values(chains)) {
-    const chainId = getConsensusChainId(chain);
-    chainRoot[chainId] = {
+  const groupIds: GroupId[] = [UNIVERSAL_GROUP_ID, ...Object.values(chains).map(getConsensusChainId)];
+
+  for (const groupId of groupIds) {
+    chainRoot[groupId] = {
       accounts: {},
       checked: 0,
       total: 0,
@@ -88,14 +106,13 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
 function getStructForVault(
   rootAccountId: AccountId,
   rootAccountName: string,
-  accounts: (VaultChainAccount | VaultShardAccount)[],
+  accounts: SelectableAccount[],
   chains: Record<ChainId, Chain>,
 ): RootStruct {
-  const chainMap = new Map<ChainId | typeof EVM_GROUP_ID, (VaultChainAccount | VaultShardAccount)[]>();
+  const chainMap = new Map<GroupId, SelectableAccount[]>();
 
   for (const account of accounts) {
-    const chain = chains[account.chainId];
-    const groupId = chain && getConsensusChainId(chain);
+    const groupId = getAccountGroupId(account, chains);
 
     if (nullable(groupId)) continue;
 
@@ -114,7 +131,10 @@ function getStructForVault(
   const sortedChains = chainsService.sortChains(Object.values(chains));
   const chainOrder = new Map(sortedChains.map((chain, index) => [chain.chainId, index]));
 
+  // Keys that work on every network lead the list; EVM keys close it.
   const chainTuples: ChainTuple[] = Array.from(chainMap.entries()).sort((a, b) => {
+    if (a[0] === UNIVERSAL_GROUP_ID) return -1;
+    if (b[0] === UNIVERSAL_GROUP_ID) return 1;
     if (a[0] === EVM_GROUP_ID) return 1;
     if (b[0] === EVM_GROUP_ID) return -1;
 
@@ -150,4 +170,5 @@ export const shardsUtils = {
   getVaultChainsCounter,
   getSelectedShards,
   EVM_GROUP_ID,
+  UNIVERSAL_GROUP_ID,
 };
