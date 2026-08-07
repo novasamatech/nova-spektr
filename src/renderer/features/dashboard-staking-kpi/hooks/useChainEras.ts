@@ -6,6 +6,7 @@ import { keys } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { era } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { type EraTimeAnchor } from '../lib/expiry';
 
 /**
  * Active era per chain. The subscription itself is owned by the
@@ -14,6 +15,27 @@ import { networkModel } from '@/entities/network';
  */
 export const useChainEras = (): Record<ChainId, EraIndex> => {
   return useUnit(era.eraResource.$cache);
+};
+
+/**
+ * Everything needed to turn an era index into a date, per chain: the active era
+ * and when it started. `null` for a chain whose anchor has not arrived — a date
+ * is then simply not shown, never estimated.
+ */
+export const useEraAnchors = (): Record<ChainId, EraTimeAnchor | null> => {
+  const cache = useUnit(era.eraProgressResource.$cache);
+
+  return useMemo(() => {
+    const anchors: Record<ChainId, EraTimeAnchor | null> = {};
+    for (const chainId of keys(cache)) {
+      const progress = cache[chainId];
+      anchors[chainId] = progress
+        ? { activeEra: progress.era, eraStartMs: progress.eraStartMs, eraDurationMs: progress.eraDurationMs }
+        : null;
+    }
+
+    return anchors;
+  }, [cache]);
 };
 
 /**

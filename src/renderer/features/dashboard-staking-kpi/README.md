@@ -211,6 +211,10 @@ unclaimed era has left, and the positions table badges expiry per row, coloured 
 most people have never heard of the claim window until a reward silently expires. Eras are converted to days through the
 chain's own era duration.
 
+The claim modal additionally names the **dates**: `earned 2 Jul, expires 24 Sep`. "Era 1,704" means nothing to anyone
+reading that line, and the same fact in the unit people hold money in does. Both are derived from the chain's era anchor
+and are simply **absent** when it has not arrived — a guessed date about money that disappears is worse than no date.
+
 ### Drill-downs
 
 - **Est. APY** opens the donut breakdown: one segment per position, hover-linked in both directions — the donut centre

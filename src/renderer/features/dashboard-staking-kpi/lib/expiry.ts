@@ -53,3 +53,40 @@ export function oldestPayoutEra(eras: number[]): number | null {
 
   return Math.min(...eras);
 }
+
+/** The era anchor a date is derived from — when the active era started. */
+export type EraTimeAnchor = {
+  activeEra: number;
+  eraStartMs: number;
+  eraDurationMs: number;
+};
+
+/**
+ * When an era **started**, in unix ms, walked back from the active era's own
+ * start.
+ *
+ * "Era 1,704" means nothing to anyone reading a card; "earned around 2 July" is
+ * the same fact in the unit people actually hold money in. Derived, never
+ * guessed: without an anchor the caller gets `null` and prints the era count it
+ * already had.
+ */
+export function eraStartedAt(era: number, anchor: EraTimeAnchor | null): number | null {
+  if (!anchor || anchor.eraDurationMs <= 0) return null;
+
+  return anchor.eraStartMs - (anchor.activeEra - era) * anchor.eraDurationMs;
+}
+
+/**
+ * When an era's payout stops being claimable — the moment it falls out of the
+ * `historyDepth` window.
+ *
+ * The window is inclusive of its oldest era (see {@link erasUntilExpiry}), so
+ * the deadline is the start of the era that finally pushes it out.
+ */
+export function eraExpiresAt(
+  era: number,
+  anchor: EraTimeAnchor | null,
+  historyDepth: number = DEFAULT_CLAIM_WINDOW_ERAS,
+): number | null {
+  return eraStartedAt(era + historyDepth + 1, anchor);
+}

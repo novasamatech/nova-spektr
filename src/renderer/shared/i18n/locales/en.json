@@ -911,7 +911,8 @@
             "all": "All time",
             "custom": "Custom",
             "pickDates": "Pick dates"
-          }
+          },
+          "oldestDates": "earned {earned}, expires {expires}"
         },
         "positions": {
           "detailTitle": "Staking positions",

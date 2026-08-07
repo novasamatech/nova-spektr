@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -14,13 +15,21 @@ import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { useEraAnchors } from '../hooks/useChainEras';
 import { useRawRewardPayouts } from '../hooks/useRawRewardPayouts';
 import { useSignableChains } from '../hooks/useSignableChains';
 import { useStakingChainAssets } from '../hooks/useStakingChainAssets';
 import { useValidatorRewards } from '../hooks/useValidatorRewards';
 import { formatAssetAmountExact, sumFiat } from '../lib/amounts';
 import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
-import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
+import {
+  DEFAULT_CLAIM_WINDOW_ERAS,
+  daysUntilExpiry,
+  eraExpiresAt,
+  eraStartedAt,
+  erasUntilExpiry,
+  oldestPayoutEra,
+} from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
 import { type RewardWindow, DEFAULT_REWARD_WINDOW, windowBounds, windowSlug } from '../lib/reward-period';
 import { DEFAULT_REWARD_SORT, isRewardSortColumn, sortRewardRows } from '../lib/reward-sorting';
@@ -56,6 +65,9 @@ type Props = {
 };
 
 type DisplayRow = ValidatorRewardRow & { color: string; accruedFiat: string; expiryDays: number | null };
+
+/** `2 Jul` — a day, without a year nobody needs inside an 84-era window. */
+const formatDay = (timestampMs: number): string => format(new Date(timestampMs), 'd MMM');
 
 /** A segmented-control button, styled like `Tabs.Trigger` without its panels. */
 const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
@@ -95,6 +107,7 @@ export const ClaimModal = memo(
     const claimEnabled = enabledActions.includes('claim');
     const claimRequested = useUnit(dashboardStakingKpiActions.claimRequested);
     const { toFiat } = useStakingChainAssets();
+    const eraAnchors = useEraAnchors();
     const signableChains = useSignableChains();
     const blockedChains = useUnit(dashboardStakingKpiActions.$blockedClaimChains);
 
@@ -300,6 +313,37 @@ export const ClaimModal = memo(
 
       return values.length > 0 ? Math.min(...values) : null;
     }, [claimable]);
+
+    /**
+     * The oldest unclaimed era, as dates rather than as an era index.
+     *
+     * "Era 1,704" means nothing to anyone reading this line; "earned 2 Jul,
+     * expires 24 Sep" is the same fact in the unit people hold money in. Both
+     * are derived from the chain's era anchor and are simply absent when it has
+     * not arrived — a guessed date about money that disappears is worse than no
+     * date.
+     */
+    const oldestUnclaimed = useMemo(() => {
+      let oldest: { chainId: ChainId; era: number } | null = null;
+
+      for (const row of claimable) {
+        for (const payoutEra of row.eras) {
+          if (!oldest || payoutEra < oldest.era) {
+            oldest = { chainId: row.chainId, era: payoutEra };
+          }
+        }
+      }
+
+      if (!oldest) return null;
+
+      const anchor = eraAnchors[oldest.chainId] ?? null;
+      const historyDepth = historyDepths[oldest.chainId] ?? undefined;
+
+      return {
+        earnedAt: eraStartedAt(oldest.era, anchor),
+        expiresAt: eraExpiresAt(oldest.era, anchor, historyDepth ?? undefined),
+      };
+    }, [claimable, eraAnchors, historyDepths]);
 
     /**
      * Following a slice with the eye is useless if its row is fifty pixels
@@ -776,6 +820,12 @@ export const ClaimModal = memo(
                         soonestExpiry === null
                           ? null
                           : t('dashboard.staking.kpi.rewards.oldestExpires', { count: soonestExpiry }),
+                        oldestUnclaimed?.earnedAt && oldestUnclaimed.expiresAt
+                          ? t('dashboard.staking.kpi.rewards.oldestDates', {
+                              earned: formatDay(oldestUnclaimed.earnedAt),
+                              expires: formatDay(oldestUnclaimed.expiresAt),
+                            })
+                          : null,
                       ]
                         .filter(Boolean)
                         .join(' · ')}
