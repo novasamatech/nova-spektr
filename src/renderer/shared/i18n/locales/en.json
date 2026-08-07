@@ -3128,7 +3128,6 @@
       "signingPathAccountMissing": "This account is not added locally",
       "signingPathAccountMissingHint": "Add it to submit the draft along its signing path",
       "submitSuccess": "Draft submitted",
-      "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
       "recipientCheckPending": "Waiting for the network connection to check the recipient before the draft can be created.",
       "submittedBadge": "Submitted",
       "stepMultisig": "Account",

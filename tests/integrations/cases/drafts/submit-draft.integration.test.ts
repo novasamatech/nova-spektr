@@ -266,6 +266,11 @@ describe('Submit Draft — submit & edit flows', () => {
       });
     });
 
+    // Runs before the outer afterEach, so `env.cleanup()` sees real timers.
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('feeds the wrapper engine the resolved saved path and adopts its output as the submit extrinsic', async () => {
       const spies = seamSpies();
       // A stray signable account sits in the wallet next to the authored path —
@@ -282,6 +287,8 @@ describe('Submit Draft — submit & edit flows', () => {
         ],
         { multisigAccountId: MULTISIG_MID_ID, initiatorAccountId: SIGNER_ID },
       );
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       await allSettled(submitDraftModel.flowStarted, {
         scope: env.scope,
@@ -303,7 +310,13 @@ describe('Submit Draft — submit & edit flows', () => {
       const lastExtrinsicCall = spies.createExtrinsic.mock.calls.at(-1);
       expect(lastExtrinsicCall![0]).toBe(wrappedSentinel);
       expect(env.getState(submitDraftModel.$wrappedExtrinsic)).toBe(extrinsicSentinel);
-      expect(env.getState(submitDraftModel.$wrappedTxError)).toBe(false);
+
+      // Equivalent of the old `$wrappedTxError === false`: once the tier-1
+      // settle delay elapses, the whole flow reaches `ready` — proving neither
+      // wrapping-failure reason (`signing-path-unresolved`, `invalid-call-data`)
+      // is blocking it.
+      await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+      expect(env.getState(submitDraftModel.$readiness)).toEqual({ status: 'ready' });
     });
   });
 

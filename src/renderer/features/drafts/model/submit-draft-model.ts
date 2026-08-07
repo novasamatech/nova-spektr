@@ -47,7 +47,7 @@ import { type TransactionSigningPayload, signModel } from '@/features/operations
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { findLocalInitiator, findSubmittableInitiator } from '../lib/draft-initiator';
+import { findSubmittableInitiator } from '../lib/draft-initiator';
 import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 import { preserveSigningPath } from '../lib/preserve-signing-path';
 import { type SubmitDraftErrorKind } from '../lib/submit-draft-screen';
@@ -451,28 +451,6 @@ const {
 });
 
 // --- Initiator rehydration from signingPath ---
-
-/**
- * True iff the draft has an initiatorAccountId but the user can no longer sign
- * with it (so they must pick a replacement). The canonical signer is the path's
- * leaf — accept it if it matches any wallet account, independent of the
- * wallet's account-graph traversal.
- */
-const $initiatorUnavailable = combine(
-  {
-    draft: $draft,
-    availableAccounts: walletModel.$availableAccounts,
-    signatory: $signatoryStore,
-  },
-  ({ draft, availableAccounts, signatory }) => {
-    if (!draft?.initiatorAccountId) return false;
-    // A valid signatory was already picked (auto-selected or by the user) —
-    // the banner has nothing left to ask for.
-    if (signatory !== null) return false;
-
-    return nullable(findLocalInitiator(draft, availableAccounts));
-  },
-);
 
 // Pre-select the stored initiator when it is still a valid signatory
 sample({
@@ -1026,7 +1004,6 @@ export const submitDraftModel = {
   $initiator,
   $signatoryStore,
   $signatories,
-  $initiatorUnavailable,
   $fee,
   $wrappedTx,
   $wrappedExtrinsic,

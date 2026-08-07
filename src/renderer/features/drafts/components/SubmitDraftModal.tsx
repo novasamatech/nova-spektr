@@ -200,7 +200,6 @@ const ConfirmStep = () => {
   const flowChain = useUnit(submitDraftModel.$chain);
   const readiness = useUnit(submitDraftModel.$readiness);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
-  const initiatorUnavailable = useUnit(submitDraftModel.$initiatorUnavailable);
   const validationErrors = useUnit(submitDraftModel.$validationErrors);
   const validationValid = useUnit(submitDraftModel.$validationValid);
   const validationPending = useUnit(submitDraftModel.$validationPending);
@@ -419,13 +418,6 @@ const ConfirmStep = () => {
         </div>
       )}
 
-      {initiatorUnavailable && (
-        <div className="mx-5 mt-3 flex items-start gap-2 rounded-lg border border-icon-warning/20 bg-icon-warning/8 px-3 py-2">
-          <Icon className="mt-0.5 shrink-0 text-icon-warning" name="warnCutout" size={16} />
-          <FootnoteText className="text-text-secondary">{t('operations.drafts.initiatorUnavailable')}</FootnoteText>
-        </div>
-      )}
-
       <SignatoryPicker />
 
       <Box padding={[4, 5]}>
@@ -526,14 +518,12 @@ const ConfirmStep = () => {
         <div />
         <SignButton
           disabled={
-            initiatorUnavailable ||
             nullable(wrappedExtrinsic) ||
             nullable(fee) ||
             validationPending ||
             !validationValid ||
             !isRecipientRiskAccepted
           }
-          isDefault={initiatorUnavailable}
           type={confirm.signatoryWallet.type}
           onClick={submitDraftModel.confirmModel.startSigning}
         />
