@@ -18,7 +18,8 @@ export {
   getExpiryUrgency,
   sortByStake,
 } from './position-metrics';
-export { type PositionSortColumn, DEFAULT_SORT, isSortColumn, sortPositionRows } from './position-sorting';
+export { type PositionRole, derivePositionRole } from './position-role';
+export { DEFAULT_SORT } from './position-sorting';
 export { buildNominationRows, countNominations } from './nominations';
 export {
   type NominationSortColumn,

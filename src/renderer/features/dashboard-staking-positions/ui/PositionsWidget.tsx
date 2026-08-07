@@ -2,18 +2,18 @@ import { useUnit } from 'effector-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, CaptionText, CountChip, Icon, SmallTitleText } from '@/shared/ui';
-import { type TableSort, Tooltip } from '@/shared/ui-kit';
+import { Button, CountChip, Icon, SmallTitleText } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { usePositionRows } from '../hooks/usePositionRows';
 import { useTrackedAddressBookAccounts } from '../hooks/useTrackedAddressBookAccounts';
-import { type PositionRow, DEFAULT_SORT, isSortColumn, sortPositionRows } from '../lib';
+import { type PositionRow } from '../lib';
 import { positionActions } from '../model/position-actions';
 
 import { PositionDetailDrawer } from './PositionDetailDrawer';
 import { PositionsEmptyState } from './PositionsEmptyState';
-import { PositionsTable, SCROLL_THRESHOLD } from './PositionsTable';
+import { PositionsTable } from './PositionsTable';
 import { PositionsTableSkeleton } from './PositionsTableSkeleton';
 
 type Props = {
@@ -24,9 +24,9 @@ type Props = {
 /**
  * The staking tab's main surface: one row per (account × chain) position.
  *
- * Sorting is controlled rather than left to the table, because "largest stake
- * first" has to hold over planck strings no `Number` can compare — see
- * `lib/position-metrics`.
+ * Sorting and filtering live in the table itself: `DataTable` reads the
+ * comparators declared on each column, so "largest stake first" holds over
+ * planck strings no `Number` can compare — see `lib/position-metrics`.
  *
  * This is also where the dashboard's address-book selection is handed to
  * `aggregates/staking-positions`, once for the whole staking tab.
@@ -38,30 +38,14 @@ export const PositionsWidget = ({ accountIds }: Props) => {
   const wiredActions = useUnit(positionActions.$wiredActions);
   const changeValidatorsTarget = useUnit(positionActions.$changeValidatorsTarget);
 
-  const [sort, setSort] = useState<TableSort>(DEFAULT_SORT);
   const [openRowId, setOpenRowId] = useState<string | null>(null);
-
-  const sortedRows = useMemo(() => {
-    if (!isSortColumn(sort.column)) return rows;
-
-    return sortPositionRows(rows, sort.column, sort.direction);
-  }, [rows, sort]);
 
   // A row is looked up rather than stored: the position keeps updating while the
   // drawer is open, and a snapshot taken at click time would go stale on screen.
   const openRow = useMemo<PositionRow | null>(
-    () => sortedRows.find((row) => row.id === openRowId) ?? null,
-    [sortedRows, openRowId],
+    () => rows.find((row) => row.id === openRowId) ?? null,
+    [rows, openRowId],
   );
-
-  const handleSortChange = useCallback((next: TableSort | null) => {
-    // Clearing the sort would leave the rows in aggregate order, which means
-    // nothing to the user. `Table` cycles asc → desc → null, so `null` is folded
-    // back onto the same column as ascending: sending it to `DEFAULT_SORT` made
-    // the third click on the Staked column - the default one - land on the state
-    // it was already in, so Staked could never be sorted ascending at all.
-    setSort((current) => next ?? { column: current.column, direction: 'asc' });
-  }, []);
 
   const startStakingWired = wiredActions.includes('startStaking');
 
@@ -102,17 +86,7 @@ export const PositionsWidget = ({ accountIds }: Props) => {
         <PositionsEmptyState startStakingWired={startStakingWired} onStartStaking={startStaking} />
       ) : null}
 
-      {rows.length > 0 ? (
-        <>
-          <PositionsTable rows={sortedRows} sort={sort} onSortChange={handleSortChange} onRowClick={handleRowClick} />
-
-          {rows.length > SCROLL_THRESHOLD ? (
-            <CaptionText className="px-3 pt-2 text-text-tertiary">
-              {t('dashboard.staking.positions.scrollHint', { count: rows.length })}
-            </CaptionText>
-          ) : null}
-        </>
-      ) : null}
+      {rows.length > 0 ? <PositionsTable rows={rows} onRowClick={handleRowClick} /> : null}
 
       <PositionDetailDrawer row={openRow} onClose={closeDrawer} />
 

@@ -4,6 +4,7 @@ import { Provider } from 'effector-react';
 
 import { type Wallet, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
@@ -66,7 +67,13 @@ const row: PositionRow = {
   accessMode: 'direct',
   multisig: null,
   status: 'active',
+  networkName: 'Polkadot',
+  address: toAddress(accountId, { prefix: polkadotAssetHubChain.addressPrefix }),
   staked: '1000000000000',
+  role: 'nominator',
+  nominatingStake: '1000000000000',
+  selfStake: null,
+  totalBalance: null,
   sharePercent: 100,
   apy: null,
   activeValidatorCount: 0,

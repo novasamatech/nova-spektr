@@ -1,7 +1,9 @@
-import { type Asset, type Chain, type Wallet } from '@/shared/core';
+import { type Address, type Asset, type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type NominationStatus, type PositionStatus, type StakingPosition } from '@/domains/staking';
+
+import { type PositionRole } from './position-role';
 
 /**
  * How the user can act on the account behind a position.
@@ -41,8 +43,30 @@ export type PositionRow = {
   multisig: MultisigThreshold | null;
   /** Mirrors `position.status` — the table needs it as a sortable column key. */
   status: PositionStatus;
+  /** The relay this chain belongs to — Polkadot for Polkadot Asset Hub. */
+  networkName: string;
+  /** Address in the chain's own prefix — the string the row prints. */
+  address: Address;
   /** Ledger total — bonded plus everything still unbonding, in planck. */
   staked: string;
+  /** What the stash does with its bond. */
+  role: PositionRole;
+  /**
+   * Stake behind other people's validators, planck. A validator's own bond is
+   * not nominating stake, so it reads `0` there.
+   */
+  nominatingStake: string;
+  /**
+   * A validating stash's own stake in the active era, planck. `null` for every
+   * other role and while the era exposure is unread — never `0`, which would
+   * claim the chain said something it has not.
+   */
+  selfStake: string | null;
+  /**
+   * `free + reserved` of the staking asset on this chain, planck. `null` until
+   * a balance record for the pair has landed.
+   */
+  totalBalance: string | null;
   /** Share of the chain's visible total, in percent. */
   sharePercent: number;
   /**

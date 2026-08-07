@@ -93,6 +93,10 @@ export const sortRows = <T>(rows: T[], columns: DataTableColumn<T>[], sort: Tabl
   const sign = sort.direction === 'asc' ? 1 : -1;
 
   return [...rows].sort((a, b) => {
+    if (column.compare) {
+      return column.compare(a, b) * sign;
+    }
+
     if (column.value) {
       const left = column.value(a);
       const right = column.value(b);

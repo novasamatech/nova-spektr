@@ -3,15 +3,23 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
-import { getRelaychainAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
 import { type EraValidatorMap, type StakingPosition, validators as validatorsStore } from '@/domains/staking';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
 import { useVisibleDrafts } from '@/features/drafts';
-import { type PositionRow, averageApy, calculateSharePercent, getAccessMode, getMultisigThreshold } from '../lib';
+import {
+  type PositionRow,
+  averageApy,
+  calculateSharePercent,
+  derivePositionRole,
+  getAccessMode,
+  getMultisigThreshold,
+} from '../lib';
 
 import { useSignerAccountIds } from './useSignerAccountIds';
 
@@ -58,7 +66,22 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   const wallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
   const eraValidators = useUnit(validatorsStore.validatorsResource.$cache);
+  const balanceMap = useUnit(balanceModel.$balanceMap);
   const { drafts, available: draftsAvailable } = useVisibleDrafts();
+
+  // Keyed by (chain, account, asset) so a row can find the one balance that
+  // belongs to it without walking the whole map per row.
+  const balanceByKey = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const balance of Object.values(balanceMap)) {
+      map.set(
+        `${balance.chainId}-${balance.accountId}-${balance.assetId}`,
+        balance.free.add(balance.reserved).toString(),
+      );
+    }
+
+    return map;
+  }, [balanceMap]);
 
   const selectedIds = useMemo(() => {
     if (accountIds.length === 0) return null;
@@ -134,7 +157,16 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         accessMode: getAccessMode(account, wallets, signerAccountIds),
         multisig: getMultisigThreshold(account),
         status: position.status,
+        networkName: (chain.parentId ? chains[chain.parentId]?.name : undefined) ?? chain.name,
+        address: toAddress(position.accountId, { prefix: chain.addressPrefix }),
         staked: position.stake.total,
+        role: derivePositionRole(position),
+        // A validator's bond backs itself, not somebody else's set.
+        nominatingStake: position.kind === 'validator' ? '0' : position.stake.active,
+        // The era's snapshot, so it can lag a bond placed after the election —
+        // and it stays `null` until that exposure is read.
+        selfStake: position.validator?.ownStake ?? null,
+        totalBalance: balanceByKey.get(`${position.chainId}-${position.accountId}-${asset.assetId}`) ?? null,
         sharePercent: calculateSharePercent(
           position.stake.total,
           (chainTotals.get(position.chainId) ?? BN_ZERO).toString(),
@@ -155,6 +187,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     signerAccountIds,
     accountByAccountId,
     eraValidators,
+    balanceByKey,
     draftCountByKey,
     pending,
     draftsAvailable,

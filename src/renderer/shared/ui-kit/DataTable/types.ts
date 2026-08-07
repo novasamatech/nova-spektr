@@ -32,6 +32,13 @@ export type DataTableColumn<T> = {
    */
   value?: (row: T) => number | null;
   /**
+   * Exact ordering, when a `number` cannot express it — planck amounts run past
+   * `Number.MAX_SAFE_INTEGER`, so a column that must not mis-order two large
+   * bonds compares them as big integers here. Takes precedence over
+   * {@link value} for sorting only; filtering still uses `value`.
+   */
+  compare?: (a: T, b: T) => number;
+  /**
    * Full-precision value for the CSV. Falls back to {@link text} — the screen
    * abbreviates, a spreadsheet is where people do arithmetic.
    */

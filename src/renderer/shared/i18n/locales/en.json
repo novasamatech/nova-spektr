@@ -965,13 +965,21 @@
           "status": "Status",
           "apy": "APY",
           "validators": "Validators",
-          "unclaimed": "Unclaimed"
+          "unclaimed": "Unclaimed",
+          "network": "Network",
+          "chain": "Chain",
+          "address": "Address",
+          "role": "Type",
+          "totalBalance": "Total balance",
+          "nominatingStake": "Nominating stake",
+          "selfStake": "Self stake"
         },
         "status": {
           "active": "Active",
           "waiting": "Waiting",
           "inactive": "Inactive",
-          "bonded": "Bonded"
+          "bonded": "Bonded",
+          "unknown": "Unknown"
         },
         "statusHint": {
           "active": "Backed by elected validators this era — this stake is earning.",
@@ -995,8 +1003,6 @@
           "expiring": "expires now",
           "hint": "Unclaimed rewards are lost once their era leaves the chain's history."
         },
-        "scrollHint_one": "{count} position",
-        "scrollHint_other": "{count} positions · scroll for more",
         "empty": {
           "title": "No staking positions yet",
           "description": "Stake DOT and KSM directly from your accounts — including multisig and Address Book accounts via drafts.",
@@ -1056,7 +1062,14 @@
             "footer": "{total} nominations · {active} active, {waiting} waiting, {dropped} dropped out",
             "empty": "This account nominates no validators yet."
           }
-        }
+        },
+        "role": {
+          "validator": "Validator",
+          "nominator": "Nominator",
+          "idle": "Idle",
+          "unknown": "—"
+        },
+        "searchPlaceholder": "Search network, chain or address"
       }
     }
   },

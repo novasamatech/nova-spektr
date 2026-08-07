@@ -61,13 +61,33 @@ flowchart TD
 
 ### The table
 
-Columns, in order: **Account · Staked · Share · Status · APY · Validators · Unclaimed · actions**. Sorted by staked
-descending by default, and clearing the sort returns to that default rather than to the aggregate's arbitrary order.
+Columns, in order: **Network · Chain · Account · Address · Type · Total balance · Nominating stake · Self stake · Staked
+· Share · Status · APY · Validators · Unclaimed · actions**. Sorted by staked descending by default, and clearing the
+sort returns to that default rather than to the aggregate's arbitrary order.
+
+Fifteen columns do not fit a laptop, so the card **scrolls sideways** below ~1720px rather than squeezing: every amount
+crushed into an ellipsis defeats the point of a table people compare numbers in.
+
+Every column carries its own filter — a tick-list on Network, Chain, Type and Status, a substring on Address, a numeric
+range on every amount — plus one search box across the whole row, all through the shared `ui-kit/DataTable`. Filters,
+search and the CSV export run over the **strings the cells render**, never the underlying record, and the export's
+filename carries the network and type filters that produced it.
 
 - **Account** — the resolved name, the address, the chain, and everything about the account that changes what can be
   done with it: the multisig threshold and the count of pending drafts this very account already initiated on this very
   chain. A validator position adds a `Validator` chip here (with a tooltip) — the one glance-level marker that the rest
-  of the row reads differently.
+  of the row reads differently, and the one that survives the **Type** column being scrolled out of view. It is also the
+  one column with **no filter**: the name it prints is resolved inside the cell (custom name → contact → on-chain
+  identity → wallet), so a filter here could only match a raw field the user is not looking at. **Address** beside it is
+  the searchable identity.
+- **Type** — `Validator` / `Nominator` / `Idle` / `Unknown`. A stash is a validator or a nominator on `pallet_staking`,
+  never both, so the position's kind answers it first. `Idle` is a bonded stash that nominates nothing; `Unknown` is the
+  era validator set still being unread, which is a statement about what the app has looked at rather than about the
+  chain.
+- **Total balance / Nominating stake / Self stake** — what the address holds on the chain, what its bond backs for other
+  people, and what a validating stash puts behind itself. A validator's bond is not nominating stake, so that column
+  reads `0` there; self stake is the **era's** snapshot and can lag a bond placed after the election, and reads `—`
+  rather than `0` while the exposure is unread.
 - **Share** — a share of what the user is _looking at_. Under the dashboard's account filter the denominator is the
   visible chain total, so the column always adds up to 100%.
 - **Status** — `Active` / `Waiting` / `Inactive` / `Bonded`, each with the reason behind it. The reason is the point:

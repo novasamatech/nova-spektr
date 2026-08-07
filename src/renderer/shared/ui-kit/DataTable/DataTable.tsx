@@ -47,6 +47,12 @@ type Props<T> = {
   scrollThreshold?: number;
   scrollMaxHeight?: number;
   /**
+   * Width below which the table scrolls sideways instead of squeezing. A table
+   * with a dozen columns cannot fit a laptop, and columns crushed to an
+   * ellipsis are worse than a scrollbar.
+   */
+  minWidth?: number;
+  /**
    * Enables the export button. Receives the filters that produced the file, so
    * the name can carry them — a folder of exports is unreadable when three of
    * them differ only by a filter nobody wrote down.
@@ -77,6 +83,7 @@ export const DataTable = <T,>({
   searchPlaceholder,
   scrollThreshold = DEFAULT_SCROLL_THRESHOLD,
   scrollMaxHeight = DEFAULT_SCROLL_MAX_HEIGHT,
+  minWidth,
   exportFileName,
   emptyMessage,
   toolbar,
@@ -162,9 +169,12 @@ export const DataTable = <T,>({
         </div>
       )}
 
-      <div className={scrolls ? SCROLL_CLASS : undefined} style={scrolls ? { maxHeight: scrollMaxHeight } : undefined}>
+      <div
+        className={cnTw(minWidth && 'overflow-x-auto', scrolls && SCROLL_CLASS)}
+        style={scrolls ? { maxHeight: scrollMaxHeight } : undefined}
+      >
         <div className="table-container">
-          <table className="table">
+          <table className="table" style={minWidth ? { minWidth } : undefined}>
             <thead className="table-header">
               <tr>
                 {columns.map(column => {

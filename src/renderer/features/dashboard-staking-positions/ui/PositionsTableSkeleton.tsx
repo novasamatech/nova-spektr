@@ -1,64 +1,43 @@
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { type Column, Skeleton, Table } from '@/shared/ui-kit';
+import { type DataTableColumn, DataTable, Skeleton } from '@/shared/ui-kit';
 
-import { type PositionColumnKey, POSITION_COLUMNS } from './columnLayout';
+import { POSITIONS_MIN_WIDTH, POSITION_COLUMNS } from './columnLayout';
 
 const SKELETON_ROWS = 5;
 
-/** Placeholder row — one field per column, so the table types line up. */
-type SkeletonRow = Record<PositionColumnKey, null> & { id: string };
-
-const PLACEHOLDER_WIDTH: Record<PositionColumnKey, string> = {
-  accountId: '180px',
-  staked: '80px',
-  sharePercent: '36px',
-  status: '56px',
-  apy: '40px',
-  activeValidatorCount: '52px',
-  asset: '88px',
-  accessMode: '16px',
-};
+type SkeletonRow = { id: string };
 
 /**
  * The loaded table's own header and column widths, with the cells blanked.
  *
- * Reusing `Table` rather than drawing a stand-in grid is what removes the jump:
- * the row height, the paddings and the widths are literally the same code, so
- * there is nothing left to drift.
+ * Reusing `DataTable` rather than drawing a stand-in grid is what removes the
+ * jump: the row height, the paddings and the widths are literally the same
+ * code, so there is nothing left to drift. Its toolbar stays off — there is
+ * nothing to search or export yet.
  */
 export const PositionsTableSkeleton = () => {
   const { t } = useI18n();
 
   const rows = useMemo<SkeletonRow[]>(
-    () =>
-      Array.from({ length: SKELETON_ROWS }, (_, index) => ({
-        id: `skeleton-${index}`,
-        accountId: null,
-        staked: null,
-        sharePercent: null,
-        status: null,
-        apy: null,
-        activeValidatorCount: null,
-        asset: null,
-        accessMode: null,
-      })),
+    () => Array.from({ length: SKELETON_ROWS }, (_, index) => ({ id: `skeleton-${index}` })),
     [],
   );
 
-  const columns = useMemo<Column<SkeletonRow>[]>(
+  const columns = useMemo<DataTableColumn<SkeletonRow>[]>(
     () =>
       POSITION_COLUMNS.map((column) => ({
-        key: column.key,
+        id: column.id,
         title: column.titleKey ? t(`dashboard.staking.positions.${column.titleKey}`) : '',
         width: column.width,
-        render: () => <Skeleton width={PLACEHOLDER_WIDTH[column.key]} height="20px" />,
+        decorative: true,
+        render: () => <Skeleton width={column.placeholder} height="20px" />,
       })),
     [t],
   );
 
-  // Same stickiness as the loaded table — the header must not gain a divider
-  // and start pinning only when the data lands.
-  return <Table columns={columns} data={rows} getRowKey={(row) => row.id} stickyHeader />;
+  // Same minimum width as the loaded table — the columns must not reflow the
+  // moment the data lands.
+  return <DataTable columns={columns} rows={rows} getRowId={(row) => row.id} minWidth={POSITIONS_MIN_WIDTH} />;
 };
