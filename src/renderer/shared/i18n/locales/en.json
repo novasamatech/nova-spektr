@@ -553,7 +553,9 @@
         "typeCustom": "Custom Selection",
         "selectAll": "Select All",
         "deselectAll": "Deselect All",
-        "selectedCount": "{count} selected"
+        "selectedCount": "{count} selected",
+        "network": "Network",
+        "anyNetwork": "Any network"
       },
       "sources": {
         "wallet": "Wallet",
@@ -3261,6 +3263,12 @@
       "overlap_one": "{count} account appears in multiple categories",
       "overlap_other": "{count} accounts appear in multiple categories",
       "empty": "No accounts match this filter"
+    },
+    "quickFilter": {
+      "title": "Filter accounts",
+      "network": "Network",
+      "source": "Source",
+          "clear": "Clear filters"
     }
   },
   "price": {

@@ -6,8 +6,10 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, includes } from '@/shared/lib/utils';
 import { Counter, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Popover, SearchInput, Tabs, Tooltip } from '@/shared/ui-kit';
-import { type AccountEntry, accountPresetsModel } from '@/aggregates/account-presets';
+import { type AccountEntry, type PresetFilterCriteria, accountPresetsModel } from '@/aggregates/account-presets';
 import { PresetManagementModal, SourceBreakdownBar } from '@/widgets/PresetManagementModal';
+
+import { QuickFilterPopover } from './QuickFilterPopover';
 
 type TabCounterProps = {
   label: string;
@@ -36,6 +38,8 @@ const ALL_VALUE = '__all__';
 type Props = {
   $activePresetId: Store<string | null>;
   onActivate: (id: string | null) => void;
+  $quickFilters: Store<PresetFilterCriteria>;
+  onQuickFiltersChange: (filters: PresetFilterCriteria) => void;
 };
 
 /**
@@ -46,7 +50,12 @@ type Props = {
  * break the slot call path (`TypeError: render is not a function`). Memoize
  * child components instead if needed.
  */
-export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) => {
+export const AccountSelectorSwitcher = ({
+  $activePresetId,
+  onActivate,
+  $quickFilters,
+  onQuickFiltersChange,
+}: Props) => {
   const { t } = useI18n();
   const activePresetId = useUnit($activePresetId);
   const segmentPresets = useUnit(accountPresetsModel.$segmentPresets);
@@ -162,6 +171,8 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
         ) : (
           <IconButton name="settingsLite" onClick={handleOpenSettings} />
         )}
+
+        <QuickFilterPopover $filters={$quickFilters} onChange={onQuickFiltersChange} />
       </div>
       <PresetManagementModal isOpen={modalOpen} onClose={handleCloseModal} />
     </>

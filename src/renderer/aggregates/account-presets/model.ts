@@ -10,10 +10,17 @@ import {
   type BackendContactSeed,
   type LocalContactSeed,
   type WalletEntrySeed,
+  applyPresetFilter,
   buildMergedEntries,
   matchPreset,
 } from './lib';
-import { type AccountEntry, type AccountPreset, type PresetFilterCriteria, type PresetType } from './types';
+import {
+  type AccountEntry,
+  type AccountPreset,
+  type PresetFilterCriteria,
+  type PresetType,
+  EMPTY_FILTERS,
+} from './types';
 
 const MAX_SEGMENTS = 3;
 const PRESETS_KEY = 'account_presets';
@@ -226,16 +233,49 @@ type MatchedSource = {
 const resolveMatched = ({ activeId, byPresetId, all }: MatchedSource) =>
   activeId ? (byPresetId[activeId] ?? all) : all;
 
+const resolveMatchedWithQuickFilter = ({
+  quickFilter,
+  ...source
+}: MatchedSource & { quickFilter: PresetFilterCriteria }) => applyPresetFilter(quickFilter, resolveMatched(source));
+
+/**
+ * An ad-hoc narrowing on top of whichever preset is active.
+ *
+ * Deliberately **not persisted**: a saved preset is a decision the user made
+ * and named, a quick filter is a look they are taking right now, and a look
+ * that survived a restart would silently scope the whole dashboard to something
+ * nobody remembers choosing. "Save as preset" is how a look becomes a
+ * decision.
+ */
+const $dashboardQuickFilter = createStore<PresetFilterCriteria>(EMPTY_FILTERS);
+const $operationsQuickFilter = createStore<PresetFilterCriteria>(EMPTY_FILTERS);
+
+const dashboardQuickFilterChanged = createEvent<PresetFilterCriteria>();
+const operationsQuickFilterChanged = createEvent<PresetFilterCriteria>();
+
+$dashboardQuickFilter.on(dashboardQuickFilterChanged, (_, filters) => filters);
+$operationsQuickFilter.on(operationsQuickFilterChanged, (_, filters) => filters);
+
 const $matchedDashboardEntriesRaw = combine(
-  { activeId: $activeDashboardPresetId, byPresetId: $entriesByPresetId, all: $allEntries },
-  resolveMatched,
+  {
+    activeId: $activeDashboardPresetId,
+    byPresetId: $entriesByPresetId,
+    all: $allEntries,
+    quickFilter: $dashboardQuickFilter,
+  },
+  resolveMatchedWithQuickFilter,
 );
 const $matchedDashboardEntries = createStore<AccountEntry[]>([], { updateFilter: matchedEntriesFilter });
 $matchedDashboardEntries.on($matchedDashboardEntriesRaw, (_, next) => next);
 
 const $matchedOperationsEntriesRaw = combine(
-  { activeId: $activeOperationsPresetId, byPresetId: $entriesByPresetId, all: $allEntries },
-  resolveMatched,
+  {
+    activeId: $activeOperationsPresetId,
+    byPresetId: $entriesByPresetId,
+    all: $allEntries,
+    quickFilter: $operationsQuickFilter,
+  },
+  resolveMatchedWithQuickFilter,
 );
 const $matchedOperationsEntries = createStore<AccountEntry[]>([], { updateFilter: matchedEntriesFilter });
 $matchedOperationsEntries.on($matchedOperationsEntriesRaw, (_, next) => next);
@@ -250,10 +290,12 @@ export const accountPresetsModel = {
   $activeDashboardPresetId,
   $activeDashboardPreset,
   $matchedDashboardEntries,
+  $dashboardQuickFilter,
 
   $activeOperationsPresetId,
   $activeOperationsPreset,
   $matchedOperationsEntries,
+  $operationsQuickFilter,
 
   presetCreated,
   presetUpdated,
@@ -263,4 +305,6 @@ export const accountPresetsModel = {
 
   dashboardPresetActivated,
   operationsPresetActivated,
+  dashboardQuickFilterChanged,
+  operationsQuickFilterChanged,
 };
