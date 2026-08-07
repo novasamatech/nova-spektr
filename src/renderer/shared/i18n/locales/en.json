@@ -487,6 +487,17 @@
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
+  "dataTable": {
+    "clearFilters": "Clear filters",
+    "clearColumn": "Clear this filter",
+    "export": "Export CSV",
+    "filterColumn": "Filter column",
+    "containsPlaceholder": "Contains…",
+    "min": "Min",
+    "max": "Max",
+    "noMatches": "No rows match the current filters",
+    "rowCount": "Showing {visible} of {total}"
+  },
   "dateRangePicker": {
     "lastMonth": "Last month",
     "lastWeek": "Last week",

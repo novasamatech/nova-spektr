@@ -49,6 +49,14 @@ export {
   type TableVirtualization,
   Table,
 } from './Table';
+export {
+  type DataTableColumn,
+  type DataTableFilterKind,
+  type DataTableFilterState,
+  type DataTableRange,
+  DataTable,
+  emptyFilterState,
+} from './DataTable';
 export { Indicator } from './Indicator/Indicator';
 export { NotificationProvider, useNotification } from './NotificationContext';
 export { Speedometer } from './Speedometer/Speedomenter';
