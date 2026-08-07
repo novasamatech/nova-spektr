@@ -568,6 +568,17 @@ const $timeoutReason = combine(
 
 const $confirmReady = confirmModel.$confirms.map((confirms) => confirms.at(0) ?? null);
 
+// Validation reads balances that arrive over the same node as everything else, so
+// when the node goes quiet it never reaches a verdict at all: `$validationDone`
+// stays false, the Sign button stays disabled with `$validationPending` false, and
+// nothing on screen explains why. Folding it into readiness gives that dead end the
+// same tier-3 timeout treatment as the rest of the flow.
+//
+// Null means "no verdict yet"; `true` covers both a clean pass and a validation that
+// finished with real errors — those belong inline on the confirm screen via
+// `TransactionValidationError`, never as a block.
+const $validationSettled = $validationDone.map((done) => (done ? true : null));
+
 // A plain store, NOT `$step.map(...)`. The factory uses `active` as a `sample`
 // clock, and a derived store used as a clock does not emit under `fork()` —
 // the readiness timers would silently never arm in tests. `stepChanged` is an
@@ -590,6 +601,14 @@ const { $readiness, retryRequested } = createOperationReadiness({
     { key: 'estimating-fee', store: $fee, error: $feeFailure, retry: retryFee },
     { key: 'confirming', store: $confirmReady, blocked: $signatoryBlock },
     { key: 'confirming', store: $confirmReady, blocked: $confirmBlock },
+    // Last on purpose. Order only decides the reported `pending.step` and the
+    // tier-1 scan order, and this requirement declares no `blocked` store at all;
+    // validation is the habitual laggard because it waits on balances, so naming
+    // it only once everything else is satisfied is the informative choice.
+    //
+    // No `error`/`retry`: `createStoreFromEffect` has no error channel, and
+    // validation re-runs by itself whenever its params change.
+    { key: 'validating', store: $validationSettled },
   ],
 });
 

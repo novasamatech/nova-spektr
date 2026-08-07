@@ -1,4 +1,10 @@
-export type OperationStep = 'settling' | 'connecting' | 'resolving-path' | 'wrapping' | 'estimating-fee' | 'confirming';
+export type OperationStep =
+  | 'connecting'
+  | 'resolving-path'
+  | 'wrapping'
+  | 'estimating-fee'
+  | 'confirming'
+  | 'validating';
 
 export type OperationBlockReasonKind =
   | 'network-disabled'

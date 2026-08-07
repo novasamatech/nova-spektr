@@ -16,11 +16,12 @@ import {
 } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { toAddress } from '@/shared/lib/utils';
-import { createAccountId } from '@/shared/mocks';
+import { createAccountId, dotAsset } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { OPERATION_READINESS_TIMEOUT, OPERATION_SETTLE_DELAY, activeOperationRoute } from '@/shared/transactions';
 import { type Draft, type PathNode, draftsResource, draftsService, operationsService } from '@/domains/backend';
 import { type AnyAccount, type Extrinsic, accounts, transactionService } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
@@ -35,7 +36,7 @@ import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { graphModel } from '@/features/signing-path';
-import { kusamaChainId, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
+import { createBalance, kusamaChainId, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import {
   type FeatureTestEnvironment,
   FeatureTestBuilder,
@@ -191,6 +192,8 @@ const fakeApi = {
   createType: () => fakeCall,
   registry: { createType: () => fakeCall },
   consts: { multisig: { depositBase: new BN(20), depositFactor: new BN(1) } },
+  // The tx validator keys its balance lookups on the chain id it reads here.
+  genesisHash: { toHex: () => polkadotChainId },
 } as unknown as ApiPromise;
 
 const wrappedSentinel = {
@@ -311,12 +314,14 @@ describe('Submit Draft — submit & edit flows', () => {
       expect(lastExtrinsicCall![0]).toBe(wrappedSentinel);
       expect(env.getState(submitDraftModel.$wrappedExtrinsic)).toBe(extrinsicSentinel);
 
-      // Equivalent of the old `$wrappedTxError === false`: once the tier-1
-      // settle delay elapses, the whole flow reaches `ready` — proving neither
-      // wrapping-failure reason (`signing-path-unresolved`, `invalid-call-data`)
-      // is blocking it.
+      // Equivalent of the old `$wrappedTxError === false`: once the tier-1 settle
+      // delay elapses the flow has advanced past every requirement up to and
+      // including `confirming` — proving neither wrapping-failure reason
+      // (`signing-path-unresolved`, `invalid-call-data`) is blocking it. It stops
+      // at `validating` because no balances are seeded here, which is the
+      // requirement's own case below.
       await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
-      expect(env.getState(submitDraftModel.$readiness)).toEqual({ status: 'ready' });
+      expect(env.getState(submitDraftModel.$readiness)).toEqual({ status: 'pending', step: 'validating' });
     });
   });
 
@@ -1125,6 +1130,87 @@ describe('Submit Draft — submit & edit flows', () => {
           status: 'blocked',
           reason: { kind: 'internal', detail: 'initiator wallet -2 not found' },
         });
+      });
+    });
+
+    describe('validation as a requirement', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'Validation that cannot finish times out instead of disabling Sign in silence',
+        });
+      });
+
+      // Native DOT balance for the only account the draft flow asks about — the
+      // signatory, which is also the multisig's next hop.
+      const signerBalance = createBalance(SIGNER_ID, polkadotChainId, dotAsset.assetId, '10000000000000');
+
+      // Validation waits on balances that arrive over the same node as everything
+      // else, so a quiet node strands it. Before it became a requirement this was
+      // the flow's remaining silent dead end: every readiness step satisfied,
+      // `$validationDone` false forever, and a Sign button disabled with
+      // `$validationPending` false — no spinner, no error, nothing to act on.
+      it('blocks with the timeout reason when validation never reaches a verdict', async () => {
+        seamSpies();
+        // No balances seeded: `$validationBalances` stays null, so the validator's
+        // params never complete and it is never even invoked.
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b.withApi(polkadotChainId, fakeApi).withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+
+        // Everything ahead of validation is genuinely settled, which is what makes
+        // `validating` the reported step rather than a stand-in for a stalled fee.
+        expect(env.getState(submitDraftModel.$wrappedTx)).toBe(wrappedSentinel);
+        expect(env.getState(submitDraftModel.$fee)).not.toBeNull();
+        expect(env.getState(submitDraftModel.confirmModel.$confirms)).not.toEqual([]);
+        expect(env.getState(submitDraftModel.$validationDone)).toBe(false);
+        expect(readiness()).toEqual({ status: 'pending', step: 'validating' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT - 1);
+        expect(readiness()).toEqual({ status: 'pending', step: 'validating' });
+
+        // The chain is CONNECTED, so the backstop names the throttling signature.
+        await vi.advanceTimersByTimeAsync(1);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'node-unresponsive' } });
+      });
+
+      // The regression guard for the line between the two: a validation that
+      // *finishes* and reports real errors (not enough for the fee) is a verdict,
+      // so readiness is satisfied and the confirm screen keeps rendering — the
+      // errors belong inline under `TransactionValidationError`, with Sign
+      // disabled by `$validationValid`. Turning them into a blocked screen would
+      // replace an actionable message with "change node".
+      it('stays ready and surfaces the errors inline when validation fails on balance', async () => {
+        seamSpies();
+        // Far more than the seeded balance, so `tryWithdraw` reports a shortfall.
+        vi.spyOn(transactionService, 'getTransactionFee').mockResolvedValue(new BN('99999000000000000'));
+
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b
+            .withApi(polkadotChainId, fakeApi)
+            .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+            .withStoreValue(balanceModel.__test.$balanceMap, { [signerBalance.id]: signerBalance }),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        expect(env.getState(submitDraftModel.$validationDone)).toBe(true);
+        expect(env.getState(submitDraftModel.$validationValid)).toBe(false);
+        expect(env.getState(submitDraftModel.$validationErrors).length).toBeGreaterThan(0);
+
+        // Not blocked — the confirm screen renders and the errors go inline.
+        expect(readiness()).toEqual({ status: 'ready' });
+
+        // And it stays that way: the tier-3 backstop has nothing left to catch.
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT);
+        expect(readiness()).toEqual({ status: 'ready' });
       });
     });
   });

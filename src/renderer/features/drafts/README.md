@@ -250,10 +250,10 @@ with no multisig hop) are covered the same way as multisig ones.
 ### Why the confirm step can't open
 
 Reaching the confirm screen needs several things to line up: a live connection, a re-resolvable signing path, a wrapped
-extrinsic, a fee estimate, and a chosen signatory. Any one of them can fail to arrive — a node that is down, throttling
-or simply silent; a path whose accounts are gone; call data that no longer decodes. The step used to have a single
-observable state for all of it, "Preparing signing data…", with no timeout and no way out: a throttled node left the
-modal spinning until the user gave up.
+extrinsic, a fee estimate, a chosen signatory, and a completed balance validation. Any one of them can fail to arrive —
+a node that is down, throttling or simply silent; a path whose accounts are gone; call data that no longer decodes. The
+step used to have a single observable state for all of it, "Preparing signing data…", with no timeout and no way out: a
+throttled node left the modal spinning until the user gave up.
 
 Waiting is now a verdict with three outcomes — **ready**, **preparing** (naming the step still outstanding) and
 **blocked** (naming a reason and offering the remediation that matches it):
@@ -280,6 +280,14 @@ can't be reached.
 Blocking is not final. **Try again** re-runs the outstanding steps with a fresh deadline, and a chain that reconnects on
 its own while the flow sits blocked retries it automatically — but only while it is blocked, so a flapping node can't
 keep resetting the deadline of a flow that is still legitimately preparing.
+
+**Validation counts as one of the steps.** It reads balances that arrive over the same node as everything else, so a
+quiet node strands it: previously that left the Sign button disabled with no spinner and no error — the same silent dead
+end, one screen later. It is the last requirement checked, because it waits on balances and is normally the last to
+finish, so naming it is only informative once everything else is in. A validation that _finishes_ and reports real
+problems (not enough to cover the fee) has reached a verdict: the confirm screen stays, the problems are listed inline
+under the details, and Sign stays disabled. Only a validation that never finishes at all reaches the deadline and
+blocks.
 
 **Render order** on the submit modal: the empty-wallet screen (no signatories at all) → a blocked verdict → the
 preparing spinner → the confirm screen. A blocked verdict outranks the spinner because it is terminal for that attempt.
