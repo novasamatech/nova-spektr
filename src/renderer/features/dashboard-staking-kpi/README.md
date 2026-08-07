@@ -154,11 +154,40 @@ Three rules keep a hover-driven screen with a `NamedAccount` in every row from r
 scoping the request to the filters would re-download a year of history on every filter click and cache a separate copy
 per combination. Only the **period** changes a request, because it changes which eras are attributed.
 
+## Rewards by Account
+
+A fifth widget shipped from this folder — a full-width table answering the question the claim drill-down cannot: **which
+of my addresses earned what, and what is that worth annualised**. One row per (account × chain), with Network, Chain,
+Account, Address, Type, Total staked, Rewards in period and APY %.
+
+It is a separate table rather than a mode of the validator view because the two have different units. A payout is
+`payout_stakers_by_page(validator, era, page)`, so the claim view is organised by validator and every row can express
+one call; an account row cannot, and putting a Claim button on it would invite the same call to be submitted twice.
+
+- **Rewards** come from the indexer's **raw payout rows** — received amounts with a timestamp — so an arbitrary date
+  range applies to them exactly. This is deliberately not the drill-down's "earned" figure, which is **accrued** by era
+  replay; the two are different facts and are never mixed.
+- **APY %** is simple, non-compounding annualisation: `rewards / staked × 365 / days`. The denominator is the stake **as
+  it is now**, because the ledger only reports today's bond and reconstructing yesterday's would cost an `erasStakers`
+  read per era in the range. A position that changed size mid-window is therefore not adjusted for, which the tooltip
+  says in words rather than leaving the reader to assume otherwise.
+- Under each figure sits the **network's own current reward rate**, as a benchmark. It is labelled as the network's and
+  is the _current_ rate, not one recomputed over the chosen window — a forward-looking figure next to a realised one,
+  never presented as the same kind of number.
+- A position that stakes nothing shows `—`, not `0%`: a yield over nothing is not zero, it does not exist.
+
 ### The period tabs
 
-`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the earned attribution window (the donut
-and the Earned column), and the CSV export. They deliberately do **not** filter the claim: a payout expires by **era**,
-not by date, and hiding part of what is still claimable behind a date filter hides money.
+`7d / 30d / All time / Custom` sit on the rewards drill-down and on the Rewards by Account table, and move **two**
+things: the earned attribution window (the donut, the Earned column and the table's rows), and the CSV export. They
+deliberately do **not** filter the validator table or the claim: a payout expires by **era**, not by date, and hiding
+part of what is still claimable behind a date filter hides money.
+
+**Custom** opens a date-range picker, and only then — a date field sitting next to "30d" invites the user to set both
+and wonder which one won. Both ends of the range are inclusive of the whole day, so 1 Jul – 31 Jul is 31 days, and a
+half-picked range is a real state: nothing is reported until the second end lands, because annualising over a length
+nobody chose would be an invented number. A range that ends in the past still costs the eras since it **started** — eras
+are counted backwards from the active one, so a July window looked at in September replays September's eras too.
 
 There is deliberately **no "received in period" figure** next to the tabs. Received (actual payouts, on the indexer's
 timestamps) and earned (the eras' arithmetic) are different facts on different clocks — old eras claimed inside the

@@ -22,7 +22,7 @@ import { formatAssetAmountExact, sumFiat } from '../lib/amounts';
 import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
 import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
-import { type RewardPeriod, DEFAULT_REWARD_PERIOD, periodStart } from '../lib/reward-period';
+import { type RewardWindow, DEFAULT_REWARD_WINDOW, windowBounds, windowSlug } from '../lib/reward-period';
 import { DEFAULT_REWARD_SORT, isRewardSortColumn, sortRewardRows } from '../lib/reward-sorting';
 import { type ClaimRow } from '../lib/types';
 import {
@@ -98,7 +98,7 @@ export const ClaimModal = memo(
     const signableChains = useSignableChains();
     const blockedChains = useUnit(dashboardStakingKpiActions.$blockedClaimChains);
 
-    const [period, setPeriod] = useState<RewardPeriod>(DEFAULT_REWARD_PERIOD);
+    const [rewardWindow, setRewardWindow] = useState<RewardWindow>(DEFAULT_REWARD_WINDOW);
     const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
     const [nominatorFilter, setNominatorFilter] = useState<AccountId | null>(null);
     const [tableSort, setTableSort] = useState<TableSort>(DEFAULT_REWARD_SORT);
@@ -106,7 +106,7 @@ export const ClaimModal = memo(
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
 
-    const { rewards, pendingChains } = useValidatorRewards(positions, period);
+    const { rewards, pendingChains } = useValidatorRewards(positions, rewardWindow);
     const pendingChainSet = useMemo(() => new Set(pendingChains), [pendingChains]);
 
     /**
@@ -345,17 +345,18 @@ export const ClaimModal = memo(
 
     const rawPayouts = useRawRewardPayouts(payoutRequests);
 
-    const windowStart = periodStart(period);
+    const bounds = windowBounds(rewardWindow);
     const windowedPayouts = useMemo(
       () =>
         rawPayouts.filter(
           (payout) =>
-            (windowStart === undefined || payout.timestamp >= windowStart) &&
+            (bounds.from === null || payout.timestamp >= bounds.from) &&
+            (bounds.to === null || payout.timestamp <= bounds.to) &&
             (chainFilter === null || payout.chainId === chainFilter) &&
             // The indexer speaks addresses; the filter speaks account ids.
             (nominatorFilter === null || toAccountId(payout.address) === nominatorFilter),
         ),
-      [rawPayouts, windowStart, chainFilter, nominatorFilter],
+      [rawPayouts, bounds.from, bounds.to, chainFilter, nominatorFilter],
     );
 
     /**
@@ -389,8 +390,11 @@ export const ClaimModal = memo(
       const network =
         chainFilter === null ? 'all-networks' : (networks.find((n) => n.chainId === chainFilter)?.chainName ?? '');
 
-      downloadCsv(csvFileName('reward-payouts', { parts: [network, period] }), buildCsv(columns, windowedPayouts));
-    }, [windowedPayouts, scopedClaimRows, chainFilter, networks, period, t]);
+      downloadCsv(
+        csvFileName('reward-payouts', { parts: [network, windowSlug(rewardWindow)] }),
+        buildCsv(columns, windowedPayouts),
+      );
+    }, [windowedPayouts, scopedClaimRows, chainFilter, networks, rewardWindow, t]);
 
     const handleClaimRow = useCallback(
       (row: ValidatorRewardRow) => claimRequested({ requests: toClaimRequests([row], signableChains) }),
@@ -610,7 +614,7 @@ export const ClaimModal = memo(
                 slightly different number (actual payouts land on their own
                 clock) read as a discrepancy rather than a different fact. */}
               <div className="flex items-center justify-end gap-4">
-                <PeriodTabs value={period} onChange={setPeriod} />
+                <PeriodTabs value={rewardWindow} onChange={setRewardWindow} />
               </div>
 
               {/* One network is not a choice — the filter appears with the second. */}

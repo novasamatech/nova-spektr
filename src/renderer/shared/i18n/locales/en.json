@@ -906,7 +906,9 @@
           "period": {
             "7d": "7d",
             "30d": "30d",
-            "all": "All time"
+            "all": "All time",
+            "custom": "Custom",
+            "pickDates": "Pick dates"
           }
         },
         "positions": {
@@ -1070,6 +1072,26 @@
           "unknown": "—"
         },
         "searchPlaceholder": "Search network, chain or address"
+      },
+      "rewardsTable": {
+        "title": "Rewards by Account",
+        "noSelection": "Select accounts above to see their rewards",
+        "empty": "No rewards were paid to the selected accounts in this window",
+        "pickRange": "Pick both ends of the date range to see rewards for it",
+        "searchPlaceholder": "Search network, chain or address",
+        "windowHint": "Yield is annualised from {days} days at the current bonded amount",
+        "apyHint": "Rewards received in the window, annualised over the amount staked today. A position that changed size mid-window is not adjusted for.",
+        "networkAverage": "network {value}%",
+        "columns": {
+          "network": "Network",
+          "chain": "Chain",
+          "account": "Account",
+          "address": "Address",
+          "role": "Type",
+          "totalStaked": "Total staked",
+          "rewards": "Rewards in period",
+          "apy": "APY %"
+        }
       }
     }
   },
