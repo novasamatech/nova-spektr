@@ -43,5 +43,5 @@ export const RewardsTableSkeleton = ({ titles }: Props) => {
     [titles],
   );
 
-  return <Table columns={columns} data={rows} getRowKey={(row) => row.id} />;
+  return <Table columns={columns} data={rows} getRowKey={(row) => row.id} stickyHeader />;
 };

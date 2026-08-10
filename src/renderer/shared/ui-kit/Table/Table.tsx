@@ -43,6 +43,15 @@ type TableProps<T> = {
   className?: string;
   cellAlign?: CellAlign;
   /**
+   * Pins the header row while the rows scroll under it.
+   *
+   * The table does not become the scroll container — the caller's does, which
+   * is why this also drops the container's own `overflow`. An element with
+   * `overflow: hidden` is a scrollport, and a sticky header inside one sticks
+   * to _that_ box, which then scrolls away with the rows and pins nothing.
+   */
+  stickyHeader?: boolean;
+  /**
    * Controlled sort state. When provided, the table does not sort data itself —
    * data is expected to arrive pre-sorted. Use together with `onSortChange`.
    */
@@ -68,6 +77,7 @@ const TableComponent = <T,>({
   data,
   className,
   cellAlign = 'middle',
+  stickyHeader = false,
   sort,
   defaultSort,
   onSortChange,
@@ -130,7 +140,7 @@ const TableComponent = <T,>({
   }, [data, columns, isControlled, internalSort]);
 
   return (
-    <div className={cnTw('table-container', className)}>
+    <div className={cnTw('table-container', { 'table-container--sticky-header': stickyHeader }, className)}>
       <table className="table">
         <thead className="table-header">
           <tr>

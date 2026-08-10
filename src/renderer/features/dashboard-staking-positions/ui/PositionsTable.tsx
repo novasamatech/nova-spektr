@@ -23,21 +23,6 @@ export const SCROLL_THRESHOLD = 20;
  */
 const SCROLL_MAX_HEIGHT = 448;
 
-/**
- * Keeps the sticky header working: `.table-container` is `overflow: hidden`,
- * which would make it the sticky ancestor and pin the header to a box that
- * never scrolls. Handing the scroll to the wrapper and letting the header cells
- * stick is what actually holds the columns in place.
- */
-const SCROLL_CLASS = [
-  'overflow-y-auto',
-  '[&_.table-container]:overflow-visible',
-  '[&_.table-header-cell]:sticky',
-  '[&_.table-header-cell]:top-0',
-  '[&_.table-header-cell]:z-1',
-  '[&_.table-header-cell]:bg-white',
-].join(' ');
-
 type Props = {
   rows: PositionRow[];
   sort: TableSort;
@@ -110,11 +95,15 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
   const scrolls = rows.length > SCROLL_THRESHOLD;
 
   return (
-    <div className={scrolls ? SCROLL_CLASS : undefined} style={scrolls ? { maxHeight: SCROLL_MAX_HEIGHT } : undefined}>
+    <div
+      className={scrolls ? 'overflow-y-auto' : undefined}
+      style={scrolls ? { maxHeight: SCROLL_MAX_HEIGHT } : undefined}
+    >
       <Table
         columns={columns}
         data={rows}
         sort={sort}
+        stickyHeader={scrolls}
         getRowKey={(row) => row.id}
         onSortChange={onSortChange}
         onRowClick={onRowClick}

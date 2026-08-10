@@ -290,7 +290,7 @@ export const NominationsModal = memo(({ positions, chains, currency, walletByAcc
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <Table columns={columns} data={visibleRows} getRowKey={(item) => item.key} />
+                <Table columns={columns} data={visibleRows} getRowKey={(item) => item.key} stickyHeader />
               </div>
             </div>
           </div>

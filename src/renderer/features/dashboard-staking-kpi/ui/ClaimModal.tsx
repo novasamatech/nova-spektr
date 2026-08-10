@@ -668,7 +668,7 @@ export const ClaimModal = memo(
                         </FootnoteText>
                       )
                     ) : (
-                      <Table columns={columns} data={displayRows} getRowKey={(item) => item.key} />
+                      <Table columns={columns} data={displayRows} getRowKey={(item) => item.key} stickyHeader />
                     )}
                   </div>
                 </div>

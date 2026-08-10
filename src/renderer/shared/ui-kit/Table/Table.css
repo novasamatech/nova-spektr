@@ -15,6 +15,28 @@
   background-color: white;
 }
 
+/*
+ * Sticky header, pinned to the *caller's* scroll container.
+ *
+ * The container drops its own overflow so it stops being a scrollport of its
+ * own — otherwise the header sticks to a box that scrolls away with the rows.
+ * The offset goes on the cells rather than on <thead>/<tr>: under
+ * `border-collapse: collapse` those rows have no border box to stick with. Each
+ * cell therefore carries the background itself, and the divider is an inset
+ * shadow because a collapsed border would be shared with the first row.
+ */
+.table-container--sticky-header {
+  overflow: visible;
+}
+
+.table-container--sticky-header .table-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 var(--divider);
+  background-color: white;
+}
+
 .table-header-cell {
   padding: 12px;
   color: var(--text-tertiary);
@@ -40,18 +62,41 @@
   background-color: var(--action-background-hover);
 }
 
+/*
+ * A header names its column on one line. Left to wrap, a header that is a few
+ * pixels short of its label folds in half and pushes the whole table down —
+ * and, because the sort glyphs are not all the same width, it could do that in
+ * one sort state and not another. Over-long labels now clip instead, which is
+ * a visible, stable failure rather than a layout that moves under the user.
+ */
 .table-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  white-space: nowrap;
 }
 
+.table-header-content > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * A fixed slot, because the glyphs are not: `⇅` measures 12px against 6.6px for
+ * `▴` and 7.7px for `▾`, all three from a fallback font. Sized to content, a
+ * narrow column would fit its header while sorted and fold while not.
+ */
 .table-sort-indicator {
   display: flex;
+  flex: none;
+  justify-content: center;
   align-items: center;
   opacity: 0.8;
   transition: opacity 0.15s ease;
+  width: 12px;
+  overflow: visible;
 }
 
 .table-header-cell--sortable:hover .table-sort-indicator {
