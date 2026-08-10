@@ -3,13 +3,15 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { type Asset, type Chain, type EraIndex, type Validator, type Wallet } from '@/shared/core';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AccountIdentity, type AnyAccount, identity } from '@/domains/network';
+import { type AccountIdentity, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import {
   type EraValidator,
   type ScoreBreakdown,
   mapEraValidatorToLegacy,
   recommendationsService,
 } from '@/domains/staking';
+import { contactModel } from '@/entities/contact';
+import { networkModel } from '@/entities/network';
 import { type CriteriaFlags, stakingValidators } from '@/aggregates/staking-validators';
 import {
   type DisplayedStrings,
@@ -131,26 +133,57 @@ const $identities = combine($chain, identity.$list, (chain, list) => {
 });
 
 /**
- * A sub-identity carries its operator's display name plus its own suffix, and
- * the row shows both - `Operator A/node-2` is what tells two nodes of one
- * operator apart.
+ * The name a validator is shown, searched and sorted by.
+ *
+ * Resolved by `accountService.resolveAccountName`, the same chain every other
+ * address in the app goes through: a custom account name, then the local
+ * address book, then the external one, then the on-chain identity, and a short
+ * address when none of those knows it. This list used to read identities only,
+ * so a validator the user had just named in their address book still showed up
+ * as a bare address here - and nowhere else in the app did.
+ *
+ * The one thing the general resolver cannot say is the sub-identity suffix, so
+ * it is added back when the identity is what won: `Operator A/node-2` is what
+ * tells two nodes of one operator apart, and a name from the address book is a
+ * deliberate override of exactly that.
  */
-const $displayedNames = combine(stakingValidators.$validatorList, $identities, (validators, identities) => {
-  const names: Record<AccountId, string> = {};
-
-  for (const validator of validators) {
-    const accountIdentity = identities[validator.accountId];
-    if (nullable(accountIdentity)) continue;
-
-    const name = accountIdentity.subName ? `${accountIdentity.name}/${accountIdentity.subName}` : accountIdentity.name;
-
-    if (name.length > 0) {
-      names[validator.accountId] = name;
-    }
-  }
-
-  return names;
+const $nameResolverSource = combine({
+  contacts: contactModel.$contacts,
+  identities: identity.$list,
+  chains: networkModel.$chains,
+  accounts: accounts.$list,
 });
+
+const $displayedNames = combine(
+  {
+    validators: stakingValidators.$validatorList,
+    chainIdentities: $identities,
+    chain: $chain,
+    resolverSource: $nameResolverSource,
+  },
+  ({ validators, chainIdentities, chain, resolverSource }) => {
+    const names: Record<AccountId, string> = {};
+
+    for (const validator of validators) {
+      const resolved = accountService.resolveAccountName({
+        accountId: validator.accountId,
+        chain,
+        contacts: resolverSource.contacts,
+        identities: resolverSource.identities,
+        chains: resolverSource.chains,
+        accounts: resolverSource.accounts,
+      });
+
+      const accountIdentity = chainIdentities[validator.accountId];
+      const wonByIdentity = nonNullable(accountIdentity) && resolved === accountIdentity.name;
+
+      names[validator.accountId] =
+        wonByIdentity && accountIdentity.subName ? `${resolved}/${accountIdentity.subName}` : resolved;
+    }
+
+    return names;
+  },
+);
 
 const $displayedAddresses = combine(stakingValidators.$validatorList, $chain, (validators, chain) => {
   const addresses: Record<AccountId, string> = {};

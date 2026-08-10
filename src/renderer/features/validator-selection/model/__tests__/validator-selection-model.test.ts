@@ -1,13 +1,22 @@
 import { type Scope, allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Asset, type AssetId, type Chain, type ChainId, type Validator, AssetType } from '@/shared/core';
+import {
+  type Asset,
+  type AssetId,
+  type Chain,
+  type ChainId,
+  type LocalContact,
+  type Validator,
+  AssetType,
+} from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import type * as NetworkDomain from '@/domains/network';
 import { type AccountIdentity } from '@/domains/network';
 import type * as StakingDomain from '@/domains/staking';
 import { type EraValidator, DEFAULT_STAKING_CHAIN } from '@/domains/staking';
+import { contactModel } from '@/entities/contact';
 import { stakingValidators } from '@/aggregates/staking-validators';
 import { DEFAULT_FILTERS, DEFAULT_SORT, OPEN_FILTERS } from '../../lib';
 import { validatorSelectionModel } from '../validator-selection-model';
@@ -87,17 +96,28 @@ const makeIdentity = (index: number, name: string, subName?: string): AccountIde
   website: '',
 });
 
+const makeContact = (index: number, name: string): LocalContact => ({
+  id: `contact-${index}`,
+  name,
+  address: toAddress(accountId(index), { prefix: ADDRESS_PREFIX }),
+  accountId: accountId(index),
+  source: 'local',
+});
+
 const forkWith = ({
   validators = [],
   identities = [],
+  contacts = [],
 }: {
   validators?: EraValidator[];
   identities?: AccountIdentity[];
+  contacts?: LocalContact[];
 } = {}) => {
   return fork({
     values: [
       [$validatorsCache, { [CHAIN_ID]: Object.fromEntries(validators.map((v) => [v.accountId, v])) }],
       [$identityCache, { [CHAIN_ID]: Object.fromEntries(identities.map((i) => [i.accountId, i])) }],
+      [contactModel.$localContacts, contacts],
     ],
     handlers: [[requestIdentitiesFx, () => ({})]],
   });
@@ -178,6 +198,40 @@ describe('validatorSelectionModel init', () => {
     expect(scope.getState(validatorSelectionModel.$displayedAddresses)[accountId(1)]).toBe(
       toAddress(accountId(1), { prefix: ADDRESS_PREFIX }),
     );
+  });
+
+  /**
+   * The reason the list stopped reading identities on their own: a validator
+   * the user has just named in their address book is named everywhere else in
+   * the app, and used to be a bare address here alone.
+   */
+  it('lets the address book name a validator, over its on-chain identity', async () => {
+    const scope = forkWith({
+      ...SCENARIO,
+      contacts: [makeContact(1, 'My favourite node')],
+    });
+
+    await initiate(scope, {});
+
+    const names = scope.getState(validatorSelectionModel.$displayedNames);
+
+    expect(names[accountId(1)]).toBe('My favourite node');
+    // The others keep the identity, so the address book is an override and not
+    // a replacement of the resolution chain.
+    expect(names[accountId(2)]).toBe('Bravo');
+  });
+
+  it('falls back to the address for a validator nobody has named', async () => {
+    const scope = forkWith({ validators: [makeValidator(9)], identities: [] });
+
+    await initiate(scope, {});
+
+    const name = scope.getState(validatorSelectionModel.$displayedNames)[accountId(9)];
+
+    // Whatever it is, it is not empty — the row has to render something, and an
+    // absent entry used to leave `getDisplayedLabel` printing the raw hex id.
+    expect(name).toBeTruthy();
+    expect(name).not.toBe(accountId(9));
   });
 
   it('numbers cluster positions in recommendation order, not in the current sort', async () => {

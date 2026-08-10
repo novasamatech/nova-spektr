@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import {
   type Column,
   type TableSort,
@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from '@/shared/ui-kit';
 import { type EraValidator } from '@/domains/staking';
+import { NamedAccount } from '@/widgets/NameResolver';
 import {
   type ScoreTone,
   type SortColumn,
@@ -219,7 +220,10 @@ export const ValidatorTable = () => {
 
           return (
             <div className="flex min-w-0 items-center gap-x-2">
-              <Account
+              {/* `title` is the model's already-resolved name, which the plain
+                  resolver cannot reproduce: it carries the sub-identity suffix
+                  the rows are told apart by. */}
+              <NamedAccount
                 hideAddress
                 hideExplorers
                 accountId={validator.accountId}

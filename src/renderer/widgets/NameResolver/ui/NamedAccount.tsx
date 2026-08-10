@@ -7,7 +7,11 @@ import { useAccountName, useWalletName } from '@/domains/network';
 
 type Props = Omit<ComponentProps<typeof Account>, 'chain' | 'walletType'> & {
   accountId: AccountId;
-  chain: Chain | undefined;
+  /**
+   * `null` and `undefined` both mean "no chain": the name resolves without a
+   * prefix and the address falls back to the generic encoding.
+   */
+  chain: Chain | null | undefined;
   /**
    * Explicit hard override. When set, wins over all resolution. Reserve for
    * cases where the caller has _already_ resolved the right name and wants to
