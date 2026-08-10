@@ -1,4 +1,4 @@
-import { type ReactNode, memo, useCallback, useRef } from 'react';
+import { type MouseEvent, type ReactNode, memo, useCallback, useRef } from 'react';
 import { Cell, Pie, PieChart } from 'recharts';
 
 import { cnTw } from '@/shared/lib/utils';
@@ -30,6 +30,15 @@ type Props = {
  * React could flush them and it blew the update-depth limit. A donut that
  * appears instantly is also simply the right behaviour for a chart the user is
  * pointing at.
+ *
+ * **The wrapper decides when the pointer is on nothing, not Recharts.**
+ * Recharts binds enter and leave to each sector's own `<g>`; the enter is
+ * dependable, the leave is not — sweeping the pointer across the ring and off
+ * it left the last sector lit until a row was hovered, because the sector it
+ * belonged to never saw the exit. The container cannot miss it: `mouseleave`
+ * fires when the pointer leaves the box at all, and a `mousemove` landing
+ * anywhere that is not a sector — the hole in the middle, the corners around
+ * the ring — says the same thing one frame later.
  */
 export const DonutBreakdown = memo(({ data, size = 180, hoveredId, onHover, children }: Props) => {
   // Read through a ref so the handlers stay referentially stable: a new
@@ -44,6 +53,16 @@ export const DonutBreakdown = memo(({ data, size = 180, hoveredId, onHover, chil
   );
   const handleLeave = useCallback(() => onHover(null), [onHover]);
 
+  const handleMove = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      const target = event.target;
+      if (!(target instanceof Element) || target.closest('.recharts-pie-sector') === null) {
+        onHover(null);
+      }
+    },
+    [onHover],
+  );
+
   if (data.length === 0) return null;
 
   const inner = size * 0.31;
@@ -54,6 +73,8 @@ export const DonutBreakdown = memo(({ data, size = 180, hoveredId, onHover, chil
       className="relative shrink-0 select-none [&_.recharts-sector]:outline-none [&_svg]:outline-none"
       style={{ width: size, height: size }}
       onMouseDown={(event) => event.preventDefault()}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
     >
       <PieChart width={size} height={size}>
         <Pie
