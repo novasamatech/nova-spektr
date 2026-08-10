@@ -1,14 +1,16 @@
+import { useUnit } from 'effector-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type VotingMap } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
+import { networkModel } from '@/entities/network';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type EntryLike, type GovernanceBreakdownRow, useGovernanceBreakdown } from '../hooks/useGovernanceBreakdown';
 import { type ChainGovernanceSummary } from '../hooks/useGovernanceOverview';
 
@@ -29,6 +31,8 @@ type Props = {
 export const GovernanceDetailModal = memo(
   ({ chainSummary, votingMap, accountIds, allEntries, currency, onClose }: Props) => {
     const { t } = useI18n();
+    const chains = useUnit(networkModel.$chains);
+    const chain = chains[chainSummary.chainId];
     const { rows } = useGovernanceBreakdown({ votingMap, chainSummary, accountIds, allEntries });
     const { formatted, suffix } = formatBalance(chainSummary.totalLocked, chainSummary.precision);
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
@@ -50,16 +54,12 @@ export const GovernanceDetailModal = memo(
           title: t('dashboard.governanceOverview.governanceDetail.account'),
           width: '30%',
           render: (_, item) => (
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <span
                 className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
               />
-              <Identicon address={toAddress(item.address)} />
-              <div className="min-w-0">
-                <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-                <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-              </div>
+              <NamedAccount accountId={toAccountId(item.address)} chain={chain} variant="short" iconSize={20} />
             </div>
           ),
         },
@@ -122,7 +122,7 @@ export const GovernanceDetailModal = memo(
           render: () => <Icon name="right" size={16} className="text-text-tertiary" />,
         },
       ],
-      [t, currency],
+      [t, currency, chain],
     );
 
     const handleRowClick = useCallback((row: GovernanceBreakdownRow) => setSelectedAccountId(row.accountId), []);

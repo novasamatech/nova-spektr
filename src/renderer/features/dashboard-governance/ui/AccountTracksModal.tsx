@@ -6,14 +6,17 @@ import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { type Conviction, type TrackId, type VotingMap } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, getRoundedValue, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { Identicon, getTrackMeta } from '@/shared/ui-entities';
+import { getTrackMeta } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { useAccountName } from '@/domains/network';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { votingService } from '@/entities/governance';
+import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type ChainGovernanceSummary } from '../hooks/useGovernanceOverview';
 
 import { ChartTooltip } from './ChartTooltip';
@@ -47,6 +50,12 @@ type Props = {
 export const AccountTracksModal = memo(
   ({ accountId, accountName, accountAddress, votingMap, chainSummary, currency, onClose }: Props) => {
     const { t } = useI18n();
+    const chains = useUnit(networkModel.$chains);
+    const chain = chains[chainSummary.chainId];
+    const resolvedAccountId = toAccountId(accountAddress);
+    // The title names the account too, and it must be the same name the row
+    // under it shows — hence the resolver rather than the passed-in `name`.
+    const resolvedName = useAccountName({ accountId: resolvedAccountId, chain });
     const pricesParams = useUnit(currencySelect.$currentPricesParams);
     const { data: prices } = useAssetsPrices(pricesParams);
 
@@ -134,7 +143,7 @@ export const AccountTracksModal = memo(
       [rows],
     );
 
-    const displayName = accountName || toShortAddress(accountAddress);
+    const displayName = resolvedName || accountName || toShortAddress(accountAddress);
 
     const totalLocked = useMemo(() => {
       return rows.reduce((max, row) => {
@@ -218,10 +227,8 @@ export const AccountTracksModal = memo(
         <Modal.Title close>{t('dashboard.governanceOverview.trackDetail.title', { account: displayName })}</Modal.Title>
         <Modal.Content disableScroll>
           <div className="flex items-center gap-3 px-5 py-3">
-            <Identicon address={toAddress(accountAddress)} size={32} />
             <div className="min-w-0 flex-1">
-              <FootnoteText className="font-bold">{displayName}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(accountAddress)}</FootnoteText>
+              <NamedAccount accountId={resolvedAccountId} chain={chain} variant="short" iconSize={32} />
             </div>
             <div className="shrink-0">
               <FootnoteText align="right" className="font-bold tabular-nums">
