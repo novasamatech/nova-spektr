@@ -2,7 +2,13 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { type Asset, type Chain, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Asset,
+  type Chain,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
@@ -21,7 +27,7 @@ type Props = {
 };
 
 type AccountsWithBalance =
-  | (VaultChainAccount & {
+  | ((VaultChainAccount | VaultUniversalKeyAccount) & {
       balance?: BN;
     })
   | (VaultShardAccount & {

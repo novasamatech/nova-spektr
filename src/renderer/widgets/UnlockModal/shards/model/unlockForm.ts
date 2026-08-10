@@ -206,7 +206,7 @@ const $txWrappers = combine(
         const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+        return (!isBase || !isPolkadotVault) && accountService.isAccountAvailableOnChain(a, chain);
       },
     });
 

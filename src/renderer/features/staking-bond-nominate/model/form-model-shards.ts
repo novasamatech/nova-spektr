@@ -15,7 +15,7 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -251,10 +251,10 @@ const $destinationAccounts = combine(
       if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+      const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
-      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+      return isAvailableOnChain && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
     });
   },
 );

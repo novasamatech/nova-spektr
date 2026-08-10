@@ -9,6 +9,7 @@ import {
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  type VaultUniversalKeyAccount,
   type WcAccount,
 } from './account';
 import { type ID } from './general';
@@ -33,7 +34,7 @@ export type WalletHiddenReason = 'unnamed' | 'manual';
 export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;
   rootAccountId: AccountId;
-  accounts: (VaultChainAccount | VaultShardAccount)[];
+  accounts: (VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount)[];
 }
 
 export interface SingleShardWallet extends Wallet {

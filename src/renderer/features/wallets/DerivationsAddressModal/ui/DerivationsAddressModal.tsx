@@ -2,7 +2,7 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type Address, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, InfoLink, SmallTitleText } from '@/shared/ui';
@@ -13,6 +13,7 @@ import {
   TROUBLESHOOTING_URL,
   createDynamicDerivationPayload,
 } from '@/entities/transaction';
+import { type VaultDraftAccount, type VaultScannedAccount } from '@/features/polkadot-vault-wallet';
 import { derivationAddressUtils } from '../lib/utils';
 
 import { DdKeyQrReader } from './DdKeyQrReader';
@@ -25,10 +26,8 @@ const enum Step {
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  keys: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
-  onComplete: (
-    accounts: (Omit<VaultChainAccount, 'id' | 'walletId'> | Omit<VaultShardAccount, 'id' | 'walletId'>)[],
-  ) => void;
+  keys: VaultDraftAccount[];
+  onComplete: (accounts: VaultScannedAccount[]) => void;
   onClose: () => void;
 };
 export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {
@@ -52,7 +51,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
     const accounts = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
     // TODO fix in lol
-    const newAccounts = accounts.filter((account) => !(account as VaultShardAccount | VaultChainAccount).id);
+    const newAccounts = accounts.filter((account) => !('id' in account) || !account.id);
 
     onComplete(newAccounts);
   };

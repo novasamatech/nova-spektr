@@ -3,9 +3,16 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
 import { type Encoder } from 'raptorq/raptorq';
 
-import { type Address, type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Address,
+  type Chain,
+  type ChainId,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { CryptoType, CryptoTypeString } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { RelayChains, nonNullable, nullable } from '@/shared/lib/utils';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
@@ -176,7 +183,7 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
 export const createDynamicDerivationExportPayload = (
   walletName: string,
   publicKey: Address,
-  derivations: (VaultChainAccount | VaultShardAccount)[],
+  derivations: (VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount)[],
   chains: Record<ChainId, Chain>,
 ) => {
   const payload = EXPORT_ADDRESS.encode({
@@ -190,7 +197,11 @@ export const createDynamicDerivationExportPayload = (
         },
         derivedKeys: derivations
           .map((d) => {
-            const chain = chains[d.chainId];
+            // A key with no network scope goes to the device under Polkadot relay
+            // — the network every key set already has. The public key is the same
+            // whichever network it is filed under.
+            const chainId = 'chainId' in d ? d.chainId : RelayChains.POLKADOT;
+            const chain = chains[chainId];
             const address =
               d.cryptoType === CryptoType.ETHEREUM
                 ? (d.publicKey ?? null)
@@ -203,7 +214,7 @@ export const createDynamicDerivationExportPayload = (
             return {
               address,
               derivationPath: d.derivationPath,
-              genesisHash: hexToU8a(d.chainId),
+              genesisHash: hexToU8a(chainId),
               encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
             };
           })

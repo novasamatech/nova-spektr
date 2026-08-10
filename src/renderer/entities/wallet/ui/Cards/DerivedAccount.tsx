@@ -1,6 +1,11 @@
 import { type MouseEvent, type PropsWithChildren } from 'react';
 
-import { type Chain, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Chain,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type VaultUniversalKeyAccount,
+} from '@/shared/core';
 import { cnTw, nullable } from '@/shared/lib/utils';
 import { BodyText, CaptionText, FootnoteText, Icon } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
@@ -9,7 +14,8 @@ import { accountUtils } from '../../lib/account-utils';
 import { KeyIcon } from '../../lib/constants';
 
 type Props = PropsWithChildren<{
-  account: VaultChainAccount | VaultShardAccount[];
+  account: VaultChainAccount | VaultUniversalKeyAccount | VaultShardAccount[];
+  /** Absent for a key with no network scope — the chain badge is then skipped. */
   chain?: Chain;
   showSuffix?: boolean;
   className?: string;

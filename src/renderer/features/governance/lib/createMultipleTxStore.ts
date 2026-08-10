@@ -4,7 +4,7 @@ import { type Store, combine, createStore } from 'effector';
 import { type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
@@ -44,7 +44,7 @@ export const createMultipleTxStore = ({
           const isBase = accountUtils.isVaultBaseAccount(a);
           const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-          return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+          return (!isBase || !isPolkadotVault) && accountService.isAccountAvailableOnChain(a, chain);
         },
       });
 

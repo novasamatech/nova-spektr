@@ -1,13 +1,7 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import {
-  type Chain,
-  type DraftAccount,
-  type PolkadotVaultWallet,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
+import { type Chain, type ChainId, type PolkadotVaultWallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -18,6 +12,7 @@ import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts, useWalletName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
+import { type VaultScannedAccount } from '@/features/polkadot-vault-wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import {
@@ -29,6 +24,7 @@ import {
 } from '@/features/wallets';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
+import { UNIVERSAL_KEYS_GROUP } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -73,9 +69,7 @@ export const VaultWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
     store: accounts.$list,
     keys: [wallet.id],
     fn: (accounts, [walletId]) =>
-      accountService
-        .filterAccountsByWallet(accounts, walletId)
-        .filter(a => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
+      accountService.filterAccountsByWallet(accounts, walletId).filter(accountUtils.isVaultDerivedAccount),
   });
 
   const accountsMap = useMemo(() => walletDetailsUtils.getVaultAccountsMap(walletAccounts), [walletAccounts]);
@@ -88,23 +82,26 @@ export const VaultWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
     setChains(filteredChains);
   }, [allChains, walletAccounts]);
 
+  // A key is identified by where it is scoped, its path and its shard group.
+  // Unscoped keys share the `universal` bucket so they compare against each
+  // other and never against a network-scoped key of the same path.
+  const keyScope = (key: { chainId?: ChainId | null; derivationPath: string }) => key.chainId ?? UNIVERSAL_KEYS_GROUP;
+  const keyIdentity = (key: { chainId?: ChainId | null; derivationPath: string; groupId?: string }) =>
+    keyScope(key) + key.derivationPath + (key.groupId ?? '');
+
   const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
     toggleConstructorModal();
 
-    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath + (k?.groupId ?? '')));
-    const existingKeySet = new Set(
-      walletAccounts.map(a => a.chainId + a.derivationPath + ((a as VaultShardAccount)?.groupId ?? '')),
-    );
+    const draftKeySet = new Set(keys.map(keyIdentity));
+    const existingKeySet = new Set(walletAccounts.map(keyIdentity));
 
-    const keysToRemove = walletAccounts.filter(
-      a => !draftKeySet.has(a.chainId + a.derivationPath + ((a as VaultShardAccount)?.groupId ?? '')),
-    );
+    const keysToRemove = walletAccounts.filter(a => !draftKeySet.has(keyIdentity(a)));
 
     if (keysToRemove.length > 0) {
       vaultDetailsModel.events.keysRemoved(keysToRemove);
     }
 
-    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath + (k?.groupId ?? '')));
+    const keysToAdd = keys.filter(k => !existingKeySet.has(keyIdentity(k)));
 
     if (keysToAdd.length > 0) {
       vaultDetailsModel.events.keysAdded(keysToAdd);
@@ -116,9 +113,9 @@ export const VaultWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
   const handleImportedKeys = (keys: DerivationKeyDraft[]) => {
     toggleImportModal();
 
-    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+    const existingKeySet = new Set(walletAccounts.map(a => keyScope(a) + a.derivationPath));
 
-    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
+    const keysToAdd = keys.filter(k => !existingKeySet.has(keyScope(k) + k.derivationPath));
 
     if (keysToAdd.length > 0) {
       vaultDetailsModel.events.keysAdded(keysToAdd);
@@ -127,7 +124,7 @@ export const VaultWalletDetails = ({ wallet, defaultTab, onClose }: Props) => {
     }
   };
 
-  const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
+  const handleVaultKeys = (accounts: VaultScannedAccount[]) => {
     vaultDetailsModel.events.accountsCreated({ walletId: wallet.id, accounts });
     toggleScanModal();
   };

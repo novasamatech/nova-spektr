@@ -51,10 +51,7 @@ const $possibleAccountsForVoting = combine(
     }
 
     const accounts = wallet.accounts.filter((a) => {
-      return (
-        accountService.isAccountAvailableOnChain(a, chain) &&
-        (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
-      );
+      return accountService.isAccountAvailableOnChain(a, chain) && accountUtils.isVaultDerivedAccount(a);
     });
 
     const uniqueAccounts = uniqBy(accounts, 'accountId');

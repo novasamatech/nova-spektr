@@ -76,9 +76,8 @@ export const Signatory = ({
         if (!chain) return false;
 
         const accountIdMatch = toAccountId(signatoryAddress) === a.accountId;
-        const chainIdMatch = accountUtils.isChainIdMatch(a, chain.chainId);
 
-        return accountIdMatch && chainIdMatch;
+        return accountIdMatch && accountService.isAccountAvailableOnChain(a, chain);
       },
     })?.[0]?.name || '';
 

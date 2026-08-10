@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import derivations_template_url from '@/shared/assets/templates/polkadot-vault-derivations-template.yaml?url';
-import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
+import { type VaultDraftAccount } from '@/features/polkadot-vault-wallet';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { type DerivationKeyDraft } from '../lib/types';
 import { importKeysModel } from '../model/import-keys-model';
@@ -15,7 +15,7 @@ import { importKeysModel } from '../model/import-keys-model';
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
+  existingKeys: VaultDraftAccount[];
   onConfirm: (keys: DerivationKeyDraft[]) => void;
   onClose: () => void;
 };

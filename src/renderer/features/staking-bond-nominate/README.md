@@ -1,6 +1,6 @@
 # Bond & Nominate
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-03
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-07
 
 ## Overview
 

@@ -2,16 +2,11 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { groupBy } from 'lodash';
 import { reset } from 'patronum';
 
-import {
-  type Chain,
-  type ChainId,
-  type DraftAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
+import { type VaultDraftAccount } from '@/features/polkadot-vault-wallet';
 import { PATH_ERRORS } from '../lib/constants';
 import { type ErrorDetails, DerivationImportError } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
@@ -27,7 +22,7 @@ import {
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
   root: AccountId;
-  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+  derivations: VaultDraftAccount[];
 };
 type Report = {
   addedKeys: number;

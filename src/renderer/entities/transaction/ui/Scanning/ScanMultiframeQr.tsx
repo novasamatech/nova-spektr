@@ -101,10 +101,7 @@ export const ScanMultiframeQr = ({
 
     const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
       const signatory = signingPayload.signatory;
-      const derivationPath =
-        accountUtils.isVaultChainAccount(signatory) || accountUtils.isVaultShardAccount(signatory)
-          ? signatory.derivationPath
-          : null;
+      const derivationPath = accountUtils.isVaultDerivedAccount(signatory) ? signatory.derivationPath : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const chainId = signingPayload.chain.chainId;

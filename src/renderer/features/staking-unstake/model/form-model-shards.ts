@@ -22,7 +22,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type ResourceRequestKey } from '@/shared/query';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { staking, stakingService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -225,7 +225,7 @@ const $txWrappers = combine(
         const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+        return (!isBase || !isPolkadotVault) && accountService.isAccountAvailableOnChain(a, network.chain);
       },
     });
 

@@ -284,9 +284,9 @@ const $proxyAccounts = combine(
       if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+      const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, chain);
 
-      return isChainAndCryptoMatch && !isShardAccount;
+      return isAvailableOnChain && !isShardAccount;
     });
   },
 );

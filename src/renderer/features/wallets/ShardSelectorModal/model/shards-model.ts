@@ -1,7 +1,7 @@
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import { cloneDeep } from 'lodash';
 
-import { type VaultChainAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -14,6 +14,7 @@ import {
   type ChainToggleParams,
   type RootStruct,
   type RootToggleParams,
+  type SelectableAccount,
   type SelectedStruct,
 } from '../lib/types';
 
@@ -53,7 +54,7 @@ const $filteredAccounts = combine(
     wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
   },
-  ({ query, wallet, chains }): (VaultChainAccount | VaultShardAccount)[] => {
+  ({ query, wallet, chains }): SelectableAccount[] => {
     if (nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
 
     return shardsUtils.getFilteredAccounts(wallet.accounts, chains, query);

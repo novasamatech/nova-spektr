@@ -1,6 +1,6 @@
 # Address book backend connection & authentication
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-07
 
 ## Overview
 

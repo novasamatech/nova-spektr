@@ -13,6 +13,7 @@ import {
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  type VaultUniversalKeyAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
@@ -33,6 +34,8 @@ export const accountUtils = {
   isVaultBaseAccount,
   isVaultChainAccount,
   isVaultShardAccount,
+  isVaultUniversalKeyAccount,
+  isVaultDerivedAccount,
   isMultisigAccount,
   isFlexibleMultisigAccount,
   isAnyMultisigAccount,
@@ -106,6 +109,26 @@ function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShar
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.SHARD
   );
+}
+
+function isVaultUniversalKeyAccount(account: Partial<AnyAccount>): account is VaultUniversalKeyAccount {
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    accountService.isUniversalAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.UNIVERSAL_KEY
+  );
+}
+
+/**
+ * Every Vault key the user derived themselves — network-scoped, sharded or
+ * universal. Excludes the wallet's root (base) account, which is not a
+ * derivation and carries no derivation path.
+ */
+function isVaultDerivedAccount(
+  account: Partial<AnyAccount>,
+): account is VaultChainAccount | VaultShardAccount | VaultUniversalKeyAccount {
+  return isVaultChainAccount(account) || isVaultShardAccount(account) || isVaultUniversalKeyAccount(account);
 }
 
 function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
@@ -191,10 +214,12 @@ function getMultisigAccountId(signatories: AccountId[], threshold: number, crypt
   return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId) as AccountId;
 }
 
-function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount | VaultShardAccount[])[] {
+function getAccountsAndShardGroups(
+  accounts: AnyAccount[],
+): (VaultChainAccount | VaultUniversalKeyAccount | VaultShardAccount[])[] {
   const shardsIndexes: Record<string, number> = {};
 
-  return accounts.reduce<(VaultChainAccount | VaultShardAccount[])[]>((acc, account) => {
+  return accounts.reduce<(VaultChainAccount | VaultUniversalKeyAccount | VaultShardAccount[])[]>((acc, account) => {
     if (isVaultBaseAccount(account)) return acc;
 
     if (!isVaultShardAccount(account)) {

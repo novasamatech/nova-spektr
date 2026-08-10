@@ -26,6 +26,9 @@ const DerivationErrorText: Record<DerivationError, string> = {
   [DerivationError.INVALID_SHARD_RANGE]: t('dynamicDerivations.keysConstructor.derivationInvalidShardRange'),
 };
 
+/** Sentinel for the "no network scope" option — `Select` only carries strings. */
+const ALL_NETWORKS = 'all-networks';
+
 type Props = {
   keyId: string;
   keyIndex: number;
@@ -51,8 +54,10 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
     fn: (errors, [id]) => errors[id]?.[0] ?? null,
   });
 
-  const chain = chains[keyData.chainId];
-  if (!chain) return null;
+  const chain = (keyData.chainId ? chains[keyData.chainId] : null) ?? null;
+  // A scoped key whose network vanished from the config would render an empty
+  // row; "All networks" legitimately has no chain.
+  if (keyData.chainId && !chain) return null;
 
   const handleInputBlur = () => {
     setShowHints(false);
@@ -67,8 +72,8 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
     constructorModel.removeKey(keyId);
   };
 
-  const handleUpdateChainId = (newChainId: ChainId) => {
-    constructorModel.updateKey([keyId, { chainId: newChainId }]);
+  const handleUpdateChainId = (value: string) => {
+    constructorModel.updateKey([keyId, { chainId: value === ALL_NETWORKS ? null : (value as ChainId) }]);
   };
 
   const handleUpdateDerivation = (newDerivationPath: string) => {
@@ -93,7 +98,17 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
         <HelpText className="text-text-tertiary">{keyIndex}</HelpText>
       </div>
       <div className="col-start-2">
-        <Select name={chain.name} placeholder="" value={keyData.chainId} onChange={handleUpdateChainId}>
+        <Select
+          name={chain?.name ?? t('dynamicDerivations.keysConstructor.allNetworksLabel')}
+          placeholder=""
+          value={keyData.chainId ?? ALL_NETWORKS}
+          onChange={handleUpdateChainId}
+        >
+          <Select.Item value={ALL_NETWORKS}>
+            <FootnoteText className="truncate text-text-primary">
+              {t('dynamicDerivations.keysConstructor.allNetworksLabel')}
+            </FootnoteText>
+          </Select.Item>
           {chainsList.map((chain) => (
             <Select.Item value={chain.chainId} key={chain.chainId}>
               <ChainTitle fontClass="text-text-primary truncate" key={chain.chainId} chain={chain} />

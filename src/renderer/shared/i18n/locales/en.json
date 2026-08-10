@@ -820,6 +820,7 @@
     },
     "keysConstructor": {
       "addNewKeyButton": "Add new key",
+      "allNetworksLabel": "All networks",
       "addNewKeyShortcut": "Shift+Enter",
       "backButton": "Back",
       "derivationCannotEndWithSlash": "The derivation path cannot end with a slash.",
@@ -3997,6 +3998,7 @@
     "vault": {
       "editKeys": "Edit keys",
       "evmGroup": "EVM Compatible",
+      "universalGroup": "All networks",
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",

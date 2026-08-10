@@ -1,4 +1,8 @@
-import { type ChainId, type HexString, type VaultShardAccount } from '@/shared/core';
+import { type ChainId, type HexString } from '@/shared/core';
+import { type UNIVERSAL_GENESIS } from '@/shared/lib/utils';
+import { type DerivationKeyDraft } from '@/features/polkadot-vault-wallet';
+
+export { type DerivationKeyDraft };
 
 export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };
@@ -30,12 +34,9 @@ export type DerivationWithPath = ImportedDerivation & Required<Pick<ImportedDeri
 
 export type TypedImportedDerivation = {
   derivationPath: string;
-  chainId: ChainId;
+  /** `UNIVERSAL_GENESIS` when the file scopes the key to no network. */
+  chainId: ChainId | typeof UNIVERSAL_GENESIS;
   sharded?: string;
-};
-
-export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
-  groupId?: VaultShardAccount['groupId'];
 };
 
 export type ParsedData = {

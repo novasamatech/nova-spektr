@@ -17,8 +17,12 @@ import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
-import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
-import { type DerivationKeyDraft } from '@/features/wallets';
+import {
+  type DerivationKeyDraft,
+  type VaultDraftAccount,
+  type VaultScannedAccount,
+  polkadotVaultService,
+} from '@/features/polkadot-vault-wallet';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -28,11 +32,7 @@ export type Callbacks = {
 
 type VaultCreateParams = {
   wallet: Omit<NoID<PolkadotVaultGroup>, 'accounts'>;
-  accounts: (
-    | Omit<NoID<VaultBaseAccount>, 'walletId'>
-    | Omit<NoID<VaultChainAccount>, 'walletId'>
-    | Omit<NoID<VaultShardAccount>, 'walletId'>
-  )[];
+  accounts: (Omit<NoID<VaultBaseAccount>, 'walletId'> | VaultScannedAccount)[];
 };
 
 const formInitiated = createEvent<SeedInfo>();
@@ -46,9 +46,9 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $keys = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>([]);
+const $keys = createStore<VaultDraftAccount[]>([]);
 
-const $keysGroups = combine($keys, (accounts): (VaultChainAccount | VaultShardAccount[])[] => {
+const $keysGroups = combine($keys, accounts => {
   return accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
 });
 

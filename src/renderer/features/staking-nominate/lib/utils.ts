@@ -1,5 +1,5 @@
 import { type Chain, type Wallet } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
@@ -31,7 +31,7 @@ function getTxWrappers({ chain, wallet, wallets, account, signatories }: TxWrapp
       const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+      return (!isBase || !isPolkadotVault) && accountService.isAccountAvailableOnChain(a, chain);
     },
   });
 

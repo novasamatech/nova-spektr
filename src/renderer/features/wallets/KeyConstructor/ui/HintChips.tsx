@@ -11,7 +11,8 @@ import { constructorModel } from '../model/constructor-model';
 type Props = {
   keyId: string;
   derivationPath: string;
-  chain: Chain;
+  /** `null` when the key is not scoped to a network ("All networks"). */
+  chain: Chain | null;
 };
 
 const HARD_DERIVATION = '//';
@@ -21,14 +22,19 @@ const TYPES = ['main', 'hot', 'public', 'sharded'];
 const SHARDS_COUNT = ['2', '3', '5', '10', '15', '20', '25', '50'];
 const SHARDS_RANGES = SHARDS_COUNT.map((count) => `0...${count}`);
 
-const getAutocompleteHints = (derivationPath: string, chain: Chain): string[] => {
-  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
+const getAutocompleteHints = (derivationPath: string, chain: Chain | null): string[] => {
+  // An unscoped key is always Substrate — an Ethereum derivation is inherently
+  // tied to one network.
+  const isEthereumBased = chain ? networkUtils.isEthereumBased(chain.options) : false;
 
   if (!derivationPath) {
     return isEthereumBased ? [HARD_DERIVATION] : DERIVATION_SEPARATORS;
   }
 
   if (derivationPath === '//' || derivationPath === '/') {
+    // With no network to name the key after, offer the key types straight away.
+    if (!chain) return TYPES;
+
     const chainName = chain.parentId ? chain.name : chain.specName;
     const displayChainName = chainName.trim().replaceAll(' ', '_').toLowerCase();
     return [displayChainName];

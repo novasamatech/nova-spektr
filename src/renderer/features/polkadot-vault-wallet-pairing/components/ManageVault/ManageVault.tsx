@@ -35,6 +35,7 @@ import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
+import { type VaultScannedAccount } from '@/features/polkadot-vault-wallet';
 import { type DerivationKeyDraft, DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
@@ -90,8 +91,12 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     );
 
     for (const account of keysGroups) {
-      const chainId = accountUtils.isAccountWithShards(account) ? account[0]!.chainId : account.chainId;
-      chainsMap[chainId]!.push(account);
+      const scoped = accountUtils.isAccountWithShards(account) ? account[0]! : account;
+      // Keys with no network scope are shown by the constructor, not by this
+      // per-network breakdown of the key set.
+      if (!('chainId' in scoped)) continue;
+
+      chainsMap[scoped.chainId]!.push(account as VaultChainAccount | VaultShardAccount[]);
     }
 
     setChainElements(Object.entries(chainsMap) as [ChainId, (VaultChainAccount | VaultShardAccount[])[]][]);
@@ -104,9 +109,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsAddressModalOpen();
   };
 
-  const handleCreateVault = (
-    accounts: (Omit<VaultChainAccount, 'id' | 'walletId'> | Omit<VaultShardAccount, 'id' | 'walletId'>)[],
-  ) => {
+  const handleCreateVault = (accounts: VaultScannedAccount[]) => {
     manageVaultModel.events.vaultCreated({
       wallet: {
         name: walletName.trim(),

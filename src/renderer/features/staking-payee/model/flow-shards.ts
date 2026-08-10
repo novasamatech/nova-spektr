@@ -13,7 +13,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
-import { type AnyAccount, multisigOperationService } from '@/domains/network';
+import { type AnyAccount, accountService, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -108,7 +108,7 @@ function getTxWrappers({
       const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+      return (!isBase || !isPolkadotVault) && accountService.isAccountAvailableOnChain(a, chain);
     },
   });
 

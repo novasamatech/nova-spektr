@@ -1,14 +1,19 @@
-import { type Chain, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { AccountExplorers, Hash, Identicon } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
 import { KeyIcon, accountUtils } from '@/entities/wallet';
+import { type SelectableAccount } from '../lib/types';
 
 type Props = {
-  account: VaultChainAccount | VaultShardAccount;
-  chain: Chain;
+  account: SelectableAccount;
+  /**
+   * Absent for a key with no network scope — the address falls back to the
+   * generic format.
+   */
+  chain?: Chain;
   checked: boolean;
   semiChecked?: boolean;
   className?: string;
@@ -18,9 +23,8 @@ type Props = {
 export const SelectableShard = ({ account, chain, checked, semiChecked, onChange }: Props) => {
   const { t } = useI18n();
 
-  const isChain = accountUtils.isVaultChainAccount(account);
-  const isShard = accountUtils.isVaultShardAccount(account);
-  const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+  const isDerived = accountUtils.isVaultDerivedAccount(account);
+  const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
 
   return (
     <div
@@ -58,8 +62,8 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
           </div>
         </Checkbox>
       </div>
-      <AccountExplorers accountId={account.accountId} chain={chain}>
-        {(isShard || isChain) && (
+      <AccountExplorers accountId={account.accountId} chain={chain ?? null}>
+        {isDerived && (
           <>
             <FootnoteText className="text-text-tertiary">{t('general.explorers.derivationTitle')}</FootnoteText>
             <HelpText className="break-all text-text-secondary">{account.derivationPath}</HelpText>
