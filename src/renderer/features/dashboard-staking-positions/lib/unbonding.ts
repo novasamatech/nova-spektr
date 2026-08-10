@@ -1,4 +1,5 @@
-const MS_PER_HOUR = 60 * 60 * 1000;
+const MS_PER_MINUTE = 60 * 1000;
+const MS_PER_HOUR = 60 * MS_PER_MINUTE;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
 
 /**
@@ -15,6 +16,7 @@ export function getExpiryLabelKey(expiryDays: number): 'expiring' | 'days' {
 export type UnbondingCountdown = {
   days: number;
   hours: number;
+  minutes: number;
   /** The estimated unlock moment, unix ms — what the `→ Aug 3` part renders. */
   unlockAtMs: number;
   /** The chunk's estimate is already in the past; it unlocks at the next era. */
@@ -37,13 +39,41 @@ export function getUnbondingCountdown(unlockEstimateMs: number | null, nowMs: nu
   const remaining = unlockEstimateMs - nowMs;
 
   if (remaining <= 0) {
-    return { days: 0, hours: 0, unlockAtMs: unlockEstimateMs, elapsed: true };
+    return { days: 0, hours: 0, minutes: 0, unlockAtMs: unlockEstimateMs, elapsed: true };
   }
 
+  const days = Math.floor(remaining / MS_PER_DAY);
+  const hours = Math.floor((remaining % MS_PER_DAY) / MS_PER_HOUR);
+  const minutes = Math.floor((remaining % MS_PER_HOUR) / MS_PER_MINUTE);
+
   return {
-    days: Math.floor(remaining / MS_PER_DAY),
-    hours: Math.floor((remaining % MS_PER_DAY) / MS_PER_HOUR),
+    days,
+    hours,
+    // Floored like the rest, except when it is the only unit left to show: the
+    // last seconds of a wait are still a wait, and a lone `0m` reads as "done"
+    // on a chunk that is not. Under a larger unit a zero is just a zero.
+    minutes: days === 0 && hours === 0 ? Math.max(1, minutes) : minutes,
     unlockAtMs: unlockEstimateMs,
     elapsed: false,
   };
+}
+
+/**
+ * The two largest units that still carry information, and the compact-duration
+ * key that renders them.
+ *
+ * Three units never fit the chip, and the leading zeroes are the ones worth
+ * dropping: `0d 0h` told the user nothing except that the answer was somewhere
+ * under an hour, which is exactly when the minutes matter most.
+ */
+export type CountdownParts =
+  | { unit: 'daysHours'; days: number; hours: number }
+  | { unit: 'hoursMinutes'; hours: number; minutes: number }
+  | { unit: 'minutes'; minutes: number };
+
+export function getCountdownParts({ days, hours, minutes }: UnbondingCountdown): CountdownParts {
+  if (days > 0) return { unit: 'daysHours', days, hours };
+  if (hours > 0) return { unit: 'hoursMinutes', hours, minutes };
+
+  return { unit: 'minutes', minutes };
 }

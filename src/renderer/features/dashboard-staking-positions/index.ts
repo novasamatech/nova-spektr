@@ -6,8 +6,8 @@ import { dashboardStakingSlot } from '@/pages/Dashboard';
 
 import { PositionsWidget } from './ui/PositionsWidget';
 
-export type { MultisigThreshold, PositionAccessMode, PositionRow } from './lib';
-export { canAct, getAccessMode, getMultisigThreshold } from './lib';
+export type { CountdownParts, MultisigThreshold, PositionAccessMode, PositionRow } from './lib';
+export { canAct, getAccessMode, getCountdownParts, getMultisigThreshold, getUnbondingCountdown } from './lib';
 export type {
   ClaimPayload,
   NominationsChangePayload,

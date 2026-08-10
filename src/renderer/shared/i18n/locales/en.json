@@ -899,7 +899,7 @@
           "redeem": "Redeem",
           "unbond": "Unbond",
           "readyChip": "{amount} ready",
-          "unbondingChip": "{amount} · {days}d {hours}h",
+          "unbondingChip": "{amount} · {duration}",
           "unbondingErasChip_one": "{amount} · {count} era",
           "unbondingErasChip_other": "{amount} · {count} eras",
           "footerTotals": "{amounts} · {fiat}"
@@ -989,7 +989,7 @@
             "validators": "Validators"
           },
           "unbonding": "Unbonding",
-          "unbondingLeft": "{days}d {hours}h left",
+          "unbondingLeft": "{duration} left",
           "unbondingReady": "Ready to withdraw",
           "unbondingUnlock": "→ {date}",
           "unbondingEras_one": "{count} era left",
@@ -3920,6 +3920,11 @@
     "days_other": "{ count } days",
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
+    "compact": {
+      "daysHours": "{days}d {hours}h",
+      "hoursMinutes": "{hours}h {minutes}m",
+      "minutes": "{minutes}m"
+    },
     "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "minutesSeconds": "{ minutes }:{ seconds }",
     "weeks_one": "{ count } week",

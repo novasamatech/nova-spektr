@@ -81,13 +81,21 @@ the data lands.
 
 ### The drawer
 
-A 560px right-hand panel: who the account is and its access mode, a six-cell stats grid repeating the row's columns (the
+A 720px right-hand panel: who the account is and its access mode, a six-cell stats grid repeating the row's columns (the
 user arrived by clicking one of them and should not have to remember which), the next unbonding chunk with a
-`12d 4h left → Aug 3` countdown, the action chips, and the full nominations table.
+`12d 4h left → Aug 3` countdown, the action chips, and the full nominations table. The countdown shows the two largest
+units that still say something — `12d 4h`, then `3h 7m`, then `43m` — because a wait rounded to `0d 0h` tells the user
+only that it is under an hour, which is exactly when the minutes matter. The width is set by that table — six columns,
+four of them sortable — not by the panel's own content; at 560px its headers no longer fit.
 
 Each nomination is `active`, `waiting` or `dropped out`, and the era validator set is what separates the last two: a
 validator missing from it was simply not elected, while one that _is_ elected but does not carry our stake dropped us
 out of its rewarded page. While that set is unknown nothing is called dropped out — nothing proves it was.
+
+The table sorts by status by default — earning first, then dropped out, then not elected, with the biggest stake first
+inside each band — which is the order the drawer is opened to see. Status, our stake, APY and era points are sortable
+from the header. Each validator carries the standard explorers button, so the address is one click away, in full, next
+to the chain's block explorers.
 
 The unbonding countdown comes from the chain's era anchor. Without one the strip falls back to the era count, which is
 the only thing actually known.

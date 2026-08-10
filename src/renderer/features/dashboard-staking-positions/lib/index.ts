@@ -20,4 +20,16 @@ export {
 } from './position-metrics';
 export { type PositionSortColumn, DEFAULT_SORT, isSortColumn, sortPositionRows } from './position-sorting';
 export { buildNominationRows, countNominations } from './nominations';
-export { type UnbondingCountdown, getExpiryLabelKey, getUnbondingCountdown } from './unbonding';
+export {
+  type NominationSortColumn,
+  DEFAULT_NOMINATION_SORT,
+  isNominationSortColumn,
+  sortNominationRows,
+} from './nomination-sorting';
+export {
+  type CountdownParts,
+  type UnbondingCountdown,
+  getCountdownParts,
+  getExpiryLabelKey,
+  getUnbondingCountdown,
+} from './unbonding';

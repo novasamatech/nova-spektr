@@ -11,7 +11,7 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
-import { type PositionRow, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
+import { type PositionRow, getCountdownParts, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
 import { type PositionAction, positionActions } from '../model/position-actions';
 
 import { NominationsTable } from './NominationsTable';
@@ -67,6 +67,10 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   // Soonest chunk first, so the strip talks about the next thing to happen.
   const nextChunk = row?.position.unbonding.at(0) ?? null;
   const countdown = getUnbondingCountdown(nextChunk?.unlockEstimateMs ?? null, nowMs);
+  // Two units, largest first, with the leading zeroes dropped — see
+  // `getCountdownParts`. The chip on the positions modal renders the same one.
+  const countdownParts = countdown ? getCountdownParts(countdown) : null;
+  const countdownLabel = countdownParts ? t(`time.compact.${countdownParts.unit}`, { ...countdownParts }) : '';
 
   const actionPayload = row
     ? {
@@ -111,7 +115,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   return (
     <Drawer
       isOpen={isOpen}
-      width={560}
+      // Sized by the nominations table, which is the widest thing in here: six
+      // columns, four of them sortable, and an account cell that should not
+      // have to truncate a validator's address. At 560 the headers themselves
+      // no longer fit. The app's window is at least 1372px wide, so this still
+      // leaves the dashboard behind it readable.
+      width={720}
       onToggle={(open) => {
         if (!open) onClose();
       }}
@@ -223,10 +232,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     ? `${
                         countdown.elapsed
                           ? t('dashboard.staking.positions.detail.unbondingReady')
-                          : t('dashboard.staking.positions.detail.unbondingLeft', {
-                              days: countdown.days,
-                              hours: countdown.hours,
-                            })
+                          : t('dashboard.staking.positions.detail.unbondingLeft', { duration: countdownLabel })
                       } ${t('dashboard.staking.positions.detail.unbondingUnlock', {
                         date: formatDate(new Date(countdown.unlockAtMs), 'MMM d'),
                       })}`

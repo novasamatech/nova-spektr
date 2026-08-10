@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Label } from '@/shared/ui-kit';
 import { type UnbondingChunk } from '@/domains/staking';
+import { getCountdownParts, getUnbondingCountdown } from '@/features/dashboard-staking-positions';
 import { formatAssetAmount } from '../lib/amounts';
 
 type Props = {
@@ -12,21 +13,15 @@ type Props = {
   precision: number;
 };
 
-function formatCountdown(chunk: UnbondingChunk, now: number): { days: number; hours: number } | null {
-  if (chunk.unlockEstimateMs === null) return null;
-
-  const remaining = Math.max(0, chunk.unlockEstimateMs - now);
-
-  return {
-    days: Math.floor(remaining / (24 * 60 * 60 * 1000)),
-    hours: Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)),
-  };
-}
-
 /**
  * One chip per unlocking chunk — amber while it is still locked, green once it
- * can be withdrawn. The countdown comes from the era anchor; without one the
- * chip falls back to the era count, which is all the chain can tell us.
+ * can be withdrawn. The countdown comes from the era anchor; without one, and
+ * once the estimate has been overtaken, the chip falls back to the era count,
+ * which is all the chain can tell us.
+ *
+ * The maths is the positions drawer's, not a copy of it: the same chunk showed
+ * `0d 0h` here and a real countdown there, because this file rounded to two
+ * units of its own.
  */
 export const UnbondingChips = memo(({ chunks, redeemable, symbol, precision }: Props) => {
   const { t } = useI18n();
@@ -46,15 +41,15 @@ export const UnbondingChips = memo(({ chunks, redeemable, symbol, precision }: P
       )}
       {chunks.map((chunk) => {
         const amount = formatAssetAmount({ symbol, precision, amount: chunk.value });
-        const countdown = formatCountdown(chunk, now);
+        const countdown = getUnbondingCountdown(chunk.unlockEstimateMs, now);
+        const parts = countdown && !countdown.elapsed ? getCountdownParts(countdown) : null;
 
         return (
           <Label key={`${chunk.era}-${chunk.value}`} variant="orange">
-            {countdown
+            {parts
               ? t('dashboard.staking.kpi.positions.unbondingChip', {
                   amount,
-                  days: countdown.days,
-                  hours: countdown.hours,
+                  duration: t(`time.compact.${parts.unit}`, { ...parts }),
                 })
               : t('dashboard.staking.kpi.positions.unbondingErasChip', {
                   amount,
