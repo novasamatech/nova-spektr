@@ -400,7 +400,11 @@ const $positions = combine(
       const chainNominations = nominations[chainId] ?? {};
       const chainValidators = validators[chainId] ?? null;
       const pagesKey = exposurePagesCacheKey(chainId, activeEra, nominated[chainId] ?? EMPTY_VALIDATORS);
-      const chainExposures = exposurePages[pagesKey] ?? {};
+      // `null`, not `{}`. The pages land well after the ledgers, and an empty
+      // map reads as "no validator backs this stash" — every nominating
+      // position showed a red `inactive` pill for the seconds in between, then
+      // flipped to active. Absence of an answer is not an answer.
+      const chainExposures = exposurePages[pagesKey] ?? null;
 
       const progress = eraProgress[chainId];
       const eraAnchor: EraAnchor | null =

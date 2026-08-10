@@ -8,12 +8,20 @@ export type PositionSortColumn = 'staked' | 'sharePercent' | 'status' | 'apy' | 
 
 export const DEFAULT_SORT = { column: 'staked', direction: 'desc' } as const;
 
-/** Earning first, dead last — the order a user scanning for problems wants. */
+/**
+ * Earning first, dead last — the order a user scanning for problems wants.
+ *
+ * `unknown` sorts next to `active` rather than beside the problems: a position
+ * whose exposures are still loading is far more often earning than not, and
+ * parking it at the bottom would make rows jump the length of the table the
+ * moment the read lands.
+ */
 const STATUS_RANK: Record<PositionStatus, number> = {
   active: 0,
-  waiting: 1,
-  inactive: 2,
-  bonded: 3,
+  unknown: 1,
+  waiting: 2,
+  inactive: 3,
+  bonded: 4,
 };
 
 /**

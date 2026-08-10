@@ -1,5 +1,5 @@
 import { useI18n } from '@/shared/i18n';
-import { type LabelVariant, Label, Tooltip } from '@/shared/ui-kit';
+import { type LabelVariant, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type PositionStatus, type PositionStatusReason } from '@/domains/staking';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   statusReason: PositionStatusReason;
 };
 
-const VARIANT: Record<PositionStatus, LabelVariant> = {
+const VARIANT: Record<Exclude<PositionStatus, 'unknown'>, LabelVariant> = {
   active: 'green',
   waiting: 'orange',
   inactive: 'red',
@@ -22,9 +22,18 @@ const VARIANT: Record<PositionStatus, LabelVariant> = {
  * was elected" points straight at changing validators. When the chain has not
  * told us why, the tooltip falls back to the plain status meaning rather than
  * inventing one.
+ *
+ * `unknown` gets no pill at all: it is the exposure read still being in flight,
+ * and every pill this component can draw would be a claim about the chain that
+ * nobody has checked. The cell shimmers alongside the KPI cards above it, which
+ * are waiting on the same data.
  */
 export const PositionStatusPill = ({ status, statusReason }: Props) => {
   const { t } = useI18n();
+
+  if (status === 'unknown') {
+    return <Skeleton width="62px" height="22px" />;
+  }
 
   const hint = statusReason
     ? t(`dashboard.staking.positions.statusHint.${statusReason}`)

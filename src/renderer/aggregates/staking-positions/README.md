@@ -92,6 +92,14 @@ the ledger subscription writes an entry for **every** requested account, empty o
 nothing here" is a real answer rather than an unfinished load. Once at least one account is bonded, the chain stays
 pending until its nominations arrive too — otherwise a nominating position would flash as merely _bonded_.
 
+The exposures deliberately do not join that wait, and answer for themselves instead. They are keyed by the nominated
+validator set, so they cannot even be requested until the nominations land, and holding the whole table back for them
+would withhold the stake, the share and the account over one slow read. `$positions` instead carries the position's
+status as `unknown` until the exposure pages arrive — the aggregate passes `null` rather than an empty exposure map,
+which `positionsService` tells apart, and the Status cell shimmers while the rest of the row is already usable. Passing
+`{}` was the bug: it reads as "no validator backs this stash", so every nominating position wore a red `Inactive` pill
+for the seconds in between.
+
 Two things deliberately do **not** hold the dashboard hostage: a chain whose connection is disabled, and a chain whose
 connection has errored. Both keep `$pending` false, because neither will ever produce data and a permanent spinner is
 worse than a chain that is simply missing from the table.

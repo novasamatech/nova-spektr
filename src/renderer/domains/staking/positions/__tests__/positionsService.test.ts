@@ -213,6 +213,42 @@ describe('positionsService', () => {
       expect(position.activeValidators).toEqual([]);
       expect(position.statusReason).toEqual('notExposed');
     });
+
+    test('should be unknown while the exposures have not been read', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          nomination: createNomination([validatorA]),
+          exposures: null,
+          validators: createValidatorMap([createValidator(validatorA)]),
+        }),
+      );
+
+      expect(position.status).toEqual('unknown');
+      expect(position.statusReason).toBeNull();
+      expect(position.activeValidators).toEqual([]);
+    });
+
+    test('should tell an empty exposure map apart from a missing one', () => {
+      const withoutExposures = positionsService.derivePosition(
+        createInput({ nomination: createNomination([validatorA]), exposures: null }),
+      );
+      const withEmptyExposures = positionsService.derivePosition(
+        createInput({ nomination: createNomination([validatorA]), exposures: {} }),
+      );
+
+      expect(withoutExposures.status).toEqual('unknown');
+      expect(withEmptyExposures.status).toEqual('inactive');
+    });
+
+    test('should answer bonded and waiting without waiting for the exposures', () => {
+      const bonded = positionsService.derivePosition(createInput({ exposures: null }));
+      const waiting = positionsService.derivePosition(
+        createInput({ nomination: createNomination([validatorA], ACTIVE_ERA), exposures: null }),
+      );
+
+      expect(bonded.status).toEqual('bonded');
+      expect(waiting.status).toEqual('waiting');
+    });
   });
 
   describe('statusReason', () => {

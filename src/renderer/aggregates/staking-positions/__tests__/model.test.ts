@@ -312,6 +312,58 @@ describe('aggregates/staking-positions', () => {
     expect(kusamaA?.activeValidators).toEqual([validatorTwo]);
   });
 
+  /**
+   * The regression this guards: the aggregate used to hand `derivePosition` an
+   * empty exposure map while the pages were still in flight, which is the same
+   * shape as "no validator backs this stash". Every nominating position wore a
+   * red `inactive` pill for the seconds in between and then flipped to active.
+   */
+  it('reports unknown while the exposure pages are in flight, not inactive', async () => {
+    const scope = await makeScope({
+      chains: [polkadotChain],
+      apis: { [POLKADOT_AH]: polkadotApi },
+      accountList: [accountA],
+    });
+
+    chainMock.exposurePages[POLKADOT_AH] = { [validatorTwo]: createExposure(accountA.accountId, '1000') };
+
+    // An era and a validator no other test uses. The exposure request cache is
+    // module-level and never goes stale, so a key another test already fetched
+    // is answered without ever pushing a value into this scope's store.
+    await emitEra(scope, POLKADOT_AH, 500);
+    await emitLedger(scope, POLKADOT_AH, {
+      [accountA.accountId]: createStake(accountA.accountId, POLKADOT_AH, '1000', '1000'),
+    });
+
+    // The window is a few ticks wide and closes on its own, so the assertion is
+    // over everything the store passed through rather than over one snapshot.
+    const seen: string[] = [];
+    createWatch({
+      unit: stakingPositions.$positions,
+      scope,
+      fn: positions => {
+        const status = positions.find(position => position.accountId === accountA.accountId)?.status;
+        if (status && seen.at(-1) !== status) seen.push(status);
+      },
+    });
+
+    // The nominations are what the exposure request is keyed by: the moment
+    // they land, nothing has been read about the exposures yet.
+    await emitNominations(scope, POLKADOT_AH, {
+      [accountA.accountId]: { targets: [validatorTwo], submittedIn: 490 },
+    });
+
+    // The pool starts its keys through a `scopeBind`, which `allSettled` cannot
+    // see into: draining once leaves the exposure read itself untouched.
+    await allSettled(scope);
+
+    expect(seen).toEqual(['unknown', 'active']);
+
+    const landed = scope.getState(stakingPositions.$positions);
+    expect(landed[0]?.statusReason).toBeNull();
+    expect(landed[0]?.activeValidators).toEqual([validatorTwo]);
+  });
+
   it('skips a staking chain absent from the network config and picks it up once present', async () => {
     const scope = await makeScope({ chains: [polkadotChain] });
 

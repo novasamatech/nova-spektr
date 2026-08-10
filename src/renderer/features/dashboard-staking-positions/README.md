@@ -65,7 +65,9 @@ descending by default, and clearing the sort returns to that default rather than
 - **Status** — `Active` / `Waiting` / `Inactive` / `Bonded`, each with the reason behind it. The reason is the point:
   "Inactive" alone tells the user nothing actionable, "none of the nominated validators was elected" points straight at
   changing validators. When the chain has not said why, the tooltip falls back to the plain status meaning rather than
-  inventing one.
+  inventing one. Until the active-era exposures have been read the cell shows no pill at all, only a shimmer: the
+  exposures land seconds after the ledgers, and every pill available at that point would be a verdict nobody has checked
+  — a red `Inactive` on a position that turns out to be earning.
 - **APY** — the mean APY of the validators that actually back the position; for one that earns nothing, the mean of what
   it nominates, which is what it _would_ earn. Grey `—` when the chain reports no reward data.
 - **Unclaimed** — the amount plus how long it has left. An unclaimed payout is not merely uncollected: it is destroyed

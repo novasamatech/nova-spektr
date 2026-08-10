@@ -121,7 +121,7 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
   const chunks = deriveUnbondingChunks(stake.unlocking, activeEra, eraAnchor);
   const unbonding = chunks.filter(chunk => !chunk.redeemable);
 
-  const activeValidators = deriveActiveValidators(stake.stash, targets, exposures);
+  const activeValidators = exposures ? deriveActiveValidators(stake.stash, targets, exposures) : [];
 
   let status: PositionStatus;
   let statusReason: PositionStatusReason = null;
@@ -135,6 +135,11 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
     status = 'waiting';
   } else if (activeValidators.length > 0) {
     status = 'active';
+  } else if (!exposures) {
+    // Nothing here proves the position earns nothing: `inactive` would be the
+    // app reporting a verdict it has not looked up. The two branches above
+    // answer without exposures, so only this one has to wait.
+    status = 'unknown';
   } else {
     status = 'inactive';
     statusReason = deriveStatusReason(targets, validators);

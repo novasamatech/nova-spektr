@@ -29,8 +29,15 @@ export type UnbondingChunk = {
  * - `waiting` - nominations submitted, the election has not applied them yet.
  * - `inactive` - nominating, election applied, but not exposed anywhere.
  * - `bonded` - a ledger exists, but the stash nominates nothing.
+ * - `unknown` - the active-era exposures have not been read yet, so whether this
+ *   position is exposed is not established.
+ *
+ * `unknown` is the only one that is not a fact about the chain: it says the app
+ * has not looked. It exists because the alternative was to report `inactive`
+ * while the exposure pages were still in flight - a red pill claiming the
+ * user's validators dropped them, on a position that turns out to be earning.
  */
-export type PositionStatus = 'active' | 'waiting' | 'inactive' | 'bonded';
+export type PositionStatus = 'active' | 'waiting' | 'inactive' | 'bonded' | 'unknown';
 
 /**
  * Why an `inactive` position earns nothing. Always `null` for the other
@@ -77,8 +84,13 @@ export type DerivePositionInput = {
   stake: Stake;
   /** `null` when the stash has no nomination on chain. */
   nomination: Nomination | null;
-  /** Active-era exposures of (at least) the nominated validators. */
-  exposures: ExposureMap;
+  /**
+   * Active-era exposures of (at least) the nominated validators. `null` until
+   * the read answers - an empty map is itself an answer ("nothing backs this
+   * stash"), the absence of one is not, and conflating the two is what made a
+   * loading position look inactive.
+   */
+  exposures: ExposureMap | null;
   /** Elected validators of the active era, `null` when unavailable. */
   validators: EraValidatorMap | null;
   activeEra: EraIndex;
