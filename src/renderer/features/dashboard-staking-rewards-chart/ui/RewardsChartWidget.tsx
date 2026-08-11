@@ -135,24 +135,29 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
         </div>
 
         <div ref={containerRef} className="relative mt-3 min-h-0 flex-1" style={{ minHeight: CHART_HEIGHT }}>
-          {pending ? (
-            <Skeleton width="100%" height="100%" />
-          ) : hasData ? (
-            <RewardsBarChart
-              buckets={buckets}
-              asset={selected.asset}
-              color={selected.color}
-              formatDate={formatDate}
-              onHoverChange={handleHoverChange}
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-y-1">
-              <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.empty.title')}</BodyText>
-              <FootnoteText className="text-text-tertiary">
-                {t('dashboard.staking.rewardsChart.empty.description')}
-              </FootnoteText>
-            </div>
-          )}
+          {/* The plot is absolutely positioned: the container's height comes
+              from flex + min-height, which is not a definite height, so an
+              in-flow percentage-sized chart would resolve to 0. */}
+          <div className="absolute inset-0">
+            {pending ? (
+              <Skeleton width="100%" height="100%" />
+            ) : hasData ? (
+              <RewardsBarChart
+                buckets={buckets}
+                asset={selected.asset}
+                color={selected.color}
+                formatDate={formatDate}
+                onHoverChange={handleHoverChange}
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-y-1">
+                <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.empty.title')}</BodyText>
+                <FootnoteText className="text-text-tertiary">
+                  {t('dashboard.staking.rewardsChart.empty.description')}
+                </FootnoteText>
+              </div>
+            )}
+          </div>
 
           {hoveredBucket ? (
             <div className="absolute top-1 z-10" style={{ left: tooltipLeft }}>
