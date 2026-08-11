@@ -72,3 +72,13 @@ The tell is geometry, not appearance: `button.getBoundingClientRect().bottom` pa
 that lands on the overlay. Fix is structural — `<Modal.Content disableScroll>` when the step owns its scroll area, as
 `ValidatorSelectionModal` does. Short forms hide the bug: the sibling flows nest the same way and fit, so copying their
 shell is not evidence the layout works.
+
+## Percent heights die in min-height flex chains (Recharts blank chart)
+
+`ResponsiveContainer height="100%"` (and any `h-full`) computes to 0 when the parent's height is produced by
+`min-height` + flex growth: min-height does not make a height *definite* per CSS, so children's percentages resolve to
+auto. Recharts then measures 0 and renders null — header shows, plot is blank white. The fix is structural, not a
+bigger min-height: put the chart in an `absolute inset-0` box inside the `relative` flex-1 container; absolute
+positioning resolves against the containing block regardless of definiteness. Tell: `.recharts-responsive-container`
+has inline `height: 100%` but computed height 0. Verify stretching layouts with real data in the browser — the empty
+state rendering fine proves nothing about the percent-height path.
