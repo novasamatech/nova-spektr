@@ -150,7 +150,7 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
       {
         key: 'unbonding',
         title: t('dashboard.staking.kpi.columns.unbonding'),
-        width: '32%',
+        width: '30%',
         render: (_, item) => (
           <UnbondingChips
             chunks={item.unbonding}
@@ -163,7 +163,7 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
       {
         key: 'accessMode',
         title: t('dashboard.staking.kpi.columns.actions'),
-        width: '18%',
+        width: '20%',
         render: (_, item) => {
           if (!canAct(item.accessMode)) return null;
 
@@ -172,8 +172,11 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
 
           // One tooltip per button, not one around both: the two are served by
           // different flows, so one can be live while the other is not.
+          // flex-wrap: the column is fixed-width (`table-layout: fixed`), so
+          // when both buttons don't fit side by side they stack instead of
+          // painting past the modal edge.
           return (
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
               {hasRedeemable && (
                 <Tooltip open={redeemEnabled ? false : undefined}>
                   <Tooltip.Trigger>
