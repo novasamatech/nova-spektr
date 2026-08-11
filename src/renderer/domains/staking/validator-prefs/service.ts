@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type StorageChangeSet } from '@polkadot/types/interfaces';
+import { type Codec } from '@polkadot/types/types';
 
 import { type StakingValidatorPrefs, stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -13,16 +13,36 @@ function mapPrefs(prefs: StakingValidatorPrefs): ValidatorPrefs {
   return { commission: perbillToPercent(prefs.commission), blocked: prefs.blocked };
 }
 
+function buildValidatorPrefsMap(
+  stashes: AccountId[],
+  values: Codec[],
+  decodePrefs: (value: Codec) => ValidatorPrefs,
+): ValidatorPrefsMap {
+  return stashes.reduce<ValidatorPrefsMap>((acc, stash, index) => {
+    const value = values[index];
+
+    /**
+     * Zero length — not `isEmpty` — is the existence signal: polkadot.js
+     * `Raw.isEmpty` is also true for all-zero bytes, and a real 0%-commission
+     * non-blocked validator stores exactly `0x0000`.
+     */
+    acc[stash] = value === undefined || value.encodedLength === 0 ? null : decodePrefs(value);
+
+    return acc;
+  }, {});
+}
+
 /**
  * `staking.validators` is a `ValueQuery` map: `api.query...multi` decodes a
  * missing key as default prefs `{ commission: 0, blocked: false }` — exactly
  * what a real 0%-commission validator stores, so existence is the only signal
  * that separates "validator" from "not a validator". The raw storage
- * subscription is the one read that answers with `Option` per key.
+ * subscription is the one read that answers per key whether the entry exists.
  *
- * `state_subscribeStorage` sends every requested key in the first change set
- * and only the changed ones afterwards, so the running map lives in the closure
- * and every emission re-publishes the whole map.
+ * Rpc-core intercepts `state_subscribeStorage`: each emission arrives as a full
+ * value set positionally aligned with the requested keys, unchanged keys
+ * back-filled from its cache. Plain hex keys decode as `Raw`, and an absent key
+ * arrives as a zero-length `Raw`.
  */
 function subscribeValidatorPrefs(
   api: ApiPromise,
@@ -30,23 +50,14 @@ function subscribeValidatorPrefs(
   callback: (prefs: ValidatorPrefsMap) => void,
 ): Promise<() => void> {
   const storageKeys = stashes.map(stash => api.query.staking.validators.key(stash));
-  const stashByKey = new Map(storageKeys.map((key, index) => [key, stashes[index]]));
   const valueType = api.registry.createLookupType(api.query.staking.validators.creator.meta.type.asMap.value);
 
-  const current: ValidatorPrefsMap = {};
+  const decodePrefs = (value: Codec) =>
+    mapPrefs(stakingValidatorPrefs.parse(api.registry.createType(valueType, value.toU8a())));
 
-  return api.rpc.state.subscribeStorage<StorageChangeSet>(storageKeys, changeSet => {
+  return api.rpc.state.subscribeStorage<Codec[]>(storageKeys, values => {
     try {
-      for (const [storageKey, value] of changeSet.changes) {
-        const stash = stashByKey.get(storageKey.toHex());
-        if (!stash) continue;
-
-        current[stash] = value.isSome
-          ? mapPrefs(stakingValidatorPrefs.parse(api.registry.createType(valueType, value.unwrap().toU8a(true))))
-          : null;
-      }
-
-      callback({ ...current });
+      callback(buildValidatorPrefsMap(stashes, values, decodePrefs));
     } catch (error) {
       console.warn(error);
       callback({});
@@ -55,6 +66,7 @@ function subscribeValidatorPrefs(
 }
 
 export const validatorPrefsService = {
+  buildValidatorPrefsMap,
   mapPrefs,
   subscribeValidatorPrefs,
 };
