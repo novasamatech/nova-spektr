@@ -50,7 +50,13 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
         </FootnoteText>
       ),
 
-      status: (row) => <PositionStatusPill status={row.position.status} statusReason={row.position.statusReason} />,
+      status: (row) => (
+        <PositionStatusPill
+          status={row.position.status}
+          statusReason={row.position.statusReason}
+          kind={row.position.kind}
+        />
+      ),
 
       apy: (row) =>
         row.apy === null ? (
@@ -63,10 +69,14 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
 
       activeValidatorCount: (row) => (
         <FootnoteText className="text-text-secondary">
-          {t('dashboard.staking.positions.validatorsValue', {
-            active: row.activeValidatorCount,
-            total: row.nominationCount,
-          })}
+          {row.position.kind === 'validator'
+            ? row.position.validator?.nominatorCount == null
+              ? t('dashboard.staking.positions.noValue')
+              : t('dashboard.staking.positions.nominatorsValue', { count: row.position.validator.nominatorCount })
+            : t('dashboard.staking.positions.validatorsValue', {
+                active: row.activeValidatorCount,
+                total: row.nominationCount,
+              })}
         </FootnoteText>
       ),
 
