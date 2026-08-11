@@ -16,6 +16,7 @@ import { type PositionAction, positionActions } from '../model/position-actions'
 
 import { NominationsTable } from './NominationsTable';
 import { PositionStatusPill } from './PositionStatusPill';
+import { ValidatorStatsSection } from './ValidatorStatsSection';
 import { toSigningMode } from './signing-mode';
 
 type Props = {
@@ -42,7 +43,8 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const { t, formatDate } = useI18n();
   const wiredActions = useUnit(positionActions.$wiredActions);
   const unclaimed = useUnclaimedRewards(row?.chain ?? null, row?.accountId ?? null);
-  const { rows: nominationRows, counts } = useNominationRows(row?.position ?? null);
+  const isValidatorPosition = row?.position.kind === 'validator';
+  const { rows: nominationRows, counts } = useNominationRows(isValidatorPosition ? null : (row?.position ?? null));
 
   // Which chip is waiting for its flow to open. The handoff itself is instant,
   // but the screen it opens can take a moment to mount — the chip owes the user
@@ -188,7 +190,11 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
               </StatCell>
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.status')}>
-                <PositionStatusPill status={row.position.status} statusReason={row.position.statusReason} />
+                <PositionStatusPill
+                  status={row.position.status}
+                  statusReason={row.position.statusReason}
+                  kind={row.position.kind}
+                />
               </StatCell>
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.apy')}>
@@ -234,12 +240,24 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 )}
               </StatCell>
 
-              <StatCell label={t('dashboard.staking.positions.detail.stats.validators')}>
+              <StatCell
+                label={
+                  isValidatorPosition
+                    ? t('dashboard.staking.positions.detail.stats.nominators')
+                    : t('dashboard.staking.positions.detail.stats.validators')
+                }
+              >
                 <FootnoteText className="text-text-secondary">
-                  {t('dashboard.staking.positions.validatorsValue', {
-                    active: row.activeValidatorCount,
-                    total: row.nominationCount,
-                  })}
+                  {isValidatorPosition
+                    ? row.position.validator?.nominatorCount == null
+                      ? t('dashboard.staking.positions.noValue')
+                      : t('dashboard.staking.positions.nominatorsValue', {
+                          count: row.position.validator.nominatorCount,
+                        })
+                    : t('dashboard.staking.positions.validatorsValue', {
+                        active: row.activeValidatorCount,
+                        total: row.nominationCount,
+                      })}
                 </FootnoteText>
               </StatCell>
             </div>
@@ -303,22 +321,36 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                  * turns the chosen set into a `nominate` transaction, so opening
                  * it would end on a submit that goes nowhere.
                  */}
-                {renderAction(
-                  'changeValidators',
-                  t('dashboard.staking.positions.detail.actions.changeValidators'),
-                  () =>
-                    openWithLoader('changeValidators', () =>
-                      positionActions.events.changeValidatorsRequested(actionPayload),
-                    ),
-                )}
+                {isValidatorPosition
+                  ? null
+                  : renderAction(
+                      'changeValidators',
+                      t('dashboard.staking.positions.detail.actions.changeValidators'),
+                      () =>
+                        openWithLoader('changeValidators', () =>
+                          positionActions.events.changeValidatorsRequested(actionPayload),
+                        ),
+                    )}
               </div>
             )}
 
-            {/* --- nominations --- */}
-            <div className="flex flex-col gap-y-2">
-              <BodyText>{t('dashboard.staking.positions.detail.nominations.title')}</BodyText>
-              <NominationsTable rows={nominationRows} counts={counts} chain={row.chain} asset={row.asset} />
-            </div>
+            {/* --- nominations / validator stats --- */}
+            {isValidatorPosition && row.position.validator ? (
+              <div className="flex flex-col gap-y-2">
+                <BodyText>{t('dashboard.staking.positions.detail.validator.title')}</BodyText>
+                {row.position.status === 'waiting' ? (
+                  <FootnoteText className="text-text-tertiary">
+                    {t('dashboard.staking.positions.detail.validator.notElected')}
+                  </FootnoteText>
+                ) : null}
+                <ValidatorStatsSection validator={row.position.validator} asset={row.asset} />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-y-2">
+                <BodyText>{t('dashboard.staking.positions.detail.nominations.title')}</BodyText>
+                <NominationsTable rows={nominationRows} counts={counts} chain={row.chain} asset={row.asset} />
+              </div>
+            )}
           </div>
         ) : null}
       </Drawer.Content>
