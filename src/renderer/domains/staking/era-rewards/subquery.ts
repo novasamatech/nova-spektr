@@ -68,6 +68,33 @@ type Params = {
 };
 
 /**
+ * One indexer row's slices that belong to our stashes. A stash appears in
+ * `others` when it nominates the row's validator — and in `address` when it IS
+ * the validator: that line is implicit (`own`), so it has to be added, not
+ * found. Missing it is what made every own-validator earn a flat zero.
+ */
+export function buildShares(
+  node: { address: string; own: string; others: { who: string; value: string }[] | null },
+  byAddress: Map<string, AccountId>,
+): Record<AccountId, string> {
+  const shares: Record<AccountId, string> = {};
+
+  for (const other of node.others ?? []) {
+    const stash = byAddress.get(other.who);
+    if (stash) {
+      shares[stash] = other.value;
+    }
+  }
+
+  const selfStash = byAddress.get(node.address);
+  if (selfStash) {
+    shares[selfStash] = node.own;
+  }
+
+  return shares;
+}
+
+/**
  * Every (era, validator) our stashes were exposed to, with each stash's own
  * slice picked out of the nominator list.
  *
@@ -126,14 +153,7 @@ export async function fetchEraExposureShares({
 
           for (const node of nodes) {
             const validator = toAccountId(node.address);
-            const shares: Record<AccountId, string> = {};
-
-            for (const other of node.others ?? []) {
-              const stash = byAddress.get(other.who);
-              if (stash) {
-                shares[stash] = other.value;
-              }
-            }
+            const shares = buildShares(node, byAddress);
 
             const entry = collected.get(exposureKey(node.era, validator));
             if (entry) {
