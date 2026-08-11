@@ -1,5 +1,6 @@
 import {
   type Effect,
+  type Event,
   type Store,
   type StoreWritable,
   createEffect,
@@ -32,6 +33,12 @@ interface QueryResource<Params, Response, Cache> extends Resource<Params, Respon
    */
   invalidate: Effect<Params, void>;
   $pending: Store<Record<ResourceRequestKey, boolean>>;
+  /**
+   * A request for a key gave up — after exhausting `retry`, when configured.
+   * Nothing reaches `$cache` for that key, so without listening to this a
+   * consumer cannot tell "still loading" from "failed and will not arrive".
+   */
+  fail: Event<{ params: Params; error: Error }>;
 }
 
 type QueryParams<Params, Response, Cache> = {
@@ -185,6 +192,7 @@ function build<Params, Response, Cache>({
     fetch: fetchFx,
     invalidate: invalidateFx,
     $pending: readonly($pending),
+    fail: readonly(requestFx.fail),
   };
 }
 

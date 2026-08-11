@@ -34,7 +34,9 @@ const { events } = validatorSelectionModel;
 /** What a cell shows when the chain reported nothing for it. */
 const UNKNOWN_VALUE = '—';
 
-const SKELETON_ROW_COUNT = 8;
+// Enough to fill the full-height modal viewport: fewer left a block of blank
+// white under them, which read as "the list is empty" rather than "loading".
+const SKELETON_ROW_COUNT = 14;
 
 /**
  * Grey / amber / green, matching the detail pane. Grey is deliberate at the
@@ -128,6 +130,7 @@ export const ValidatorTable = () => {
     displayedAddresses,
     detailValidator,
     scores,
+    failed,
   } = useUnit({
     chain: validatorSelectionModel.$chain,
     asset: validatorSelectionModel.$asset,
@@ -144,6 +147,7 @@ export const ValidatorTable = () => {
     displayedAddresses: validatorSelectionModel.$displayedAddresses,
     detailValidator: validatorSelectionModel.$detailValidator,
     scores: validatorSelectionModel.$scores,
+    failed: validatorSelectionModel.$failed,
   });
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
@@ -153,13 +157,15 @@ export const ValidatorTable = () => {
     [displayedNames, displayedAddresses],
   );
 
-  const rows = useMemo(
-    () =>
-      pending
-        ? SKELETON_ROWS
-        : visible.map((validator) => toRow(validator, scores[validator.accountId]?.overall ?? null)),
-    [pending, visible, scores],
-  );
+  // A failed request means the skeletons are waiting for data that will not
+  // arrive — showing them anyway is the lie this state exists to avoid.
+  const showLoadFailed = failed && pending;
+
+  const rows = useMemo(() => {
+    if (pending) return showLoadFailed ? [] : SKELETON_ROWS;
+
+    return visible.map((validator) => toRow(validator, scores[validator.accountId]?.overall ?? null));
+  }, [pending, showLoadFailed, visible, scores]);
 
   const isReadOnly = signingMode === 'watchOnly';
   const atLimit = selectedCount >= maxNominations;
@@ -391,6 +397,8 @@ export const ValidatorTable = () => {
       />
 
       {!pending && rows.length === 0 ? <NoValidators /> : null}
+
+      {showLoadFailed ? <LoadFailed /> : null}
     </ScrollArea>
   );
 };
@@ -406,6 +414,22 @@ const NoValidators = () => {
       />
       <Button variant="text" size="sm" onClick={() => events.clearSearchAndFilters()}>
         {t('staking.validatorSelection.empty.action')}
+      </Button>
+    </div>
+  );
+};
+
+const LoadFailed = () => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex flex-col items-center gap-y-2 py-6">
+      <EmptyMessage
+        title={t('staking.validatorSelection.loadFailed.title')}
+        description={t('staking.validatorSelection.loadFailed.description')}
+      />
+      <Button variant="text" size="sm" onClick={() => events.retryRequested()}>
+        {t('staking.validatorSelection.loadFailed.action')}
       </Button>
     </div>
   );

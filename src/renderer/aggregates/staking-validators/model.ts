@@ -10,6 +10,7 @@ import {
   type EraValidatorMap,
   type IdentityParentMap,
   type RecommendationCriteria,
+  type ValidatorsResourceParams,
   DEFAULT_RECOMMENDATION_CRITERIA,
   buildOperatorClusters,
   era,
@@ -105,6 +106,66 @@ const $validatorList = $validators.map(map => Object.values(map));
  */
 const $pending = combine($chainId, validators.validatorsResource.$cache, (chainId, cache) => nullable(cache[chainId]));
 
+// --- request health --------------------------------------------------------------
+//
+// `$pending` only says "no data yet" - it cannot tell a request still working
+// from one that already gave up. Both looked identical (skeletons forever) on a
+// flaky RPC, which is exactly when the user needs to know the difference.
+
+/** Retries the elected-set request the scoped chain is stuck on. */
+const retryRequested = createEvent();
+
+/**
+ * Relay api of the scoped chain, for the APY's era timing - Asset Hub has no
+ * Babe pallet. Mirrors `useElectedValidators`; the chain stands in for itself
+ * when it has no parent.
+ */
+const $timelineApi = combine({ chain: $chain, api: $api, apis: networkModel.$apis }, ({ chain, api, apis }) => {
+  return (chain?.parentId ? apis[chain.parentId] : null) ?? api;
+});
+
+const $requestParams = combine(
+  { chainId: $chainId, api: $api, era: $era, timelineApi: $timelineApi },
+  ({ chainId, api, era, timelineApi }): ValidatorsResourceParams | null => {
+    return nonNullable(api) && nonNullable(era) ? { chainId, api, era, timelineApi } : null;
+  },
+);
+
+/** The scoped chain's elected set is being fetched right now. */
+const $loading = combine($requestParams, validators.validatorsResource.$pending, (params, pending) => {
+  return nonNullable(params) && (pending[validators.validatorsResource.createKey(params)] ?? false);
+});
+
+/**
+ * The last request for this (chain, era) failed and gave up. Not reset by
+ * `$chainId` moving - it is keyed data, so scoping back to the failed chain
+ * shows the failure again instead of pretending the set is on its way.
+ */
+const $failedRequest = createStore<{ chainId: ChainId; era: EraIndex } | null>(null)
+  .on(validators.validatorsResource.fail, (_, { params }) => ({ chainId: params.chainId, era: params.era }))
+  .reset(retryRequested);
+
+// A set that landed anyway - another consumer retried, the era moved on -
+// retires the failure it supersedes.
+sample({
+  clock: validators.validatorsResource.push,
+  source: $failedRequest,
+  filter: (failed, { params }) => nonNullable(failed) && failed.chainId === params.chainId,
+  fn: () => null,
+  target: $failedRequest,
+});
+
+const $failed = combine({ chainId: $chainId, era: $era, failed: $failedRequest }, ({ chainId, era, failed }) => {
+  return nonNullable(failed) && failed.chainId === chainId && failed.era === era;
+});
+
+sample({
+  clock: retryRequested,
+  source: $requestParams,
+  filter: (params: ValidatorsResourceParams | null): params is ValidatorsResourceParams => nonNullable(params),
+  target: validators.validatorsResource.start,
+});
+
 const $maxNominations = $api.map(api =>
   nonNullable(api) ? validatorsService.getMaxValidators(api) : FALLBACK_MAX_NOMINATIONS,
 );
@@ -198,10 +259,13 @@ export const stakingValidators = {
   $recommended,
   $recommendedCount,
   $pending,
+  $loading,
+  $failed,
 
   scopeChain,
   setCriteria,
   resetCriteria,
+  retryRequested,
 };
 
 export type { CriteriaFlags };

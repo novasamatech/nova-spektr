@@ -3786,6 +3786,16 @@
         "description": "Try a different name, or relax the filters you set.",
         "title": "No validators match your search or filters"
       },
+      "loading": {
+        "meta": "Loading validators…",
+        "note": "Loading the validators of the era — the list will fill in as soon as the network answers"
+      },
+      "loadFailed": {
+        "action": "Retry",
+        "description": "The network did not answer. The list will not fill in on its own — retry the request.",
+        "metaStale": "Couldn't update the validator set",
+        "title": "Couldn't load the validators"
+      },
       "filters": {
         "anyPlaceholder": "Any",
         "done": "Done",

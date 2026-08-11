@@ -14,20 +14,30 @@ const { events } = validatorSelectionModel;
 export const SelectionToolbar = () => {
   const { t } = useI18n();
 
-  const { query, signingMode, selectedCount, showSelectedOnly, meta } = useUnit({
+  const { query, signingMode, selectedCount, showSelectedOnly, meta, loading, failed, pending } = useUnit({
     query: validatorSelectionModel.$query,
     signingMode: validatorSelectionModel.$signingMode,
     selectedCount: validatorSelectionModel.$selectedCount,
     showSelectedOnly: validatorSelectionModel.$showSelectedOnly,
     meta: validatorSelectionModel.$meta,
+    loading: validatorSelectionModel.$loading,
+    failed: validatorSelectionModel.$failed,
+    pending: validatorSelectionModel.$pending,
   });
 
-  const metaLabel = nonNullable(meta.era)
-    ? t('staking.validatorSelection.toolbar.meta', {
-        count: meta.validatorCount,
-        era: meta.era.toLocaleString(),
-      })
-    : t('staking.validatorSelection.toolbar.metaNoEra', { count: meta.validatorCount });
+  // "600 active validators" would be a lie in every state below: while the set
+  // is on its way the count is not known yet, and after a failed refresh the
+  // number on screen belongs to the previous era.
+  const metaLabel = loading
+    ? t('staking.validatorSelection.loading.meta')
+    : failed && !pending
+      ? t('staking.validatorSelection.loadFailed.metaStale')
+      : nonNullable(meta.era)
+        ? t('staking.validatorSelection.toolbar.meta', {
+            count: meta.validatorCount,
+            era: meta.era.toLocaleString(),
+          })
+        : t('staking.validatorSelection.toolbar.metaNoEra', { count: meta.validatorCount });
 
   return (
     <div className="flex items-center gap-x-2 px-5 pb-3">
@@ -67,6 +77,12 @@ export const SelectionToolbar = () => {
       </Button>
 
       <FootnoteText className="ms-auto shrink-0 text-text-tertiary">{metaLabel}</FootnoteText>
+
+      {failed && !pending && !loading ? (
+        <Button variant="text" size="sm" onClick={() => events.retryRequested()}>
+          {t('staking.validatorSelection.loadFailed.action')}
+        </Button>
+      ) : null}
     </div>
   );
 };

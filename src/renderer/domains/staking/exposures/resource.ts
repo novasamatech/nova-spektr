@@ -30,6 +30,10 @@ export const exposuresResource = createQueryResource<ExposuresResourceParams>({
   .request<ExposureOverviewMap>(({ api, era }) => {
     return exposureService.getEraOverviews(api, era);
   })
+  // The overview walk is the single biggest read of the staking stack and
+  // everything downstream (positions, validators) waits on it — one rate-limited
+  // response must not fail the era for the rest of the session.
+  .retry({ count: 3, delay: 1000 })
   .cache({
     store: $exposuresCache,
     map: (state, overviews, { chainId, era }) => ({ ...state, [chainId]: { era, overviews } }),

@@ -1190,3 +1190,17 @@ unclaimed eras, oldest expires in 15d**.
 - Browser (dev, warm cache): main-thread blockage on open **1063ms → 199ms**, longest task 140ms; 20 rows mounted,
   bottom spacer 10,908px. Scroll to middle/end, sort, search, "Show selected", detail pane all behave.
 - `pnpm types:go` clean; 147 unit tests across both features pass.
+
+## Follow-up (user report 2026-08-11): picker opens empty / with a stale set that never updates
+
+Diagnosis: the elected-set fetch has NO retry — on flaky RPC (`-32029 Too Many Requests` in the user's console) a
+failed request logs and gives up; the cache never fills → skeletons forever ("opens empty"), or the previous era's
+cached set stays on screen with no refresh ("first loaded validators", never updates). Data itself arrives in ONE
+atomic push (no streaming), so the "list not updating" is a dead request, not a missing subscription.
+
+- [x] `.retry({ count: 3, delay: 1000 })` on validators + exposures resources
+- [x] expose `fail` from `createQueryResource`; aggregate gets `$loading` / `$failed` for the scoped (chain, era) + a
+  `retryRequested` event that restarts the fetch
+- [x] UI: viewport-filling skeletons + "Loading…" meta note; error state with Retry button; "updating" hint when a
+  stale set is shown while the new era loads
+- [x] verify in browser: cold open shows loading then fills; forced failure shows retry state

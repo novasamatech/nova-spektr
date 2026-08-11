@@ -30,6 +30,7 @@ export { apyService } from './apy/service';
 export { useNetworkApy } from './apy/hooks';
 
 export type { EraValidator, EraValidatorMap } from './validators/types';
+export type { ValidatorsResourceParams } from './validators/resource';
 export { nominators, validators } from './validators/store';
 export { validatorsService } from './validators/service';
 export { mapEraValidatorToLegacy, mapEraValidatorsToLegacy } from './validators/helpers';

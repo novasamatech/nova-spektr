@@ -65,10 +65,11 @@ export const SelectionFooter = ({ onGoBack }: Props) => {
 const ContextNote = () => {
   const { t } = useI18n();
 
-  const { signingMode, signingInfo, showingNote } = useUnit({
+  const { signingMode, signingInfo, showingNote, pending } = useUnit({
     signingMode: validatorSelectionModel.$signingMode,
     signingInfo: validatorSelectionModel.$signingInfo,
     showingNote: validatorSelectionModel.$showingNote,
+    pending: validatorSelectionModel.$pending,
   });
 
   if (signingMode === 'watchOnly') {
@@ -95,6 +96,11 @@ const ContextNote = () => {
         ) : null}
       </div>
     );
+  }
+
+  // "Showing 0 of 0" reads as an empty list, not as one that is on its way.
+  if (pending) {
+    return <FootnoteText className="text-text-tertiary">{t('staking.validatorSelection.loading.meta')}</FootnoteText>;
   }
 
   return (

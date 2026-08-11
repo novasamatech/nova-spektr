@@ -467,6 +467,8 @@ export const validatorSelectionModel = {
   $showingNote,
   $viewNote,
   $pending: stakingValidators.$pending,
+  $loading: stakingValidators.$loading,
+  $failed: stakingValidators.$failed,
 
   events: {
     formInitiated,
@@ -484,6 +486,7 @@ export const validatorSelectionModel = {
     detailOpened,
     detailClosed,
     validatorsSubmitted,
+    retryRequested: stakingValidators.retryRequested,
   },
   output: {
     formSubmitted,
