@@ -373,6 +373,28 @@ describe('positionsService', () => {
 
       expect(position.kind).toEqual('validator');
       expect(position.status).toEqual('active');
+      expect(position.validator?.commission).toEqual(5);
+    });
+
+    test('should split the unbonding chunks of a validator position at the active era boundary', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          validatorPrefs: prefs,
+          stake: createStake({
+            unlocking: createUnlocking([
+              ['400', ACTIVE_ERA + 2],
+              ['100', ACTIVE_ERA - 3],
+              ['250', ACTIVE_ERA],
+              ['300', ACTIVE_ERA + 1],
+            ]),
+          }),
+        }),
+      );
+
+      expect(position.kind).toEqual('validator');
+      expect(position.redeemable).toEqual('350');
+      expect(position.totalUnbonding).toEqual('700');
+      expect(position.unbonding.map(chunk => chunk.value)).toEqual(['300', '400']);
     });
 
     test('should match the era set against the stash, not the queried account', () => {

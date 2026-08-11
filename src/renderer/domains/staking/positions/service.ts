@@ -134,19 +134,22 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
   const targets = nomination?.targets ?? [];
   const chunks = deriveUnbondingChunks(stake.unlocking, activeEra, eraAnchor);
   const unbonding = chunks.filter(chunk => !chunk.redeemable);
+  const redeemable = deriveRedeemable(stake.unlocking, activeEra);
+  const totalUnbonding = sumPlanck(unbonding.map(chunk => chunk.value));
 
   const eraValidator = validators?.[stake.stash] ?? null;
   // Current intent wins: prefs make a validator, nominations make a nominator.
   // Era-set membership alone only upgrades an intent-less stash - a validator
-  // that chilled mid-era is still elected and earning, not "bonded".
+  // that chilled mid-era is still elected and earning, not "bonded" - and its
+  // era entry then doubles as the prefs source.
   // Era validator maps are keyed by stash; `accountId` can be a legacy
   // controller - same stash-keying rule as the exposure check below.
-  const isValidator = nonNullable(validatorPrefs) || (nonNullable(eraValidator) && targets.length === 0);
+  const prefsSource = validatorPrefs ?? (targets.length === 0 ? eraValidator : null);
 
-  if (isValidator) {
+  if (prefsSource) {
     const validatorInfo: PositionValidatorInfo = {
-      commission: validatorPrefs?.commission ?? eraValidator?.commission ?? 0,
-      blocked: validatorPrefs?.blocked ?? eraValidator?.blocked ?? false,
+      commission: prefsSource.commission,
+      blocked: prefsSource.blocked,
       ownStake: eraValidator?.ownStake ?? null,
       totalExposure: eraValidator?.totalStake ?? null,
       nominatorCount: eraValidator?.nominatorCount ?? null,
@@ -164,8 +167,8 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
       nominations: [],
       activeValidators: [],
       unbonding,
-      redeemable: deriveRedeemable(stake.unlocking, activeEra),
-      totalUnbonding: sumPlanck(unbonding.map(chunk => chunk.value)),
+      redeemable,
+      totalUnbonding,
     };
   }
 
@@ -204,8 +207,8 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
     nominations: targets,
     activeValidators,
     unbonding,
-    redeemable: deriveRedeemable(stake.unlocking, activeEra),
-    totalUnbonding: sumPlanck(unbonding.map(chunk => chunk.value)),
+    redeemable,
+    totalUnbonding,
   };
 }
 
