@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { buildCsv, downloadCsv } from '@/shared/lib/csv';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
 import { getColorByIndex } from '@/shared/ui/chart-constants';
 import { type Column, EmptyMessage, Label, Modal, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
@@ -172,6 +172,13 @@ export const ClaimModal = memo(
     const validatorRows = useMemo(
       () => buildValidatorRewardRows({ claimRows: scopedClaimRows, rewards: scopedRewards, toFiat }),
       [scopedClaimRows, scopedRewards, toFiat],
+    );
+
+    /** Accounts of ours that are themselves validators — flags the rail entry. */
+    const validatorAccounts = useMemo(
+      () =>
+        new Set(positions.filter((position) => position.kind === 'validator').map((position) => position.accountId)),
+      [positions],
     );
 
     /**
@@ -408,6 +415,11 @@ export const ClaimModal = memo(
                 />
                 <HelpText className="text-text-tertiary">{item.chainName}</HelpText>
               </div>
+              {item.isSelf ? (
+                <div className="shrink-0">
+                  <Label variant="gray">{t('dashboard.staking.kpi.rewards.myValidatorBadge')}</Label>
+                </div>
+              ) : null}
             </div>
           ),
         },
@@ -415,32 +427,45 @@ export const ClaimModal = memo(
           key: 'nominators',
           title: columnTitles.nominators,
           width: rewardColumnWidth('nominators'),
-          render: (_, item) => (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <div className="w-fit">
-                  <Label variant="gray">
-                    {t('dashboard.staking.kpi.nominations.nominatorsValue', { count: item.nominators.length })}
-                  </Label>
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <div className="flex max-w-64 flex-col gap-1">
-                  {item.nominators.map((accountId) => (
-                    <NamedAccount
-                      key={accountId}
-                      accountId={accountId}
-                      chain={chains[item.chainId]}
-                      wallet={walletByAccount[accountId]}
-                      variant="short"
-                      iconSize={16}
-                      hideExplorers
-                    />
-                  ))}
-                </div>
-              </Tooltip.Content>
-            </Tooltip>
-          ),
+          render: (_, item) => {
+            // A validator's own row lists itself among its `nominators` (the
+            // chain does not distinguish self-stake from backing); counting it
+            // as a backer would claim credit the validator gave itself.
+            const backerCount = item.isSelf
+              ? item.nominators.filter((accountId) => accountId !== item.validatorId).length
+              : item.nominators.length;
+
+            return (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div className="w-fit">
+                    <Label variant="gray">
+                      {item.isSelf
+                        ? backerCount === 0
+                          ? t('dashboard.staking.kpi.rewards.selfNominator')
+                          : t('dashboard.staking.kpi.rewards.selfNominatorPlus', { count: backerCount })
+                        : t('dashboard.staking.kpi.nominations.nominatorsValue', { count: item.nominators.length })}
+                    </Label>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <div className="flex max-w-64 flex-col gap-1">
+                    {item.nominators.map((accountId) => (
+                      <NamedAccount
+                        key={accountId}
+                        accountId={accountId}
+                        chain={chains[item.chainId]}
+                        wallet={walletByAccount[accountId]}
+                        variant="short"
+                        iconSize={16}
+                        hideExplorers
+                      />
+                    ))}
+                  </div>
+                </Tooltip.Content>
+              </Tooltip>
+            );
+          },
         },
         {
           key: 'accrued',
@@ -613,7 +638,7 @@ export const ClaimModal = memo(
                       the space under a 180px ring is exactly one list wide. */}
                     <div className="mt-2 flex w-full shrink-0 flex-col gap-1 border-t border-divider pt-2">
                       <HelpText className="text-text-tertiary uppercase">
-                        {t('dashboard.staking.kpi.rewards.nominatorsColumn')}
+                        {t('dashboard.staking.kpi.rewards.accountsRail')}
                       </HelpText>
                       {nominators.map((nominator) => {
                         const active = nominatorFilter === nominator.accountId;
@@ -645,6 +670,13 @@ export const ClaimModal = memo(
                                 hideExplorers
                               />
                             </div>
+                            {validatorAccounts.has(nominator.accountId) ? (
+                              <div className="flex h-4.5 shrink-0 items-center rounded-full bg-input-background-disabled px-1.5">
+                                <CaptionText className="text-text-secondary">
+                                  {t('dashboard.staking.positions.validatorChip')}
+                                </CaptionText>
+                              </div>
+                            ) : null}
                             {pendingChainSet.has(nominator.chainId) ? (
                               <Skeleton width="56px" height="12px" />
                             ) : (
