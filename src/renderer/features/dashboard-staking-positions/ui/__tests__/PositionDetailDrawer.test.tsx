@@ -69,7 +69,52 @@ const renderDrawer = () => {
   );
 };
 
+const validatorRow: PositionRow = {
+  ...row,
+  position: {
+    ...position,
+    kind: 'validator',
+    validator: {
+      commission: 5,
+      blocked: false,
+      ownStake: '1000',
+      totalExposure: '5000',
+      nominatorCount: 12,
+      eraPoints: 340,
+    },
+    nominations: [],
+    activeValidators: [],
+    status: 'active',
+  },
+};
+
+const renderValidatorDrawer = () => {
+  const scope = fork({ values: [[positionActions.$wiredActions, ['changeValidators']]] });
+
+  return render(
+    <Provider value={scope}>
+      <I18Provider>
+        <ThemeProvider>
+          <PositionDetailDrawer row={validatorRow} onClose={() => {}} />
+        </ThemeProvider>
+      </I18Provider>
+    </Provider>,
+  );
+};
+
 describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
+  test('should show validator stats instead of nominations for a validator position', async () => {
+    renderValidatorDrawer();
+
+    expect(await screen.findByText('Validator')).toBeInTheDocument();
+    expect(screen.queryByText('Nominations')).not.toBeInTheDocument();
+
+    expect(screen.queryByRole('button', { name: 'Change validators' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add stake' })).toBeInTheDocument();
+
+    expect(screen.getAllByText('12 nominators').length).toBeGreaterThan(0);
+  });
+
   test('should acknowledge the change-validators click with a spinner, then hand off', async () => {
     const requested: unknown[] = [];
     const unwatch = createWatch({
