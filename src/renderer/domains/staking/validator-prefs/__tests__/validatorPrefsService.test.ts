@@ -44,6 +44,18 @@ describe('domains/staking/validator-prefs/service', () => {
       });
     });
 
+    test('should treat a live-node absent value (empty StorageData) as no validator', () => {
+      // The live shape: an empty Bytes-style wrapper whose compact length
+      // prefix makes `encodedLength` 1 — only the bare encoding is empty.
+      const absent = registry.createType('StorageData', '0x');
+      expect(absent.encodedLength).toEqual(1);
+      expect(absent.toU8a(true).length).toEqual(0);
+
+      expect(validatorPrefsService.buildValidatorPrefsMap([STASH_1], [absent], decodePrefs)).toEqual({
+        [STASH_1]: null,
+      });
+    });
+
     test('should decode all-zero bytes as a real 0%-commission validator', () => {
       const zeroPrefs = new Raw(registry, new Uint8Array([0x00, 0x00]));
 

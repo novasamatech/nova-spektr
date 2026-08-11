@@ -16,17 +16,21 @@ function mapPrefs(prefs: StakingValidatorPrefs): ValidatorPrefs {
 function buildValidatorPrefsMap(
   stashes: AccountId[],
   values: Codec[],
-  decodePrefs: (value: Codec) => ValidatorPrefs,
+  decodePrefs: (bytes: Uint8Array) => ValidatorPrefs,
 ): ValidatorPrefsMap {
   return stashes.reduce<ValidatorPrefsMap>((acc, stash, index) => {
-    const value = values[index];
-
     /**
-     * Zero length — not `isEmpty` — is the existence signal: polkadot.js
-     * `Raw.isEmpty` is also true for all-zero bytes, and a real 0%-commission
-     * non-blocked validator stores exactly `0x0000`.
+     * The concrete codec of an absent-key value differs between environments: a
+     * zero-length `Raw` in some, an empty `StorageData` — whose compact length
+     * prefix makes `encodedLength` 1 — from live nodes (measured on Polkadot
+     * Asset Hub, 2026-08-11). The bare encoding is the wrapper-independent
+     * existence signal. `isEmpty` stays wrong either way: real 0%-commission
+     * non-blocked prefs store all-zero bytes (`0x0000`), which polkadot.js also
+     * reports as "empty".
      */
-    acc[stash] = value === undefined || value.encodedLength === 0 ? null : decodePrefs(value);
+    const bytes = values[index]?.toU8a(true);
+
+    acc[stash] = bytes === undefined || bytes.length === 0 ? null : decodePrefs(bytes);
 
     return acc;
   }, {});
@@ -41,8 +45,9 @@ function buildValidatorPrefsMap(
  *
  * Rpc-core intercepts `state_subscribeStorage`: each emission arrives as a full
  * value set positionally aligned with the requested keys, unchanged keys
- * back-filled from its cache. Plain hex keys decode as `Raw`, and an absent key
- * arrives as a zero-length `Raw`.
+ * back-filled from its cache. The wrapper codec of each value is
+ * environment-dependent, so existence is read from the bare encoding — see
+ * `buildValidatorPrefsMap`.
  */
 function subscribeValidatorPrefs(
   api: ApiPromise,
@@ -52,8 +57,8 @@ function subscribeValidatorPrefs(
   const storageKeys = stashes.map(stash => api.query.staking.validators.key(stash));
   const valueType = api.registry.createLookupType(api.query.staking.validators.creator.meta.type.asMap.value);
 
-  const decodePrefs = (value: Codec) =>
-    mapPrefs(stakingValidatorPrefs.parse(api.registry.createType(valueType, value.toU8a())));
+  const decodePrefs = (bytes: Uint8Array) =>
+    mapPrefs(stakingValidatorPrefs.parse(api.registry.createType(valueType, bytes)));
 
   return api.rpc.state.subscribeStorage<Codec[]>(storageKeys, values => {
     try {

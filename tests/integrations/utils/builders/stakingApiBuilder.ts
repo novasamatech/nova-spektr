@@ -572,13 +572,14 @@ export function createStakingApi(params: CreateStakingApiParams): StakingApiHand
       },
       state: {
         // Raw storage subscription of the validator-prefs service. An absent
-        // key answers as a zero-length `Raw` — the service's existence signal —
-        // and a present one as the bare SCALE bytes of the prefs struct.
+        // key answers as an empty `StorageData` — the live-node shape, whose
+        // compact length prefix defeats `encodedLength` checks — and a present
+        // one as the bare SCALE bytes of the prefs struct.
         subscribeStorage: (storageKeys: AccountId[], callback: (values: Codec[]) => void) => {
           const build = () =>
             storageKeys.map((stash) => {
               const prefs = state.prefs[stash];
-              if (!prefs) return registry.createType('Raw', '0x');
+              if (!prefs) return registry.createType('StorageData', '0x');
 
               const value = registry.createType('TestValidatorPrefs', {
                 commission: prefs.commission,
