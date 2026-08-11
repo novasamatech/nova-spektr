@@ -88,7 +88,7 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
   const tooltipLeft = hover ? clamp(hover.x - TOOLTIP_WIDTH / 2, 0, Math.max(hover.width - TOOLTIP_WIDTH, 0)) : 0;
 
   return (
-    <DashboardWidget colSpan={4}>
+    <DashboardWidget>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>

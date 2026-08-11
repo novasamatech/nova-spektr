@@ -28,4 +28,6 @@ export const dashboardStakingPositionsFeature = createFeature({
 dashboardStakingPositionsFeature.inject(dashboardStakingSlot, {
   order: 10,
   render: PositionsWidget,
+  defaultSize: { w: 4, h: 5 },
+  minSize: { w: 2, h: 3 },
 });

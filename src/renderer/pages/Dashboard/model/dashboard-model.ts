@@ -4,45 +4,40 @@ import { persist } from 'effector-storage/local';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
+import { type Rect, resolveCollisions } from '../lib/layout-engine';
 
 const tabChanged = createEvent<string>();
-const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
 const editModeToggled = createEvent();
+
+const layoutSet = createEvent<{ tab: string; layout: Record<string, Rect> }>();
+const widgetMoved = createEvent<{ tab: string; key: string; x: number; y: number }>();
+const widgetResized = createEvent<{ tab: string; key: string; w: number; h: number }>();
+const layoutReset = createEvent<{ tab: string }>();
 
 const $activeTab = createStore('overview');
 const $editMode = createStore(false);
 $editMode.on(editModeToggled, (state) => !state);
 
-const $savedWidgetOrder = createStore<Record<string, string[]>>({});
-persist({ store: $savedWidgetOrder, key: 'dashboard-widget-order', sync: true });
-$savedWidgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
+const $widgetLayout = createStore<Record<string, Record<string, Rect>>>({});
+persist({ store: $widgetLayout, key: 'dashboard-widget-layout-v1', sync: true });
 
-/**
- * Widgets that used to be one and are now several, keyed by the DI key the old
- * one was saved under.
- *
- * A saved layout survives the split: the grid drops keys it no longer knows and
- * appends unknown widgets at the end, so without this the four staking cards
- * would silently jump below everything the user had arranged. Expanding the old
- * key in place keeps them where they were.
- */
-const WIDGET_SPLITS: Record<string, string[]> = {
-  'feature: dashboard/staking-kpi': [
-    'feature: dashboard/staking-total-staked',
-    'feature: dashboard/staking-apy',
-    'feature: dashboard/staking-nominations',
-    'feature: dashboard/staking-rewards',
-  ],
-};
+$widgetLayout
+  .on(layoutSet, (state, { tab, layout }) => ({ ...state, [tab]: layout }))
+  .on(widgetMoved, (state, { tab, key, x, y }) => {
+    const tabLayout = state[tab];
+    if (!tabLayout?.[key]) return state;
+    const moved = { ...tabLayout, [key]: { ...tabLayout[key]!, x, y } };
 
-const $widgetOrder = $savedWidgetOrder.map((saved) => {
-  const migrated: Record<string, string[]> = {};
-  for (const [tab, order] of Object.entries(saved)) {
-    migrated[tab] = order.flatMap((key) => WIDGET_SPLITS[key] ?? [key]);
-  }
+    return { ...state, [tab]: resolveCollisions(moved, key) };
+  })
+  .on(widgetResized, (state, { tab, key, w, h }) => {
+    const tabLayout = state[tab];
+    if (!tabLayout?.[key]) return state;
+    const resized = { ...tabLayout, [key]: { ...tabLayout[key]!, w, h } };
 
-  return migrated;
-});
+    return { ...state, [tab]: resolveCollisions(resized, key) };
+  })
+  .on(layoutReset, (state, { tab }) => ({ ...state, [tab]: {} }));
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
@@ -88,9 +83,12 @@ export const dashboardModel = {
   $selectedAccounts,
   $selectedContactAccountIds,
   $activeTab,
-  $widgetOrder,
+  $widgetLayout,
   $editMode,
   tabChanged,
-  widgetOrderChanged,
+  layoutSet,
+  widgetMoved,
+  widgetResized,
+  layoutReset,
   editModeToggled,
 };

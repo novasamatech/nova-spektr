@@ -16,4 +16,6 @@ dashboardStakingRewardsChartFeature.inject(dashboardStakingSlot, {
   // Spaced by ten — see `dashboard-staking-positions`.
   order: 20,
   render: RewardsChartWidget,
+  defaultSize: { w: 4, h: 5 },
+  minSize: { w: 2, h: 3 },
 });

@@ -16,9 +16,7 @@ export const EM_DASH = '—';
  * next to each other.
  */
 export const KpiWidgetFrame = ({ children }: { children: ReactNode }) => (
-  <DashboardWidget colSpan={1} card={false}>
-    {children}
-  </DashboardWidget>
+  <DashboardWidget card={false}>{children}</DashboardWidget>
 );
 
 /**

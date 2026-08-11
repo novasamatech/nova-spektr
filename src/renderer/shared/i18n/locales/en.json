@@ -499,6 +499,9 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "resetLayout": "Reset layout",
+    "dragWidget": "Drag to reorder",
+    "resizeWidget": "Resize widget",
     "tabs": {
       "overview": "Overview",
       "staking": "Staking",

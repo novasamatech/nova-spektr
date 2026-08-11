@@ -47,4 +47,6 @@ sample({
 dashboardPortfolioOverviewFeature.inject(dashboardWidgetsSlot, {
   order: 0,
   render: PortfolioOverviewWidget,
+  defaultSize: { w: 2, h: 6 },
+  minSize: { w: 2, h: 3 },
 });

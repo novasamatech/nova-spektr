@@ -1,4 +1,5 @@
 export {
+  type WidgetGridMeta,
   Dashboard,
   dashboardGovernanceSlot,
   dashboardPresetSwitcherSlot,

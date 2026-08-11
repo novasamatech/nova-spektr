@@ -71,7 +71,7 @@ export const PositionsWidget = ({ accountIds }: Props) => {
   const startStaking = useCallback(() => positionActions.events.startStakingRequested(), []);
 
   return (
-    <DashboardWidget colSpan={4}>
+    <DashboardWidget>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <SmallTitleText>{t('dashboard.staking.positions.title')}</SmallTitleText>
