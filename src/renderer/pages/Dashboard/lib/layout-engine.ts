@@ -64,11 +64,18 @@ export function syncLayout(
   stored: Record<string, Rect>,
   orderedKeys: string[],
   sizes: Record<string, Size>,
+  maxSizes?: Record<string, Size>,
 ): Record<string, Rect> {
-  // Keep known rects in the given order; this also drops stale keys not in orderedKeys.
+  // Keep known rects in the given order; this also drops stale keys not in
+  // orderedKeys. Stored rects are clamped to the widget's max size — a layout
+  // saved before a widget declared (or shrank) its cap must not keep it larger
+  // than the cap allows.
   const result: Record<string, Rect> = {};
   for (const key of orderedKeys) {
-    if (stored[key]) result[key] = stored[key]!;
+    const rect = stored[key];
+    if (!rect) continue;
+    const max = maxSizes?.[key];
+    result[key] = max ? { ...rect, w: Math.min(rect.w, max.w), h: Math.min(rect.h, max.h) } : rect;
   }
 
   // Place missing widgets in order, flowing left-to-right then wrapping rows

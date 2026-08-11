@@ -89,81 +89,85 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
 
   return (
     <DashboardWidget>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>
-          <SegmentedControl
-            value={selected.chainId}
-            options={assetOptions}
-            label={t('dashboard.staking.rewardsChart.assetSwitch')}
-            onChange={handleAssetChange}
-          />
-        </div>
-        <SegmentedControl
-          value={range}
-          options={rangeOptions}
-          label={t('dashboard.staking.rewardsChart.rangeSwitch')}
-          onChange={handleRangeChange}
-        />
-      </div>
-
-      <div className="mt-2 flex items-baseline gap-2">
-        {pending ? (
-          <Skeleton width="180px" height="22px" />
-        ) : (
-          <>
-            <SmallTitleText>{formatAsset(total, selected.asset)}</SmallTitleText>
-            <div className="flex items-baseline gap-1">
-              {fiatFlag ? (
-                <>
-                  {}
-                  <FootnoteText className="text-text-tertiary">≈</FootnoteText>
-                  <AssetFiatBalance asset={selected.asset} amount={total} />
-                  {}
-                  <FootnoteText className="text-text-tertiary">·</FootnoteText>
-                </>
-              ) : null}
-              <FootnoteText className="text-text-tertiary">
-                {t(`dashboard.staking.rewardsChart.rangeSummary.${range}`)}
-              </FootnoteText>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div ref={containerRef} className="relative mt-3" style={{ height: CHART_HEIGHT }}>
-        {pending ? (
-          <Skeleton width="100%" height={`${CHART_HEIGHT}px`} />
-        ) : hasData ? (
-          <RewardsBarChart
-            buckets={buckets}
-            asset={selected.asset}
-            color={selected.color}
-            formatDate={formatDate}
-            onHoverChange={handleHoverChange}
-          />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-y-1">
-            <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.empty.title')}</BodyText>
-            <FootnoteText className="text-text-tertiary">
-              {t('dashboard.staking.rewardsChart.empty.description')}
-            </FootnoteText>
-          </div>
-        )}
-
-        {hoveredBucket ? (
-          <div className="absolute top-1 z-10" style={{ left: tooltipLeft }}>
-            <RewardsChartTooltip
-              bucket={hoveredBucket}
-              chain={chain}
-              asset={selected.asset}
-              color={selected.color}
-              era={resolveBucketEra(hoveredBucket, eraAnchor)}
-              walletByAccountId={walletByAccountId}
-              formatDate={formatDate}
+      {/* min-h-full lets the plot area absorb extra cell height while keeping
+          the outer scroll when the cell is shorter than the content */}
+      <div className="flex min-h-full flex-col">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>
+            <SegmentedControl
+              value={selected.chainId}
+              options={assetOptions}
+              label={t('dashboard.staking.rewardsChart.assetSwitch')}
+              onChange={handleAssetChange}
             />
           </div>
-        ) : null}
+          <SegmentedControl
+            value={range}
+            options={rangeOptions}
+            label={t('dashboard.staking.rewardsChart.rangeSwitch')}
+            onChange={handleRangeChange}
+          />
+        </div>
+
+        <div className="mt-2 flex items-baseline gap-2">
+          {pending ? (
+            <Skeleton width="180px" height="22px" />
+          ) : (
+            <>
+              <SmallTitleText>{formatAsset(total, selected.asset)}</SmallTitleText>
+              <div className="flex items-baseline gap-1">
+                {fiatFlag ? (
+                  <>
+                    {}
+                    <FootnoteText className="text-text-tertiary">≈</FootnoteText>
+                    <AssetFiatBalance asset={selected.asset} amount={total} />
+                    {}
+                    <FootnoteText className="text-text-tertiary">·</FootnoteText>
+                  </>
+                ) : null}
+                <FootnoteText className="text-text-tertiary">
+                  {t(`dashboard.staking.rewardsChart.rangeSummary.${range}`)}
+                </FootnoteText>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div ref={containerRef} className="relative mt-3 min-h-0 flex-1" style={{ minHeight: CHART_HEIGHT }}>
+          {pending ? (
+            <Skeleton width="100%" height="100%" />
+          ) : hasData ? (
+            <RewardsBarChart
+              buckets={buckets}
+              asset={selected.asset}
+              color={selected.color}
+              formatDate={formatDate}
+              onHoverChange={handleHoverChange}
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-y-1">
+              <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.empty.title')}</BodyText>
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.staking.rewardsChart.empty.description')}
+              </FootnoteText>
+            </div>
+          )}
+
+          {hoveredBucket ? (
+            <div className="absolute top-1 z-10" style={{ left: tooltipLeft }}>
+              <RewardsChartTooltip
+                bucket={hoveredBucket}
+                chain={chain}
+                asset={selected.asset}
+                color={selected.color}
+                era={resolveBucketEra(hoveredBucket, eraAnchor)}
+                walletByAccountId={walletByAccountId}
+                formatDate={formatDate}
+              />
+            </div>
+          ) : null}
+        </div>
       </div>
     </DashboardWidget>
   );

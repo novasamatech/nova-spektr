@@ -55,7 +55,9 @@ export const dashboardStakingRewardsFeature = createFeature({
   enable,
 });
 
-const KPI_SIZE = { defaultSize: { w: 1, h: 2 }, minSize: { w: 1, h: 2 } };
+// A KPI card is one figure with a subline — extra height would only add blank
+// card, so growth is capped at double width and the default height.
+const KPI_SIZE = { defaultSize: { w: 1, h: 2 }, minSize: { w: 1, h: 2 }, maxSize: { w: 2, h: 2 } };
 
 dashboardStakingTotalStakedFeature.inject(dashboardStakingSlot, { order: 0, render: TotalStakedWidget, ...KPI_SIZE });
 dashboardStakingApyFeature.inject(dashboardStakingSlot, { order: 1, render: ApyWidget, ...KPI_SIZE });

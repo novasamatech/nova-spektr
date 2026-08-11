@@ -10,6 +10,7 @@ type WidgetSortableContextValue = {
   isDragging: boolean;
   rect: Rect;
   minSize: Size;
+  maxSize: Size;
   resizePreview: (next: Size) => void;
   resizeCommit: () => void;
 };
@@ -24,11 +25,21 @@ type ProviderProps = {
   editMode: boolean;
   rect: Rect;
   minSize: Size;
+  maxSize: Size;
   onResize: (next: Size) => void;
   children: ReactNode;
 };
 
-export const WidgetSortableProvider = ({ id, index, editMode, rect, minSize, onResize, children }: ProviderProps) => {
+export const WidgetSortableProvider = ({
+  id,
+  index,
+  editMode,
+  rect,
+  minSize,
+  maxSize,
+  onResize,
+  children,
+}: ProviderProps) => {
   const handleRef = useRef<HTMLButtonElement>(null);
   const [preview, setPreview] = useState<Size | null>(null);
   const { ref, isDragging } = useSortable({
@@ -46,13 +57,14 @@ export const WidgetSortableProvider = ({ id, index, editMode, rect, minSize, onR
       isDragging,
       rect: preview ? { ...rect, w: preview.w, h: preview.h } : rect,
       minSize,
+      maxSize,
       resizePreview: (next: Size) => setPreview(next),
       resizeCommit: () => {
         if (preview) onResize(preview);
         setPreview(null);
       },
     }),
-    [ref, handleRef, editMode, isDragging, rect, minSize, onResize, preview],
+    [ref, handleRef, editMode, isDragging, rect, minSize, maxSize, onResize, preview],
   );
 
   return <WidgetSortableContext.Provider value={value}>{children}</WidgetSortableContext.Provider>;

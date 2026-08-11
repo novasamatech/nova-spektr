@@ -13,6 +13,7 @@ import { WidgetSortableProvider } from './WidgetSortableContext';
 const EMPTY_PROPS: Record<string, unknown> = {};
 const FALLBACK_DEFAULT: Size = { w: 2, h: 3 };
 const FALLBACK_MIN: Size = { w: 1, h: 2 };
+const FALLBACK_MAX: Size = { w: GRID_COLUMNS, h: Number.MAX_SAFE_INTEGER };
 const GAP_PX = 16; // matches the grid's gap-4
 
 const layoutsEqual = (a: Record<string, Rect>, b: Record<string, Rect>): boolean => {
@@ -61,12 +62,14 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   const sizes = useMemo(() => {
     const map: Record<string, Size> = {};
     const mins: Record<string, Size> = {};
+    const maxes: Record<string, Size> = {};
     for (const h of available) {
       map[h.key!] = h.body.defaultSize ?? FALLBACK_DEFAULT;
       mins[h.key!] = h.body.minSize ?? FALLBACK_MIN;
+      maxes[h.key!] = h.body.maxSize ?? FALLBACK_MAX;
     }
 
-    return { defaults: map, mins };
+    return { defaults: map, mins, maxes };
   }, [available]);
 
   const orderedKeys = useMemo(() => {
@@ -85,8 +88,8 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   const stored = widgetLayout[tab];
 
   const effective = useMemo(
-    () => syncLayout(stored ?? {}, orderedKeys, sizes.defaults),
-    [stored, orderedKeys, sizes.defaults],
+    () => syncLayout(stored ?? {}, orderedKeys, sizes.defaults, sizes.maxes),
+    [stored, orderedKeys, sizes.defaults, sizes.maxes],
   );
 
   useEffect(() => {
@@ -147,6 +150,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const Component = handler.body.render as ComponentType<any>;
           const min = sizes.mins[key] ?? FALLBACK_MIN;
+          const max = sizes.maxes[key] ?? FALLBACK_MAX;
 
           return (
             <WidgetSortableProvider
@@ -156,9 +160,10 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
               editMode={editMode}
               rect={rect}
               minSize={min}
+              maxSize={max}
               onResize={(next: Size) => {
-                const w = Math.max(min.w, Math.min(next.w, GRID_COLUMNS - rect.x));
-                const h = Math.max(min.h, next.h);
+                const w = Math.max(min.w, Math.min(next.w, max.w, GRID_COLUMNS - rect.x));
+                const h = Math.max(min.h, Math.min(next.h, max.h));
                 widgetResized({ tab, key, w, h });
               }}
             >

@@ -22,9 +22,9 @@ type Props = {
 };
 
 /**
- * The shell of one KPI card. Its height is fixed and the footer is pinned to
- * the bottom, so neither a shimmer resolving into a value nor a footer
- * appearing shifts the row.
+ * The shell of one KPI card. It fills its grid cell (the cell height is fixed
+ * by the widget layout) and the footer is pinned to the bottom, so neither a
+ * shimmer resolving into a value nor a footer appearing shifts the row.
  */
 export const KpiCard = memo(({ title, value, valueClass, subline, footer, loading, onClick, ariaLabel }: Props) => {
   const handleKeyDown = useCallback(
@@ -44,7 +44,7 @@ export const KpiCard = memo(({ title, value, valueClass, subline, footer, loadin
       tabIndex={onClick ? 0 : undefined}
       aria-label={ariaLabel}
       className={cnTw(
-        'flex h-40 flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow',
+        'flex h-full flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow',
         onClick &&
           'cursor-pointer transition-shadow hover:shadow-card-shadow-level2 focus-visible:ring-2 focus-visible:ring-primary-button-background-default focus-visible:outline-none',
       )}

@@ -6,7 +6,6 @@ import { type XAxisTickContentProps } from 'recharts/types/util/types';
 
 import { type Asset } from '@/shared/core';
 import { formatBalance } from '@/shared/lib/utils';
-import { CHART_HEIGHT } from '../lib/constants';
 import { type DateFormatter, formatAxisLabel } from '../lib/labels';
 import { type RewardBucket } from '../lib/types';
 
@@ -107,7 +106,7 @@ export const RewardsBarChart = ({ buckets, asset, color, formatDate, onHoverChan
   const renderTick = useCallback((props: XAxisTickContentProps) => <AxisTick props={props} data={data} />, [data]);
 
   return (
-    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+    <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={data}
         margin={{ top: 20, right: 4, bottom: 0, left: 4 }}

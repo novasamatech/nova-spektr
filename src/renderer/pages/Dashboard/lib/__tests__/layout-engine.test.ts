@@ -71,6 +71,19 @@ describe('syncLayout', () => {
     expect(result.a).toEqual({ x: 0, y: 1, w: 2, h: 2 });
     expect(result.b).toEqual({ x: 2, y: 1, w: 2, h: 2 });
   });
+
+  it('clamps stored rects to the widget max size', () => {
+    const stored: Record<string, Rect> = {
+      a: { x: 0, y: 0, w: 4, h: 6 },
+      b: { x: 0, y: 6, w: 2, h: 2 },
+    };
+
+    const result = syncLayout(stored, ['a', 'b'], sizes, { a: { w: 2, h: 2 } });
+
+    expect(result.a).toEqual({ x: 0, y: 0, w: 2, h: 2 });
+    // b floats up under the clamped a
+    expect(result.b).toEqual({ x: 0, y: 2, w: 2, h: 2 });
+  });
 });
 
 describe('syncLayout migration path', () => {

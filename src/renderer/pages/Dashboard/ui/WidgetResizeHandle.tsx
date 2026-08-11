@@ -27,8 +27,8 @@ export const WidgetResizeHandle = () => {
     const { px, py, w, h, colWidth } = start.current;
     const dW = Math.round((e.clientX - px) / colWidth);
     const dH = Math.round((e.clientY - py) / ROW_HEIGHT_PX);
-    const nextW = Math.max(ctx.minSize.w, Math.min(GRID_COLUMNS, w + dW));
-    const nextH = Math.max(ctx.minSize.h, h + dH);
+    const nextW = Math.max(ctx.minSize.w, Math.min(GRID_COLUMNS, ctx.maxSize.w, w + dW));
+    const nextH = Math.max(ctx.minSize.h, Math.min(ctx.maxSize.h, h + dH));
     ctx.resizePreview({ w: nextW, h: nextH });
   };
 
