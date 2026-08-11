@@ -6,7 +6,7 @@ import { type ChainId } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
-import { type EraValidatorMap, validators as validatorsStore } from '@/domains/staking';
+import { type EraValidatorMap, type StakingPosition, validators as validatorsStore } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
@@ -24,19 +24,21 @@ export type PositionRowsResult = {
 /**
  * The APY the row shows.
  *
- * An earning position is worth exactly what backs it, so its APY is the mean of
- * the validators that actually do. A position that earns nothing has no such
- * set, and the honest answer there is what it _would_ earn — the mean of what
- * it nominates. `null` when the chain reports no reward data at all.
+ * A validator earns its own APY — the commission-adjusted figure the era
+ * pipeline already computed for it; `null` while it is not elected. An earning
+ * nominator position is worth exactly what backs it, so its APY is the mean of
+ * the validators that actually do. A nominator position that earns nothing has
+ * no such set, and the honest answer there is what it _would_ earn — the mean
+ * of what it nominates. `null` when the chain reports no reward data at all.
  */
-function derivePositionApy(
-  activeValidators: AccountId[],
-  nominations: AccountId[],
-  eraValidators: EraValidatorMap | null,
-): number | null {
+function derivePositionApy(position: StakingPosition, eraValidators: EraValidatorMap | null): number | null {
   if (nullable(eraValidators)) return null;
 
-  const source = activeValidators.length > 0 ? activeValidators : nominations;
+  if (position.kind === 'validator') {
+    return eraValidators[position.stake.stash]?.apy ?? null;
+  }
+
+  const source = position.activeValidators.length > 0 ? position.activeValidators : position.nominations;
 
   return averageApy(source.map((accountId) => eraValidators[accountId]?.apy));
 }
@@ -131,7 +133,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
           position.stake.total,
           (chainTotals.get(position.chainId) ?? BN_ZERO).toString(),
         ),
-        apy: derivePositionApy(position.activeValidators, position.nominations, chainValidators),
+        apy: derivePositionApy(position, chainValidators),
         activeValidatorCount: position.activeValidators.length,
         nominationCount: position.nominations.length,
         draftCount: draftCountByKey.get(`${position.chainId}-${position.accountId}`) ?? 0,
