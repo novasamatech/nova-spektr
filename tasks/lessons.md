@@ -82,3 +82,24 @@ bigger min-height: put the chart in an `absolute inset-0` box inside the `relati
 positioning resolves against the containing block regardless of definiteness. Tell: `.recharts-responsive-container`
 has inline `height: 100%` but computed height 0. Verify stretching layouts with real data in the browser — the empty
 state rendering fine proves nothing about the percent-height path.
+
+## A mock that encodes the wrong wire shape green-lights broken code
+
+The validator-prefs existence check (`encodedLength === 0`) passed 3000+ unit tests and 265 integration tests and was
+wrong on every live node: the integration mock modelled an absent storage key as a zero-length `Raw`, while a real node
+delivers an empty `StorageData` whose compact length prefix makes `encodedLength === 1`. The mock was built from the
+same (reviewed, plausible, incorrect) theory as the code under test, so they agreed with each other and disagreed with
+the chain. Only browser-driving the app against live Polkadot Asset Hub caught it.
+
+Rules: when mocking a wire format, capture the shape from a live endpoint first (one `node` probe) instead of deriving
+it from library source; after fixing, encode the live shape into the mock so the old bug fails tests; and treat "all
+suites green" as no substitute for one runtime pass against the real dependency. Related pitfall trio for
+`subscribeStorage`: payload is decoded `Codec[]` (not `StorageChangeSet`), `Raw.isEmpty` is true for all-zero bytes
+(real 0%-commission prefs), and the only wrapper-independent absence signal is `toU8a(true).length === 0`.
+
+## `import('/@fs/...')` is two different tools in Electron vs the browser dev server
+
+In the Electron renderer (CDP-driven) it returns the app's live module instance; against the same code served to a
+plain browser tab it can create a second module graph with its own store instances that only mirrors the app until the
+next edit/reload. When verifying in a browser tab, read the app's real state through React fiber props/hook state, not
+through dynamic module imports.
