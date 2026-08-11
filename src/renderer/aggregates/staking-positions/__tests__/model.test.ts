@@ -74,6 +74,12 @@ vi.mock('@/domains/staking/era/service', () => ({
   },
 }));
 
+vi.mock('@/domains/staking/validator-prefs/service', () => ({
+  validatorPrefsService: {
+    subscribeValidatorPrefs: () => Promise.resolve(() => {}),
+  },
+}));
+
 vi.mock('@/domains/staking/exposures/service', () => ({
   exposureService: {
     getEraOverviews: () => Promise.resolve({}),

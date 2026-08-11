@@ -200,7 +200,7 @@ export type StakingApiState = {
   consts: StakingConstsFixture;
 };
 
-export type StakingSubscriptionKind = 'activeEra' | 'ledger' | 'nominators' | 'minNominatorBond';
+export type StakingSubscriptionKind = 'activeEra' | 'ledger' | 'nominators' | 'minNominatorBond' | 'validatorPrefs';
 
 export type StakingApiHandle = {
   api: ApiPromise;
@@ -311,6 +311,7 @@ export function createStakingApi(params: CreateStakingApiParams): StakingApiHand
     ledger: 0,
     nominators: 0,
     minNominatorBond: 0,
+    validatorPrefs: 0,
   };
   const readCounters: Record<string, number> = {};
 
@@ -386,6 +387,16 @@ export function createStakingApi(params: CreateStakingApiParams): StakingApiHand
 
         return Promise.resolve(build());
       },
+    },
+
+    // The validator-prefs service reads this item through the third door: raw
+    // `state_subscribeStorage` over `key(stash)`, because `.multi` would decode
+    // a missing key as default prefs and erase the existence signal. The key is
+    // the stash itself here — the service treats keys opaquely, and the rpc
+    // stub below maps them straight back into `state.prefs`.
+    validators: {
+      key: (stash: AccountId) => stash,
+      creator: { meta: { type: { asMap: { value: 'TestValidatorPrefs' } } } },
     },
 
     minNominatorBond: (maybeCallback?: unknown) => {
@@ -559,6 +570,34 @@ export function createStakingApi(params: CreateStakingApiParams): StakingApiHand
       chain: {
         getBlock: () => Promise.resolve({ block: { header: { number: { toNumber: () => 1 } } } }),
       },
+      state: {
+        // Raw storage subscription of the validator-prefs service. An absent
+        // key answers as a zero-length `Raw` — the service's existence signal —
+        // and a present one as the bare SCALE bytes of the prefs struct.
+        subscribeStorage: (storageKeys: AccountId[], callback: (values: Codec[]) => void) => {
+          const build = () =>
+            storageKeys.map((stash) => {
+              const prefs = state.prefs[stash];
+              if (!prefs) return registry.createType('Raw', '0x');
+
+              const value = registry.createType('TestValidatorPrefs', {
+                commission: prefs.commission,
+                blocked: prefs.blocked ?? false,
+              });
+
+              return registry.createType('Raw', value.toU8a());
+            });
+
+          return Promise.resolve(register('validatorPrefs', () => callback(build())));
+        },
+      },
+    },
+    // Only `createLookupType` + `createType` are exercised: the prefs service
+    // resolves the map's value type through the lookup, and the `validators`
+    // stub above short-circuits that to the registered test type directly.
+    registry: {
+      createLookupType: (type: string) => type,
+      createType: (type: string, value: unknown) => registry.createType(type, value),
     },
     consts: {
       staking: {
@@ -618,6 +657,7 @@ export function createStakingApi(params: CreateStakingApiParams): StakingApiHand
         ledger: 0,
         nominators: 0,
         minNominatorBond: 0,
+        validatorPrefs: 0,
       };
 
       for (const subscription of subscriptions) {
