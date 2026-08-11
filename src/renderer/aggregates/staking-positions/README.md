@@ -90,7 +90,8 @@ era, so they always add up to the unbonding part of that total.
 `$pending` is about the app's own progress, never about the answer. A chain resolves the moment its ledger map lands:
 the ledger subscription writes an entry for **every** requested account, empty ones included, so "this account stakes
 nothing here" is a real answer rather than an unfinished load. Once at least one account is bonded, the chain stays
-pending until its nominations arrive too — otherwise a nominating position would flash as merely _bonded_.
+pending until its nominations **and validator prefs** cover every bonded account — otherwise a nominating position would
+flash as merely _bonded_, and a validating one as a plain nominator.
 
 The exposures deliberately do not join that wait, and answer for themselves instead. They are keyed by the nominated
 validator set, so they cannot even be requested until the nominations land, and holding the whole table back for them
@@ -117,7 +118,7 @@ component never starts a subscription.
 
 ```mermaid
 flowchart TD
-    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + min bond + active era"]
+    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + validator prefs + min bond + active era"]
     B --> C["active era known"]
     C --> D["era exposures + era validators + era anchor"]
     B --> E["nominated validator union"]
@@ -127,8 +128,8 @@ flowchart TD
     F --> G
 ```
 
-- **(chain, accounts)** starts the ledger and nominations subscriptions, the minimum bond, and the active-era
-  subscription — only for chains that have a connected api and at least one eligible account.
+- **(chain, accounts)** starts the ledger, nominations and validator-prefs subscriptions, the minimum bond, and the
+  active-era subscription — only for chains that have a connected api and at least one eligible account.
 - **(chain, era)** starts the era's exposure overviews, the era validator set (needed to explain _why_ an idle position
   earns nothing) and the era anchor that turns unbonding eras into dates.
 - **(chain, era, nominated validators)** reads the exposure pages of exactly the validators the selection nominates —

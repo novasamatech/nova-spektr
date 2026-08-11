@@ -11,7 +11,7 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { stakingPositions } from '../model';
 
-// The staking domain talks to the chain through five service modules. Mocking
+// The staking domain talks to the chain through six service modules. Mocking
 // exactly those keeps the pooled resources, their caches and the refcounting
 // real - only the api reads are replaced.
 const chainMock = vi.hoisted(() => {
@@ -19,6 +19,7 @@ const chainMock = vi.hoisted(() => {
 
   const ledgers = new Map<string, Callback<Record<string, unknown>>>();
   const nominations = new Map<string, Callback<Record<string, unknown>>>();
+  const validatorPrefs = new Map<string, Callback<Record<string, unknown>>>();
   const minBonds = new Map<string, Callback<string>>();
   const eras = new Map<string, Callback<number | undefined>>();
 
@@ -28,6 +29,7 @@ const chainMock = vi.hoisted(() => {
   const reset = () => {
     ledgers.clear();
     nominations.clear();
+    validatorPrefs.clear();
     minBonds.clear();
     eras.clear();
 
@@ -35,7 +37,7 @@ const chainMock = vi.hoisted(() => {
     for (const key of Object.keys(validators)) delete validators[key];
   };
 
-  return { ledgers, nominations, minBonds, eras, exposurePages, validators, reset };
+  return { ledgers, nominations, validatorPrefs, minBonds, eras, exposurePages, validators, reset };
 });
 
 vi.mock('@/domains/staking/staking/service', () => ({
@@ -76,7 +78,11 @@ vi.mock('@/domains/staking/era/service', () => ({
 
 vi.mock('@/domains/staking/validator-prefs/service', () => ({
   validatorPrefsService: {
-    subscribeValidatorPrefs: () => Promise.resolve(() => {}),
+    subscribeValidatorPrefs: (api: { chainId: string }, _stashes: unknown, callback: never) => {
+      chainMock.validatorPrefs.set(api.chainId, callback);
+
+      return Promise.resolve(() => chainMock.validatorPrefs.delete(api.chainId));
+    },
   },
 }));
 
@@ -250,6 +256,11 @@ async function emitLedger(scope: Scope, chainId: ChainId, ledger: Record<string,
 
 async function emitNominations(scope: Scope, chainId: ChainId, value: Record<string, unknown>) {
   chainMock.nominations.get(chainId)?.(value);
+  await allSettled(scope);
+}
+
+async function emitPrefs(scope: Scope, chainId: ChainId, value: Record<string, unknown>) {
+  chainMock.validatorPrefs.get(chainId)?.(value);
   await allSettled(scope);
 }
 
@@ -496,6 +507,30 @@ describe('aggregates/staking-positions', () => {
 
     expect(scope.getState(stakingPositions.$pending)).toBe(false);
     expect(scope.getState(stakingPositions.$positions)).toEqual([]);
+  });
+
+  it('stays pending until validator prefs cover the bonded accounts', async () => {
+    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+
+    await emitEra(scope, POLKADOT_AH, 410);
+    await emitLedger(scope, POLKADOT_AH, {
+      [accountA.accountId]: createStake(accountA.accountId, POLKADOT_AH, '1000', '1000'),
+      [accountB.accountId]: undefined,
+    });
+    await emitNominations(scope, POLKADOT_AH, {
+      [accountA.accountId]: { targets: [validatorOne], submittedIn: 400 },
+      [accountB.accountId]: null,
+    });
+
+    // Nominations answered but the prefs did not — without them a validator
+    // position would first render as a bonded nominator and then flip.
+    expect(scope.getState(stakingPositions.$pending)).toBe(true);
+
+    // `null` is a real answer ("not a validator"): coverage is about the key
+    // existing in the map, not about the account being a validator.
+    await emitPrefs(scope, POLKADOT_AH, { [accountA.accountId]: null });
+
+    expect(scope.getState(stakingPositions.$pending)).toBe(false);
   });
 
   it('stops every started resource key on reset', async () => {
