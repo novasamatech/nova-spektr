@@ -1,16 +1,18 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type EraIndex, type Unlocking } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EraAnchor } from '../era/service';
 import { type ExposureMap } from '../exposures/types';
-import { type EraValidatorMap } from '../validators/types';
+import { type EraValidator, type EraValidatorMap } from '../validators/types';
 
 import {
   type DerivePositionInput,
   type NominationStatus,
   type PositionStatus,
   type PositionStatusReason,
+  type PositionValidatorInfo,
   type StakingPosition,
   type UnbondingChunk,
 } from './types';
@@ -114,12 +116,56 @@ function deriveStatusReason(targets: AccountId[], validators: EraValidatorMap | 
   return electedTargets.length === 0 ? 'notElected' : 'notExposed';
 }
 
+/**
+ * A validator is either elected into the active era or merely intending. There
+ * is no nominator-style `inactive`: elected means exposed. Without the era set
+ * nothing distinguishes the two, so the answer stays `unknown` - same
+ * anti-flicker rule as the nominator ladder.
+ */
+function deriveValidatorStatus(eraValidator: EraValidator | null, validators: EraValidatorMap | null): PositionStatus {
+  if (nonNullable(eraValidator)) return 'active';
+
+  return validators === null ? 'unknown' : 'waiting';
+}
+
 function derivePosition(input: DerivePositionInput): StakingPosition {
-  const { accountId, chainId, stake, nomination, exposures, validators, activeEra, eraAnchor } = input;
+  const { accountId, chainId, stake, nomination, validatorPrefs, exposures, validators, activeEra, eraAnchor } = input;
 
   const targets = nomination?.targets ?? [];
   const chunks = deriveUnbondingChunks(stake.unlocking, activeEra, eraAnchor);
   const unbonding = chunks.filter(chunk => !chunk.redeemable);
+
+  const eraValidator = validators?.[accountId] ?? null;
+  // Current intent wins: prefs make a validator, nominations make a nominator.
+  // Era-set membership alone only upgrades an intent-less stash - a validator
+  // that chilled mid-era is still elected and earning, not "bonded".
+  const isValidator = nonNullable(validatorPrefs) || (nonNullable(eraValidator) && targets.length === 0);
+
+  if (isValidator) {
+    const validatorInfo: PositionValidatorInfo = {
+      commission: validatorPrefs?.commission ?? eraValidator?.commission ?? 0,
+      blocked: validatorPrefs?.blocked ?? eraValidator?.blocked ?? false,
+      ownStake: eraValidator?.ownStake ?? null,
+      totalExposure: eraValidator?.totalStake ?? null,
+      nominatorCount: eraValidator?.nominatorCount ?? null,
+      eraPoints: eraValidator?.eraPoints ?? null,
+    };
+
+    return {
+      accountId,
+      chainId,
+      stake,
+      status: deriveValidatorStatus(eraValidator, validators),
+      statusReason: null,
+      kind: 'validator',
+      validator: validatorInfo,
+      nominations: [],
+      activeValidators: [],
+      unbonding,
+      redeemable: deriveRedeemable(stake.unlocking, activeEra),
+      totalUnbonding: sumPlanck(unbonding.map(chunk => chunk.value)),
+    };
+  }
 
   const activeValidators = exposures ? deriveActiveValidators(stake.stash, targets, exposures) : [];
 
@@ -151,6 +197,8 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
     stake,
     status,
     statusReason,
+    kind: 'nominator',
+    validator: null,
     nominations: targets,
     activeValidators,
     unbonding,

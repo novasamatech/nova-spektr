@@ -130,6 +130,8 @@ const position = (active: string, unbondingChunks = 0): StakingPosition => ({
   stake: { accountId: ALICE, chainId: CHAIN_ID, controller: ALICE, stash: ALICE, active, total: active, unlocking: [] },
   status: 'active',
   statusReason: null,
+  kind: 'nominator',
+  validator: null,
   nominations: [],
   activeValidators: [],
   unbonding: Array.from({ length: unbondingChunks }, (_, index) => ({

@@ -3,6 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EraAnchor } from '../era/service';
 import { type ExposureMap } from '../exposures/types';
 import { type Nomination } from '../nominations/types';
+import { type ValidatorPrefs } from '../validator-prefs/types';
 import { type EraValidatorMap } from '../validators/types';
 
 /**
@@ -36,6 +37,11 @@ export type UnbondingChunk = {
  * has not looked. It exists because the alternative was to report `inactive`
  * while the exposure pages were still in flight - a red pill claiming the
  * user's validators dropped them, on a position that turns out to be earning.
+ *
+ * For a `validator` position the ladder is shorter: `active` - elected into the
+ * active era, `waiting` - registered but not elected, `unknown` - the era set
+ * has not been read. `inactive` and `bonded` are unreachable - elected means
+ * exposed, and there is no nominator-style "elected but dropped out" state.
  */
 export type PositionStatus = 'active' | 'waiting' | 'inactive' | 'bonded' | 'unknown';
 
@@ -55,6 +61,28 @@ export type PositionStatusReason = 'notElected' | 'notExposed' | null;
  */
 export type NominationStatus = 'active' | 'waiting' | 'droppedOut';
 
+export type PositionKind = 'nominator' | 'validator';
+
+/**
+ * Validator-specific facts of a position. `commission`/`blocked` come from the
+ * live prefs (or the era prefs when the stash chilled but is still elected);
+ * the exposure-derived fields are `null` until the stash is elected and the era
+ * validator set has been read.
+ */
+export type PositionValidatorInfo = {
+  /** Commission, in percent (0..100). */
+  commission: number;
+  /** The validator does not accept new nominations. */
+  blocked: boolean;
+  /** Self stake in the active era, planck. */
+  ownStake: string | null;
+  /** Own + nominator stake in the active era, planck. */
+  totalExposure: string | null;
+  nominatorCount: number | null;
+  /** Reward points earned in the last completed era. */
+  eraPoints: number | null;
+};
+
 export type StakingPosition = {
   accountId: AccountId;
   chainId: ChainId;
@@ -62,6 +90,9 @@ export type StakingPosition = {
   stake: Stake;
   status: PositionStatus;
   statusReason: PositionStatusReason;
+  kind: PositionKind;
+  /** Non-null exactly when `kind` is `validator`. */
+  validator: PositionValidatorInfo | null;
   /** Everything the stash nominates. */
   nominations: AccountId[];
   /** Nominated validators whose active-era exposure includes the stash. */
@@ -84,6 +115,12 @@ export type DerivePositionInput = {
   stake: Stake;
   /** `null` when the stash has no nomination on chain. */
   nomination: Nomination | null;
+  /**
+   * `null` when the stash is not registered as a validator — or when the prefs
+   * subscription has not answered yet; the aggregate's pending flag covers that
+   * gap, the derivation does not distinguish the two.
+   */
+  validatorPrefs: ValidatorPrefs | null;
   /**
    * Active-era exposures of (at least) the nominated validators. `null` until
    * the read answers - an empty map is itself an answer ("nothing backs this

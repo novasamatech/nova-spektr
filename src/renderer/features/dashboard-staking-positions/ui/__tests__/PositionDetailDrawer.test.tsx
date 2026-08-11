@@ -27,6 +27,8 @@ const position: StakingPosition = {
   },
   status: 'active',
   statusReason: null,
+  kind: 'nominator',
+  validator: null,
   nominations: [],
   activeValidators: [],
   unbonding: [],

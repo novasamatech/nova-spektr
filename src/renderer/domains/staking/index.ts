@@ -58,8 +58,10 @@ export { recommendationsService } from './recommendations/service';
 export type {
   DerivePositionInput,
   NominationStatus,
+  PositionKind,
   PositionStatus,
   PositionStatusReason,
+  PositionValidatorInfo,
   StakingPosition,
   UnbondingChunk,
 } from './positions/types';
