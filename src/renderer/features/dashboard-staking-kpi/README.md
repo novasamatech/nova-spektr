@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-11
 
 ## Overview
 
@@ -80,13 +80,15 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
 
 ### Filters on the rewards drill-down
 
-Three, and they compose: **network**, **nominator** and **period**.
+Three, and they compose: **network**, **account** and **period**.
 
 - **Network** appears only when the selection stakes on more than one — a filter with a single option is furniture.
   Built from the rows themselves, never a hard-coded list of chains.
-- **Nominator** is the rail under the donut rather than a separate control: the same list answers "which of my accounts
-  is behind this" and "show me only that one". It is built from the network-scoped data but **not** from the
-  nominator-scoped data, so the filter never hides its own alternatives, and clicking the active entry clears it.
+- **Account** is the rail under the donut rather than a separate control — headed "My accounts", because the selection's
+  accounts can stand behind a validator as nominators _or be the validator_: an account that runs one carries a
+  Validator chip on its rail entry, exactly the chip the positions table uses. The same list answers "which of my
+  accounts is behind this" and "show me only that one". It is built from the network-scoped data but **not** from the
+  account-scoped data, so the filter never hides its own alternatives, and clicking the active entry clears it.
 - Both narrow the table, the donut, the totals **and** the export together. An export that silently ignored the filters
   on screen would be the worst of the three.
 
@@ -193,17 +195,29 @@ chain's own era duration.
   same validator — and the runtime rejects the second as already claimed. One row per (chain, validator) keeps them
   together, sums what each of our accounts is owed, and submits the call once.
 
-  Each row carries the validator, **which of our accounts nominate it**, what it **earned** over the selected window,
-  what is still **unclaimed**, and its own **Claim** button. The footer claims everything at once. Nothing is selected
-  first: with the validator as the unit there is no per-row choice worth making, and "claim all" is what the user
-  actually wants nine times out of ten. A validator only watch-only accounts stand behind keeps its row and loses its
-  button — its absence would read as a bug.
+  Each row carries the validator, **which of our accounts stand behind it**, what it **earned** over the selected
+  window, what is still **unclaimed**, and its own **Claim** button. The footer claims everything at once. Nothing is
+  selected first: with the validator as the unit there is no per-row choice worth making, and "claim all" is what the
+  user actually wants nine times out of ten. A validator only watch-only accounts stand behind keeps its row and loses
+  its button — its absence would read as a bug.
+
+  **A validator we run is our row too.** When the row's validator is one of the selection's own accounts it wears a "My
+  validator" badge next to the name, and the backing column reads **"self"** — or **"self + N accounts"** when other
+  accounts of ours nominate it. The chain lists the validator's own stake among its backers, so the count deliberately
+  excludes the validator itself: "2 accounts" for a validator plus one nominator would claim a backer the validator gave
+  itself. The tooltip still lists every backing account, self included. Claiming needed no change: a self payout is the
+  same permissionless `payout_stakers` call, so those rows were always claimable.
 
   **Earned and unclaimed are different facts and are never mixed.** Unclaimed is what the chain still owes, read from
   the payout scan. Earned is the era's own arithmetic — exposure, reward points, commission — replayed over the window,
   because the reward indexer records an amount and an address and **never the validator behind it**. It is therefore
   accrued, not received: an era pays out when someone submits its payout call, which may be days later. The donut is
   sized by earned, so it stays meaningful for a wallet that has already claimed everything.
+
+  The replay attributes **own validators** as well as nominations. An exposure row keeps the validator's self-stake in
+  its own field rather than in the nominator list, so the validator's line is added to the shares explicitly — earning
+  the era formula's validator payout, its own-stake share plus commission. Before that, an account running a validator
+  read a flat zero in Earned while its Unclaimed kept growing: the two columns disagreed about the same money.
 
 - **Total staked** opens the positions drill-down: the same donut over staked value, a table of Account / Staked /
   Unbonding / actions with a chip per unlocking chunk (amber with a countdown while locked, green once ready), and
