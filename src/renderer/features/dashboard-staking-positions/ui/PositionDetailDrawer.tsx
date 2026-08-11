@@ -1,10 +1,10 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance } from '@/shared/lib/utils';
-import { BodyText, Button, CaptionText, FootnoteText, Icon } from '@/shared/ui';
+import { BodyText, Button, CaptionText, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
 import { Drawer, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -43,6 +43,13 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const wiredActions = useUnit(positionActions.$wiredActions);
   const unclaimed = useUnclaimedRewards(row?.chain ?? null, row?.accountId ?? null);
   const { rows: nominationRows, counts } = useNominationRows(row?.position ?? null);
+
+  // Which chip is waiting for its flow to open. The handoff itself is instant,
+  // but the screen it opens can take a moment to mount — the chip owes the user
+  // a spinner for that gap instead of a click that visibly does nothing.
+  const [loadingAction, setLoadingAction] = useState<PositionAction | null>(null);
+  const deferredOpenRef = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(deferredOpenRef.current), []);
 
   const nowMs = useMemo(() => Date.now(), [row?.id]);
 
@@ -83,6 +90,22 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
       }
     : null;
 
+  // Two frames, not one: the first paints the spinner, the second runs once it
+  // is actually on screen — only then mount the flow. Dispatching straight from
+  // the click puts the mount in the same task as the click, and the spinner
+  // never gets a chance to appear.
+  const openWithLoader = (action: PositionAction, dispatch: () => void) => {
+    if (loadingAction) return;
+
+    setLoadingAction(action);
+    deferredOpenRef.current = requestAnimationFrame(() => {
+      deferredOpenRef.current = requestAnimationFrame(() => {
+        dispatch();
+        setLoadingAction(null);
+      });
+    });
+  };
+
   const renderAction = (
     action: PositionAction,
     label: string,
@@ -91,6 +114,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
     blockedHint?: string,
   ) => {
     const disabled = !wiredActions.includes(action) || Boolean(blockedHint);
+    const loading = loadingAction === action;
 
     return (
       <Tooltip open={disabled ? undefined : false}>
@@ -101,7 +125,8 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
               variant={primary ? 'fill' : 'chip'}
               pallet={primary ? 'primary' : 'secondary'}
               disabled={disabled}
-              onClick={onClick}
+              prefixElement={loading ? <Loader color={primary ? 'white' : 'primary'} size={14} /> : undefined}
+              onClick={loading ? undefined : onClick}
             >
               {label}
             </Button>
@@ -281,7 +306,10 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 {renderAction(
                   'changeValidators',
                   t('dashboard.staking.positions.detail.actions.changeValidators'),
-                  () => positionActions.events.changeValidatorsRequested(actionPayload),
+                  () =>
+                    openWithLoader('changeValidators', () =>
+                      positionActions.events.changeValidatorsRequested(actionPayload),
+                    ),
                 )}
               </div>
             )}

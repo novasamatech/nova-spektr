@@ -1,4 +1,5 @@
-import { type ReactNode, isValidElement, memo, useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { type ReactNode, isValidElement, memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
@@ -27,6 +28,15 @@ export type Column<T> = {
 export type TableRowProps = {
   disabled?: boolean;
   selected?: boolean;
+};
+
+export type TableVirtualization = {
+  /** The scroll container the rows move in — e.g. a `ScrollArea` viewport. */
+  getScrollElement: () => HTMLElement | null;
+  /** Every row must render at exactly this height, px. */
+  rowHeight: number;
+  /** Rows kept mounted beyond each edge of the viewport. */
+  overscan?: number;
 };
 
 const CELL_ALIGN_STYLES = {
@@ -64,6 +74,13 @@ type TableProps<T> = {
   /** Per-row visual state. */
   rowProps?: (item: T) => TableRowProps;
   /**
+   * Renders only the rows in (and around) the caller's scroll viewport instead
+   * of the whole data set. For long lists mounting hundreds of rows at once
+   * blocks the main thread for seconds — a validator table is ~600 rows of
+   * identicons and checkboxes. Rows must be fixed-height.
+   */
+  virtualization?: TableVirtualization;
+  /**
    * @deprecated Use `onSortChange`, which reports the whole `TableSort` and
    *   pairs with the controlled `sort` prop. Both callbacks still fire on every
    *   header click, so this one stays for backwards compatibility only.
@@ -83,6 +100,7 @@ const TableComponent = <T,>({
   onSortChange,
   getRowKey,
   rowProps,
+  virtualization,
   onSort,
   onRowClick,
 }: TableProps<T>) => {
@@ -175,31 +193,155 @@ const TableComponent = <T,>({
             })}
           </tr>
         </thead>
-        <tbody className="table-body">
-          {sortedData.map((item, index) => {
-            const { disabled = false, selected = false } = rowProps?.(item) ?? {};
-
-            return (
-              <tr
+        {virtualization ? (
+          <VirtualizedTableBody
+            data={sortedData}
+            columns={columns}
+            cellAlign={cellAlign}
+            virtualization={virtualization}
+            getRowKey={getRowKey}
+            rowProps={rowProps}
+            onRowClick={onRowClick}
+          />
+        ) : (
+          <tbody className="table-body">
+            {sortedData.map((item, index) => (
+              <TableRow
                 key={getRowKey ? getRowKey(item) : index}
-                className={cnTw('table-row', {
-                  'table-row--disabled': disabled,
-                  'table-row--selected': selected,
-                  'cursor-pointer': Boolean(onRowClick) && !disabled,
-                })}
-                onClick={onRowClick && !disabled ? () => onRowClick(item, index) : undefined}
-              >
-                {columns.map(column => (
-                  <td key={String(column.key)} className={cnTw('table-cell', CELL_ALIGN_STYLES[cellAlign])}>
-                    {column.render ? column.render(item[column.key], item) : String(item[column.key])}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
+                item={item}
+                index={index}
+                columns={columns}
+                cellAlign={cellAlign}
+                rowProps={rowProps}
+                onRowClick={onRowClick}
+              />
+            ))}
+          </tbody>
+        )}
       </table>
     </div>
+  );
+};
+
+type TableRowComponentProps<T> = {
+  item: T;
+  index: number;
+  columns: Column<T>[];
+  cellAlign: CellAlign;
+  rowProps?: (item: T) => TableRowProps;
+  onRowClick?: (item: T, index: number) => void;
+};
+
+const TableRow = <T,>({ item, index, columns, cellAlign, rowProps, onRowClick }: TableRowComponentProps<T>) => {
+  const { disabled = false, selected = false } = rowProps?.(item) ?? {};
+
+  return (
+    <tr
+      className={cnTw('table-row', {
+        'table-row--disabled': disabled,
+        'table-row--selected': selected,
+        'cursor-pointer': Boolean(onRowClick) && !disabled,
+      })}
+      onClick={onRowClick && !disabled ? () => onRowClick(item, index) : undefined}
+    >
+      {columns.map(column => (
+        <td key={String(column.key)} className={cnTw('table-cell', CELL_ALIGN_STYLES[cellAlign])}>
+          {column.render ? column.render(item[column.key], item) : String(item[column.key])}
+        </td>
+      ))}
+    </tr>
+  );
+};
+
+type VirtualizedTableBodyProps<T> = Pick<
+  TableRowComponentProps<T>,
+  'columns' | 'cellAlign' | 'rowProps' | 'onRowClick'
+> & {
+  data: T[];
+  virtualization: TableVirtualization;
+  getRowKey?: (item: T) => string;
+};
+
+/**
+ * Spacer-row virtualization: two empty `<tr>`s carry the height of everything
+ * off-screen, so the table keeps its natural flow (and `table-layout: fixed`
+ * keeps the columns aligned with the header no matter which rows are mounted).
+ */
+const VirtualizedTableBody = <T,>({
+  data,
+  columns,
+  cellAlign,
+  virtualization,
+  getRowKey,
+  rowProps,
+  onRowClick,
+}: VirtualizedTableBodyProps<T>) => {
+  const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  // Row positions are relative to the scroll viewport, but the header (and
+  // anything the caller renders above the table) pushes the body down — measure
+  // that offset, same way `features/multisig-operations` does for its list.
+  useLayoutEffect(() => {
+    const body = bodyRef.current;
+    const scrollElement = virtualization.getScrollElement();
+    if (!body || !scrollElement) return;
+
+    const margin = Math.round(
+      body.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop,
+    );
+    setScrollMargin(prev => (prev === margin ? prev : margin));
+  });
+
+  const virtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: virtualization.getScrollElement,
+    estimateSize: () => virtualization.rowHeight,
+    overscan: virtualization.overscan ?? 10,
+    scrollMargin,
+    getItemKey: index => {
+      const item = data[index];
+
+      return item !== undefined && getRowKey ? getRowKey(item) : index;
+    },
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const firstItem = virtualItems.at(0);
+  const lastItem = virtualItems.at(-1);
+  // `start`/`end` include the scroll margin, `getTotalSize` does not.
+  const topPad = firstItem ? firstItem.start - scrollMargin : 0;
+  const bottomPad = lastItem ? virtualizer.getTotalSize() - (lastItem.end - scrollMargin) : 0;
+
+  return (
+    <tbody ref={bodyRef} className="table-body">
+      {topPad > 0 && (
+        <tr aria-hidden>
+          <td colSpan={columns.length} style={{ height: topPad, padding: 0 }} />
+        </tr>
+      )}
+      {virtualItems.map(virtualItem => {
+        const item = data[virtualItem.index];
+        if (item === undefined) return null;
+
+        return (
+          <TableRow
+            key={virtualItem.key}
+            item={item}
+            index={virtualItem.index}
+            columns={columns}
+            cellAlign={cellAlign}
+            rowProps={rowProps}
+            onRowClick={onRowClick}
+          />
+        );
+      })}
+      {bottomPad > 0 && (
+        <tr aria-hidden>
+          <td colSpan={columns.length} style={{ height: bottomPad, padding: 0 }} />
+        </tr>
+      )}
+    </tbody>
   );
 };
 

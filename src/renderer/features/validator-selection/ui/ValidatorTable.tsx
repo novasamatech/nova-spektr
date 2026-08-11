@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
@@ -48,6 +48,15 @@ const SCORE_TONE_CLASS: Record<ScoreTone, string> = {
 };
 
 const SORT_COLUMNS: SortColumn[] = ['validator', 'score', 'eraPoints', 'nominators', 'ownStake', 'commission', 'apy'];
+
+/**
+ * Fixed height every row renders at (20px line + 16px padding each side, and
+ * nothing in a cell is taller than that) — what lets the table virtualize.
+ * Mounting all ~600 elected validators at once, each with an identicon and a
+ * checkbox, blocked the main thread for over a second before the modal could
+ * paint.
+ */
+const ROW_HEIGHT = 54;
 
 function isSortColumn(value: string): value is SortColumn {
   return SORT_COLUMNS.some((column) => column === value);
@@ -101,6 +110,7 @@ function toRow(validator: EraValidator, score: number | null): ValidatorRow {
 
 export const ValidatorTable = () => {
   const { t } = useI18n();
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const {
     chain,
@@ -357,12 +367,13 @@ export const ValidatorTable = () => {
   };
 
   return (
-    <ScrollArea>
+    <ScrollArea viewportRef={viewportRef}>
       <Table
         columns={columns}
         data={rows}
         sort={sort}
         getRowKey={(row) => row.rowKey}
+        virtualization={{ getScrollElement: () => viewportRef.current, rowHeight: ROW_HEIGHT }}
         // Deliberately not `disabled` for a blocked validator. `disabled` drops
         // the row's click handler along with its hover, which made a blocked row
         // the one row in the table you could not open - so the numbers a user

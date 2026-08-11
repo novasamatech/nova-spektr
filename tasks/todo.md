@@ -1159,3 +1159,34 @@ Added a live Kusama nominator (`GhjDoG…RNbnnV`, 5931 KSM, era 8662) to the add
 `13.49M DOT + 21.44K KSM` never summed, the network filter appears (Polkadot AH / Kusama AH / All), filtering to Kusama
 narrows 13 rows to 3 and the donut to $465.71, and the KSM position surfaces a real warning the DOT one never did — **20
 unclaimed eras, oldest expires in 15d**.
+
+---
+
+# Fix: "Change validators" click froze the app for ~1-2s (2026-08-11)
+
+## Diagnosis (measured in a real browser, not guessed)
+
+- The click's effector part (`changeValidatorsRequested` → `formInitiated` cascade, `resolveAccountName` × 600) is
+  **18ms** — not the problem.
+- The freeze was **one ~1000ms long task** (~2s in Electron with devtools open): the synchronous React mount of
+  `ValidatorTable`, which rendered **every** filtered validator row at once (221–600 rows, each with an identicon SVG,
+  a Radix checkbox and tooltip wrappers) before the browser could paint the modal.
+- The pending-skeleton path never softened the first open because the dashboard itself warms the validators cache (the
+  drawer's nominations table loads the elected set).
+
+## Done
+
+- [x] ui-kit `Table`: opt-in `virtualization` prop (`@tanstack/react-virtual`, already a dependency; house pattern from
+  `features/multisig-operations`). Spacer-`<tr>` technique keeps natural table flow; `table-layout: fixed` keeps
+  columns aligned to the header.
+- [x] `ValidatorTable`: `ScrollArea viewportRef` + `virtualization={{ rowHeight: 54 }}` — ~20-30 rows mounted instead
+  of all of them.
+- [x] `PositionDetailDrawer`: spinner on the pressed action chip; the dispatch is deferred by a double
+  `requestAnimationFrame` so the spinner frame paints before the modal mounts.
+- [x] RTL test: spinner appears on click, handoff fires after the deferred frames, spinner clears.
+
+## Verified
+
+- Browser (dev, warm cache): main-thread blockage on open **1063ms → 199ms**, longest task 140ms; 20 rows mounted,
+  bottom spacer 10,908px. Scroll to middle/end, sort, search, "Show selected", detail pane all behave.
+- `pnpm types:go` clean; 147 unit tests across both features pass.
