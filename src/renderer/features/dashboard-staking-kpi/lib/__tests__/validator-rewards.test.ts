@@ -149,6 +149,51 @@ describe('buildValidatorRewardRows', () => {
   });
 });
 
+describe('buildValidatorRewardRows isSelf', () => {
+  it('marks a row whose validator is one of our accounts', () => {
+    // account(1) is both the nominator claiming and the validator paid out to —
+    // a self payout.
+    const rows = buildValidatorRewardRows({
+      claimRows: [
+        claimRow({ accountId: account(1), payouts: [{ era: 10, validator: account(1), page: 0, amount: '60' }] }),
+      ],
+      rewards: [],
+      toFiat,
+    });
+
+    expect(rows[0]?.isSelf).toBe(true);
+  });
+
+  it('keeps foreign validators isSelf false', () => {
+    const rows = buildValidatorRewardRows({
+      claimRows: [
+        claimRow({ accountId: account(1), payouts: [payout(10, 1, 0, '60')] }),
+        claimRow({ accountId: account(2), payouts: [payout(10, 1, 0, '40')] }),
+      ],
+      rewards: [reward(1, account(1), '30', 10)],
+      toFiat,
+    });
+
+    for (const row of rows) {
+      expect(row.isSelf).toBe(false);
+    }
+  });
+
+  it('marks a rewards-only row whose validator is one of our accounts', () => {
+    // No payouts, only an era reward — account(1) claims and account(1) is the
+    // validator paid, so the row is still ours.
+    const rows = buildValidatorRewardRows({
+      claimRows: [claimRow({ accountId: account(1) }), claimRow({ accountId: account(2) })],
+      rewards: [
+        { era: 7, validator: account(1), accountId: account(2), amount: '5', isSelf: false, chainId: POLKADOT },
+      ],
+      toFiat,
+    });
+
+    expect(rows[0]?.isSelf).toBe(true);
+  });
+});
+
 describe('toClaimRequests', () => {
   it('groups every claimable validator into one request per chain', () => {
     const rows = buildValidatorRewardRows({
