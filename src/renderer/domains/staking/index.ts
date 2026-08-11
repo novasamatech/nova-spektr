@@ -41,6 +41,11 @@ export { nominations } from './nominations/store';
 export { nominationsService } from './nominations/service';
 export { useMinNominatorBond, useNominations, usePayee } from './nominations/hooks';
 
+export type { ValidatorPrefs, ValidatorPrefsMap } from './validator-prefs/types';
+export type { ValidatorPrefsResourceParams } from './validator-prefs/resource';
+export { validatorPrefs } from './validator-prefs/store';
+export { validatorPrefsService } from './validator-prefs/service';
+
 export type { IdentityParentMap, RecommendationCriteria, ScoreBreakdown } from './recommendations/types';
 export {
   DEFAULT_RECOMMENDATION_CRITERIA,
