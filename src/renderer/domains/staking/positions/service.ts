@@ -135,10 +135,12 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
   const chunks = deriveUnbondingChunks(stake.unlocking, activeEra, eraAnchor);
   const unbonding = chunks.filter(chunk => !chunk.redeemable);
 
-  const eraValidator = validators?.[accountId] ?? null;
+  const eraValidator = validators?.[stake.stash] ?? null;
   // Current intent wins: prefs make a validator, nominations make a nominator.
   // Era-set membership alone only upgrades an intent-less stash - a validator
   // that chilled mid-era is still elected and earning, not "bonded".
+  // Era validator maps are keyed by stash; `accountId` can be a legacy
+  // controller - same stash-keying rule as the exposure check below.
   const isValidator = nonNullable(validatorPrefs) || (nonNullable(eraValidator) && targets.length === 0);
 
   if (isValidator) {

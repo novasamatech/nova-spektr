@@ -375,6 +375,20 @@ describe('positionsService', () => {
       expect(position.status).toEqual('active');
     });
 
+    test('should match the era set against the stash, not the queried account', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          accountId: controller,
+          stake: createStake({ accountId: controller, stash }),
+          validators: createValidatorMap([createValidator(stash)]),
+        }),
+      );
+
+      expect(position.accountId).toEqual(controller);
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('active');
+    });
+
     test('should prefer a nomination intent over era-set membership', () => {
       const position = positionsService.derivePosition(
         createInput({
