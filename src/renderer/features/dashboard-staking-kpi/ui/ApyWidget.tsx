@@ -44,11 +44,13 @@ export const ApyWidget = ({ accountIds }: Props) => {
         })
       : null;
 
+  const ariaLabel = [title, headline, networkAvg].filter(Boolean).join(', ');
+
   return (
     <KpiWidgetFrame>
       <KpiCard
         title={title}
-        ariaLabel={title}
+        ariaLabel={ariaLabel}
         loading={kpi.pending}
         valueClass={kpi.weightedApy === null ? 'text-text-tertiary' : 'text-text-positive'}
         value={headline}
