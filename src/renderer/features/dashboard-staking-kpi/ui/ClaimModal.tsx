@@ -560,8 +560,10 @@ export const ClaimModal = memo(
 
     const loading = pendingChains.length > 0;
 
+    // Same footprint as the validator-selection modal: the two screens are both
+    // "work through a validator list" surfaces and should feel alike.
     return (
-      <Modal isOpen size="xl" height="lg" onToggle={(open) => !open && onClose()}>
+      <Modal isOpen size="3xl" height="full" onToggle={(open) => !open && onClose()}>
         <Modal.Title close>{t('dashboard.staking.kpi.rewards.detailTitle')}</Modal.Title>
         <Modal.Content disableScroll>
           {rows.length === 0 ? (
