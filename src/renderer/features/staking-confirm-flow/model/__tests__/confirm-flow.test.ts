@@ -454,4 +454,18 @@ describe('staking-confirm-flow · draft branch', () => {
 
     expect(scope.getState(confirmFlowModel.$canSaveAsDraft)).toBe(false);
   });
+
+  it('refuses a redeem draft with nothing unlocked behind it', async () => {
+    // `withdraw_unbonded` takes no amount, so the call data itself would build
+    // fine — the gate is what keeps a no-op from being saved for somebody else
+    // to pay a fee on.
+    const scope = fork();
+
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget('0') });
+    await allSettled(confirmFlowModel.toggleDraftMode, { scope, params: true });
+    await allSettled(confirmFlowModel.draftPathCommitted, { scope, params: signerPath });
+
+    expect(scope.getState(confirmFlowModel.$draftCoreTx)).not.toBeNull();
+    expect(scope.getState(confirmFlowModel.$canSaveAsDraft)).toBe(false);
+  });
 });

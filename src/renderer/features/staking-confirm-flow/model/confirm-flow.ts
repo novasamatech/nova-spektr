@@ -312,6 +312,21 @@ export const createConfirmFlowModel = () => {
       pendingFee || pendingWrapping || validating || readingSpans,
   );
 
+  /**
+   * Nothing to redeem is not an operation.
+   *
+   * The dashboard already refuses to open the flow for a position with no
+   * unlocked chunk; the gate is kept here too, because a session that opened
+   * against a figure the ledger no longer holds would otherwise pay a fee for a
+   * call that moves nothing. Blocks the sign gate and the draft save alike — a
+   * draft of a no-op is still a no-op, just paid for by somebody else later.
+   */
+  const $hasSomethingToDo = combine(
+    { mode: $mode, amount: $amount, validators: $validators },
+    ({ mode, amount, validators }) =>
+      mode === 'redeem' ? new BN(amount).gt(BN_ZERO) : toNominationTargets(validators).length > 0,
+  );
+
   // --- draft transaction ---------------------------------------------------
 
   /**
@@ -350,9 +365,10 @@ export const createConfirmFlowModel = () => {
       isPathComplete: draftMode.$isDraftPathComplete,
       callData: $draftCallDataHex,
       network: $networkStore,
+      hasSomethingToDo: $hasSomethingToDo,
     },
-    ({ isDraftMode, isPathComplete, callData, network }) =>
-      isDraftMode && isPathComplete && nonNullable(callData) && nonNullable(network),
+    ({ isDraftMode, isPathComplete, callData, network, hasSomethingToDo }) =>
+      isDraftMode && isPathComplete && nonNullable(callData) && nonNullable(network) && hasSomethingToDo,
   );
 
   draftMode.connectSave({
@@ -367,20 +383,6 @@ export const createConfirmFlowModel = () => {
   wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished: flowClosed });
 
   // --- sign gate -----------------------------------------------------------
-
-  /**
-   * Nothing to redeem is not an operation.
-   *
-   * The dashboard already refuses to open the flow for a position with no
-   * unlocked chunk; the gate is kept here too, because a session that opened
-   * against a figure the ledger no longer holds would otherwise pay a fee for a
-   * call that moves nothing.
-   */
-  const $hasSomethingToDo = combine(
-    { mode: $mode, amount: $amount, validators: $validators },
-    ({ mode, amount, validators }) =>
-      mode === 'redeem' ? new BN(amount).gt(BN_ZERO) : toNominationTargets(validators).length > 0,
-  );
 
   const $routeSigner = createRouteSignerStore($route);
 
