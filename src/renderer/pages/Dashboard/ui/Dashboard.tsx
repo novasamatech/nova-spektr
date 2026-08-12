@@ -88,7 +88,7 @@ export const Dashboard = () => {
                 {activeSlot && <AddWidgetPopover slot={activeSlot} tab={activeTab} />}
                 <IconButton
                   name="refresh"
-                  aria-label={t('dashboard.resetLayout')}
+                  ariaLabel={t('dashboard.resetLayout')}
                   onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
                 />
               </>

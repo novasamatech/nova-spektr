@@ -49,18 +49,25 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const available = useMemo(() => {
+  const { available, hiddenAvailableCount } = useMemo(() => {
     const hidden = new Set(hiddenWidgets[tab] ?? []);
-
-    return handlers
-      .filter((h) => {
-        try {
-          return h.available() && h.key != null && !hidden.has(h.key);
-        } catch {
-          return false;
+    const visible: typeof handlers = [];
+    let hiddenCount = 0;
+    for (const h of handlers) {
+      try {
+        if (!h.available() || h.key == null) continue;
+        if (hidden.has(h.key)) {
+          hiddenCount += 1;
+          continue;
         }
-      })
-      .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
+        visible.push(h);
+      } catch {
+        // unavailable handler — skip
+      }
+    }
+    visible.sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
+
+    return { available: visible, hiddenAvailableCount: hiddenCount };
   }, [handlers, hiddenWidgets, tab]);
 
   const sizes = useMemo(() => {
@@ -144,7 +151,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
           gridAutoRows: `${ROW_HEIGHT_PX}px`,
         }}
       >
-        {renderKeys.length === 0 && (hiddenWidgets[tab]?.length ?? 0) > 0 && (
+        {renderKeys.length === 0 && hiddenAvailableCount > 0 && (
           <div className="col-span-full flex items-center justify-center py-20 text-footnote text-text-tertiary">
             {t('dashboard.allWidgetsHidden')}
           </div>

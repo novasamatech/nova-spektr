@@ -30,14 +30,12 @@ export const AddWidgetPopover = <P extends SlotProps>({ slot, tab }: Props<P>) =
     }
   });
 
-  if (hiddenHandlers.length === 0) {
-    return <IconButton name="add" disabled ariaLabel={t('dashboard.addWidget')} />;
-  }
+  const hasHiddenWidgets = hiddenHandlers.length > 0;
 
   return (
-    <Popover open={open} align="end" onToggle={setOpen}>
+    <Popover open={open && hasHiddenWidgets} align="end" onToggle={setOpen}>
       <Popover.Trigger>
-        <IconButton name="add" ariaLabel={t('dashboard.addWidget')} />
+        <IconButton name="add" disabled={!hasHiddenWidgets} ariaLabel={t('dashboard.addWidget')} />
       </Popover.Trigger>
       <Popover.Content>
         <ul className="flex max-h-60 w-56 flex-col gap-y-0.5 overflow-y-auto p-2">
@@ -45,7 +43,7 @@ export const AddWidgetPopover = <P extends SlotProps>({ slot, tab }: Props<P>) =
             <li key={h.key}>
               <button
                 type="button"
-                className="w-full rounded px-2 py-1.5 text-left text-footnote hover:bg-hover"
+                className="w-full rounded px-2 py-1.5 text-left text-footnote hover:bg-hover focus:bg-hover"
                 onClick={() => {
                   if (h.key == null) return;
                   widgetRestored({ tab, key: h.key });
