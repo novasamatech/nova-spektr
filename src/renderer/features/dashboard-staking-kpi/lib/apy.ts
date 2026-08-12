@@ -101,11 +101,10 @@ export const NETWORK_AVG_MIN_COVERAGE = 1;
 /**
  * Stake-weighted blend of the per-chain network average rates — the same
  * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
- * along: the label shows the longest window of the contributing chains — it
- * must not claim more history than the dominant component has, and the
- * per-chain breakdown shows each chain's exact window; "shortest" would
- * understate the majority component instead. A real tradeoff, revisit if it
- * confuses.
+ * along: the label shows the longest window among the contributing chains — the
+ * blend legitimately includes that much history for at least one component, and
+ * the per-chain breakdown shows each chain's exact window; "shortest" would
+ * understate every other component. A real tradeoff, revisit if it confuses.
  */
 export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): NetworkAvgBlend | null {
   let weighted = new BigNumber(0);
