@@ -35,22 +35,29 @@ export const RewardsWidget = ({ accountIds }: Props) => {
   const rewardTokens = formatAssetAmounts(kpi.rewardAmounts, { sign: '+', fallback: EM_DASH });
   const showFiat = kpi.fiatFlag !== false;
 
+  const subline = showFiat
+    ? t('dashboard.staking.kpi.rewards.subline', {
+        amounts: rewardTokens,
+        days: kpi.rewardsWindowDays,
+      })
+    : t('dashboard.staking.kpi.rewards.sublineNoFiat', { days: kpi.rewardsWindowDays });
+  // An explicit aria-label replaces the card's inner text for screen readers,
+  // so it must carry what the card shows. The system tests anchor on the title
+  // prefix of this label.
+  const unclaimedLabel = kpi.unclaimedFooter
+    ? `${t('dashboard.staking.kpi.rewards.unclaimed')} ${formatAssetAmounts(kpi.unclaimedFooter.amounts)}`
+    : null;
+  const ariaLabel = [title, subline, unclaimedLabel].filter(Boolean).join(', ');
+
   return (
     <KpiWidgetFrame>
       <KpiCard
         title={title}
-        ariaLabel={title}
+        ariaLabel={ariaLabel}
         loading={kpi.pending}
         valueClass="text-text-positive"
         value={showFiat ? <Price amount={kpi.rewardsFiat} currency={kpi.currency} /> : rewardTokens}
-        subline={
-          showFiat
-            ? t('dashboard.staking.kpi.rewards.subline', {
-                amounts: rewardTokens,
-                days: kpi.rewardsWindowDays,
-              })
-            : t('dashboard.staking.kpi.rewards.sublineNoFiat', { days: kpi.rewardsWindowDays })
-        }
+        subline={subline}
         footer={
           kpi.unclaimedFooter ? (
             <div className="flex items-center gap-2">

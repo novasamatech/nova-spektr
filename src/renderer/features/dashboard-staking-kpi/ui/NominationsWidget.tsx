@@ -28,14 +28,20 @@ export const NominationsWidget = ({ accountIds }: Props) => {
   const title = t('dashboard.staking.kpi.nominations.title');
   if (accountIds.length === 0) return <NoSelectionCard title={title} />;
 
+  const subline = t('dashboard.staking.kpi.nominations.subline', { count: kpi.activeValidatorCount });
+  // An explicit aria-label replaces the card's inner text for screen readers,
+  // so it must carry what the card shows. The system tests anchor on the title
+  // prefix of this label.
+  const ariaLabel = [title, String(kpi.nominationRows.length), subline].join(', ');
+
   return (
     <KpiWidgetFrame>
       <KpiCard
         title={title}
-        ariaLabel={title}
+        ariaLabel={ariaLabel}
         loading={kpi.pending}
         value={kpi.nominationRows.length}
-        subline={t('dashboard.staking.kpi.nominations.subline', { count: kpi.activeValidatorCount })}
+        subline={subline}
         onClick={handleOpen}
       />
 
