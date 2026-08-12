@@ -13,6 +13,11 @@ export const useNetworkApy = (params: NullableMap<ApyResourceParams>) => {
   });
 };
 
+/**
+ * `data` is `undefined` while loading AND when the rate is measured as unknown
+ * — distinguish via `pending`: `data === undefined && !pending` means the chain
+ * could not report a rate.
+ */
 export const useNetworkAvgRate = (params: NullableMap<NetworkAvgRateParams>) => {
   return useResource(networkAvgRateResource, {
     params: nonNullableMap(params) ? params : null,

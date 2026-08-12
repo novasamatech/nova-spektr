@@ -43,7 +43,9 @@ const $networkAvgRateCache = createStore<Record<ChainId, NetworkAvgRate | null>>
 /**
  * Trailing ~30d network average reward rate per chain. Era-keyed like
  * `apyResource`: a rollover changes the key and triggers exactly one refetch; a
- * window of closed eras never changes, so the cache never goes stale. The
+ * window of closed eras never changes, so a non-null result never goes stale; a
+ * `null` (unknown) result is not cached and is re-requested on the next mount -
+ * deliberate, it doubles as retry after a transient failure. The
  * `erasValidatorPrefs` read duplicates the one in `apyResource` — accepted,
  * both requests run once per era per chain.
  */
