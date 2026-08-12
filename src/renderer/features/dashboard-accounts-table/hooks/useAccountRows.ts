@@ -74,7 +74,14 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
   // same as the resolution NamedAccount runs per cell.
   const resolvedAccounts = useAccountsNames(selectedAccounts);
 
+  // `useAccountsNames` maps to a fresh array every render, so its identity
+  // cannot key a memo. Serializing the (accountId, name) pairs to a string and
+  // deriving the map from that string keeps `nameByAccountId` — and therefore
+  // the rows array below — referentially stable across unrelated re-renders.
+  const resolvedNamesKey = JSON.stringify(resolvedAccounts.map((account) => [account.accountId, account.name]));
+
   const nameByAccountId = useMemo(() => {
+    const resolvedNames: [string, string][] = JSON.parse(resolvedNamesKey);
     const names = new Map<string, string>();
 
     // Contacts have no AnyAccount, their allEntries name is what the UI shows;
@@ -84,12 +91,12 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
         names.set(entry.accountId, entry.name);
       }
     }
-    for (const account of resolvedAccounts) {
-      names.set(account.accountId, account.name);
+    for (const [accountId, name] of resolvedNames) {
+      names.set(accountId, name);
     }
 
     return names;
-  }, [allEntries, resolvedAccounts]);
+  }, [allEntries, resolvedNamesKey]);
 
   const accountByAccountId = useMemo(() => {
     const map = new Map<AccountId, AnyAccount>();
@@ -149,6 +156,8 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
         id: `${balance.accountId}-${balance.chainId}-${balance.assetId}`,
         accountId: balance.accountId,
         groupKey: balance.accountId,
+        // Rendered group headers must use <NamedAccount title={row.displayName}> so the
+        // displayed string and the searched string never diverge (search-patterns rule).
         displayName: nameByAccountId.get(balance.accountId) ?? shortAddress,
         displayAddress,
         shortAddress,
