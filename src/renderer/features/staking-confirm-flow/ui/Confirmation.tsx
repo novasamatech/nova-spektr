@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
+import { Alert, Button, CaptionText, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
@@ -48,6 +48,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const hasMultisigAccount = useUnit(confirmFlowModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(confirmFlowModel.$multisigDeposit);
   const preparing = useUnit(confirmFlowModel.$preparing);
+  const noRouteSigner = useUnit(confirmFlowModel.$noRouteSigner);
   const canSign = useUnit(confirmFlowModel.$canSign);
 
   const isDraftMode = useUnit(confirmFlowModel.$isDraftMode);
@@ -151,6 +152,15 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Box>
 
           {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+
+          {/* `$noRouteSigner` is already false in draft mode. */}
+          {noRouteSigner && (
+            <Box padding={[2, 5]}>
+              <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+                <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+              </Alert>
+            </Box>
+          )}
 
           <FootnoteText className="px-5 pt-3 text-text-tertiary">
             {isRedeem ? t('staking.confirmFlow.hint.redeem') : t('staking.confirmFlow.hint.changeValidators')}

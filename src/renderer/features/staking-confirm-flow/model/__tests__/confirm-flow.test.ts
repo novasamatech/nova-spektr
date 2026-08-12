@@ -45,12 +45,14 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
   // they get back from this factory, and a derived store would refuse.
   return {
     ...actual,
-    createComplexTxStore: ({ transaction }: { transaction: Store<unknown> }) => {
+    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
       const $tx = createStore<unknown>(null);
       sample({ clock: transaction, target: $tx });
 
       const bag = {
-        $route: createStore<unknown[]>([]),
+        // The self-route a plain account gets from the real store — keeps the
+        // route-signer guard honest without the BFS over the account graph.
+        $route: initiator.map((account) => (account ? [account] : [])),
         $tx,
         $feeTx: createStore<unknown>(null),
         $pendingWrapping: createStore(false),
@@ -61,6 +63,10 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
 
       return bag;
     },
+    // The real one asks the DI permission registry, which is empty in a unit
+    // fork — every account would read as unsignable. The permission check has
+    // its own tests; here the terminal hop simply signs.
+    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
     createTxValidationStore: () => {
       const bag = {
         $errors: createStore<unknown[]>([]),

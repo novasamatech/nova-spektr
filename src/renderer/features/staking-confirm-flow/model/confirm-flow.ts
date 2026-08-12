@@ -6,7 +6,12 @@ import { readonly } from 'patronum';
 import { ZERO_BALANCE, nonNullable, nullable } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createTxValidationStore, getActionRequiredAmount } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createRouteSignerStore,
+  createTxValidationStore,
+  getActionRequiredAmount,
+} from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -219,6 +224,7 @@ export const createConfirmFlowModel = () => {
     routeOverride: $pathRoute,
   });
 
+  /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
   // --- validation ----------------------------------------------------------
@@ -345,6 +351,18 @@ export const createConfirmFlowModel = () => {
       mode === 'redeem' ? new BN(amount).gt(BN_ZERO) : toNominationTargets(validators).length > 0,
   );
 
+  const $routeSigner = createRouteSignerStore($route);
+
+  /**
+   * No one on the resolved route can actually sign: the position belongs to a
+   * contact (no initiator at all) or to a watch-only account. Blocks the gate
+   * and surfaces an explicit message instead of a silently dead button.
+   */
+  const $noRouteSigner = combine(
+    { isDraftMode: draftMode.$isDraftMode, request: $request, routeSigner: $routeSigner },
+    ({ isDraftMode, request, routeSigner }) => !isDraftMode && nonNullable(request) && nullable(routeSigner),
+  );
+
   const $canSign = combine(
     {
       isDraftMode: draftMode.$isDraftMode,
@@ -352,9 +370,10 @@ export const createConfirmFlowModel = () => {
       txValid: $isTxValid,
       preparing: $preparing,
       tx: $tx,
+      noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, hasSomethingToDo, txValid, preparing, tx }) =>
-      !isDraftMode && hasSomethingToDo && txValid && !preparing && nonNullable(tx),
+    ({ isDraftMode, hasSomethingToDo, txValid, preparing, tx, noRouteSigner }) =>
+      !isDraftMode && hasSomethingToDo && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
 
   // --- confirm → sign → submit --------------------------------------------
@@ -481,6 +500,7 @@ export const createConfirmFlowModel = () => {
     $hasMultisigAccount,
     $multisigDeposit,
     $preparing,
+    $noRouteSigner,
     $canSign,
     $confirms: confirmModel.$confirms,
 

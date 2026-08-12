@@ -297,6 +297,7 @@ export const createAmountFlowModel = () => {
     routeOverride: $pathRoute,
   });
 
+  /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
   const $available = combine($reservable, $fee, (reservable, fee) => {
