@@ -363,6 +363,17 @@ const $totalFee = combine($fee, $plans, (fee, plans) => (fee ? fee.mul(new BN(Ma
 // draft mode, where nobody local is expected to sign.
 const draftMode = createDraftModeBinding({ formInitiated: claimRequested, chainChanged: claimRequested });
 
+// A session that arrives already knowing nobody local pays it opens with draft
+// mode on. `signingMode` carries the *payer's* mode (payouts are permissionless,
+// so producers substitute a signable payer where they can) — `every` therefore
+// only holds when the whole session really has no one to sign.
+sample({
+  clock: claimRequested,
+  filter: (requests) => requests.length > 0 && requests.every((request) => request.signingMode === 'draft'),
+  fn: () => true,
+  target: draftMode.draftModeToggled,
+});
+
 const $routeSigner = createRouteSignerStore($route);
 
 /**

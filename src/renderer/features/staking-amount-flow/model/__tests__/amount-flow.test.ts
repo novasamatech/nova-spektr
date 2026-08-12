@@ -157,6 +157,7 @@ const target = (active = dot(1000), unbondingChunks = 0) => ({
   asset: ASSET,
   account: ACCOUNT,
   wallet: null,
+  signingMode: 'local' as const,
 });
 
 const $minNominatorBond = () => $minNominatorBondMock.current as ReturnType<typeof createStore<Record<string, string>>>;

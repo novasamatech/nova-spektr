@@ -2,6 +2,7 @@ import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { type TxConfirmInfo } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition } from '@/domains/staking';
+import { type SigningMode } from '@/features/validator-selection';
 
 export const enum Step {
   NONE,
@@ -35,6 +36,12 @@ export type AmountFlowTarget = {
   account: AnyAccount | null;
   /** Wallet the account belongs to — drives the account chip's badge and name. */
   wallet?: Wallet | null;
+  /**
+   * How the caller expects this to be signed. `draft` opens the flow with draft
+   * mode already on — the user should not have to discover the toggle for a
+   * position nobody local can sign.
+   */
+  signingMode: SigningMode;
 };
 
 export type AmountFlowRequest = AmountFlowTarget & { mode: AmountFlowMode };

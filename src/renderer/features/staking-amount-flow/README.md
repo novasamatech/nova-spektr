@@ -1,6 +1,6 @@
 # Staking amount flow (unbond / add stake)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -111,6 +111,10 @@ only when the final approval does — updates the row on its own.
 The amount screen carries the app-wide draft toggle. In draft mode the user picks the signing path themselves (the flow
 cannot sign for an account it has no key for), the fee and balance checks step aside — the eventual signer pays — and
 the primary button creates a **draft** instead of walking on to the confirm.
+
+A request whose `signingMode` is `draft` — an address-book position, where the caller already knows nobody local signs —
+**opens with the toggle already on**: the user should not have to discover it. The toggle stays a toggle; switching it
+off returns to normal mode, where the no-route-signer guard takes over.
 
 **Signing and draft creation never share a confirmation.** Draft mode ends at the amount screen: it has its own button
 and its own gate, `Continue` is disabled while it is on, and a created draft closes the flow. This mirrors every other

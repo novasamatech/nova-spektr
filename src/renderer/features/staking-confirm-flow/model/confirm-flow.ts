@@ -127,6 +127,17 @@ export const createConfirmFlowModel = () => {
 
   const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
 
+  // A request that arrives already knowing nobody local signs it (an
+  // address-book position) opens with draft mode on, instead of making the
+  // user discover the toggle. Registered after the binding, so the toggle
+  // lands after the binding's own `.reset(flowStarted)` on `$isDraftMode`.
+  sample({
+    clock: flowStarted,
+    filter: (request) => request.signingMode === 'draft',
+    fn: () => true,
+    target: draftMode.draftModeToggled,
+  });
+
   const $draftSourceAccountId = draftMode.$draftSigningPath.map((path) => path.at(0)?.accountId ?? null);
 
   // --- slashing spans ------------------------------------------------------

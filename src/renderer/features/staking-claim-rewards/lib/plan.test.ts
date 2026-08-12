@@ -41,6 +41,7 @@ const request = (n: number, payouts: UnclaimedPayout[], chainIndex = 1): ClaimRe
   account: account(n),
   wallet: wallet(n),
   payouts,
+  signingMode: 'local',
 });
 
 describe('sortPayouts', () => {

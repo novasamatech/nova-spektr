@@ -1,6 +1,6 @@
 # Staking Dashboard Actions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -132,6 +132,13 @@ holds no signing key for is disabled and says so.
 **The payer is resolved, not assumed.** A payout is permissionless, so the nominator is only the first candidate: when
 it is an address-book position, any account of ours that can sign on that chain is used instead. See the claim flow's
 own spec for the reasoning.
+
+**The signing mode travels with the request.** Every target this feature dispatches carries a `signingMode`, so a flow
+opened for an address-book position starts in draft mode instead of making the user discover the toggle. The drawer's
+payloads keep the mode the drawer computed; a KPI-resolved target derives it here (no local account → `draft`, an
+account that holds no key → `watchOnly`, otherwise `local`). Claims are the exception: the payer's mode wins — the
+drawer may say `draft` for a contact position, but the substituted payer can sign, so the claim request goes out
+`local`.
 
 ## Related
 

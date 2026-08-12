@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -112,6 +112,11 @@ Draft mode is **only offered when the claim is a single transaction**. A draft c
 chunked or multi-account claim has nothing single to save; offering the toggle there would silently save a fraction of
 what the screen totals. The toggle is hidden rather than disabled, because the reason is structural and no user action
 inside the modal can change it.
+
+Each request carries a `signingMode` — the **payer's** mode, not the nominator's: payouts are permissionless, so
+producers substitute a signable payer where they can and send `local` even for an address-book nominator. A session
+whose every request says `draft` (no signable payer at all) opens with the toggle already on; no current producer emits
+that, so it is the model's contract rather than a live path.
 
 The draft's call is built from the draft signing path's **source account**, not the stash — which is correct here for
 the reason above: the sender of `payout_stakers_by_page` is only the fee payer, and the rewards reach the nominators

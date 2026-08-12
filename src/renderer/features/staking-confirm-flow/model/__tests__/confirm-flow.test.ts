@@ -192,6 +192,7 @@ const changeTarget = (validators: Validator[] = [validator(ALICE), validator(BOB
   account: ACCOUNT,
   wallet: null,
   validators,
+  signingMode: 'local' as const,
 });
 
 const redeemTarget = (amount = REDEEMABLE) => ({
@@ -201,6 +202,7 @@ const redeemTarget = (amount = REDEEMABLE) => ({
   account: ACCOUNT,
   wallet: null,
   amount,
+  signingMode: 'local' as const,
 });
 
 /** An api the mocked pallet never looks at, but `$api` has to be non-null. */

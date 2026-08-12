@@ -8,6 +8,7 @@ import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import { confirmFlowModel } from '@/features/staking-confirm-flow/model/confirm-flow';
 import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow/types';
+import { type SigningMode } from '@/features/validator-selection';
 import {
   polkadotAssetHubChain,
   polkadotAssetHubChainId,
@@ -74,7 +75,11 @@ function createPosition(accountId: AccountId): StakingPosition {
   };
 }
 
-function createRedeemTarget(account: AnyAccount | null, accountId: AccountId): RedeemTarget {
+function createRedeemTarget(
+  account: AnyAccount | null,
+  accountId: AccountId,
+  signingMode: SigningMode = 'local',
+): RedeemTarget {
   return {
     position: createPosition(accountId),
     chain: polkadotAssetHubChain,
@@ -82,6 +87,7 @@ function createRedeemTarget(account: AnyAccount | null, accountId: AccountId): R
     account,
     wallet: account ? stakingWallet : null,
     amount: '1000000000',
+    signingMode,
   };
 }
 
@@ -103,7 +109,11 @@ const pickedValidator: Validator = {
   nominators: [],
 };
 
-function createChangeValidatorsTarget(account: AnyAccount | null, accountId: AccountId): ChangeValidatorsTarget {
+function createChangeValidatorsTarget(
+  account: AnyAccount | null,
+  accountId: AccountId,
+  signingMode: SigningMode = 'local',
+): ChangeValidatorsTarget {
   return {
     position: createPosition(accountId),
     chain: polkadotAssetHubChain,
@@ -111,6 +121,7 @@ function createChangeValidatorsTarget(account: AnyAccount | null, accountId: Acc
     account,
     wallet: account ? stakingWallet : null,
     validators: [pickedValidator],
+    signingMode,
   };
 }
 
@@ -154,7 +165,7 @@ describe('Staking Confirm Flow - Route Signer Guard', () => {
 
     await env.executeEvent(
       confirmFlowModel.redeemRequested,
-      createRedeemTarget(watchOnlyAccount, watchOnlyAccount.accountId),
+      createRedeemTarget(watchOnlyAccount, watchOnlyAccount.accountId, 'watchOnly'),
     );
 
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(true);
@@ -174,10 +185,18 @@ describe('Staking Confirm Flow - Route Signer Guard', () => {
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(false);
   });
 
-  it('should block a redeem for a contact position (no local account)', async () => {
+  it('should block a redeem for a contact position (no local account) once draft mode is off', async () => {
     await buildEnv([stakingAccountA]);
 
-    await env.executeEvent(confirmFlowModel.redeemRequested, createRedeemTarget(null, contactAccountId));
+    // The drawer sends `draft` for a contact position, so the flow opens with
+    // draft mode already on…
+    await env.executeEvent(confirmFlowModel.redeemRequested, createRedeemTarget(null, contactAccountId, 'draft'));
+
+    expect(env.getState(confirmFlowModel.$isDraftMode)).toBe(true);
+    expect(env.getState(confirmFlowModel.$canSign)).toBe(false);
+
+    // …and the guard takes over the moment the user toggles it off.
+    await env.executeEvent(confirmFlowModel.toggleDraftMode, false);
 
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(true);
     expect(env.getState(confirmFlowModel.$canSign)).toBe(false);
@@ -188,7 +207,7 @@ describe('Staking Confirm Flow - Route Signer Guard', () => {
 
     await env.executeEvent(
       confirmFlowModel.changeValidatorsRequested,
-      createChangeValidatorsTarget(watchOnlyAccount, watchOnlyAccount.accountId),
+      createChangeValidatorsTarget(watchOnlyAccount, watchOnlyAccount.accountId, 'watchOnly'),
     );
 
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(true);
@@ -212,5 +231,45 @@ describe('Staking Confirm Flow - Route Signer Guard', () => {
     await buildEnv([stakingAccountA]);
 
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(false);
+  });
+
+  describe('signing mode carry-over', () => {
+    it('should start in draft mode when the request says draft', async () => {
+      await buildEnv([stakingAccountA]);
+
+      await env.executeEvent(
+        confirmFlowModel.changeValidatorsRequested,
+        createChangeValidatorsTarget(null, contactAccountId, 'draft'),
+      );
+
+      expect(env.getState(confirmFlowModel.$isDraftMode)).toBe(true);
+    });
+
+    it('should stay in normal mode for a local request', async () => {
+      await buildEnv([stakingAccountA]);
+
+      await env.executeEvent(
+        confirmFlowModel.redeemRequested,
+        createRedeemTarget(stakingAccountA, stakingAccountA.accountId, 'local'),
+      );
+
+      expect(env.getState(confirmFlowModel.$isDraftMode)).toBe(false);
+    });
+
+    it('should drop draft mode when a local request follows a draft one', async () => {
+      await buildEnv([stakingAccountA]);
+
+      await env.executeEvent(confirmFlowModel.redeemRequested, createRedeemTarget(null, contactAccountId, 'draft'));
+      expect(env.getState(confirmFlowModel.$isDraftMode)).toBe(true);
+
+      // `$isDraftMode` resets on the same event the auto-enable samples — this
+      // pins that the reset lands first and the request's mode wins.
+      await env.executeEvent(
+        confirmFlowModel.redeemRequested,
+        createRedeemTarget(stakingAccountA, stakingAccountA.accountId, 'local'),
+      );
+
+      expect(env.getState(confirmFlowModel.$isDraftMode)).toBe(false);
+    });
   });
 });

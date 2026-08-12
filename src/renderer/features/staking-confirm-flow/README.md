@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -103,6 +103,10 @@ only when the final approval does — updates the row on its own.
 The confirm carries the app-wide draft toggle. In draft mode the user picks the signing path themselves (the flow cannot
 sign for an account it has no key for), the fee and balance checks step aside — the eventual signer pays — and the
 primary button creates a **draft** instead of signing.
+
+A request whose `signingMode` is `draft` — an address-book position, where the caller already knows nobody local signs —
+**opens with the toggle already on**: the user should not have to discover it. The toggle stays a toggle; switching it
+off returns to normal mode, where the no-route-signer guard takes over.
 
 **Signing and draft creation never share a button.** While the toggle is on, the signing branch is closed outright:
 `Sign` is replaced, and pressing it would go nowhere. A created draft closes the flow. This mirrors every other

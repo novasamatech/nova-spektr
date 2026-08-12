@@ -135,7 +135,16 @@ export function resolveClaimRequests(entries: KpiClaimEntry[], sources: Resoluti
       continue;
     }
 
-    requests.push({ chain, asset, account: payer.account, wallet: payer.wallet, payouts: entry.payouts });
+    // The payer's mode, not the nominator's: `resolveClaimPayer` only returns
+    // an account `isSignerAccount` accepts, so the request is signable here.
+    requests.push({
+      chain,
+      asset,
+      account: payer.account,
+      wallet: payer.wallet,
+      payouts: entry.payouts,
+      signingMode: 'local',
+    });
   }
 
   return { requests, skipped };
@@ -208,6 +217,9 @@ function resolvePositionTarget(
     asset,
     account: resolved?.account ?? null,
     wallet: resolved?.wallet ?? null,
+    // The flows read `draft` as "start with draft mode on": an address-book
+    // position has nobody local to sign, a watch-only account holds no key.
+    signingMode: resolved ? (isSignerAccount(resolved.account) ? 'local' : 'watchOnly') : 'draft',
   };
 }
 
