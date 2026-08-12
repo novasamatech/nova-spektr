@@ -24,10 +24,11 @@ export { exposurePagesCacheKey } from './exposures/resource';
 export { exposureService } from './exposures/service';
 export { useExposurePages, useExposures } from './exposures/hooks';
 
-export type { ApyResourceParams } from './apy/resource';
+export type { ApyResourceParams, NetworkAvgRateParams } from './apy/resource';
+export type { NetworkAvgRate } from './apy/service';
 export { apy } from './apy/store';
 export { apyService } from './apy/service';
-export { useNetworkApy } from './apy/hooks';
+export { useNetworkApy, useNetworkAvgRate } from './apy/hooks';
 
 export type { EraValidator, EraValidatorMap } from './validators/types';
 export type { ValidatorsResourceParams } from './validators/resource';
