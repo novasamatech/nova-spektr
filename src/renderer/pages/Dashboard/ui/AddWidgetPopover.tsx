@@ -34,6 +34,10 @@ export const AddWidgetPopover = <P extends SlotProps>({ slot, tab }: Props<P>) =
 
   const hasHiddenWidgets = hiddenHandlers.length > 0;
 
+  if (open && !hasHiddenWidgets) {
+    setOpen(false);
+  }
+
   return (
     <Popover open={open && hasHiddenWidgets} align="end" onToggle={setOpen}>
       <Popover.Trigger>
