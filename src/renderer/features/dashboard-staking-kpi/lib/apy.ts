@@ -1,7 +1,7 @@
 import { default as BigNumber } from 'bignumber.js';
 
 import { type ChainId } from '@/shared/core';
-import { type StakingPosition } from '@/domains/staking';
+import { type NetworkAvgRate, type StakingPosition } from '@/domains/staking';
 
 /**
  * One chain's contribution to the blended APY: the network APY it pays and the
@@ -66,4 +66,43 @@ export function computeWeightedApy(entries: ApyWeight[]): number | null {
   if (!totalWeight.gt(0)) return null;
 
   return weighted.div(totalWeight).toNumber();
+}
+
+/** One chain's contribution to the blended network benchmark. */
+export type NetworkAvgWeight = {
+  chainId: ChainId;
+  /** The chain's trailing-window rate, `null` when it has not reported one. */
+  rate: Pick<NetworkAvgRate, 'ratePercent' | 'days'> | null;
+  /** Fiat value of the earning stake on that chain. */
+  weight: string;
+};
+
+/**
+ * Stake-weighted blend of the per-chain network average rates — the same
+ * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
+ * along: the label shows the longest window among the contributing chains
+ * ("30d" for Polkadot AH even when Kusama AH could only answer for 21).
+ */
+export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): { rate: number; days: number } | null {
+  let weighted = new BigNumber(0);
+  let totalWeight = new BigNumber(0);
+  let days = 0;
+
+  for (const entry of entries) {
+    if (entry.rate === null) continue;
+
+    const rate = Number(entry.rate.ratePercent);
+    if (!Number.isFinite(rate)) continue;
+
+    const weight = new BigNumber(entry.weight || '0');
+    if (!weight.gt(0)) continue;
+
+    weighted = weighted.plus(weight.times(rate));
+    totalWeight = totalWeight.plus(weight);
+    days = Math.max(days, entry.rate.days);
+  }
+
+  if (!totalWeight.gt(0)) return null;
+
+  return { rate: weighted.div(totalWeight).toNumber(), days };
 }
