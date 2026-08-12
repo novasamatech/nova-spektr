@@ -86,6 +86,7 @@ describe('splitBalanceByPurpose', () => {
     const split = splitBalanceByPurpose(balance, new BN(900), true);
 
     expect(split.staked?.toString()).toEqual('500');
+    expect(split.governance?.toString()).toEqual('0');
     expect(split.other.toString()).toEqual('0');
   });
 

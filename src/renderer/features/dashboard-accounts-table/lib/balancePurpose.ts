@@ -34,10 +34,10 @@ export const splitBalanceByPurpose = (
   governanceApplicable: boolean,
 ): PurposeSplit => {
   const transferable = transferableAmountBN(balance);
-  const pot = BN.max(BN_ZERO, totalAmountBN(balance).sub(transferable));
+  const nonTransferable = totalAmountBN(balance).sub(transferable);
 
-  const staked = stakedActive === null ? null : BN.min(stakedActive, pot);
-  const afterStaked = pot.sub(staked ?? BN_ZERO);
+  const staked = stakedActive === null ? null : BN.min(stakedActive, nonTransferable);
+  const afterStaked = nonTransferable.sub(staked ?? BN_ZERO);
 
   const governance = governanceApplicable ? BN.min(votedAmountBN(balance), afterStaked) : null;
   const other = afterStaked.sub(governance ?? BN_ZERO);
