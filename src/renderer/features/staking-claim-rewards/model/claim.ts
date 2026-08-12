@@ -8,6 +8,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
+  createRouteSignerStore,
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
@@ -175,6 +176,7 @@ const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStor
   routeOverride: $pathRoute,
 });
 
+/** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
 const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
 /**
@@ -357,13 +359,30 @@ const $preparing = combine(
  */
 const $totalFee = combine($fee, $plans, (fee, plans) => (fee ? fee.mul(new BN(Math.max(plans.length, 1))) : fee));
 
+// Created ahead of its own section below: the sign gate must stand down in
+// draft mode, where nobody local is expected to sign.
+const draftMode = createDraftModeBinding({ formInitiated: claimRequested, chainChanged: claimRequested });
+
+const $routeSigner = createRouteSignerStore($route);
+
+/**
+ * No one on the resolved route can actually sign — the chosen payer is a
+ * watch-only account. Blocks the gate and surfaces an explicit message instead
+ * of a silently dead button.
+ */
+const $noRouteSigner = combine(
+  { isDraftMode: draftMode.$isDraftMode, initiator: $initiator, routeSigner: $routeSigner },
+  ({ isDraftMode, initiator, routeSigner }) => !isDraftMode && nonNullable(initiator) && nullable(routeSigner),
+);
+
 const $canSign = combine(
   {
     tx: $tx,
     valid: $isTxValid,
     preparing: $preparing,
+    noRouteSigner: $noRouteSigner,
   },
-  ({ tx, valid, preparing }) => nonNullable(tx) && valid && !preparing,
+  ({ tx, valid, preparing, noRouteSigner }) => nonNullable(tx) && valid && !preparing && !noRouteSigner,
 );
 
 const $confirmDraft = combine(
@@ -424,8 +443,6 @@ sample({
 // ---------------------------------------------------------------------------
 // Draft mode
 // ---------------------------------------------------------------------------
-
-const draftMode = createDraftModeBinding({ formInitiated: claimRequested, chainChanged: claimRequested });
 
 wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished });
 
@@ -645,6 +662,7 @@ export const claimRewardsModel = {
   $hasMultisigAccount,
   $multisigDeposit,
   $preparing,
+  $noRouteSigner,
   $canSign,
 
   $canUseDraftMode,

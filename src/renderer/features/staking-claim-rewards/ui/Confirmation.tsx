@@ -47,6 +47,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const hasMultisigAccount = useUnit(claimRewardsModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(claimRewardsModel.$multisigDeposit);
   const preparing = useUnit(claimRewardsModel.$preparing);
+  const noRouteSigner = useUnit(claimRewardsModel.$noRouteSigner);
   const canSign = useUnit(claimRewardsModel.$canSign);
 
   const balances = useUnit(balanceModel.$balanceMap);
@@ -172,6 +173,15 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Box>
 
           {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+
+          {/* `$noRouteSigner` is already false in draft mode. */}
+          {noRouteSigner && (
+            <Box padding={[2, 5]}>
+              <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+                <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+              </Alert>
+            </Box>
+          )}
 
           {/* Rewards on another network are a separate signing session — say so
               instead of quietly leaving them out of the total. */}

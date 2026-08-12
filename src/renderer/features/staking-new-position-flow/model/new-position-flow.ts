@@ -9,11 +9,17 @@ import {
   fromPrecision,
   getRelaychainAsset,
   nonNullable,
+  nullable,
   reservableAmountBN,
   toAddress,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createTxValidationStore, getActionRequiredAmount } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createRouteSignerStore,
+  createTxValidationStore,
+  getActionRequiredAmount,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { DEFAULT_STAKING_CHAIN, validatorsService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -318,6 +324,7 @@ export const createNewPositionFlowModel = () => {
     routeOverride: $pathRoute,
   });
 
+  /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
   const $available = combine($reservable, $fee, (reservable, fee) => getAvailableToBond({ reservable, fee }));
@@ -445,6 +452,19 @@ export const createNewPositionFlowModel = () => {
   // exist until a validator set does. What can be decided here is decided here,
   // and the tx-level rules gate the confirm instead.
 
+  const $routeSigner = createRouteSignerStore($route);
+
+  /**
+   * No one on the resolved route can actually sign: the picked account is
+   * watch-only. Blocks the gate and surfaces an explicit message instead of a
+   * silently dead button. No initiator picked yet is not this error —
+   * `$canContinue` demands one on its own.
+   */
+  const $noRouteSigner = combine(
+    { isDraftMode: draftMode.$isDraftMode, initiator: $initiator, routeSigner: $routeSigner },
+    ({ isDraftMode, initiator, routeSigner }) => !isDraftMode && nonNullable(initiator) && nullable(routeSigner),
+  );
+
   const $canContinue = combine(
     {
       isDraftMode: draftMode.$isDraftMode,
@@ -452,9 +472,10 @@ export const createNewPositionFlowModel = () => {
       destinationValid: $isDestinationValid,
       initiator: $initiator,
       preparing: $preparing,
+      noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, amountValid, destinationValid, initiator, preparing }) =>
-      !isDraftMode && amountValid && destinationValid && nonNullable(initiator) && !preparing,
+    ({ isDraftMode, amountValid, destinationValid, initiator, preparing, noRouteSigner }) =>
+      !isDraftMode && amountValid && destinationValid && nonNullable(initiator) && !preparing && !noRouteSigner,
   );
 
   const validatorsStepEntered = sample({
@@ -666,6 +687,7 @@ export const createNewPositionFlowModel = () => {
     $hasMultisigAccount,
     $multisigDeposit,
     $preparing,
+    $noRouteSigner,
     $canContinue,
     /** Node-side verdict on the built call. Gates the confirm, not the form. */
     $isTxValid,

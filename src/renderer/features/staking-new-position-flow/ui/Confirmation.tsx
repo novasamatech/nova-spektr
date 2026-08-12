@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { RewardsDestination } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Button, DetailRow, Separator } from '@/shared/ui';
+import { Alert, Button, DetailRow, Separator } from '@/shared/ui';
 import { Address, AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
@@ -43,6 +43,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const hasMultisigAccount = useUnit(newPositionFlowModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(newPositionFlowModel.$multisigDeposit);
   const preparing = useUnit(newPositionFlowModel.$preparing);
+  const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
   const isTxValid = useUnit(newPositionFlowModel.$isTxValid);
 
   if (!chain || !asset || !initiator) return null;
@@ -102,6 +103,14 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         </Box>
 
         <TransactionValidationError errors={errors} wallets={wallets} />
+
+        {noRouteSigner && (
+          <Box padding={[2, 5]}>
+            <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+              <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+            </Alert>
+          </Box>
+        )}
       </ScrollArea>
 
       <Modal.Footer align="between">
@@ -112,7 +121,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         )}
         <SignButton
           type={signatoryWallet?.type}
-          disabled={!isTxValid || preparing}
+          disabled={!isTxValid || preparing || noRouteSigner}
           isLoading={preparing}
           onClick={newPositionFlowModel.startSigning}
         />
