@@ -42,22 +42,24 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   const layoutSet = useUnit(dashboardModel.layoutSet);
   const widgetMoved = useUnit(dashboardModel.widgetMoved);
   const widgetResized = useUnit(dashboardModel.widgetResized);
+  const hiddenWidgets = useUnit(dashboardModel.$hiddenWidgets);
+  const widgetHidden = useUnit(dashboardModel.widgetHidden);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const available = useMemo(
-    () =>
-      handlers
-        .filter((h) => {
-          try {
-            return h.available() && h.key != null;
-          } catch {
-            return false;
-          }
-        })
-        .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0)),
-    [handlers],
-  );
+  const available = useMemo(() => {
+    const hidden = new Set(hiddenWidgets[tab] ?? []);
+
+    return handlers
+      .filter((h) => {
+        try {
+          return h.available() && h.key != null && !hidden.has(h.key);
+        } catch {
+          return false;
+        }
+      })
+      .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
+  }, [handlers, hiddenWidgets, tab]);
 
   const sizes = useMemo(() => {
     const map: Record<string, Size> = {};
@@ -164,6 +166,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
                 const h = Math.max(min.h, Math.min(next.h, max.h));
                 widgetResized({ tab, key, w, h });
               }}
+              onHide={() => widgetHidden({ tab, key })}
             >
               <Component {...componentProps} />
             </WidgetSortableProvider>

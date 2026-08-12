@@ -2,6 +2,7 @@ import { type ReactNode, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { Icon } from '@/shared/ui';
 
 import { WidgetResizeHandle } from './WidgetResizeHandle';
 import { useWidgetSortable } from './WidgetSortableContext';
@@ -69,6 +70,16 @@ export const DashboardWidget = memo(({ children, className, card = true, scroll 
             <circle cx="5" cy="13" r="1.5" />
             <circle cx="11" cy="13" r="1.5" />
           </svg>
+        </button>
+      )}
+      {ctx?.editMode && (
+        <button
+          type="button"
+          className="absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow"
+          aria-label={t('dashboard.hideWidget')}
+          onClick={ctx.hide}
+        >
+          <Icon name="eyeSlashed" size={12} className="text-white" />
         </button>
       )}
       <div className={cnTw('min-h-0 flex-1', scroll ? SCROLL_CLASS : 'overflow-hidden')}>{children}</div>

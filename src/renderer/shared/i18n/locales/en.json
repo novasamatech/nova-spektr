@@ -497,6 +497,7 @@
     "title": "Dashboard",
     "resetLayout": "Reset layout",
     "dragWidget": "Drag to reorder",
+    "hideWidget": "Hide widget",
     "resizeWidget": "Resize widget",
     "tabs": {
       "overview": "Overview",

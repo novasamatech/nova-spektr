@@ -13,6 +13,7 @@ type WidgetSortableContextValue = {
   maxSize: Size;
   resizePreview: (next: Size) => void;
   resizeCommit: () => void;
+  hide: () => void;
 };
 
 const WidgetSortableContext = createContext<WidgetSortableContextValue | null>(null);
@@ -27,6 +28,7 @@ type ProviderProps = {
   minSize: Size;
   maxSize: Size;
   onResize: (next: Size) => void;
+  onHide: () => void;
   children: ReactNode;
 };
 
@@ -38,6 +40,7 @@ export const WidgetSortableProvider = ({
   minSize,
   maxSize,
   onResize,
+  onHide,
   children,
 }: ProviderProps) => {
   const handleRef = useRef<HTMLButtonElement>(null);
@@ -63,8 +66,9 @@ export const WidgetSortableProvider = ({
         if (preview) onResize(preview);
         setPreview(null);
       },
+      hide: onHide,
     }),
-    [ref, handleRef, editMode, isDragging, rect, minSize, maxSize, onResize, preview],
+    [ref, handleRef, editMode, isDragging, rect, minSize, maxSize, onResize, preview, onHide],
   );
 
   return <WidgetSortableContext.Provider value={value}>{children}</WidgetSortableContext.Provider>;
