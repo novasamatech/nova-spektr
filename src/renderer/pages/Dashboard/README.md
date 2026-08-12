@@ -10,8 +10,7 @@ Each dashboard tab (Overview, Staking, Governance) shows a set of widgets on a *
 user can drag widgets to new positions and resize them on both axes; the layout is a **free 2D mesh** — a widget keeps
 the column it is placed in — kept tidy by **vertical compaction** (widgets float up so there are never vertical gaps).
 Each tab's arrangement is saved per browser and restored on the next visit. In edit mode a widget can also be **hidden**
-(the eye button on its card); hidden widgets are restored from the **"Add widget"** popover in the header and re-enter
-the grid at the bottom at their default size.
+(the eye button on its card); hidden widgets are restored from the **"Add widget"** popover in the header.
 
 Widgets declare a **default size**, a **minimum size** and optionally a **maximum size**; the grid uses these to place
 new widgets and to bound resizing. A maximum is declared by widgets whose content cannot use extra space (e.g. the
@@ -77,8 +76,8 @@ that later turned off doesn't count).
    restored widget re-enters through the same "newly-available" path, at the bottom, rather than its old spot.
 2. First-time users (or a tab never arranged) are **migrated** from the old 1D widget order if present, otherwise seeded
    from default sizes — in both cases laid out left-to-right then compacted, matching the previous look.
-3. Edits (move, resize, hide, restore, reset) update the stored layout and hidden set, which **persist locally**
-   (`dashboard-widget-layout-v1`, `dashboard-hidden-widgets-v1`) and sync across windows.
+3. Edits (move, resize, hide, restore, reset) update the stored layout and hidden set, which **persist locally** and
+   sync across windows.
 
 ## Related
 
