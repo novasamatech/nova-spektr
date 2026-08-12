@@ -9,6 +9,7 @@ import { Address, AssetBalance, TransactionDetails, TransactionValidationError }
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -111,6 +112,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             </Alert>
           </Box>
         )}
+
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
       </ScrollArea>
 
       <Modal.Footer align="between">

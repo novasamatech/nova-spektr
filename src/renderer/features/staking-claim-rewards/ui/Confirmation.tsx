@@ -11,6 +11,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathInline } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -200,6 +201,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
               ? t('staking.claimRewards.hintBatched', { total: plans.length })
               : t('staking.claimRewards.hint')}
           </FootnoteText>
+
+          {!isDraftMode && (
+            <div className="px-5 pb-4">
+              <MultisigOperationDescriptionField />
+            </div>
+          )}
         </DraftFormBody>
       </ScrollArea>
 

@@ -10,6 +10,7 @@ import { SignButton } from '@/entities/operations';
 import { SelectedValidatorsModal } from '@/entities/staking';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -165,6 +166,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
           <FootnoteText className="px-5 pt-3 text-text-tertiary">
             {isRedeem ? t('staking.confirmFlow.hint.redeem') : t('staking.confirmFlow.hint.changeValidators')}
           </FootnoteText>
+
+          {!isDraftMode && (
+            <div className="px-5 pb-4">
+              <MultisigOperationDescriptionField />
+            </div>
+          )}
         </DraftFormBody>
       </ScrollArea>
 
