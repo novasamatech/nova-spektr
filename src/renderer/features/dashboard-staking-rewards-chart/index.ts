@@ -15,6 +15,7 @@ export const dashboardStakingRewardsChartFeature = createFeature({
 dashboardStakingRewardsChartFeature.inject(dashboardStakingSlot, {
   // Spaced by ten — see `dashboard-staking-positions`.
   order: 20,
+  label: 'dashboard.staking.rewardsChart.title',
   render: RewardsChartWidget,
   defaultSize: { w: 4, h: 5 },
   // Nothing scrolls here, so this is also the plot's floor: three rows leave it

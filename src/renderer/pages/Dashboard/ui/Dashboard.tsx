@@ -10,7 +10,7 @@ import { dashboardModel } from '../model/dashboard-model';
 
 import { DashboardGrid } from './DashboardGrid';
 
-export type WidgetGridMeta = { defaultSize: Size; minSize: Size; maxSize: Size };
+export type WidgetGridMeta = { label: string; defaultSize: Size; minSize: Size; maxSize: Size };
 
 type WidgetSlotProps = {
   accountIds: string[];

@@ -28,6 +28,7 @@ export const dashboardStakingPositionsFeature = createFeature({
 // that later splits into several needs room to keep them together.
 dashboardStakingPositionsFeature.inject(dashboardStakingSlot, {
   order: 10,
+  label: 'dashboard.staking.positions.title',
   render: PositionsWidget,
   defaultSize: { w: 4, h: 5 },
   minSize: { w: 2, h: 3 },

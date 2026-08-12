@@ -59,7 +59,27 @@ export const dashboardStakingRewardsFeature = createFeature({
 // card, so growth is capped at double width and the default height.
 const KPI_SIZE = { defaultSize: { w: 1, h: 2 }, minSize: { w: 1, h: 2 }, maxSize: { w: 2, h: 2 } };
 
-dashboardStakingTotalStakedFeature.inject(dashboardStakingSlot, { order: 0, render: TotalStakedWidget, ...KPI_SIZE });
-dashboardStakingApyFeature.inject(dashboardStakingSlot, { order: 1, render: ApyWidget, ...KPI_SIZE });
-dashboardStakingNominationsFeature.inject(dashboardStakingSlot, { order: 2, render: NominationsWidget, ...KPI_SIZE });
-dashboardStakingRewardsFeature.inject(dashboardStakingSlot, { order: 3, render: RewardsWidget, ...KPI_SIZE });
+dashboardStakingTotalStakedFeature.inject(dashboardStakingSlot, {
+  order: 0,
+  label: 'dashboard.staking.kpi.totalStaked.title',
+  render: TotalStakedWidget,
+  ...KPI_SIZE,
+});
+dashboardStakingApyFeature.inject(dashboardStakingSlot, {
+  order: 1,
+  label: 'dashboard.staking.kpi.apy.title',
+  render: ApyWidget,
+  ...KPI_SIZE,
+});
+dashboardStakingNominationsFeature.inject(dashboardStakingSlot, {
+  order: 2,
+  label: 'dashboard.staking.kpi.nominations.title',
+  render: NominationsWidget,
+  ...KPI_SIZE,
+});
+dashboardStakingRewardsFeature.inject(dashboardStakingSlot, {
+  order: 3,
+  label: 'dashboard.staking.kpi.rewards.title',
+  render: RewardsWidget,
+  ...KPI_SIZE,
+});
