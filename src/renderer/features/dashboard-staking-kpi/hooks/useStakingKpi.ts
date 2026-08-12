@@ -13,7 +13,7 @@ import { type StakingSummary, summarizePositions, useStakingPositions } from '@/
 import { getAccessMode } from '@/features/dashboard-staking-positions';
 import { type AccessMode } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
-import { computeWeightedApy, earningStakeByChain } from '../lib/apy';
+import { type NetworkAvgBlend, blendNetworkAvgRate, computeWeightedApy, earningStakeByChain } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { type UnbondingFooter, type UnclaimedFooter, getUnbondingFooter, getUnclaimedFooter } from '../lib/footer';
 import { type NominationRow, buildNominationRows } from '../lib/nominations';
@@ -22,6 +22,7 @@ import { type BreakdownRow, type ClaimRow, type PositionRow } from '../lib/types
 
 import { useChainEras, useChainHistoryDepths, useEraDurations } from './useChainEras';
 import { useNetworkApys } from './useNetworkApys';
+import { useNetworkAvgRates } from './useNetworkAvgRates';
 import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './useRewardsWindow';
 import { useStakingChainAssets } from './useStakingChainAssets';
 import { unclaimedKey, useUnclaimedPayoutsByPosition } from './useUnclaimedPayouts';
@@ -48,6 +49,11 @@ export type StakingKpiData = {
   /** Estimated APY. */
   weightedApy: number | null;
   earningPositionCount: number;
+  /**
+   * Blended trailing-window network benchmark; `null` while unknown. The UI
+   * must check `coverage` before presenting it as "the network average".
+   */
+  networkAvg: NetworkAvgBlend | null;
 
   /** Nominated validators. */
   activeValidatorCount: number;
@@ -96,6 +102,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   );
 
   const apyByChain = useNetworkApys(chainIds);
+  const avgRateByChain = useNetworkAvgRates(chainIds);
   const rewardsSince = useRewardsWindowStart();
   const { byChain: rewardsByChain } = useRewardsWindow(chainIds, stakingAccountIds, rewardsSince);
   const unclaimed = useUnclaimedPayoutsByPosition(positions);
@@ -172,6 +179,18 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
       })),
     );
   }, [positions, apyByChain, toFiat]);
+
+  const networkAvg = useMemo(() => {
+    const earningStake = earningStakeByChain(positions);
+
+    return blendNetworkAvgRate(
+      keys(earningStake).map((chainId) => ({
+        chainId,
+        rate: avgRateByChain[chainId] ?? null,
+        weight: toFiat(chainId, earningStake[chainId] ?? '0'),
+      })),
+    );
+  }, [positions, avgRateByChain, toFiat]);
 
   // --- Rewards ------------------------------------------------------------
 
@@ -317,13 +336,14 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         fiat,
         color: getColorByPriceId(asset?.priceId ?? '', index),
         apy: apyByChain[position.chainId] ?? null,
+        networkAvgRate: avgRateByChain[position.chainId] ?? null,
         validatorCount: position.activeValidators.length,
         earning: position.status === 'active',
       } satisfies BreakdownRow;
     });
 
     return rows.sort((a, b) => b.value - a.value);
-  }, [positions, assets, toFiat, apyByChain]);
+  }, [positions, assets, toFiat, apyByChain, avgRateByChain]);
 
   return {
     positions,
@@ -338,6 +358,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
 
     weightedApy,
     earningPositionCount: summary.earningPositionCount,
+    networkAvg,
 
     activeValidatorCount: summary.activeValidatorCount,
     positionCount: summary.positionCount,
