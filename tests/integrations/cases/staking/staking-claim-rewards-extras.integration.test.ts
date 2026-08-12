@@ -212,9 +212,9 @@ describe('Staking Claim Rewards - Extra Plans Validation', () => {
 
   it('should fail closed when an extra cannot be validated at all', async () => {
     // No balance record for the second payer: the validator's fee rule asserts
-    // on the missing balance and the validator swallows the throw into an
-    // empty verdict — no errors, no priced fee. That must read as a blocking
-    // error, not as a pass.
+    // on the missing balance and the validator fails closed, turning the throw
+    // into a fatal error on the verdict. That must read as a blocking error,
+    // not as a pass.
     await buildEnv([stakingAccountA, stakingAccountB], [balanceFor(stakingAccountA, FUNDED)]);
 
     await env.executeEvent(claimRewardsModel.claimRequested, [
@@ -225,7 +225,7 @@ describe('Staking Claim Rewards - Extra Plans Validation', () => {
     expect(env.getState(claimRewardsModel.$preparing)).toBe(false);
     const extraErrors = env.getState(claimRewardsModel.$extraErrors);
     expect(extraErrors).toHaveLength(1);
-    expect(extraErrors[0]).toMatchObject({ dryRunError: true, failureReason: 'extra-validation-failed' });
+    expect(extraErrors[0]).toMatchObject({ message: 'Balance for fee not found' });
     expect(env.getState(claimRewardsModel.$canSign)).toBe(false);
   });
 });

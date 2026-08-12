@@ -407,10 +407,12 @@ const validateExtrasFx = createEffect(
       const fee =
         getActionRequiredAmount(balanceValidationResults, 'fee', entry.signatory.accountId).at(0)?.required ?? null;
 
-      // No errors AND no priced fee is the signature of a validator that threw
-      // and swallowed it (a clean verdict always carries the fee quote its
-      // affordability rule computed). Fail closed: an extra that could not be
-      // checked must block signing and say so, not pass by silence.
+      // A clean verdict always carries the fee quote its affordability rule
+      // computed, so "no errors AND no priced fee" means the validation never
+      // actually ran to completion (the validator itself now fails closed on
+      // throws, so this is a belt-and-braces guard for any other path that
+      // yields a feeless clean verdict). Fail closed: an extra that could not
+      // be checked must block signing and say so, not pass by silence.
       if (errors.length === 0 && nullable(fee)) {
         validated.push({
           errors: [
@@ -564,7 +566,7 @@ const $canSign = combine(
     !preparing &&
     !noRouteSigner &&
     // Clean AND priced — an extra without a fee quote was never actually
-    // checked (dropped route, swallowed validator throw), and fail-closed
+    // checked (dropped route, incomplete validation), and fail-closed
     // means such an entry can never be signed past.
     extraValidation.every((entry) => entry.errors.length === 0 && nonNullable(entry.fee)),
 );
