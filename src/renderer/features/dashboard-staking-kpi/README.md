@@ -196,10 +196,14 @@ chain's own era duration.
   together, sums what each of our accounts is owed, and submits the call once.
 
   Each row carries the validator, **which of our accounts stand behind it**, what it **earned** over the selected
-  window, what is still **unclaimed**, and its own **Claim** button. The footer claims everything at once. Nothing is
-  selected first: with the validator as the unit there is no per-row choice worth making, and "claim all" is what the
-  user actually wants nine times out of ten. A validator only watch-only accounts stand behind keeps its row and loses
-  its button — its absence would read as a bug.
+  window, what is still **unclaimed**, and its own **Claim** button. Every column except Actions is **sortable**; the
+  default keeps unclaimed first (largest outstanding on top — the actionable column leads). Amount columns sort by
+  **fiat**, since planck amounts of different networks are not comparable; the validator column sorts by the
+  **displayed** name (resolved identity, address until it resolves). Sorting reorders only the table — the donut, totals
+  and export keep the claim order. The footer claims everything at once. Nothing is selected first: with the validator
+  as the unit there is no per-row choice worth making, and "claim all" is what the user actually wants nine times out of
+  ten. A validator only watch-only accounts stand behind keeps its row and loses its button — its absence would read as
+  a bug.
 
   **A validator we run is our row too.** When the row's validator is one of the selection's own accounts it wears a "My
   validator" badge next to the name, and the backing column reads **"self"** — or **"self + N accounts"** when other
