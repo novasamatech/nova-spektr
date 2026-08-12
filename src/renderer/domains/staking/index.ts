@@ -29,7 +29,7 @@ export type { ApyResourceParams, NetworkAvgRateParams } from './apy/resource';
 export type { NetworkAvgRate } from './apy/service';
 export { apy } from './apy/store';
 export { apyService } from './apy/service';
-export { useNetworkApy, useNetworkAvgRate } from './apy/hooks';
+export { useNetworkApy } from './apy/hooks';
 
 export type { EraValidator, EraValidatorMap } from './validators/types';
 export type { ValidatorsResourceParams } from './validators/resource';
