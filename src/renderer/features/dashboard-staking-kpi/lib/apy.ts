@@ -110,6 +110,32 @@ export type NetworkAvgBlend = {
 export const NETWORK_AVG_MIN_COVERAGE = 1;
 
 /**
+ * The benchmark and the headline must describe the same chain set to be
+ * comparable — the two readings fail independently (the headline still has the
+ * NPoS-curve fallback, the benchmark deliberately does not), and a benchmark
+ * covering more or fewer chains than the figure beside it is a false comparison
+ * in either direction.
+ */
+export function sameContributingChains(apyEntries: ApyWeight[], rateEntries: NetworkAvgWeight[]): boolean {
+  const hasWeight = (weight: string) => new BigNumber(weight || '0').gt(0);
+
+  const apyChains = new Set(
+    apyEntries
+      .filter((entry) => entry.apy !== null && Number.isFinite(entry.apy) && hasWeight(entry.weight))
+      .map((entry) => entry.chainId),
+  );
+  const rateChains = new Set(
+    rateEntries
+      .filter(
+        (entry) => entry.rate !== null && parseRatePercent(entry.rate.ratePercent) !== null && hasWeight(entry.weight),
+      )
+      .map((entry) => entry.chainId),
+  );
+
+  return apyChains.size === rateChains.size && [...apyChains].every((chainId) => rateChains.has(chainId));
+}
+
+/**
  * Stake-weighted blend of the per-chain network average rates — the same
  * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
  * along: the label shows the longest window among the contributing chains — the

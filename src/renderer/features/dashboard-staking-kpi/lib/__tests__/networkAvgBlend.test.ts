@@ -1,5 +1,5 @@
 import { type ChainId } from '@/shared/core';
-import { blendNetworkAvgRate, computeWeightedApy } from '../apy';
+import { blendNetworkAvgRate, computeWeightedApy, sameContributingChains } from '../apy';
 
 const PAH = '0x01' as ChainId;
 const KAH = '0x02' as ChainId;
@@ -71,5 +71,67 @@ describe('blendNetworkAvgRate', () => {
     expect(apyResult).not.toBeNull();
     expect(blendResult).not.toBeNull();
     expect(blendResult?.rate).toBe(apyResult);
+  });
+});
+
+describe('sameContributingChains', () => {
+  test('matches when both readings answer for the same chains, whatever the values are', () => {
+    const result = sameContributingChains(
+      [
+        { chainId: PAH, apy: 5, weight: '300' },
+        { chainId: KAH, apy: 14, weight: '100' },
+      ],
+      [
+        { chainId: PAH, rate: rate('3.00', 30), weight: '300' },
+        { chainId: KAH, rate: rate('15.00', 21), weight: '100' },
+      ],
+    );
+
+    expect(result).toBe(true);
+  });
+
+  test('rejects a benchmark missing a chain the headline covers', () => {
+    const result = sameContributingChains(
+      [
+        { chainId: PAH, apy: 5, weight: '300' },
+        { chainId: KAH, apy: 14, weight: '100' },
+      ],
+      [
+        { chainId: PAH, rate: null, weight: '300' },
+        { chainId: KAH, rate: rate('15.00', 21), weight: '100' },
+      ],
+    );
+
+    expect(result).toBe(false);
+  });
+
+  test('rejects a benchmark covering a chain the headline does not', () => {
+    const result = sameContributingChains(
+      [
+        { chainId: PAH, apy: null, weight: '300' },
+        { chainId: KAH, apy: 14, weight: '100' },
+      ],
+      [
+        { chainId: PAH, rate: rate('3.00', 30), weight: '300' },
+        { chainId: KAH, rate: rate('15.00', 21), weight: '100' },
+      ],
+    );
+
+    expect(result).toBe(false);
+  });
+
+  test('ignores weightless chains on both sides', () => {
+    const result = sameContributingChains(
+      [
+        { chainId: PAH, apy: 5, weight: '300' },
+        { chainId: KAH, apy: 14, weight: '0' },
+      ],
+      [
+        { chainId: PAH, rate: rate('3.00', 30), weight: '300' },
+        { chainId: KAH, rate: null, weight: '0' },
+      ],
+    );
+
+    expect(result).toBe(true);
   });
 });
