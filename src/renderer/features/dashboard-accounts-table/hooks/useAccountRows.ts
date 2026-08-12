@@ -1,15 +1,7 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import {
-  getNativeAsset,
-  getRelaychainAsset,
-  nonNullable,
-  toAddress,
-  toShortAddress,
-  totalAmountBN,
-} from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accounts, useAccountsNames } from '@/domains/network';
 import { type StakingPosition, AssetHubChains } from '@/domains/staking';
@@ -18,15 +10,13 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { useStakingPositions } from '@/aggregates/staking-positions';
-import { splitBalanceByPurpose } from '../lib/balancePurpose';
 import { hasBalanceRecords } from '../lib/balanceRecords';
-import { buildRowFiat } from '../lib/rows';
+import { buildAccountRow } from '../lib/rows';
 import { type AccountRow } from '../lib/types';
-import { getWalletTypeBucket } from '../lib/walletTypeBucket';
 
 const stakingChainIds = new Set<string>(Object.values(AssetHubChains));
 
-type Entry = { accountId: string; name: string; address: string };
+type Entry = { accountId: string; name: string };
 
 export type AccountRowsResult = {
   rows: AccountRow[];
@@ -42,8 +32,9 @@ export type AccountRowsResult = {
  * the dashboard's selected accountIds, split by purpose and priced, as flat
  * rows. Nothing here starts a subscription — balance fetching is wired in the
  * feature's `index.ts`, staking tracking in `useTrackedContacts`; this only
- * joins the caches they fill. Sorting/filtering happen downstream; the output
- * order is merely stable (groupKey → chainId → assetId).
+ * joins the caches they fill and hands each record to `buildAccountRow`.
+ * Sorting/filtering happen downstream; the output order is merely stable
+ * (groupKey → chainId → assetId).
  */
 export const useAccountRows = (accountIds: string[], allEntries: Entry[]): AccountRowsResult => {
   const balanceMap = useUnit(balanceModel.$balanceMap);
@@ -75,13 +66,12 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
   const resolvedAccounts = useAccountsNames(selectedAccounts);
 
   // `useAccountsNames` maps to a fresh array every render, so its identity
-  // cannot key a memo. Serializing the (accountId, name) pairs to a string and
-  // deriving the map from that string keeps `nameByAccountId` — and therefore
-  // the rows array below — referentially stable across unrelated re-renders.
+  // cannot key a memo. The serialized (accountId, name) content below is the
+  // dep on purpose — it keeps `nameByAccountId`, and therefore the rows array,
+  // referentially stable across unrelated re-renders.
   const resolvedNamesKey = JSON.stringify(resolvedAccounts.map((account) => [account.accountId, account.name]));
 
   const nameByAccountId = useMemo(() => {
-    const resolvedNames: [string, string][] = JSON.parse(resolvedNamesKey);
     const names = new Map<string, string>();
 
     // Contacts have no AnyAccount, their allEntries name is what the UI shows;
@@ -91,8 +81,8 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
         names.set(entry.accountId, entry.name);
       }
     }
-    for (const [accountId, name] of resolvedNames) {
-      names.set(accountId, name);
+    for (const account of resolvedAccounts) {
+      names.set(account.accountId, account.name);
     }
 
     return names;
@@ -131,48 +121,29 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
 
       const asset = chain.assets.find((chainAsset) => chainAsset.assetId === balance.assetId);
       if (!asset) continue;
-      if (totalAmountBN(balance).isZero()) continue;
 
-      // Governance (conviction) locks can only exist on the chain's native asset.
-      const isNativeAsset = asset.assetId === getNativeAsset(chain.assets).assetId;
       const stakingAsset = getRelaychainAsset(chain.assets);
       const isStakingCell =
         stakingChainIds.has(chain.chainId) && nonNullable(stakingAsset) && asset.assetId === stakingAsset.assetId;
       const position = positionByKey.get(`${balance.accountId}-${balance.chainId}`);
-      // "—" while staking data is still loading: null, never 0
-      const stakedActive = !isStakingCell || stakingPending ? null : new BN(position?.stake.active ?? '0');
-
-      const split = splitBalanceByPurpose(balance, stakedActive, isNativeAsset);
-      const price = asset.priceId && currency ? (prices[asset.priceId]?.[currency.coingeckoId]?.price ?? null) : null;
-      const fiat = buildRowFiat(split, price, asset.precision);
-
       const account = accountByAccountId.get(balance.accountId) ?? null;
       const wallet = account ? (walletUtils.getWalletById(wallets, account.walletId) ?? null) : null;
+      const price = asset.priceId && currency ? (prices[asset.priceId]?.[currency.coingeckoId]?.price ?? null) : null;
 
-      const displayAddress = toAddress(balance.accountId, { prefix: chain.addressPrefix });
-      const shortAddress = toShortAddress(displayAddress, 6);
-
-      rows.push({
-        id: `${balance.accountId}-${balance.chainId}-${balance.assetId}`,
-        accountId: balance.accountId,
-        groupKey: balance.accountId,
-        // Rendered group headers must use <NamedAccount title={row.displayName}> so the
-        // displayed string and the searched string never diverge (search-patterns rule).
-        displayName: nameByAccountId.get(balance.accountId) ?? shortAddress,
-        displayAddress,
-        shortAddress,
-        wallet,
-        walletTypeBucket: getWalletTypeBucket(wallet),
+      const row = buildAccountRow({
+        balance,
         chain,
         networkName: chain.parentId ? (chains[chain.parentId]?.name ?? chain.name) : chain.name,
         asset,
-        split,
-        totalBN: split.transferable
-          .add(split.staked ?? BN_ZERO)
-          .add(split.governance ?? BN_ZERO)
-          .add(split.other),
-        fiat,
+        displayName: nameByAccountId.get(balance.accountId) ?? null,
+        wallet,
+        isStakingCell,
+        stakingPending,
+        stakeActive: position?.stake.active ?? null,
+        price,
       });
+
+      if (row) rows.push(row);
     }
 
     rows.sort((a, b) => {
