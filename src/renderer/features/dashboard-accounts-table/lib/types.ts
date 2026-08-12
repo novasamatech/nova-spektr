@@ -24,6 +24,10 @@ export type AccountRow = {
   networkName: string; // relay name via chain.parentId, or the chain itself
   asset: Asset;
   split: PurposeSplit;
+  /**
+   * Sum of the split's buckets in planck — the Total cell value, not
+   * `totalAmountBN(balance)` recomputed
+   */
   totalBN: BN;
   /** Fiat per bucket; null = unpriced asset or bucket not applicable */
   fiat: Record<NumericKey, number | null>;

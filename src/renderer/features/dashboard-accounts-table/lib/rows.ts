@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
 import { type PurposeSplit } from './balancePurpose';
@@ -22,7 +23,7 @@ export const buildRowFiat = (
     return { transferable: null, staked: null, governance: null, other: null, total: null };
   }
 
-  const toFiat = (bn: PurposeSplit['transferable']) => Number(toTokens(bn.toString(), precision)) * price;
+  const toFiat = (bn: BN) => Number(toTokens(bn.toString(), precision)) * price;
 
   const transferable = toFiat(split.transferable);
   const staked = split.staked === null ? null : toFiat(split.staked);
@@ -41,10 +42,10 @@ export const groupRows = (rows: AccountRow[]): AccountGroup[] => {
     groups.set(row.groupKey, list);
   }
 
-  return [...groups.entries()].map(([key, groupRows]) => {
-    // groupRows is never empty: an entry only exists because at least one row was pushed to it.
-    const firstRow = groupRows[0]!;
-    const priced = groupRows.map((row) => row.fiat.total).filter((value): value is number => value !== null);
+  return [...groups.entries()].map(([key, accountRows]) => {
+    // accountRows is never empty: an entry only exists because at least one row was pushed to it.
+    const firstRow = accountRows[0]!;
+    const priced = accountRows.map((row) => row.fiat.total).filter((value): value is number => value !== null);
 
     return {
       key,
@@ -52,10 +53,10 @@ export const groupRows = (rows: AccountRow[]): AccountGroup[] => {
       name: firstRow.displayName,
       wallet: firstRow.wallet,
       walletTypeBucket: firstRow.walletTypeBucket,
-      rows: groupRows,
+      rows: accountRows,
       subtotalFiat: priced.length > 0 ? priced.reduce((a, b) => a + b, 0) : null,
-      chainCount: new Set(groupRows.map((row) => row.chain.chainId)).size,
-      assetCount: new Set(groupRows.map((row) => row.asset.symbol)).size,
+      chainCount: new Set(accountRows.map((row) => row.chain.chainId)).size,
+      assetCount: new Set(accountRows.map((row) => row.asset.symbol)).size,
     };
   });
 };

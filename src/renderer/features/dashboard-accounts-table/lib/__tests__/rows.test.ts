@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Address, type Asset, type Chain } from '@/shared/core';
+import { type Address, type Asset, type Chain, type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PurposeSplit } from '../balancePurpose';
@@ -17,8 +17,10 @@ const makeSplit = (params: {
   other?: number;
 }): PurposeSplit => ({
   transferable: new BN(params.transferable),
-  staked: params.staked === undefined ? null : params.staked === null ? null : new BN(params.staked),
-  governance: params.governance === undefined ? null : params.governance === null ? null : new BN(params.governance),
+  // `== null` deliberately treats undefined and null the same
+  staked: params.staked == null ? null : new BN(params.staked),
+  // `== null` deliberately treats undefined and null the same
+  governance: params.governance == null ? null : new BN(params.governance),
   other: new BN(params.other ?? 0),
   vestedHint: BN_ZERO,
 });
@@ -100,12 +102,34 @@ describe('groupRows', () => {
     expect(groups[0]!.rows).toHaveLength(2);
   });
 
-  it('produces one group per distinct accountId, in first-seen order', () => {
-    const rows = [makeRow({ accountId: BOB }), makeRow({ accountId: ALICE }), makeRow({ accountId: BOB })];
+  it('produces one group per distinct accountId, in first-seen order, taking metadata from the first row', () => {
+    const bobFirstWallet = { id: 1, name: 'Bob first wallet' } as unknown as Wallet;
+    const bobSecondWallet = { id: 2, name: 'Bob second wallet' } as unknown as Wallet;
+
+    const rows = [
+      makeRow({
+        accountId: BOB,
+        chain: { chainId: '0x1' } as unknown as Chain,
+        displayName: 'Bob first row',
+        wallet: bobFirstWallet,
+        walletTypeBucket: 'multisig',
+      }),
+      makeRow({ accountId: ALICE }),
+      makeRow({
+        accountId: BOB,
+        chain: { chainId: '0x2' } as unknown as Chain,
+        displayName: 'Bob second row',
+        wallet: bobSecondWallet,
+        walletTypeBucket: 'watchOnly',
+      }),
+    ];
 
     const groups = groupRows(rows);
 
     expect(groups.map((g) => g.accountId)).toEqual([BOB, ALICE]);
+    expect(groups[0]!.name).toEqual('Bob first row');
+    expect(groups[0]!.wallet).toBe(bobFirstWallet);
+    expect(groups[0]!.walletTypeBucket).toEqual('multisig');
   });
 
   it('sums only priced rows into subtotalFiat, ignoring unpriced rows', () => {
