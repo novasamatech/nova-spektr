@@ -1,7 +1,9 @@
-import { combine, createStore, sample } from 'effector';
+import { createStore, sample } from 'effector';
 
 import { $features } from '@/shared/config/features';
+import { type Chain } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -28,15 +30,31 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
+const pairContactsWithChains = (accountIds: AccountId[], chains: Chain[]) =>
+  chains.flatMap((chain) =>
+    accountIds
+      .filter((accountId) => accountService.isAccountSchemeMatchChain(accountId, chain))
+      .map((accountId) => ({ accountId, chain })),
+  );
+
+// Contact balances need both fire directions (an inline `combine` as clock is
+// the fork pitfall — see the effector gotchas): the first sample covers
+// selection changes, the second re-fires when the chains list lands, because
+// chains load async at boot and a restored contact selection can arrive first.
+
 sample({
-  clock: combine(dashboardModel.$selectedContactAccountIds, networkModel.$chainsList),
-  filter: ([accountIds]) => accountIds.length > 0,
-  fn: ([accountIds, chains]) =>
-    chains.flatMap((chain) =>
-      accountIds
-        .filter((accountId) => accountService.isAccountSchemeMatchChain(accountId, chain))
-        .map((accountId) => ({ accountId, chain })),
-    ),
+  clock: dashboardModel.$selectedContactAccountIds,
+  source: networkModel.$chainsList,
+  filter: (chains, accountIds) => accountIds.length > 0 && chains.length > 0,
+  fn: (chains, accountIds) => pairContactsWithChains(accountIds, chains),
+  target: balanceSubModel.fetchAccountIds,
+});
+
+sample({
+  clock: networkModel.$chainsList,
+  source: dashboardModel.$selectedContactAccountIds,
+  filter: (accountIds, chains) => accountIds.length > 0 && chains.length > 0,
+  fn: (accountIds, chains) => pairContactsWithChains(accountIds, chains),
   target: balanceSubModel.fetchAccountIds,
 });
 
