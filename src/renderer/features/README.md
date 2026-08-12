@@ -178,6 +178,7 @@ notes.
 
 ## Dashboard
 
+- [`dashboard-accounts-table`](./dashboard-accounts-table/README.md)
 - [`dashboard-governance`](./dashboard-governance/README.md)
 - `dashboard-navigation` (no spec planned)
 - [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)

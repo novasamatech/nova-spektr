@@ -14,8 +14,12 @@ export const AccountsTableWidget = (_props: Props) => {
   const { t } = useI18n();
 
   return (
-    <DashboardWidget>
-      <div className="flex h-full flex-col">
+    // `card={false}` + our own chrome (same classes as DashboardWidget's CARD_CLASS,
+    // but no padding): the header's `border-b` needs to reach the card edges, and
+    // later tasks' row dividers must be full-bleed too — see KpiWidgetFrame for the
+    // same precedent.
+    <DashboardWidget card={false}>
+      <div className="flex h-full flex-col overflow-hidden rounded-lg border border-token-container-border bg-white shadow-card-shadow">
         <div className="flex items-center gap-3 border-b border-divider px-4 py-3.5">
           <SmallTitleText>{t('dashboard.accountsTable.title')}</SmallTitleText>
         </div>

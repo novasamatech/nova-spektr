@@ -12,6 +12,8 @@ export const dashboardAccountsTableFeature = createFeature({
   enable: $features.map(({ dashboard }) => dashboard),
 });
 
+// Existing overview widgets occupy orders 0–3; leaving a gap up to 10 gives
+// this widget room to split into several without renumbering its neighbors.
 dashboardAccountsTableFeature.inject(dashboardWidgetsSlot, {
   order: 10,
   render: AccountsTableWidget,
