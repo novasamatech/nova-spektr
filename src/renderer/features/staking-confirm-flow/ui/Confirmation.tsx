@@ -50,6 +50,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(confirmFlowModel.$multisigDeposit);
   const preparing = useUnit(confirmFlowModel.$preparing);
   const noRouteSigner = useUnit(confirmFlowModel.$noRouteSigner);
+  const nothingLeftToRedeem = useUnit(confirmFlowModel.$nothingLeftToRedeem);
   const canSign = useUnit(confirmFlowModel.$canSign);
 
   const isDraftMode = useUnit(confirmFlowModel.$isDraftMode);
@@ -159,6 +160,16 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <Box padding={[2, 5]}>
               <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
                 <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+              </Alert>
+            </Box>
+          )}
+
+          {/* The figure above is the snapshot; the live ledger has nothing left.
+              Shown in draft mode too — the save is blocked the same way. */}
+          {nothingLeftToRedeem && (
+            <Box padding={[2, 5]}>
+              <Alert active variant="error" title={t('staking.flow.nothingToRedeemTitle')}>
+                <Alert.Item withDot={false}>{t('staking.flow.nothingToRedeemHint')}</Alert.Item>
               </Alert>
             </Box>
           )}

@@ -41,22 +41,31 @@ feature is its sibling for the actions that need no amount.
 
 ## States / scenarios
 
-| State                | When it appears                                          | What the user sees                                                         |
-| -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Confirm — validators | The picker submitted a set                               | Account, network, signing route, `New validators: N` (opens the list), fee |
-| Confirm — redeem     | A redeem is requested for a position with unlocked funds | The amount and its fiat value, account, network, signing route, fee        |
-| Multisig             | A multisig sits on the route                             | The multisig deposit row alongside the fee                                 |
-| Unpayable            | The signer cannot cover the fee or reserve the deposit   | The error explains which, and **Sign is blocked**                          |
-| No signer            | Nobody on the resolved route can sign (normal mode)      | A red "No account to sign with" alert; Sign is blocked                     |
-| Empty set            | The picked set came back empty                           | No call is built and Sign stays disabled                                   |
-| Nothing to redeem    | The position has no unlocked chunk                       | Sign stays disabled — the call would move nothing and still cost a fee     |
-| Draft mode           | The draft toggle is on                                   | An address-book signing-path picker and `Save as draft` instead of Sign    |
-| Sign / Submit        | Sign pressed                                             | The shared signing and submission screens                                  |
+| State                | When it appears                                          | What the user sees                                                           |
+| -------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Confirm — validators | The picker submitted a set                               | Account, network, signing route, `New validators: N` (opens the list), fee   |
+| Confirm — redeem     | A redeem is requested for a position with unlocked funds | The amount and its fiat value, account, network, signing route, fee          |
+| Multisig             | A multisig sits on the route                             | The multisig deposit row alongside the fee                                   |
+| Unpayable            | The signer cannot cover the fee or reserve the deposit   | The error explains which, and **Sign is blocked**                            |
+| No signer            | Nobody on the resolved route can sign (normal mode)      | A red "No account to sign with" alert; Sign is blocked                       |
+| Empty set            | The picked set came back empty                           | No call is built and Sign stays disabled                                     |
+| Nothing to redeem    | The **live** ledger has no unlocked chunk                | Sign stays disabled; if the confirm opened on a figure, a red alert says why |
+| Draft mode           | The draft toggle is on                                   | An address-book signing-path picker and `Save as draft` instead of Sign      |
+| Sign / Submit        | Sign pressed                                             | The shared signing and submission screens                                    |
 
 **The confirm opens on the click, not on the node.** Everything it leads with is in hand the moment the button is
 pressed. The wrapped transaction, the fee, the validation and — for a redeem — the slashing-span read each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
 re-runs them in place.
+
+**The snapshot is for display; the redeem sign gate is live.** The figure the confirm leads with stays what it was on
+the click — a chunk unlocking mid-signature must not change it. But eras keep advancing under an open confirm, so the
+gate reads the **live** redeemable for the position from the
+[`staking-positions`](../../aggregates/staking-positions/README.md) aggregate. A live figure that merely differs from
+the snapshot is still signable — `withdraw_unbonded` takes no amount and withdraws whatever is unlocked — while a live
+zero blocks Sign and the draft save alike and raises the **"Nothing left to redeem"** alert instead of a silently dead
+button. While the aggregate has not answered yet, Sign holds without the alert (the old withdraw form's era-loading
+hold); a position gone from the settled aggregate reads as zero, not as a load to keep waiting on.
 
 **No one to sign with blocks, and says why.** The resolved route is checked for an actual signer at its end. When there
 is none — the position belongs to a contact or to a watch-only account — a red **"No account to sign with"** alert names
@@ -136,7 +145,7 @@ on — the same rule the amount flow follows.
 - [`dashboard-staking-kpi`](../dashboard-staking-kpi/README.md) — the Total-staked drill-down the redeem request comes
   from.
 - [`staking-positions`](../../aggregates/staking-positions/README.md) — owns the positions and the redeemable figures
-  this flow leads with; opening the modal starts no new request.
+  this flow leads with, and the live redeemable the redeem sign gate reads; opening the modal starts no new request.
 - `features/validator-selection` — picks the set; it never builds a transaction.
 - `features/drafts` — the draft-mode toggle, path picker and creation modal.
 - `signing-path`, `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the shared signing

@@ -87,6 +87,23 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
 
 const { slashingSpansMock } = vi.hoisted(() => ({ slashingSpansMock: vi.fn() }));
 
+// The live-redeemable gate reads the staking-positions aggregate, whose
+// `$positions` is derived from resource caches a unit fork cannot seed. The
+// mock swaps in writable stores; each test seeds the live position it needs.
+const { livePositionsMock } = vi.hoisted(() => ({
+  livePositionsMock: { $positions: null as unknown, $pending: null as unknown },
+}));
+
+vi.mock('@/aggregates/staking-positions', async () => {
+  const { createStore } = await import('effector');
+  const $positions = createStore<unknown[]>([]);
+  const $pending = createStore(false);
+  livePositionsMock.$positions = $positions;
+  livePositionsMock.$pending = $pending;
+
+  return { stakingPositions: { $positions, $pending } };
+});
+
 vi.mock('@/shared/pallet/staking', async (importOriginal) => {
   const actual = await importOriginal<{ stakingPallet: Record<string, unknown> }>();
 
@@ -213,6 +230,16 @@ const connected = (values = new Map()) =>
 /** An api the mocked pallet never looks at, but `$api` has to be non-null. */
 const withApi = () => connected(new Map().set(networkModel.$apis, { [CHAIN_ID]: {} }));
 
+const $livePositions = () => livePositionsMock.$positions as StoreWritable<StakingPosition[]>;
+const $livePending = () => livePositionsMock.$pending as StoreWritable<boolean>;
+
+/**
+ * The live position the aggregate would hold while the dashboard is open. The
+ * redeem sign gate reads _this_ figure, not the snapshot the flow was handed.
+ */
+const withLiveRedeem = (values = new Map(), redeemable = REDEEMABLE) =>
+  values.set($livePositions(), [position(redeemable)]);
+
 const signerPath = [{ kind: 'signer' as const, accountId: ALICE }];
 
 beforeEach(() => {
@@ -335,14 +362,14 @@ describe('staking-confirm-flow · built call', () => {
 
 describe('staking-confirm-flow · sign gate', () => {
   it('allows signing once the call, the fee and the validation have landed', async () => {
-    const scope = fork({ values: connected() });
+    const scope = fork({ values: withLiveRedeem(connected()) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
   });
 
   it('holds Sign while the fee is still being priced', async () => {
-    const scope = fork({ values: connected(new Map().set(complexStub()['$pendingFee'], true)) });
+    const scope = fork({ values: withLiveRedeem(connected(new Map().set(complexStub()['$pendingFee'], true))) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$preparing)).toBe(true);
@@ -350,17 +377,70 @@ describe('staking-confirm-flow · sign gate', () => {
   });
 
   it('holds Sign while the validation has not passed', async () => {
-    const scope = fork({ values: connected(new Map().set(validationStub()['$valid'], false)) });
+    const scope = fork({ values: withLiveRedeem(connected(new Map().set(validationStub()['$valid'], false))) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
   });
 
   it('refuses a redeem with nothing unlocked behind it', async () => {
-    const scope = fork({ values: connected() });
+    const scope = fork({ values: withLiveRedeem(connected(), '0') });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget('0') });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+    // Snapshot and ledger agree on zero — the dashboard case, not the stale one.
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
+  });
+
+  it('signs a redeem whose live figure differs from the snapshot', async () => {
+    // `withdraw_unbonded` takes no amount: it withdraws whatever is unlocked,
+    // so a snapshot that went stale in either direction is still signable.
+    const scope = fork({ values: withLiveRedeem(connected(), '999') });
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
+  });
+
+  it('refuses a redeem the live ledger has nothing behind anymore', async () => {
+    // The snapshot opened the confirm with a figure; the era moved and the
+    // chunks are gone. Signing would pay a fee for a no-op — blocked, and the
+    // state is named instead of leaving a dead button under a nonzero amount.
+    const scope = fork({ values: withLiveRedeem(connected(), '0') });
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(true);
+  });
+
+  it('holds Sign while the live position has not answered yet', async () => {
+    // No position and the aggregate still loading — the old form's era-loading
+    // hold. Not the stale state: the alert stays down while the answer is due.
+    const scope = fork({ values: connected(new Map().set($livePending(), true)) });
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
+  });
+
+  it('reads a position gone from the settled aggregate as nothing to redeem', async () => {
+    // Positions answered and ours is not among them: the ledger was closed out.
+    // That is an answer — zero — not a load to keep waiting on.
+    const scope = fork({ values: connected(new Map().set($livePositions(), [])) });
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(true);
+  });
+
+  it('never holds a validator change on the live redeemable', async () => {
+    // The live gate is redeem-only: a validator change moves no funds and the
+    // aggregate may legitimately have nothing to say about the position.
+    const scope = fork({ values: connected(new Map().set($livePositions(), [])) });
+    await allSettled(confirmFlowModel.changeValidatorsRequested, { scope, params: changeTarget() });
+
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
+    expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
   });
 
   it('moves to the sign step when Sign is pressed outside draft mode', async () => {
@@ -375,7 +455,7 @@ describe('staking-confirm-flow · sign gate', () => {
 
 describe('staking-confirm-flow · draft branch', () => {
   it('creates a draft instead of signing', async () => {
-    const scope = fork();
+    const scope = fork({ values: withLiveRedeem() });
     const signSpy = vi.fn();
 
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
@@ -435,7 +515,7 @@ describe('staking-confirm-flow · draft branch', () => {
   });
 
   it('a created draft ends the flow', async () => {
-    const scope = fork();
+    const scope = fork({ values: withLiveRedeem() });
 
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
     await allSettled(confirmFlowModel.toggleDraftMode, { scope, params: true });
@@ -458,8 +538,8 @@ describe('staking-confirm-flow · draft branch', () => {
   it('refuses a redeem draft with nothing unlocked behind it', async () => {
     // `withdraw_unbonded` takes no amount, so the call data itself would build
     // fine — the gate is what keeps a no-op from being saved for somebody else
-    // to pay a fee on.
-    const scope = fork();
+    // to pay a fee on. Like the sign gate, it reads the live ledger.
+    const scope = fork({ values: withLiveRedeem(new Map(), '0') });
 
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget('0') });
     await allSettled(confirmFlowModel.toggleDraftMode, { scope, params: true });

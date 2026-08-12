@@ -17,6 +17,7 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { stakingPositions } from '@/aggregates/staking-positions';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -312,19 +313,70 @@ export const createConfirmFlowModel = () => {
       pendingFee || pendingWrapping || validating || readingSpans,
   );
 
+  // --- live redeemable -------------------------------------------------------
+  //
+  // The figure the confirm leads with is the snapshot on purpose (see
+  // `$request`); the sign gate is not. `withdraw_unbonded` takes no amount — it
+  // withdraws whatever the ledger holds at execution — so a live figure that
+  // merely differs from the snapshot is fine to sign. A live figure of zero is
+  // not: the call would move nothing and still cost a fee, and the era
+  // advancing under an open confirm is exactly when that happens.
+
+  /** The live aggregate position behind an open redeem, `null` otherwise. */
+  const $livePosition = combine(stakingPositions.$positions, $request, (positions, request) => {
+    if (nullable(request) || request.mode !== 'redeem') return null;
+
+    return (
+      positions.find(
+        (position) => position.accountId === request.position.accountId && position.chainId === request.chain.chainId,
+      ) ?? null
+    );
+  });
+
+  /**
+   * Live planck redeemable for the open redeem; `null` while the aggregate has
+   * not answered yet. A position it does not hold once settled means the ledger
+   * is gone — nothing redeemable, not an unfinished load, so the gate must not
+   * wait on it forever.
+   */
+  const $liveRedeemable = combine(
+    { mode: $mode, position: $livePosition, pending: stakingPositions.$pending },
+    ({ mode, position, pending }) => {
+      if (mode !== 'redeem') return null;
+      if (position) return new BN(position.redeemable);
+
+      return pending ? null : BN_ZERO;
+    },
+  );
+
   /**
    * Nothing to redeem is not an operation.
    *
    * The dashboard already refuses to open the flow for a position with no
-   * unlocked chunk; the gate is kept here too, because a session that opened
-   * against a figure the ledger no longer holds would otherwise pay a fee for a
-   * call that moves nothing. Blocks the sign gate and the draft save alike — a
-   * draft of a no-op is still a no-op, just paid for by somebody else later.
+   * unlocked chunk, but the snapshot it opened on can go stale mid-confirm — so
+   * the gate reads the _live_ redeemable, and a load still in flight holds it
+   * the same way the old withdraw form held on its era read. Blocks the sign
+   * gate and the draft save alike — a draft of a no-op is still a no-op, just
+   * paid for by somebody else later.
    */
   const $hasSomethingToDo = combine(
-    { mode: $mode, amount: $amount, validators: $validators },
-    ({ mode, amount, validators }) =>
-      mode === 'redeem' ? new BN(amount).gt(BN_ZERO) : toNominationTargets(validators).length > 0,
+    { mode: $mode, liveRedeemable: $liveRedeemable, validators: $validators },
+    ({ mode, liveRedeemable, validators }) =>
+      mode === 'redeem'
+        ? nonNullable(liveRedeemable) && liveRedeemable.gt(BN_ZERO)
+        : toNominationTargets(validators).length > 0,
+  );
+
+  /**
+   * The ledger moved under the open confirm: it leads with the snapshot amount,
+   * yet the live ledger has nothing left to withdraw. Signing is already
+   * blocked through `$hasSomethingToDo`; this names the state so the user sees
+   * why instead of a dead button under a nonzero figure.
+   */
+  const $nothingLeftToRedeem = combine(
+    { mode: $mode, amount: $amount, liveRedeemable: $liveRedeemable },
+    ({ mode, amount, liveRedeemable }) =>
+      mode === 'redeem' && nonNullable(liveRedeemable) && liveRedeemable.isZero() && new BN(amount).gt(BN_ZERO),
   );
 
   // --- draft transaction ---------------------------------------------------
@@ -534,6 +586,8 @@ export const createConfirmFlowModel = () => {
     $multisigDeposit,
     $preparing,
     $noRouteSigner,
+    $hasSomethingToDo,
+    $nothingLeftToRedeem,
     $canSign,
     $confirms: confirmModel.$confirms,
 

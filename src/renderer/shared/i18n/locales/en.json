@@ -3955,7 +3955,9 @@
     },
     "flow": {
       "noSignerHint": "None of your wallets can sign for this account on this network. Add a wallet that controls it, or save the operation as a draft.",
-      "noSignerTitle": "No account to sign with"
+      "noSignerTitle": "No account to sign with",
+      "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
+      "nothingToRedeemTitle": "Nothing left to redeem"
     }
   },
   "time": {
