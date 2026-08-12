@@ -3949,6 +3949,10 @@
         "changeValidators": "Change validators",
         "redeem": "Redeem"
       }
+    },
+    "flow": {
+      "noSignerHint": "None of your wallets can sign for this account on this network. Add a wallet that controls it, or save the operation as a draft.",
+      "noSignerTitle": "No account to sign with"
     }
   },
   "time": {

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, DetailRow, FootnoteText, Separator } from '@/shared/ui';
+import { Alert, Button, DetailRow, FootnoteText, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
@@ -43,6 +43,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const hasMultisigAccount = useUnit(amountFlowModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(amountFlowModel.$multisigDeposit);
   const preparing = useUnit(amountFlowModel.$preparing);
+  const noRouteSigner = useUnit(amountFlowModel.$noRouteSigner);
   const canSign = useUnit(amountFlowModel.$canContinue);
 
   if (!mode || !chain || !asset || !initiator) return null;
@@ -105,6 +106,14 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         </Box>
 
         <TransactionValidationError errors={errors} wallets={wallets} />
+
+        {noRouteSigner && (
+          <Box padding={[2, 5]}>
+            <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+              <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+            </Alert>
+          </Box>
+        )}
 
         {withChill && (
           <FootnoteText className="px-5 pt-3 text-text-tertiary">

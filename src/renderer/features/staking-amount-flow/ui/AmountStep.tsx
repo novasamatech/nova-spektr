@@ -70,6 +70,7 @@ export const AmountStep = () => {
           >
             <div className="flex flex-col gap-4">
               {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <NoSignerError />
               <AmountField />
               <UnlockingLimitError />
               <MinimumBondWarning />
@@ -162,6 +163,24 @@ const MinimumBondWarning = () => {
           minimum: formatAsset(minimumBond, asset),
         })}
       </FootnoteText>
+    </Alert>
+  );
+};
+
+/**
+ * No one on the signing route can sign — the position belongs to a contact or a
+ * watch-only account. `$noRouteSigner` is already false in draft mode.
+ */
+const NoSignerError = () => {
+  const { t } = useI18n();
+
+  const noRouteSigner = useUnit(amountFlowModel.$noRouteSigner);
+
+  if (!noRouteSigner) return null;
+
+  return (
+    <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+      <FootnoteText className="text-text-secondary">{t('staking.flow.noSignerHint')}</FootnoteText>
     </Alert>
   );
 };

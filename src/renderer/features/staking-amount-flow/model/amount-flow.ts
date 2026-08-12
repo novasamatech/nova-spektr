@@ -3,9 +3,21 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { ZERO_BALANCE, formatAmount, fromPrecision, nonNullable, reservableAmountBN } from '@/shared/lib/utils';
+import {
+  ZERO_BALANCE,
+  formatAmount,
+  fromPrecision,
+  nonNullable,
+  nullable,
+  reservableAmountBN,
+} from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
-import { createComplexTxStore, createTxValidationStore, getActionRequiredAmount } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createRouteSignerStore,
+  createTxValidationStore,
+  getActionRequiredAmount,
+} from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { era } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -432,6 +444,18 @@ export const createAmountFlowModel = () => {
   // lands the flow is over and the modal closes.
   wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished: flowClosed });
 
+  const $routeSigner = createRouteSignerStore($route);
+
+  /**
+   * No one on the resolved route can actually sign: the position belongs to a
+   * contact (no initiator at all) or to a watch-only account. Blocks the gate
+   * and surfaces an explicit message instead of a silently dead button.
+   */
+  const $noRouteSigner = combine(
+    { isDraftMode: draftMode.$isDraftMode, request: $request, routeSigner: $routeSigner },
+    ({ isDraftMode, request, routeSigner }) => !isDraftMode && nonNullable(request) && nullable(routeSigner),
+  );
+
   /**
    * `Continue` gate.
    *
@@ -445,9 +469,10 @@ export const createAmountFlowModel = () => {
       txValid: $isTxValid,
       preparing: $preparing,
       tx: $tx,
+      noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, amountValid, txValid, preparing, tx }) =>
-      !isDraftMode && amountValid && txValid && !preparing && nonNullable(tx),
+    ({ isDraftMode, amountValid, txValid, preparing, tx, noRouteSigner }) =>
+      !isDraftMode && amountValid && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
 
   sample({
@@ -604,6 +629,7 @@ export const createAmountFlowModel = () => {
     $hasMultisigAccount,
     $multisigDeposit,
     $preparing,
+    $noRouteSigner,
     $canContinue,
     $confirms: confirmModel.$confirms,
 
