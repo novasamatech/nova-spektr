@@ -58,10 +58,11 @@ describe('dashboardModel.$hiddenWidgets', () => {
   });
 
   it('does not duplicate an already hidden key', async () => {
-    const scope = fork({ values: [[dashboardModel.$hiddenWidgets, { overview: ['a'] }]] });
+    const initial = { overview: ['a'] };
+    const scope = fork({ values: [[dashboardModel.$hiddenWidgets, initial]] });
     await allSettled(dashboardModel.widgetHidden, { scope, params: { tab: 'overview', key: 'a' } });
 
-    expect(scope.getState(dashboardModel.$hiddenWidgets)).toEqual({ overview: ['a'] });
+    expect(scope.getState(dashboardModel.$hiddenWidgets)).toBe(initial);
   });
 
   it('removes the key on widgetRestored', async () => {
@@ -78,5 +79,15 @@ describe('dashboardModel.$hiddenWidgets', () => {
     await allSettled(dashboardModel.layoutReset, { scope, params: { tab: 'overview' } });
 
     expect(scope.getState(dashboardModel.$hiddenWidgets)).toEqual({ overview: [], staking: ['b'] });
+  });
+
+  it('keeps state identity on no-op restore and reset', async () => {
+    const initial = { overview: ['a'] };
+    const scope = fork({ values: [[dashboardModel.$hiddenWidgets, initial]] });
+
+    await allSettled(dashboardModel.widgetRestored, { scope, params: { tab: 'staking', key: 'x' } });
+    await allSettled(dashboardModel.layoutReset, { scope, params: { tab: 'staking' } });
+
+    expect(scope.getState(dashboardModel.$hiddenWidgets)).toBe(initial);
   });
 });
