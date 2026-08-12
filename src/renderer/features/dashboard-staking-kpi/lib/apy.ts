@@ -68,6 +68,17 @@ export function computeWeightedApy(entries: ApyWeight[]): number | null {
   return weighted.div(totalWeight).toNumber();
 }
 
+/**
+ * `NetworkAvgRate.ratePercent` travels as a string; the single parse rule for
+ * every consumer — a malformed value must read as unknown, never render
+ * "NaN%".
+ */
+export function parseRatePercent(ratePercent: string): number | null {
+  const rate = Number(ratePercent);
+
+  return Number.isFinite(rate) ? rate : null;
+}
+
 /** One chain's contribution to the blended network benchmark. */
 export type NetworkAvgWeight = {
   chainId: ChainId;
@@ -118,8 +129,8 @@ export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): NetworkAvgBlen
 
     if (entry.rate === null) continue;
 
-    const rate = Number(entry.rate.ratePercent);
-    if (!Number.isFinite(rate)) continue;
+    const rate = parseRatePercent(entry.rate.ratePercent);
+    if (rate === null) continue;
 
     if (!weight.gt(0)) continue;
 
