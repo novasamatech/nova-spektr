@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Balance, LockTypes } from '@/shared/core';
-import { totalAmountBN, transferableAmountBN, vestedLockedAmountBN } from '@/shared/lib/utils';
+import { type Balance } from '@/shared/core';
+import { totalAmountBN, transferableAmountBN, vestedLockedAmountBN, votedAmountBN } from '@/shared/lib/utils';
 
 export type PurposeSplit = {
   transferable: BN;
@@ -18,12 +18,6 @@ export type PurposeSplit = {
    * summed
    */
   vestedHint: BN;
-};
-
-const convictionLockedAmountBN = (balance: Balance): BN => {
-  return balance.locked
-    .filter((lock) => lock.type === LockTypes.CONVICTION_VOTE)
-    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 };
 
 /**
@@ -45,7 +39,7 @@ export const splitBalanceByPurpose = (
   const staked = stakedActive === null ? null : BN.min(stakedActive, pot);
   const afterStaked = pot.sub(staked ?? BN_ZERO);
 
-  const governance = governanceApplicable ? BN.min(convictionLockedAmountBN(balance), afterStaked) : null;
+  const governance = governanceApplicable ? BN.min(votedAmountBN(balance), afterStaked) : null;
   const other = afterStaked.sub(governance ?? BN_ZERO);
 
   const vestedHint = BN.min(vestedLockedAmountBN(balance), other);
