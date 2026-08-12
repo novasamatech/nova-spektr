@@ -616,6 +616,64 @@
         "holdings": "Holdings"
       }
     },
+    "accountsTable": {
+      "title": "Accounts",
+      "rowCount_one": "{count} row",
+      "rowCount_other": "{count} rows",
+      "searchPlaceholder": "Account, address, chain",
+      "exportCsv": "Export CSV",
+      "groupOrderValue": "Accounts by value",
+      "groupOrderName": "Accounts A → Z",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "subtotal": "Subtotal",
+      "groupMeta_one": "{chains} chains · {assets} asset",
+      "groupMeta_other": "{chains} chains · {assets} assets",
+      "activeFilters": "{count} active",
+      "clearAll": "Clear all",
+      "filters": {
+        "network": "Network",
+        "chain": "Chain",
+        "account": "Account",
+        "walletType": "Wallet type",
+        "all": "{label}: All",
+        "one": "{label}: {value}",
+        "many": "{label}: {count} selected",
+        "amountAny": "Amount: Any",
+        "amountMin": "Total ≥ {value}",
+        "amountTitle": "Row total, {currency}",
+        "amountPlaceholder": "Minimum, e.g. 100K",
+        "presetAny": "Any"
+      },
+      "walletTypes": {
+        "vault": "Polkadot Vault",
+        "multisig": "Multisig",
+        "watchOnly": "Watch-only",
+        "walletConnect": "WalletConnect",
+        "contact": "Address book contact",
+        "other": "Other"
+      },
+      "columns": {
+        "chain": "Chain",
+        "address": "Address",
+        "transferable": "Transferable",
+        "staked": "Staked",
+        "governance": "Governance",
+        "other": "Other",
+        "total": "Total"
+      },
+      "inclVested": "incl. {amount} vested",
+      "empty": {
+        "title": "No rows match your filters",
+        "description": "Every account was filtered out. Drop one of the active filters to bring rows back.",
+        "clearFilters": "Clear filters"
+      },
+      "noSelection": "Select accounts above to view balances",
+      "footer": {
+        "showing": "Showing {rows} of {total} rows in {accounts} accounts",
+        "note": "Account subtotals are fiat · sorting applies inside every group · \"—\" = not applicable on this chain"
+      }
+    },
     "totalRewards": {
       "title": "Total Rewards",
       "range7d": "7D",
