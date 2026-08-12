@@ -1,7 +1,13 @@
 import { type Address, type ID, WalletType } from '@/shared/core';
 import { type ContactTag } from '@/shared/core/types/contact';
 
-import { type AccountEntry, type AccountPreset, type AccountSource, type PresetFilterCriteria } from './types';
+import {
+  type AccountEntry,
+  type AccountPreset,
+  type AccountSource,
+  type PresetFilterCriteria,
+  EMPTY_FILTERS,
+} from './types';
 
 export const INDEXED_WALLET_TYPES = new Set<WalletType>([
   WalletType.MULTISIG,
@@ -32,9 +38,20 @@ export const computeSourceBreakdown = (entries: AccountEntry[]): SourceBreakdown
   return breakdown;
 };
 
+/** Presets persisted before newer criteria fields were added may lack them. */
+export const normalizePresetFilters = (filters: Partial<PresetFilterCriteria>): PresetFilterCriteria => ({
+  ...EMPTY_FILTERS,
+  ...filters,
+});
+
 export function applyPresetFilter(filters: PresetFilterCriteria, entries: AccountEntry[]): AccountEntry[] {
-  const { sources, entityNames, categoryNames, tags } = filters;
-  const needsBackendMetadata = entityNames.length > 0 || categoryNames.length > 0 || tags.length > 0;
+  const { sources, entityNames, categoryNames, tags, chainIds, contactTypeNames } = normalizePresetFilters(filters);
+  const needsBackendMetadata =
+    entityNames.length > 0 ||
+    categoryNames.length > 0 ||
+    tags.length > 0 ||
+    chainIds.length > 0 ||
+    contactTypeNames.length > 0;
 
   return entries.filter(entry => {
     if (sources.length > 0 && !sources.some(s => entry.sources.includes(s))) return false;
@@ -48,6 +65,13 @@ export function applyPresetFilter(filters: PresetFilterCriteria, entries: Accoun
 
     if (entityNames.length > 0 && !entityList.some(e => entityNames.includes(e))) return false;
     if (categoryNames.length > 0 && (entry.categoryName == null || !categoryNames.includes(entry.categoryName))) {
+      return false;
+    }
+    if (chainIds.length > 0 && (entry.chainId == null || !chainIds.includes(entry.chainId))) return false;
+    if (
+      contactTypeNames.length > 0 &&
+      (entry.contactTypeName == null || !contactTypeNames.includes(entry.contactTypeName))
+    ) {
       return false;
     }
     if (
@@ -99,6 +123,9 @@ export type BackendContactSeed = {
   entityNames: string[];
   categoryName: string | null;
   tags: ContactTag[];
+  chainId: string | null;
+  chainName: string | null;
+  contactTypeName: string | null;
 };
 
 type Draft = {
@@ -115,6 +142,9 @@ type Draft = {
   entityNames?: string[];
   categoryName?: string | null;
   tags?: ContactTag[];
+  chainId?: string | null;
+  chainName?: string | null;
+  contactTypeName?: string | null;
 };
 
 const pushSource = (draft: Draft, source: AccountSource) => {
@@ -169,6 +199,9 @@ const finalizeDraft = (draft: Draft): AccountEntry => {
     entry.entityNames = draft.entityNames ?? [];
     entry.categoryName = draft.categoryName ?? null;
     entry.tags = draft.tags ?? [];
+    entry.chainId = draft.chainId ?? null;
+    entry.chainName = draft.chainName ?? null;
+    entry.contactTypeName = draft.contactTypeName ?? null;
   }
 
   return entry;
@@ -240,6 +273,9 @@ export function buildMergedEntries({
     draft.entityNames = contact.entityNames;
     draft.categoryName = contact.categoryName;
     draft.tags = contact.tags;
+    draft.chainId = contact.chainId;
+    draft.chainName = contact.chainName;
+    draft.contactTypeName = contact.contactTypeName;
   }
 
   return Array.from(byAccountId.values(), finalizeDraft);

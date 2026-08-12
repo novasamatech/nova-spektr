@@ -1,5 +1,5 @@
 export { accountPresetsModel } from './model';
-export { applyPresetFilter, matchPreset } from './lib';
+export { applyPresetFilter, matchPreset, normalizePresetFilters } from './lib';
 export {
   type AccountEntry,
   type AccountPreset,

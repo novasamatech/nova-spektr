@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Address, WalletType } from '@/shared/core';
-import { applyPresetFilter, buildMergedEntries, matchPreset } from '../lib';
+import { applyPresetFilter, buildMergedEntries, matchPreset, normalizePresetFilters } from '../lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria } from '../types';
 
 const wallet: AccountEntry = {
@@ -35,6 +35,9 @@ const backendContact: AccountEntry = {
   entityNames: ['Parity', 'W3F'],
   categoryName: 'Treasury',
   tags: [{ tagName: 'team', values: ['core', 'infra'] }],
+  chainId: '0xdot',
+  chainName: 'Polkadot',
+  contactTypeName: 'Multisig',
 };
 
 const backendContact2: AccountEntry = {
@@ -47,6 +50,9 @@ const backendContact2: AccountEntry = {
   entityNames: ['W3F'],
   categoryName: 'Grants',
   tags: [{ tagName: 'team', values: ['research'] }],
+  chainId: '0xksm',
+  chainName: 'Kusama',
+  contactTypeName: 'Wallet',
 };
 
 // Same address as `wallet` (`0x1`) but also labeled in the external address book.
@@ -63,10 +69,20 @@ const walletAndBackend: AccountEntry = {
   entityNames: ['Treasury Co'],
   categoryName: 'Treasury',
   tags: [],
+  chainId: '0xdot',
+  chainName: 'Polkadot',
+  contactTypeName: null,
 };
 
 const entries = [wallet, localContact, backendContact, backendContact2, walletAndBackend];
-const empty: PresetFilterCriteria = { sources: [], entityNames: [], categoryNames: [], tags: [] };
+const empty: PresetFilterCriteria = {
+  sources: [],
+  entityNames: [],
+  categoryNames: [],
+  tags: [],
+  chainIds: [],
+  contactTypeNames: [],
+};
 
 describe('applyPresetFilter', () => {
   it('returns all entries when all filters are empty', () => {
@@ -120,6 +136,48 @@ describe('applyPresetFilter', () => {
     expect(result.some(e => !e.sources.includes('backend-contact'))).toBe(false);
   });
 
+  it('filters by chainId', () => {
+    expect(applyPresetFilter({ ...empty, chainIds: ['0xdot'] }, entries)).toEqual([backendContact, walletAndBackend]);
+  });
+
+  it('chain filter matches any of the listed chains (OR)', () => {
+    expect(applyPresetFilter({ ...empty, chainIds: ['0xdot', '0xksm'] }, entries)).toEqual([
+      backendContact,
+      backendContact2,
+      walletAndBackend,
+    ]);
+  });
+
+  it('chain filter excludes entries without backend-contact source', () => {
+    const result = applyPresetFilter({ ...empty, chainIds: ['0xdot'] }, entries);
+    expect(result.some(e => !e.sources.includes('backend-contact'))).toBe(false);
+  });
+
+  it('filters by contact type name', () => {
+    expect(applyPresetFilter({ ...empty, contactTypeNames: ['Multisig'] }, entries)).toEqual([backendContact]);
+  });
+
+  it('contact type filter excludes backend contacts without a type', () => {
+    expect(applyPresetFilter({ ...empty, contactTypeNames: ['Multisig', 'Wallet'] }, entries)).toEqual([
+      backendContact,
+      backendContact2,
+    ]);
+  });
+
+  it('combines chain + contact type (AND across dimensions)', () => {
+    expect(applyPresetFilter({ ...empty, chainIds: ['0xdot'], contactTypeNames: ['Wallet'] }, entries)).toEqual([]);
+  });
+
+  it('accepts legacy criteria objects without the newer fields', () => {
+    const legacy = {
+      sources: [],
+      entityNames: ['W3F'],
+      categoryNames: [],
+      tags: [],
+    } as unknown as PresetFilterCriteria;
+    expect(applyPresetFilter(legacy, entries)).toEqual([backendContact, backendContact2]);
+  });
+
   it('combines source + entity (AND across dimensions)', () => {
     expect(applyPresetFilter({ ...empty, sources: ['backend-contact'], entityNames: ['W3F'] }, entries)).toEqual([
       backendContact,
@@ -131,6 +189,18 @@ describe('applyPresetFilter', () => {
     expect(applyPresetFilter({ ...empty, sources: ['local-contact'], entityNames: ['NonExistent'] }, entries)).toEqual(
       [],
     );
+  });
+});
+
+describe('normalizePresetFilters', () => {
+  it('fills fields missing from legacy persisted criteria', () => {
+    const legacy = { sources: [], entityNames: ['W3F'], categoryNames: [], tags: [] };
+    expect(normalizePresetFilters(legacy)).toEqual({ ...legacy, chainIds: [], contactTypeNames: [] });
+  });
+
+  it('keeps complete criteria intact', () => {
+    const full: PresetFilterCriteria = { ...empty, chainIds: ['0xdot'], contactTypeNames: ['Wallet'] };
+    expect(normalizePresetFilters(full)).toEqual(full);
   });
 });
 
@@ -197,6 +267,9 @@ describe('buildMergedEntries', () => {
           entityNames: ['Co'],
           categoryName: null,
           tags: [],
+          chainId: null,
+          chainName: null,
+          contactTypeName: null,
         },
       ],
     });
@@ -232,6 +305,9 @@ describe('buildMergedEntries', () => {
           entityNames: [],
           categoryName: null,
           tags: [],
+          chainId: null,
+          chainName: null,
+          contactTypeName: null,
         },
       ],
     });
@@ -265,6 +341,9 @@ describe('buildMergedEntries', () => {
           entityNames: [],
           categoryName: null,
           tags: [],
+          chainId: null,
+          chainName: null,
+          contactTypeName: null,
         },
       ],
     });
@@ -298,11 +377,39 @@ describe('buildMergedEntries', () => {
           entityNames: [],
           categoryName: null,
           tags: [],
+          chainId: null,
+          chainName: null,
+          contactTypeName: null,
         },
       ],
     });
 
     expect(result[0]!.aliases).toEqual(['Treasury']);
+  });
+
+  it('threads chain and contact type metadata onto backend-sourced entries', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [],
+      localContacts: [],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'Typed Contact',
+          address: '0xG' as Address,
+          accountId: '0xG',
+          entityNames: [],
+          categoryName: null,
+          tags: [],
+          chainId: '0xdot',
+          chainName: 'Polkadot',
+          contactTypeName: 'Multisig',
+        },
+      ],
+    });
+
+    expect(result[0]!.chainId).toBe('0xdot');
+    expect(result[0]!.chainName).toBe('Polkadot');
+    expect(result[0]!.contactTypeName).toBe('Multisig');
   });
 
   it('preserves wallet-first id when both wallet and contact share an accountId', () => {

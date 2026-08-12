@@ -27,10 +27,12 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
   const { t } = useI18n();
   const backendContacts = useUnit(contactModel.$backendContacts);
 
-  const { entityNameOptions, categoryOptions, tagOptions } = useMemo(() => {
+  const { entityNameOptions, categoryOptions, tagOptions, chainOptions, contactTypeOptions } = useMemo(() => {
     const entityNamesSet = new Set<string>();
     const categoriesSet = new Set<string>();
     const tagsMap = new Map<string, Set<string>>();
+    const chainNamesById = new Map<string, string>();
+    const contactTypesSet = new Set<string>();
 
     for (const contact of backendContacts) {
       for (const en of contact.entityNames) {
@@ -38,6 +40,12 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
       }
       if (contact.categoryName) {
         categoriesSet.add(contact.categoryName);
+      }
+      if (contact.chainId) {
+        chainNamesById.set(contact.chainId, contact.chainName ?? contact.chainId);
+      }
+      if (contact.contactTypeName) {
+        contactTypesSet.add(contact.contactTypeName);
       }
       for (const tag of contact.tags) {
         if (!tagsMap.has(tag.tagName)) {
@@ -52,6 +60,12 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
     return {
       entityNameOptions: Array.from(entityNamesSet).map((en) => ({ id: en, value: en, element: en })),
       categoryOptions: Array.from(categoriesSet).map((c) => ({ id: c, value: c, element: c })),
+      chainOptions: Array.from(chainNamesById.entries()).map(([chainId, chainName]) => ({
+        id: chainId,
+        value: chainId,
+        element: chainName,
+      })),
+      contactTypeOptions: Array.from(contactTypesSet).map((ct) => ({ id: ct, value: ct, element: ct })),
       tagOptions: Array.from(tagsMap.entries()).map(([tagName, valuesSet]) => ({
         tagName,
         options: Array.from(valuesSet).map((v) => ({ id: v, value: v, element: v })),
@@ -71,6 +85,14 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
 
   const handleCategoryChange = (results: { id: string; value: string }[]) => {
     onFiltersChange({ ...filters, categoryNames: results.map((r) => r.id) });
+  };
+
+  const handleChainChange = (results: { id: string; value: string }[]) => {
+    onFiltersChange({ ...filters, chainIds: results.map((r) => r.id) });
+  };
+
+  const handleContactTypeChange = (results: { id: string; value: string }[]) => {
+    onFiltersChange({ ...filters, contactTypeNames: results.map((r) => r.id) });
   };
 
   const handleTagChange = (tagName: string, results: { id: string; value: string }[]) => {
@@ -108,6 +130,16 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
         </div>
       </div>
 
+      {chainOptions.length > 0 && (
+        <MultiSelect
+          label={t('dashboard.presets.modal.network')}
+          placeholder={t('dashboard.presets.modal.anyNetwork')}
+          options={chainOptions}
+          selectedIds={filters.chainIds}
+          onChange={handleChainChange}
+        />
+      )}
+
       {entityNameOptions.length > 0 && (
         <MultiSelect
           label={t('dashboard.presets.modal.entity')}
@@ -125,6 +157,16 @@ export const PresetFilterEditor = ({ filters, onFiltersChange }: Props) => {
           options={categoryOptions}
           selectedIds={filters.categoryNames}
           onChange={handleCategoryChange}
+        />
+      )}
+
+      {contactTypeOptions.length > 0 && (
+        <MultiSelect
+          label={t('dashboard.presets.modal.contactType')}
+          placeholder={t('dashboard.presets.modal.anyContactType')}
+          options={contactTypeOptions}
+          selectedIds={filters.contactTypeNames}
+          onChange={handleContactTypeChange}
         />
       )}
 

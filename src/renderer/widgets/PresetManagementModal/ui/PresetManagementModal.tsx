@@ -7,13 +7,14 @@ import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
-import { Input, Modal, useNotification } from '@/shared/ui-kit';
+import { ConfirmModal, Input, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type PresetFilterCriteria,
   type PresetType,
   EMPTY_FILTERS,
   accountPresetsModel,
   applyPresetFilter,
+  normalizePresetFilters,
 } from '@/aggregates/account-presets';
 
 import { CustomAccountSelector } from './CustomAccountSelector';
@@ -39,6 +40,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const [editFilters, setEditFilters] = useState<PresetFilterCriteria>(EMPTY_FILTERS);
   const [editSelectedIds, setEditSelectedIds] = useState<string[]>([]);
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const [dragIds, setDragIds] = useState<string[] | null>(null);
   const dragIdsRef = useRef<string[] | null>(null);
@@ -55,7 +57,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
       setSelectedId(id);
       setEditName(preset.name);
       setEditType(preset.type ?? 'filter');
-      setEditFilters(preset.filters);
+      setEditFilters(normalizePresetFilters(preset.filters));
       setEditSelectedIds(preset.selectedIds ?? []);
     },
     [presets],
@@ -255,7 +257,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
             <button
               type="button"
               className="flex items-center gap-x-1.5 rounded px-2 py-1.5 text-footnote text-text-tertiary transition-colors hover:bg-action-background-hover hover:text-text-negative"
-              onClick={handleDelete}
+              onClick={() => setIsDeleteConfirmOpen(true)}
             >
               <Icon name="delete" size={14} />
               {t('dashboard.presets.modal.delete')}
@@ -266,6 +268,19 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
           {t('dashboard.presets.modal.save')}
         </Button>
       </Modal.Footer>
+
+      <ConfirmModal
+        title={t('dashboard.presets.modal.deleteConfirmTitle')}
+        description={t('dashboard.presets.modal.deleteConfirmDescription', {
+          name: selectedId !== null ? (presetsById.get(selectedId)?.name ?? '') : '',
+        })}
+        cancelText={t('dashboard.presets.modal.cancel')}
+        confirmText={t('dashboard.presets.modal.delete')}
+        type="warning"
+        isOpen={isDeleteConfirmOpen}
+        onToggle={setIsDeleteConfirmOpen}
+        onConfirm={handleDelete}
+      />
     </Modal>
   );
 };

@@ -8,6 +8,9 @@ export type PresetFilterCriteria = {
   entityNames: string[];
   categoryNames: string[];
   tags: ContactTag[];
+  /** Keyed by chainId — chain names may be renamed on the backend. */
+  chainIds: string[];
+  contactTypeNames: string[];
 };
 
 export type PresetType = 'filter' | 'custom';
@@ -25,6 +28,8 @@ export const EMPTY_FILTERS: PresetFilterCriteria = {
   entityNames: [],
   categoryNames: [],
   tags: [],
+  chainIds: [],
+  contactTypeNames: [],
 };
 
 /**
@@ -48,4 +53,7 @@ export type AccountEntry = {
   entityNames?: string[];
   categoryName?: string | null;
   tags?: ContactTag[];
+  chainId?: string | null;
+  chainName?: string | null;
+  contactTypeName?: string | null;
 };
