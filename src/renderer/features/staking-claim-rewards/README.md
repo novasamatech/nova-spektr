@@ -84,6 +84,7 @@ the first transaction, so a session abandoned halfway still claimed the ones wit
 | Multisig               | A multisig sits on the route                                          | The multisig deposit row alongside the fee                                                          |
 | Other networks skipped | The request spanned more than one chain                               | A warning that rewards on the other network(s) were left out and must be claimed from there         |
 | Unaffordable           | The signer cannot cover the fee, or cannot reserve the deposit        | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it       |
+| No signer on the route | The chosen payer's route ends without anyone able to sign             | A red "No account to sign with" alert, and **Sign is blocked**. Switching the payer clears it       |
 | Draft mode             | The claim is exactly one transaction, and the address book is healthy | The standard draft toggle, an address-book signing-path picker, and "Save as draft" instead of Sign |
 | Sign / Submit          | Sign pressed                                                          | The shared `OperationSign` / `OperationSubmit` screens                                              |
 
@@ -91,6 +92,17 @@ the first transaction, so a session abandoned halfway still claimed the ones wit
 what is being covered — is in hand the moment the button is pressed. The wrapped transaction, the fee and the validation
 each cost a round trip, so they are not awaited: the modal opens immediately, they stream in behind their own loaders,
 and Sign stays disabled until they land. Changing the signing route re-runs them in place.
+
+**A payer nobody can sign for blocks, and says why.** The route behind the payer is checked for an actual signer at its
+end; when there is none — a watch-only payer — Sign is blocked behind a red **"No account to sign with"** alert rather
+than a silently dead button. The dashboard substitutes a signable payer before dispatching (see _Who pays_), so this is
+a backstop: it catches a payer switched to a watch-only account on the confirm itself. The guard stands down in draft
+mode.
+
+**A multisig route adds the shared description field** — the note the initiator attaches for the other signatories,
+published to the shared address book once the operation is included. Whether the field, an error or nothing shows is
+decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md) aggregate; a
+plain route, and draft mode, show nothing.
 
 ### The fee shown for a batched claim
 

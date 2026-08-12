@@ -47,6 +47,7 @@ feature is its sibling for the actions that need no amount.
 | Confirm — redeem     | A redeem is requested for a position with unlocked funds | The amount and its fiat value, account, network, signing route, fee        |
 | Multisig             | A multisig sits on the route                             | The multisig deposit row alongside the fee                                 |
 | Unpayable            | The signer cannot cover the fee or reserve the deposit   | The error explains which, and **Sign is blocked**                          |
+| No signer            | Nobody on the resolved route can sign (normal mode)      | A red "No account to sign with" alert; Sign is blocked                     |
 | Empty set            | The picked set came back empty                           | No call is built and Sign stays disabled                                   |
 | Nothing to redeem    | The position has no unlocked chunk                       | Sign stays disabled — the call would move nothing and still cost a fee     |
 | Draft mode           | The draft toggle is on                                   | An address-book signing-path picker and `Save as draft` instead of Sign    |
@@ -56,6 +57,16 @@ feature is its sibling for the actions that need no amount.
 pressed. The wrapped transaction, the fee, the validation and — for a redeem — the slashing-span read each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
 re-runs them in place.
+
+**No one to sign with blocks, and says why.** The resolved route is checked for an actual signer at its end. When there
+is none — the position belongs to a contact or to a watch-only account — a red **"No account to sign with"** alert names
+the two ways forward: add a wallet that controls the account, or save the operation as a draft for whoever can sign.
+This replaces a silently dead Sign button. The guard stands down in draft mode, where nobody local is expected to sign.
+
+**A multisig route adds the shared description field** — the note the initiator attaches for the other signatories,
+published to the shared address book once the operation is included. Whether the field, an error or nothing shows is
+decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md) aggregate; a
+plain route, and draft mode, show nothing.
 
 ### `num_slashing_spans`
 

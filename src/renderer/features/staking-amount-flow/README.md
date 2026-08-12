@@ -67,10 +67,24 @@ Two boundaries are deliberate:
 | Amount too large          | Above the active stake (unbond) or above what is available (add stake)  | The field reads invalid and `Continue` is blocked                              |
 | Below minimum active bond | Remainder > 0 but under the chain's minimum nominator bond              | Amber callout; `Continue` **stays enabled**                                    |
 | No unbonding slots left   | The ledger already holds the maximum number of unbonding chunks         | Red callout, `Continue` blocked — the node would reject the call outright      |
+| No signer on the route    | Nobody on the resolved route can sign (normal mode)                     | A red "No account to sign with" alert; `Continue` and `Sign` are blocked       |
 | Unpayable                 | The signer cannot cover the fee, or cannot reserve the multisig deposit | The error explains which, and both `Continue` and `Sign` are blocked           |
 | Confirm                   | `Continue` pressed                                                      | Amount, signing route, amount + resulting stake, network fee, multisig deposit |
 | Chill notice              | The unbond is wrapped with `chill` (see below)                          | A footnote on the confirm saying the nominations are withdrawn with it         |
 | Sign / Submit             | `Sign` pressed                                                          | The shared signing and submission screens                                      |
+
+### No one to sign with
+
+The resolved signing route is checked for an actual signer at its end. When there is none — the position belongs to a
+contact (nothing local initiates it) or to a watch-only account — `Continue` refuses and a red **"No account to sign
+with"** alert names the two ways forward: add a wallet that controls the account, or save the operation as a draft for
+whoever can sign. This replaces a silently dead button: before the guard, such a position opened the flow and simply
+went nowhere. The guard stands down in draft mode, where nobody local is expected to sign.
+
+**A multisig route adds the shared description field to the confirm** — the note the initiator attaches for the other
+signatories, published to the shared address book once the operation is included. Whether the field, an error or nothing
+shows is decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md)
+aggregate; a plain route shows nothing.
 
 ### The unbonding callout
 
@@ -111,6 +125,11 @@ only when the final approval does — updates the row on its own.
 The amount screen carries the app-wide draft toggle. In draft mode the user picks the signing path themselves (the flow
 cannot sign for an account it has no key for), the fee and balance checks step aside — the eventual signer pays — and
 the primary button creates a **draft** instead of walking on to the confirm.
+
+The balance shown follows the draft, too: **`Available` — and Add stake's `Max` — read the draft path's source
+account**, the account the call will actually spend from, with no fee subtracted, since the eventual signer pays it at
+submit time. Before, a contact position read zero here. Unbond is unaffected: its cap is the position's own active
+stake, whoever signs.
 
 A request whose `signingMode` is `draft` — an address-book position, where the caller already knows nobody local signs —
 **opens with the toggle already on**: the user should not have to discover it. The toggle stays a toggle; switching it
