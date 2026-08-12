@@ -16,6 +16,8 @@ import {
 } from './calculator';
 
 const MILLISECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+const NETWORK_AVG_WINDOW_MS = 30 * MILLISECONDS_PER_DAY;
 
 type ChainRef = Pick<Chain, 'chainId'>;
 
@@ -23,6 +25,7 @@ export const apyService = {
   getStakersEraReward,
   getAvgRewardPercent,
   getNetworkApy,
+  getNetworkAvgRewardRate,
   getValidatorsApy,
 };
 
@@ -147,6 +150,99 @@ async function getNetworkApy(params: NetworkApyParams): Promise<string | null> {
   const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
 
   return calculateExpectedApy(avgRewardPercent, medianCommission).toFixed(2);
+}
+
+export type NetworkAvgRate = {
+  /**
+   * Net-of-median-commission average reward rate over the window, percent, 2
+   * dp.
+   */
+  ratePercent: string;
+  fromEra: EraIndex;
+  toEra: EraIndex;
+  /**
+   * Real window length in days — 30 on a 24h era chain, 21 where HistoryDepth
+   * caps it.
+   */
+  days: number;
+};
+
+type NetworkAvgRateParams = {
+  api: ApiPromise;
+  timelineApi?: ApiPromise | null;
+  chain: ChainRef;
+  era: EraIndex;
+  validators: Pick<ApyValidator, 'commission'>[];
+};
+
+/**
+ * Network average reward rate over a trailing ~30 day window, in percent.
+ *
+ * The benchmark shown beside the dashboard's Est. APY: the mean of per-era
+ * realized rates (`erasValidatorReward × erasPerYear / erasTotalStake`) over
+ * the last ~30 days of completed eras, capped by the runtime `HistoryDepth` (84
+ * eras ≈ 21 days on Kusama Asset Hub). Made net of the current median
+ * commission so it is directly comparable with `getNetworkApy`. Realized-only
+ * on purpose — no NPoS-curve fallback: a benchmark that cannot be measured is
+ * left unknown, never guessed.
+ */
+async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<NetworkAvgRate | null> {
+  const { api, timelineApi, chain, era, validators } = params;
+
+  const eraDurationMs = getEraDurationMs(api, timelineApi, chain);
+  const erasPerYear = MILLISECONDS_PER_YEAR / eraDurationMs;
+
+  let historyDepth: number;
+  try {
+    historyDepth = stakingPallet.consts.historyDepth(api);
+  } catch (error) {
+    console.warn('history depth unavailable, leaving the network average unknown', error);
+
+    return null;
+  }
+
+  const targetEras = Math.max(1, Math.round(NETWORK_AVG_WINDOW_MS / eraDurationMs));
+  const windowSize = Math.min(targetEras, historyDepth, era);
+  if (windowSize <= 0) return null;
+
+  const windowEras = Array.from({ length: windowSize }, (_, index) => era - windowSize + index);
+
+  let eraRewards;
+  try {
+    eraRewards = await stakingPallet.storage.erasValidatorReward(api, windowEras);
+  } catch (error) {
+    console.warn('era reward history query failed, leaving the network average unknown', error);
+
+    return null;
+  }
+
+  const rates = (
+    await Promise.all(
+      eraRewards.map(async ({ era: rewardEra, reward }) => {
+        if (!reward) return null;
+
+        const rewardValue = new BigNumber(reward.toString());
+        if (!rewardValue.isGreaterThan(0)) return null;
+
+        const totalStaked = await getTotalStaked(api, rewardEra);
+        if (!totalStaked) return null;
+
+        return rewardValue.multipliedBy(erasPerYear).div(totalStaked).toNumber();
+      }),
+    )
+  ).filter((rate): rate is number => rate !== null);
+
+  if (rates.length === 0) return null;
+
+  const grossAverage = rates.reduce((acc, rate) => acc + rate, 0) / rates.length;
+  const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
+
+  return {
+    ratePercent: calculateExpectedApy(grossAverage, medianCommission).toFixed(2),
+    fromEra: windowEras[0] ?? era,
+    toEra: windowEras[windowEras.length - 1] ?? era,
+    days: Math.max(1, Math.round((windowSize * eraDurationMs) / MILLISECONDS_PER_DAY)),
+  };
 }
 
 type ValidatorsApyParams = {
