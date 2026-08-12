@@ -36,7 +36,9 @@ const relayApi = (epochDuration = 2400, blockTime = 6000): ApiPromise =>
 
 const polkadotAh = { chainId: AssetHubChains.POLKADOT_AH } as Chain;
 
-const validators = (...commissions: number[]) => commissions.map(commission => ({ commission }));
+const loadValidators = (...commissions: number[]) => {
+  return async () => commissions.map(commission => ({ commission }));
+};
 
 /** Every requested era answers with the same constant reward. */
 const constantRewards = () => {
@@ -67,7 +69,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0, 0, 0),
+      loadValidators: loadValidators(0, 0, 0),
     });
 
     // 30d / 24h era = 30 completed eras: [70..99].
@@ -85,7 +87,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(600),
       chain: { chainId: AssetHubChains.KUSAMA_AH } as Chain,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     // 30d / 6h era = 120 eras wanted, capped at depth 84 → [16..99] ≈ 21 days.
@@ -109,7 +111,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 2,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     // 2× the single-era 5.44% baseline.
@@ -126,7 +128,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     // Window is [70..99], but only [85..99] (15 eras) produced a rate.
@@ -145,7 +147,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 2,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     // Era 0 rate is the 5.44% baseline; era 1's stake is doubled, halving its
@@ -159,7 +161,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(10, 10, 10),
+      loadValidators: loadValidators(10, 10, 10),
     });
 
     // 5.44 × (1 − 0.10)
@@ -176,7 +178,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     expect(rate).toBeNull();
@@ -184,13 +186,28 @@ describe('getNetworkAvgRewardRate', () => {
 
   test('returns null when the reward history query fails instead of guessing', async () => {
     storage.erasValidatorReward.mockRejectedValue(new Error('disconnected'));
+    const load = vi.fn(loadValidators(0));
 
     const rate = await apyService.getNetworkAvgRewardRate({
       api: mockApi(),
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: load,
+    });
+
+    expect(rate).toBeNull();
+    // The expensive prefs read must not run for a chain that produced no average.
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  test('returns null when the validator prefs query fails instead of showing a gross rate', async () => {
+    const rate = await apyService.getNetworkAvgRewardRate({
+      api: mockApi(),
+      timelineApi: relayApi(),
+      chain: polkadotAh,
+      era: 100,
+      loadValidators: vi.fn().mockRejectedValue(new Error('disconnected')),
     });
 
     expect(rate).toBeNull();
@@ -204,7 +221,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     expect(rate).toBeNull();
@@ -220,7 +237,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     expect(rate).toBeNull();
@@ -236,7 +253,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 100,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     expect(rate).toBeNull();
@@ -248,7 +265,7 @@ describe('getNetworkAvgRewardRate', () => {
       timelineApi: relayApi(),
       chain: polkadotAh,
       era: 0,
-      validators: validators(0),
+      loadValidators: loadValidators(0),
     });
 
     expect(rate).toBeNull();

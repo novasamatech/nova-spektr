@@ -45,19 +45,23 @@ const $networkAvgRateCache = createStore<Record<ChainId, NetworkAvgRate | null>>
  * `apyResource`: a rollover changes the key and triggers exactly one refetch; a
  * window of closed eras never changes, so a non-null result never goes stale; a
  * `null` (unknown) result is not cached and is re-requested on the next mount -
- * deliberate, it doubles as retry after a transient failure. The
- * `erasValidatorPrefs` read duplicates the one in `apyResource` — accepted,
- * both requests run once per era per chain.
+ * deliberate, it doubles as retry after a transient failure. To keep that retry
+ * cheap, the validator prefs (the heaviest read, duplicated with `apyResource`
+ * — accepted, once per era per chain) load lazily: an unmeasurable chain never
+ * pays for them.
  */
 export const networkAvgRateResource = createQueryResource<NetworkAvgRateParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('networkAvgRewardRate')
   .request<NetworkAvgRate | null>(async ({ api, timelineApi, chain, era }) => {
-    const prefs = await stakingPallet.storage.erasValidatorPrefs(api, era);
-    const validators = prefs.map(({ prefs }) => ({ commission: perbillToPercent(prefs.commission) }));
+    const loadValidators = async () => {
+      const prefs = await stakingPallet.storage.erasValidatorPrefs(api, era);
 
-    return apyService.getNetworkAvgRewardRate({ api, timelineApi, chain, era, validators });
+      return prefs.map(({ prefs }) => ({ commission: perbillToPercent(prefs.commission) }));
+    };
+
+    return apyService.getNetworkAvgRewardRate({ api, timelineApi, chain, era, loadValidators });
   })
   .cache({
     store: $networkAvgRateCache,

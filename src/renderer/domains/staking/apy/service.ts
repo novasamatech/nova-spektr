@@ -179,7 +179,12 @@ type NetworkAvgRateParams = {
   timelineApi?: ApiPromise | null;
   chain: ChainRef;
   era: EraIndex;
-  validators: Pick<ApyValidator, 'commission'>[];
+  /**
+   * Lazily loaded validator commissions — the full validator-set prefs read is
+   * the most expensive query involved, and a `null` result is never cached by
+   * the query layer, so it must only run once an average actually exists.
+   */
+  loadValidators: () => Promise<Pick<ApyValidator, 'commission'>[]>;
 };
 
 /**
@@ -194,7 +199,7 @@ type NetworkAvgRateParams = {
  * left unknown, never guessed.
  */
 async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<NetworkAvgRate | null> {
-  const { api, timelineApi, chain, era, validators } = params;
+  const { api, timelineApi, chain, era, loadValidators } = params;
 
   const eraDurationMs = getEraDurationMs(api, timelineApi, chain);
   const erasPerYear = MILLISECONDS_PER_YEAR / eraDurationMs;
@@ -255,6 +260,15 @@ async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<Ne
   }
 
   if (contributions.length === 0) return null;
+
+  let validators: Pick<ApyValidator, 'commission'>[];
+  try {
+    validators = await loadValidators();
+  } catch (error) {
+    console.warn('validator prefs query failed, leaving the network average unknown', error);
+
+    return null;
+  }
 
   const grossAverage = contributions.reduce((acc, { rate }) => acc + rate, 0) / contributions.length;
   const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
