@@ -143,9 +143,15 @@ per combination. Only the **period** changes a request, because it changes which
 
 ### The period tabs
 
-`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the "received in period" line, and the CSV
-export. They deliberately do **not** filter the validator table or the claim: a payout expires by **era**, not by date,
-and hiding part of what is still claimable behind a date filter hides money.
+`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the earned attribution window (the donut
+and the Earned column), and the CSV export. They deliberately do **not** filter the claim: a payout expires by **era**,
+not by date, and hiding part of what is still claimable behind a date filter hides money.
+
+There is deliberately **no "received in period" figure** next to the tabs. Received (actual payouts, on the indexer's
+timestamps) and earned (the eras' arithmetic) are different facts on different clocks — old eras claimed inside the
+window inflate one, unclaimed eras of the window inflate the other — and showing both side by side read as a
+discrepancy, not as two answers. The earned total in the donut is the number the screen stands behind; what was actually
+paid and when remains available, line by line, through the CSV export.
 
 They also bound the earned attribution. Replaying an era costs an indexer page walk whose rows carry the validator's
 whole nominator list — measured at ~10 KB a row, so a full 84-era history for a wallet backing ten operators is several

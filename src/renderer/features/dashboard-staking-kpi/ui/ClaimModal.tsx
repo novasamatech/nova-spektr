@@ -18,7 +18,7 @@ import { useRawRewardPayouts } from '../hooks/useRawRewardPayouts';
 import { useSignableChains } from '../hooks/useSignableChains';
 import { useStakingChainAssets } from '../hooks/useStakingChainAssets';
 import { useValidatorRewards } from '../hooks/useValidatorRewards';
-import { formatAssetAmountExact, sumFiat, sumPlanck } from '../lib/amounts';
+import { formatAssetAmountExact, sumFiat } from '../lib/amounts';
 import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
 import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
@@ -358,15 +358,6 @@ export const ClaimModal = memo(
       [rawPayouts, windowStart, chainFilter, nominatorFilter],
     );
 
-    const receivedByAsset = useMemo(() => {
-      const byChain = new Map<ChainId, string[]>();
-      for (const payout of windowedPayouts) {
-        byChain.set(payout.chainId, [...(byChain.get(payout.chainId) ?? []), payout.amount]);
-      }
-
-      return sumFiat([...byChain.entries()].map(([chainId, amounts]) => toFiat(chainId, sumPlanck(amounts))));
-    }, [windowedPayouts, toFiat]);
-
     /**
      * Exports the indexer's own payout rows, scoped to the period on screen.
      *
@@ -614,12 +605,11 @@ export const ClaimModal = memo(
             </div>
           ) : (
             <div className="flex h-full min-h-0 flex-col gap-3 px-5 pt-2 pb-4">
-              <div className="flex items-center justify-between gap-4">
-                <FootnoteText className="text-text-tertiary">
-                  {t('dashboard.staking.kpi.rewards.receivedInPeriod', {
-                    fiat: formatFiat(receivedByAsset, currency),
-                  })}
-                </FootnoteText>
+              {/* No "received in period" figure next to the tabs: the donut
+                already totals what the window EARNED, and a second, always
+                slightly different number (actual payouts land on their own
+                clock) read as a discrepancy rather than a different fact. */}
+              <div className="flex items-center justify-end gap-4">
                 <PeriodTabs value={period} onChange={setPeriod} />
               </div>
 

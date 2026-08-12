@@ -887,7 +887,6 @@
           "noSigner": "No account of this wallet can sign on {network}.",
           "donutCaption": "Earned per validator over the period",
           "attributing": "Working out which validator earned what…",
-          "receivedInPeriod": "Received in period: {fiat}",
           "allNetworks": "All networks",
           "validatorCount_one": "{count} validator",
           "validatorCount_other": "{count} validators",
