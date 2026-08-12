@@ -158,12 +158,19 @@ export type NetworkAvgRate = {
    * dp.
    */
   ratePercent: string;
-  fromEra: EraIndex;
-  toEra: EraIndex;
   /**
-   * Real window length in days — 30 on a 24h era chain, 21 where HistoryDepth
-   * caps it.
+   * Inclusive lower bound of the eras that actually produced a rate. The range
+   * `[fromEra, toEra]` may contain gaps — eras with no recorded reward or zero
+   * stake are skipped rather than counted.
    */
+  fromEra: EraIndex;
+  /**
+   * Inclusive upper bound of the eras that actually produced a rate. The range
+   * `[fromEra, toEra]` may contain gaps — eras with no recorded reward or zero
+   * stake are skipped rather than counted.
+   */
+  toEra: EraIndex;
+  /** The eras that actually produced a rate, expressed in days. */
   days: number;
 };
 
@@ -207,41 +214,48 @@ async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<Ne
 
   const windowEras = Array.from({ length: windowSize }, (_, index) => era - windowSize + index);
 
-  let eraRewards;
+  let eraRewards: Awaited<ReturnType<typeof stakingPallet.storage.erasValidatorReward>>;
+  let eraStakes: Awaited<ReturnType<typeof stakingPallet.storage.erasTotalStakeMulti>>;
   try {
     eraRewards = await stakingPallet.storage.erasValidatorReward(api, windowEras);
+    eraStakes = await stakingPallet.storage.erasTotalStakeMulti(api, windowEras);
   } catch (error) {
-    console.warn('era reward history query failed, leaving the network average unknown', error);
+    console.warn('era reward/stake history query failed, leaving the network average unknown', error);
 
     return null;
   }
 
-  const rates = (
-    await Promise.all(
-      eraRewards.map(async ({ era: rewardEra, reward }) => {
-        if (!reward) return null;
+  const contributions: { era: EraIndex; rate: number }[] = [];
+  for (let index = 0; index < windowEras.length; index += 1) {
+    const rewardEntry = eraRewards[index];
+    const stakeEntry = eraStakes[index];
+    if (!rewardEntry || !stakeEntry || rewardEntry.era !== stakeEntry.era) continue;
 
-        const rewardValue = new BigNumber(reward.toString());
-        if (!rewardValue.isGreaterThan(0)) return null;
+    const { reward } = rewardEntry;
+    if (!reward) continue;
 
-        const totalStaked = await getTotalStaked(api, rewardEra);
-        if (!totalStaked) return null;
+    const rewardValue = new BigNumber(reward.toString());
+    if (!rewardValue.isGreaterThan(0)) continue;
 
-        return rewardValue.multipliedBy(erasPerYear).div(totalStaked).toNumber();
-      }),
-    )
-  ).filter((rate): rate is number => rate !== null);
+    const totalStaked = new BigNumber(stakeEntry.totalStake.toString());
+    if (!totalStaked.isGreaterThan(0)) continue;
 
-  if (rates.length === 0) return null;
+    contributions.push({
+      era: rewardEntry.era,
+      rate: rewardValue.multipliedBy(erasPerYear).div(totalStaked).toNumber(),
+    });
+  }
 
-  const grossAverage = rates.reduce((acc, rate) => acc + rate, 0) / rates.length;
+  if (contributions.length === 0) return null;
+
+  const grossAverage = contributions.reduce((acc, { rate }) => acc + rate, 0) / contributions.length;
   const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
 
   return {
     ratePercent: calculateExpectedApy(grossAverage, medianCommission).toFixed(2),
-    fromEra: windowEras[0] ?? era,
-    toEra: windowEras[windowEras.length - 1] ?? era,
-    days: Math.max(1, Math.round((windowSize * eraDurationMs) / MILLISECONDS_PER_DAY)),
+    fromEra: contributions[0]!.era,
+    toEra: contributions[contributions.length - 1]!.era,
+    days: Math.max(1, Math.round((contributions.length * eraDurationMs) / MILLISECONDS_PER_DAY)),
   };
 }
 

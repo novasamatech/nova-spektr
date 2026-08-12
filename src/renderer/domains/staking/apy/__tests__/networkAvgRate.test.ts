@@ -9,7 +9,7 @@ import { apyService } from '../service';
 vi.mock('@/shared/pallet/staking', () => ({
   stakingPallet: {
     consts: { sessionsPerEra: vi.fn(), historyDepth: vi.fn() },
-    storage: { erasTotalStake: vi.fn(), erasValidatorReward: vi.fn() },
+    storage: { erasTotalStake: vi.fn(), erasTotalStakeMulti: vi.fn(), erasValidatorReward: vi.fn() },
   },
 }));
 
@@ -21,7 +21,7 @@ const storage = vi.mocked(stakingPallet.storage);
 const TO_STAKERS = '1301621489239150';
 const TOTAL_STAKED = '8739307348715573817';
 
-const mockApi = () => ({ query: {} }) as unknown as ApiPromise;
+const mockApi = () => ({}) as unknown as ApiPromise;
 
 // Relay chain: 24h era = 6 sessions × 2400 blocks × 6000ms.
 const relayApi = (epochDuration = 2400, blockTime = 6000): ApiPromise =>
@@ -45,13 +45,20 @@ const constantRewards = () => {
   );
 };
 
+/** Every requested era answers with the same constant total stake. */
+const constantStakes = () => {
+  storage.erasTotalStakeMulti.mockImplementation((_, eras) =>
+    Promise.resolve(eras.map(era => ({ era, totalStake: new BN(TOTAL_STAKED) }))),
+  );
+};
+
 describe('getNetworkAvgRewardRate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     consts.sessionsPerEra.mockReturnValue(6);
     consts.historyDepth.mockReturnValue(84);
-    storage.erasTotalStake.mockResolvedValue(new BN(TOTAL_STAKED));
     constantRewards();
+    constantStakes();
   });
 
   test('averages the realized rate over a 30 era window on a 24h era chain', async () => {
@@ -109,7 +116,7 @@ describe('getNetworkAvgRewardRate', () => {
     expect(rate).toEqual({ ratePercent: '10.88', fromEra: 0, toEra: 1, days: 2 });
   });
 
-  test('skips eras with no recorded reward and averages the rest', async () => {
+  test('skips eras with no recorded reward and reports the window of eras that actually contributed', async () => {
     storage.erasValidatorReward.mockImplementation((_, eras) =>
       Promise.resolve(eras.map(era => ({ era, reward: era < 85 ? null : new BN(TO_STAKERS) }))),
     );
@@ -122,7 +129,28 @@ describe('getNetworkAvgRewardRate', () => {
       validators: validators(0),
     });
 
-    expect(rate?.ratePercent).toEqual('5.44');
+    // Window is [70..99], but only [85..99] (15 eras) produced a rate.
+    expect(rate).toEqual({ ratePercent: '5.44', fromEra: 85, toEra: 99, days: 15 });
+  });
+
+  test('aligns reward and stake reads by era instead of assuming matching order', async () => {
+    storage.erasTotalStakeMulti.mockImplementation((_, eras) =>
+      Promise.resolve(
+        eras.map(era => ({ era, totalStake: era === 0 ? new BN(TOTAL_STAKED) : new BN(TOTAL_STAKED).muln(2) })),
+      ),
+    );
+
+    const rate = await apyService.getNetworkAvgRewardRate({
+      api: mockApi(),
+      timelineApi: relayApi(),
+      chain: polkadotAh,
+      era: 2,
+      validators: validators(0),
+    });
+
+    // Era 0 rate is the 5.44% baseline; era 1's stake is doubled, halving its
+    // rate to 2.72% — the mean of the two is 4.08%.
+    expect(rate).toEqual({ ratePercent: '4.08', fromEra: 0, toEra: 1, days: 2 });
   });
 
   test('reduces the gross average by the median validator commission', async () => {
@@ -168,8 +196,24 @@ describe('getNetworkAvgRewardRate', () => {
     expect(rate).toBeNull();
   });
 
+  test('returns null when the stake history query fails instead of narrowing the average', async () => {
+    storage.erasTotalStakeMulti.mockRejectedValue(new Error('disconnected'));
+
+    const rate = await apyService.getNetworkAvgRewardRate({
+      api: mockApi(),
+      timelineApi: relayApi(),
+      chain: polkadotAh,
+      era: 100,
+      validators: validators(0),
+    });
+
+    expect(rate).toBeNull();
+  });
+
   test('returns null when every era reports zero total stake', async () => {
-    storage.erasTotalStake.mockResolvedValue(new BN(0));
+    storage.erasTotalStakeMulti.mockImplementation((_, eras) =>
+      Promise.resolve(eras.map(era => ({ era, totalStake: new BN(0) }))),
+    );
 
     const rate = await apyService.getNetworkAvgRewardRate({
       api: mockApi(),
@@ -196,5 +240,18 @@ describe('getNetworkAvgRewardRate', () => {
     });
 
     expect(rate).toBeNull();
+  });
+
+  test('returns null for era 0 without querying reward history', async () => {
+    const rate = await apyService.getNetworkAvgRewardRate({
+      api: mockApi(),
+      timelineApi: relayApi(),
+      chain: polkadotAh,
+      era: 0,
+      validators: validators(0),
+    });
+
+    expect(rate).toBeNull();
+    expect(storage.erasValidatorReward).not.toHaveBeenCalled();
   });
 });
