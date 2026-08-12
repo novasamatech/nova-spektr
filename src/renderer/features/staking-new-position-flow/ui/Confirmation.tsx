@@ -45,7 +45,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(newPositionFlowModel.$multisigDeposit);
   const preparing = useUnit(newPositionFlowModel.$preparing);
   const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
-  const isTxValid = useUnit(newPositionFlowModel.$isTxValid);
+  const canSign = useUnit(newPositionFlowModel.$canSign);
 
   if (!chain || !asset || !initiator) return null;
 
@@ -126,7 +126,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         )}
         <SignButton
           type={signatoryWallet?.type}
-          disabled={!isTxValid || preparing || noRouteSigner}
+          disabled={!canSign}
           isLoading={preparing}
           onClick={newPositionFlowModel.startSigning}
         />

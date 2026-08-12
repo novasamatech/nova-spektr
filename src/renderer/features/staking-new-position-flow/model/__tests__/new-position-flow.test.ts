@@ -319,3 +319,23 @@ describe('staking-new-position-flow · the call', () => {
     expect(scope.getState(newPositionFlowModel.$coreTx)).toBeNull();
   });
 });
+
+describe('staking-new-position-flow · sign gate', () => {
+  it('allows signing once the call is built and validated', async () => {
+    const scope = fork({ values: seeded() });
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(true);
+  });
+
+  it('refuses to sign while there is no transaction', async () => {
+    // Validation may read `true` (nothing to check yet) — the gate must still
+    // hold on the missing call itself.
+    const scope = fork({ values: seeded() });
+    await fillForm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
+  });
+});

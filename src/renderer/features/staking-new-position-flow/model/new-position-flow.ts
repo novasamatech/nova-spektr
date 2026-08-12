@@ -511,6 +511,27 @@ export const createNewPositionFlowModel = () => {
       !isDraftMode && amountValid && destinationValid && nonNullable(initiator) && !preparing && !noRouteSigner,
   );
 
+  /**
+   * Sign gate for the confirm step, mirroring `staking-confirm-flow`.
+   *
+   * `nonNullable(tx)` matters on its own: validation passing says nothing about
+   * the wrapped transaction still being there — a route change can drop it
+   * while the last verdict is still `true`. The draft term is symmetry with the
+   * siblings; this flow's draft mode ends at the form screen (`$canContinue`
+   * refuses to walk further), so it can never actually be `true` here.
+   */
+  const $canSign = combine(
+    {
+      isDraftMode: draftMode.$isDraftMode,
+      txValid: $isTxValid,
+      preparing: $preparing,
+      tx: $tx,
+      noRouteSigner: $noRouteSigner,
+    },
+    ({ isDraftMode, txValid, preparing, tx, noRouteSigner }) =>
+      !isDraftMode && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
+  );
+
   const validatorsStepEntered = sample({
     clock: continueRequested,
     source: { canContinue: $canContinue, chain: $chain, asset: $asset, initiator: $initiator, wallet: $wallet },
@@ -722,6 +743,7 @@ export const createNewPositionFlowModel = () => {
     $preparing,
     $noRouteSigner,
     $canContinue,
+    $canSign,
     /** Node-side verdict on the built call. Gates the confirm, not the form. */
     $isTxValid,
     $confirms: confirmModel.$confirms,
