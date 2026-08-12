@@ -1010,6 +1010,26 @@
           "accountCount_other": "{count} accounts"
         }
       },
+      "minStake": {
+        "title": "Min stake to enter the active set",
+        "assetSwitch": "Staking network",
+        "headlineEra": "era {era} · active",
+        "validatorsPerEra": "{validators} elected validators per era",
+        "deltaTitle": "{delta} {symbol} against era {era}, seven eras ago",
+        "zoomNote": "axis floor {floor} {symbol} — zoomed, not zero · a step per era",
+        "empty": {
+          "title": "No era history yet",
+          "description": "The threshold appears once the last {eras} eras of {chain} can be read"
+        },
+        "tooltip": {
+          "era": "Era {era}",
+          "active": "active",
+          "threshold": "Entry threshold",
+          "vsEra": "vs era {era}",
+          "vsPreviousEra": "vs previous era",
+          "validators": "Elected validators"
+        }
+      },
       "positions": {
         "title": "Positions",
         "newPosition": "New position",

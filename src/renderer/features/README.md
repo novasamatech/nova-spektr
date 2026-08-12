@@ -188,6 +188,7 @@ notes.
 - [`dashboard-price-charts`](./dashboard-price-charts/README.md)
 - [`dashboard-staking`](./dashboard-staking/README.md)
 - [`dashboard-staking-kpi`](./dashboard-staking-kpi/README.md)
+- [`dashboard-staking-min-stake`](./dashboard-staking-min-stake/README.md)
 - [`dashboard-staking-positions`](./dashboard-staking-positions/README.md)
 - [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)
 

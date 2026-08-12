@@ -28,6 +28,7 @@ import {
   dashboardStakingRewardsFeature,
   dashboardStakingTotalStakedFeature,
 } from '@/features/dashboard-staking-kpi';
+import { dashboardStakingMinStakeFeature } from '@/features/dashboard-staking-min-stake';
 import { dashboardStakingPositionsFeature } from '@/features/dashboard-staking-positions';
 import { dashboardStakingRewardsChartFeature } from '@/features/dashboard-staking-rewards-chart';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
@@ -95,6 +96,7 @@ export const bootstrap = () => {
     dashboardStakingRewardsFeature,
     dashboardStakingPositionsFeature,
     dashboardStakingRewardsChartFeature,
+    dashboardStakingMinStakeFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,
