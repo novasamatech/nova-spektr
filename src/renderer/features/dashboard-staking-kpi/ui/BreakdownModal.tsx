@@ -129,6 +129,14 @@ export const BreakdownModal = memo(
                               ? t('dashboard.staking.kpi.apy.unknown')
                               : t('dashboard.staking.kpi.apy.value', { apy: row.apy.toFixed(1) })}
                           </FootnoteText>
+                          {row.networkAvgRate !== null && (
+                            <HelpText className="text-text-tertiary tabular-nums">
+                              {t('dashboard.staking.kpi.apy.networkAvg', {
+                                rate: Number(row.networkAvgRate.ratePercent).toFixed(1),
+                                days: row.networkAvgRate.days,
+                              })}
+                            </HelpText>
+                          )}
                           <HelpText className="text-text-tertiary tabular-nums">
                             <Price amount={row.fiat} currency={currency} />
                           </HelpText>

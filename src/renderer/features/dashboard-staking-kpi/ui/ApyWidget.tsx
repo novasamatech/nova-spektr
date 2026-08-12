@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { HelpText } from '@/shared/ui';
 import { useStakingKpi } from '../hooks/useStakingKpi';
+import { NETWORK_AVG_MIN_COVERAGE } from '../lib/apy';
 
 import { BreakdownModal } from './BreakdownModal';
 import { KpiCard } from './KpiCard';
@@ -29,6 +31,19 @@ export const ApyWidget = ({ accountIds }: Props) => {
   const headline =
     kpi.weightedApy === null ? EM_DASH : t('dashboard.staking.kpi.apy.value', { apy: kpi.weightedApy.toFixed(1) });
 
+  // The benchmark renders only when it describes the same portfolio as the
+  // headline: full weight coverage, and a headline that exists at all.
+  const networkAvg =
+    !kpi.pending &&
+    kpi.weightedApy !== null &&
+    kpi.networkAvg !== null &&
+    kpi.networkAvg.coverage >= NETWORK_AVG_MIN_COVERAGE
+      ? t('dashboard.staking.kpi.apy.networkAvg', {
+          rate: kpi.networkAvg.rate.toFixed(1),
+          days: kpi.networkAvg.days,
+        })
+      : null;
+
   return (
     <KpiWidgetFrame>
       <KpiCard
@@ -38,6 +53,7 @@ export const ApyWidget = ({ accountIds }: Props) => {
         valueClass={kpi.weightedApy === null ? 'text-text-tertiary' : 'text-text-positive'}
         value={headline}
         subline={t('dashboard.staking.kpi.apy.subline', { count: kpi.earningPositionCount })}
+        footer={networkAvg ? <HelpText className="text-text-tertiary">{networkAvg}</HelpText> : undefined}
         onClick={handleOpen}
       />
 

@@ -91,6 +91,14 @@ export type NetworkAvgBlend = {
 };
 
 /**
+ * Minimum share of the earning stake's weight the benchmark must cover to be
+ * presented as "the network average". Full coverage: with only 2-3 staking
+ * chains, a benchmark that could not measure one of them describes a different
+ * portfolio than the headline next to it.
+ */
+export const NETWORK_AVG_MIN_COVERAGE = 1;
+
+/**
  * Stake-weighted blend of the per-chain network average rates — the same
  * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
  * along: the label shows the longest window of the contributing chains — it
