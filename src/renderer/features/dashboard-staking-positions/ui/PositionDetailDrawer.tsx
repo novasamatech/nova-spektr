@@ -9,6 +9,7 @@ import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
 import { Drawer, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
+import { useChainHasSigner } from '../hooks/useChainHasSigner';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
 import { type PositionRow, getCountdownParts, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
@@ -43,6 +44,11 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const { t, formatDate } = useI18n();
   const wiredActions = useUnit(positionActions.$wiredActions);
   const unclaimed = useUnclaimedRewards(row?.chain ?? null, row?.accountId ?? null);
+  // Independent of the position's own account on purpose: a payout is
+  // permissionless, so a contact position stays claimable as long as ANY
+  // account of ours can sign on the chain — the same rule the Rewards modal
+  // gates its Claim button by.
+  const chainHasSigner = useChainHasSigner(row?.chain ?? null);
   const isValidatorPosition = row?.position.kind === 'validator';
   const { rows: nominationRows, counts } = useNominationRows(isValidatorPosition ? null : (row?.position ?? null));
 
@@ -300,12 +306,16 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
                   () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
                   true,
-                  // No "nothing to claim" while the scan is still running: the
+                  // "No signer" wins over "nothing to claim": a chain we cannot
+                  // sign on stays blocked whatever the scan finds. Below that,
+                  // no "nothing to claim" while the scan is still running: the
                   // chip stays disabled, but the app does not assert something
                   // it has not checked yet.
-                  hasUnclaimed || unclaimedPending
-                    ? undefined
-                    : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
+                  !chainHasSigner
+                    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row.chain.name })
+                    : hasUnclaimed || unclaimedPending
+                      ? undefined
+                      : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
                 )}
 
                 {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>

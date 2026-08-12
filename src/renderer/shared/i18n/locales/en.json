@@ -1019,7 +1019,8 @@
             "notWired": "This action is not connected to a transaction flow yet.",
             "nothingInPeriod": "No rewards attributed in this window.",
             "scanningPayouts": "Checking what is still unclaimed…",
-            "nothingToClaim": "Nothing to claim on this position."
+            "nothingToClaim": "Nothing to claim on this position.",
+            "noSigner": "No account of this wallet can sign on {network}."
           },
           "watchOnlyNote": "Watch-only account — data only. Actions are unavailable by design, not disabled.",
           "validator": {

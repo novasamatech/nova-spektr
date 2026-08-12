@@ -20,9 +20,11 @@ import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow';
 import {
+  type ResolutionSources,
   groupRequestsByChain,
   readPayouts,
   resolveAmountFlowTarget,
+  resolveClaimPayer,
   resolveClaimRequests,
   resolveRedeemTarget,
 } from '../lib/resolve';
@@ -86,19 +88,32 @@ export type StakingDashboardActionsDeps = {
   };
 };
 
-/** What the position drawer's Claim chip leaves out: the payouts themselves. */
+/**
+ * What the position drawer's Claim chip leaves out: the payouts themselves and
+ * the payer.
+ *
+ * The payer is resolved exactly the way the Rewards modal resolves one —
+ * `resolveClaimPayer` prefers the position's own account when it can sign, and
+ * otherwise falls back to any signer of ours on the chain, because a payout is
+ * permissionless and lands on the nominator's payee whoever submits it. Bailing
+ * on a position without a local account (the old rule) made the chip a silent
+ * no-op for exactly the address-book positions the modal claims fine.
+ */
 function buildPositionClaimRequest(
   payload: ClaimPayload,
   eras: Record<ChainId, number>,
   cache: Record<string, UnclaimedPayouts>,
+  sources: ResolutionSources,
 ): ClaimRequest | null {
-  const { chain, asset, account, wallet, position } = payload;
-  if (nullable(account) || nullable(wallet)) return null;
+  const { chain, asset, position } = payload;
+
+  const payer = resolveClaimPayer([position.accountId], chain, sources);
+  if (nullable(payer)) return null;
 
   const payouts = readPayouts(position.accountId, chain.chainId, eras, cache);
   if (payouts.length === 0) return null;
 
-  return { chain, asset, account, wallet, payouts };
+  return { chain, asset, account: payer.account, wallet: payer.wallet, payouts };
 }
 
 export const createStakingDashboardActions = ({
@@ -187,8 +202,14 @@ export const createStakingDashboardActions = ({
 
   const positionClaim = sample({
     clock: positions.claimRequested,
-    source: { eras: sources.$eras, cache: sources.$payoutsCache },
-    fn: ({ eras, cache }, payload) => buildPositionClaimRequest(payload, eras, cache),
+    source: {
+      chains: sources.$chains,
+      accounts: sources.$accounts,
+      wallets: sources.$wallets,
+      eras: sources.$eras,
+      cache: sources.$payoutsCache,
+    },
+    fn: ({ eras, cache, ...resolution }, payload) => buildPositionClaimRequest(payload, eras, cache, resolution),
   }).filterMap((request) => request ?? undefined);
 
   // A position is one chain by construction, so it never queues anything — but

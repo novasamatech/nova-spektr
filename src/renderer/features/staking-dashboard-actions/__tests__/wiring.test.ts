@@ -146,6 +146,11 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       total: '300',
       payouts: [payout(10), payout(11, '200')],
     } as unknown as UnclaimedPayouts,
+    // 7 is an address-book address: tracked and earning, but no local account.
+    [payoutsCacheKey(chainId(1), accountId(7), ACTIVE_ERA)]: {
+      total: '100',
+      payouts: [payout(12)],
+    } as unknown as UnclaimedPayouts,
   });
   const $amountFlowEnabled = createStore(true);
   const claimBlocked = createEvent<{ chainId: ChainId; chainName: string }[]>();
@@ -255,6 +260,13 @@ const positionPayload = (n: number, chainIndex: number): PositionActionPayload =
   account: universalAccount(n),
   wallet: wallet(n),
   signingMode: 'direct' as never,
+});
+
+/** An address-book position: tracked, earning, but no local account behind it. */
+const contactPositionPayload = (n: number, chainIndex: number): PositionActionPayload => ({
+  ...positionPayload(n, chainIndex),
+  account: null,
+  wallet: null,
 });
 
 describe('staking dashboard actions wiring', () => {
@@ -424,6 +436,42 @@ describe('staking dashboard actions wiring', () => {
 
       expect(dispatched).toHaveLength(1);
       expect(dispatched[0]?.[0]?.payouts).toEqual([payout(10), payout(11, '200')]);
+      // The position's own account can sign, so it stays the payer.
+      expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(1));
+      expect(dispatched[0]?.[0]?.wallet.id).toBe(1);
+    });
+
+    it('claims a contact position with a signer of ours — modal parity', async () => {
+      // The drawer used to bail on `account: null`, making the chip a silent
+      // no-op for exactly the address-book positions the Rewards modal claims.
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const dispatched = collect(harness.events.claimDispatched, scope);
+
+      await allSettled(harness.events.positionClaimRequested, {
+        scope,
+        params: { ...contactPositionPayload(7, 1), amount: '100' },
+      });
+
+      expect(dispatched).toHaveLength(1);
+      expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(1));
+      expect(dispatched[0]?.[0]?.wallet.id).toBe(1);
+      expect(dispatched[0]?.[0]?.payouts).toEqual([payout(12)]);
+    });
+
+    it('does not dispatch a position claim when nothing here can sign on the chain', async () => {
+      const harness: Harness = createHarness({
+        accounts: [universalAccount(1, SigningType.WATCH_ONLY), universalAccount(2, SigningType.WATCH_ONLY)],
+      });
+      const scope = await forkWithAccountAvailability();
+      const dispatched = collect(harness.events.claimDispatched, scope);
+
+      await allSettled(harness.events.positionClaimRequested, {
+        scope,
+        params: { ...contactPositionPayload(7, 1), amount: '100' },
+      });
+
+      expect(dispatched).toEqual([]);
     });
 
     it('does not dispatch a position claim with no payouts behind it', async () => {
