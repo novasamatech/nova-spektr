@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { ConnectionStatus, CryptoType, SigningType } from '@/shared/core';
+import { type Validator, ConnectionStatus, CryptoType, SigningType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accounts } from '@/domains/network';
@@ -13,6 +13,7 @@ import {
   polkadotAssetHubChainId,
   stakingAccountA,
   stakingWallet,
+  validatorOne,
   watchOnlyWallet,
 } from '../../fixtures/index';
 import {
@@ -84,6 +85,24 @@ function createRedeemTarget(account: AnyAccount | null, accountId: AccountId): R
   };
 }
 
+/**
+ * A real (if idle) validator: an empty picked set would zero
+ * `$hasSomethingToDo` and null `$tx` on its own, making the `$canSign`
+ * assertion vacuous.
+ */
+const pickedValidator: Validator = {
+  accountId: validatorOne,
+  chainId: polkadotAssetHubChainId,
+  ownStake: '0',
+  totalStake: '0',
+  commission: 0,
+  blocked: false,
+  slashed: false,
+  apy: 0,
+  avgApy: 0,
+  nominators: [],
+};
+
 function createChangeValidatorsTarget(account: AnyAccount | null, accountId: AccountId): ChangeValidatorsTarget {
   return {
     position: createPosition(accountId),
@@ -91,7 +110,7 @@ function createChangeValidatorsTarget(account: AnyAccount | null, accountId: Acc
     asset: polkadotAssetHubChain.assets[0]!,
     account,
     wallet: account ? stakingWallet : null,
-    validators: [],
+    validators: [pickedValidator],
   };
 }
 
@@ -174,6 +193,19 @@ describe('Staking Confirm Flow - Route Signer Guard', () => {
 
     expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(true);
     expect(env.getState(confirmFlowModel.$canSign)).toBe(false);
+  });
+
+  it('should not block a validator change for a signable account', async () => {
+    await buildEnv([stakingAccountA]);
+
+    await env.executeEvent(
+      confirmFlowModel.changeValidatorsRequested,
+      createChangeValidatorsTarget(stakingAccountA, stakingAccountA.accountId),
+    );
+
+    // The flow really started — `false` above is a verdict, not an idle default.
+    expect(env.getState(confirmFlowModel.$request)).not.toBeNull();
+    expect(env.getState(confirmFlowModel.$noRouteSigner)).toBe(false);
   });
 
   it('should stay silent while no flow is open', async () => {
