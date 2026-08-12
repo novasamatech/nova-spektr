@@ -22,13 +22,15 @@ export const AddWidgetPopover = <P extends SlotProps>({ slot, tab }: Props<P>) =
   const widgetRestored = useUnit(dashboardModel.widgetRestored);
 
   const hidden = new Set(hiddenWidgets[tab] ?? []);
-  const hiddenHandlers = handlers.filter((h) => {
-    try {
-      return h.key != null && hidden.has(h.key) && h.available();
-    } catch {
-      return false;
-    }
-  });
+  const hiddenHandlers = handlers
+    .filter((h) => {
+      try {
+        return h.key != null && hidden.has(h.key) && h.available();
+      } catch {
+        return false;
+      }
+    })
+    .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
 
   const hasHiddenWidgets = hiddenHandlers.length > 0;
 

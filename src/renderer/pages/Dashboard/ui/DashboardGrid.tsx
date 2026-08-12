@@ -153,7 +153,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
       >
         {renderKeys.length === 0 && hiddenAvailableCount > 0 && (
           <div className="col-span-full flex items-center justify-center py-20 text-footnote text-text-tertiary">
-            {t('dashboard.allWidgetsHidden')}
+            {editMode ? t('dashboard.allWidgetsHidden') : t('dashboard.allWidgetsHiddenView')}
           </div>
         )}
         {renderKeys.map((key, index) => {
