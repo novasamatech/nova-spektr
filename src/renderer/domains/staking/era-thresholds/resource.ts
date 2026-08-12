@@ -57,7 +57,9 @@ const $eraThresholdsCache = createStore<EraThresholdsCache>({});
 
 /**
  * Thresholds of the last `depth` completed eras plus the active one, oldest
- * first. Eras outside history are dropped rather than reported as zero.
+ * first. Eras outside history — and eras whose read keeps failing after the
+ * retries — are dropped from the series rather than reported as zero or allowed
+ * to fail the whole window (see `collectEraThresholds`).
  *
  * Eras are read one by one, sequentially: eight parallel prefix reads of ~600
  * entries each is exactly the burst public RPC nodes rate-limit. Each era goes
@@ -68,17 +70,10 @@ export const eraThresholdsResource = createQueryResource<EraThresholdsResourcePa
   key: ({ chainId, era, depth }) => [chainId, String(era), String(depth)],
 })
   .name('eraThresholds')
-  .request<EraThreshold[]>(async ({ chainId, api, era, depth }) => {
-    const thresholds: EraThreshold[] = [];
-
-    for (let index = Math.max(era - depth, 0); index <= era; index += 1) {
-      const threshold = await eraThresholdResource.fetch({ chainId, api, era: index });
-      if (threshold) {
-        thresholds.push(threshold);
-      }
-    }
-
-    return thresholds;
+  .request<EraThreshold[]>(({ chainId, api, era, depth }) => {
+    return eraThresholdsService.collectEraThresholds(era, depth, index =>
+      eraThresholdResource.fetch({ chainId, api, era: index }),
+    );
   })
   .cache({
     store: $eraThresholdsCache,

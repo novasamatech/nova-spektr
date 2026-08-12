@@ -59,3 +59,56 @@ describe('eraThresholdsService', () => {
     await expect(eraThresholdsService.getEraThreshold(api, ERA)).resolves.toBeNull();
   });
 });
+
+describe('collectEraThresholds', () => {
+  const threshold = (era: number) => ({ era, minStake: '1', validatorCount: 600 });
+
+  test('should walk the window oldest era first, active era last', async () => {
+    const fetched: number[] = [];
+    const result = await eraThresholdsService.collectEraThresholds(ERA, 2, async era => {
+      fetched.push(era);
+
+      return threshold(era);
+    });
+
+    expect(fetched).toEqual([ERA - 2, ERA - 1, ERA]);
+    expect(result.map(t => t.era)).toEqual([ERA - 2, ERA - 1, ERA]);
+  });
+
+  test('should drop an era whose read keeps failing instead of failing the window', async () => {
+    const result = await eraThresholdsService.collectEraThresholds(ERA, 2, async era => {
+      if (era === ERA - 1) throw new Error('rate limited');
+
+      return threshold(era);
+    });
+
+    expect(result.map(t => t.era)).toEqual([ERA - 2, ERA]);
+  });
+
+  test('should drop eras outside history without treating them as failures', async () => {
+    const result = await eraThresholdsService.collectEraThresholds(ERA, 2, async era =>
+      era === ERA - 2 ? null : threshold(era),
+    );
+
+    expect(result.map(t => t.era)).toEqual([ERA - 1, ERA]);
+  });
+
+  test('should propagate the failure when no era answered', async () => {
+    await expect(
+      eraThresholdsService.collectEraThresholds(ERA, 2, async () => {
+        throw new Error('node down');
+      }),
+    ).rejects.toThrow('node down');
+  });
+
+  test('should not read below era zero', async () => {
+    const fetched: number[] = [];
+    await eraThresholdsService.collectEraThresholds(1, 7, async era => {
+      fetched.push(era);
+
+      return threshold(era);
+    });
+
+    expect(fetched).toEqual([0, 1]);
+  });
+});
