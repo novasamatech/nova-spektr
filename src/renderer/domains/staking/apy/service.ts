@@ -4,7 +4,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { type Chain, type EraIndex } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { getEraDurationMs } from '../era/duration';
+import { getEraDurationMs, getErasInDays } from '../era/duration';
 import { type ApyValidator } from '../types';
 
 import {
@@ -17,7 +17,7 @@ import {
 
 const MILLISECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
-const NETWORK_AVG_WINDOW_MS = 30 * MILLISECONDS_PER_DAY;
+const NETWORK_AVG_WINDOW_DAYS = 30;
 
 type ChainRef = Pick<Chain, 'chainId'>;
 
@@ -213,7 +213,7 @@ async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<Ne
     return null;
   }
 
-  const targetEras = Math.max(1, Math.round(NETWORK_AVG_WINDOW_MS / eraDurationMs));
+  const targetEras = getErasInDays(NETWORK_AVG_WINDOW_DAYS, eraDurationMs);
   const windowSize = Math.min(targetEras, historyDepth, era);
   if (windowSize <= 0) return null;
 

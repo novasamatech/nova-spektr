@@ -6,6 +6,7 @@ export type { EraAnchor } from './era/service';
 export type { EraProgress } from './era/resource';
 export { era } from './era/store';
 export { eraService } from './era/service';
+export { getErasInDays } from './era/duration';
 export { useActiveEra, useEraProgress } from './era/hooks';
 
 export { staking } from './staking/store';

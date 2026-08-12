@@ -11,6 +11,18 @@ import { DEFAULT_ERA_DURATION_MS, FALLBACK_ERA_DURATION_MS } from '../constants'
  */
 export type EraDurationChain = Pick<Chain, 'chainId'> | Chain;
 
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Whole eras a window of `days` spans on a chain — `ceil`: a window must cover
+ * its days, never undershoot them. The single conversion rule for every
+ * days-framed era window (network average benchmark, rewards drill-down
+ * periods), so two surfaces never disagree on how long "30 days" is in eras.
+ */
+export function getErasInDays(days: number, eraDurationMs: number): number {
+  return Math.max(1, Math.ceil((days * MILLISECONDS_PER_DAY) / eraDurationMs));
+}
+
 /** Chain values arrive as codecs; `String()` covers both BN and primitives. */
 export function toChainNumber(value: unknown): number {
   const parsed = Number(String(value));
