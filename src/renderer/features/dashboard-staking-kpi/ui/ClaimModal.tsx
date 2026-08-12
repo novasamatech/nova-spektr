@@ -4,11 +4,12 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { buildCsv, downloadCsv } from '@/shared/lib/csv';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
 import { getColorByIndex } from '@/shared/ui/chart-constants';
-import { type Column, EmptyMessage, Label, Modal, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { type Column, type TableSort, EmptyMessage, Label, Modal, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { $accountNameCache, createAccountNameCacheKey } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -22,6 +23,7 @@ import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
 import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
 import { type RewardPeriod, DEFAULT_REWARD_PERIOD, periodStart } from '../lib/reward-period';
+import { DEFAULT_REWARD_SORT, isRewardSortColumn, sortRewardRows } from '../lib/reward-sorting';
 import { type ClaimRow } from '../lib/types';
 import {
   type ValidatorRewardRow,
@@ -88,6 +90,7 @@ export const ClaimModal = memo(
   ({ rows, positions, currency, eras, eraDurations, historyDepths, walletByAccount, onClose }: Props) => {
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
+    const accountNameCache = useUnit($accountNameCache);
     const enabledActions = useUnit(dashboardStakingKpiActions.$enabledActions);
     const claimEnabled = enabledActions.includes('claim');
     const claimRequested = useUnit(dashboardStakingKpiActions.claimRequested);
@@ -98,6 +101,7 @@ export const ClaimModal = memo(
     const [period, setPeriod] = useState<RewardPeriod>(DEFAULT_REWARD_PERIOD);
     const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
     const [nominatorFilter, setNominatorFilter] = useState<AccountId | null>(null);
+    const [tableSort, setTableSort] = useState<TableSort>(DEFAULT_REWARD_SORT);
     const [hovered, setHovered] = useState<{ id: string; from: 'donut' | 'row' } | null>(null);
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
@@ -239,6 +243,37 @@ export const ClaimModal = memo(
 
       return withFiat;
     }, [validatorRows, eras, eraDurations, historyDepths, toFiat]);
+
+    /**
+     * The validator name each row **displays**, keyed by row key — read from
+     * the cache the table's own `NamedAccount` cells fill, so sorting by name
+     * always agrees with what is on screen and re-sorts as identities land.
+     * Until a name resolves the cell shows the SS58 address; so does the sort.
+     */
+    const validatorNames = useMemo(() => {
+      const names: Record<string, string> = {};
+      for (const row of displayRows) {
+        const chain = chains[row.chainId];
+        const cached = accountNameCache[createAccountNameCacheKey({ accountId: row.validatorId, chain })];
+        names[row.key] = cached ?? toAddress(row.validatorId, { prefix: chain?.addressPrefix });
+      }
+
+      return names;
+    }, [displayRows, accountNameCache, chains]);
+
+    /**
+     * The table's own view of `displayRows` — the only consumer of the header
+     * sort. The donut slices, totals, claimable set, hover lookup and CSV all
+     * keep reading `displayRows`, so sorting the table never reshuffles or
+     * recolors the chart.
+     */
+    const tableRows = useMemo(
+      () =>
+        isRewardSortColumn(tableSort.column)
+          ? sortRewardRows(displayRows, tableSort.column, tableSort.direction, validatorNames)
+          : displayRows,
+      [displayRows, tableSort, validatorNames],
+    );
 
     const slices = useMemo(
       () =>
@@ -393,6 +428,7 @@ export const ClaimModal = memo(
         {
           key: 'validatorId',
           title: columnTitles.validatorId,
+          sortable: true,
           width: rewardColumnWidth('validatorId'),
           render: (_, item) => (
             <div
@@ -426,6 +462,7 @@ export const ClaimModal = memo(
         {
           key: 'nominators',
           title: columnTitles.nominators,
+          sortable: true,
           width: rewardColumnWidth('nominators'),
           render: (_, item) => {
             // A validator's own row lists itself among its `nominators` (the
@@ -470,6 +507,7 @@ export const ClaimModal = memo(
         {
           key: 'accrued',
           title: columnTitles.accrued,
+          sortable: true,
           width: rewardColumnWidth('accrued'),
           render: (_, item) =>
             // A row exists as soon as something is unclaimed on it, but what it
@@ -494,6 +532,7 @@ export const ClaimModal = memo(
         {
           key: 'unclaimed',
           title: columnTitles.unclaimed,
+          sortable: true,
           width: rewardColumnWidth('unclaimed'),
           render: (_, item) =>
             unclaimedPending.has(item.chainId) ? (
@@ -702,7 +741,18 @@ export const ClaimModal = memo(
                         </FootnoteText>
                       )
                     ) : (
-                      <Table columns={columns} data={displayRows} getRowKey={(item) => item.key} stickyHeader />
+                      <Table
+                        columns={columns}
+                        data={tableRows}
+                        sort={tableSort}
+                        // A third click reports `null` — treat it as back to default,
+                        // never as "whatever order the rows happen to be in".
+                        getRowKey={(item) => item.key}
+                        stickyHeader
+                        onSortChange={(sort) =>
+                          setTableSort(sort && isRewardSortColumn(sort.column) ? sort : DEFAULT_REWARD_SORT)
+                        }
+                      />
                     )}
                   </div>
                 </div>
