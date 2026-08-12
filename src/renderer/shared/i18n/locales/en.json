@@ -3924,6 +3924,7 @@
       "unlockingLimitTitle": "No unbonding slots left"
     },
     "claimRewards": {
+      "extraNoSignerError": "one of the additional transactions has no account that can sign it. Change who pays for the claim, or claim those rewards separately.",
       "hint": "Rewards go straight to the stash's transferable balance. Anyone can send this call — the rewards reach the nominators either way.",
       "hintBatched": "This claim is too large for one transaction, so it is split into {total} of them. You sign each in turn, and they are submitted together.",
       "labels": {

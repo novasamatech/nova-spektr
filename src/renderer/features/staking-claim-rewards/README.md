@@ -94,13 +94,18 @@ and Sign stays disabled until they land. Changing the signing route re-runs them
 
 ### The fee shown for a batched claim
 
-The network is asked to price **one** transaction — the primary one — and the confirm shows that figure times the number
-of transactions, the same approximation every multi-shard staking form makes. It is exact for a chunked single-account
-claim (identical calls, identical route) and an estimate when accounts route differently (one signing directly, another
-through a multisig). Validation likewise runs against the primary transaction. The consequence worth knowing: a claim
-split across many chunks by an account with barely enough free balance can pass validation and still run out on the last
-chunk. Rare — it needs more than ten unclaimed payouts _and_ a nearly empty stash — and the failure is a failed
-extrinsic, not a lost reward: the payouts stay unclaimed and can be retried.
+**Every transaction of the session is validated and priced, not just the first.** The primary plan goes through the
+complex-tx store as before; each extra plan (a chunk past the batch cap, or another account's claim) is wrapped, then
+run through the **same validator** the primary uses and priced with its own network quote. The fee row is the **sum** of
+those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate,
+during which Sign is still blocked by the preparing gate. A failing extra — an unaffordable fee, or a route that
+resolves without anyone able to sign — blocks Sign and surfaces in the same validation alert as a primary failure,
+rather than being silently dropped.
+
+The honest caveat that remains: **balance interactions _across_ plans from the same payer are not modeled.** The
+validator checks each transaction against current balances independently, so a payer with enough free balance for each
+chunk individually but not for all of them together still passes and can run out partway through the session. The
+failure is a failed extrinsic, not a lost reward: the payouts stay unclaimed and can be retried.
 
 ## Drafts
 

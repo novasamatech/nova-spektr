@@ -1,18 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { t } from 'i18next';
 import { readonly } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  type ValidationResult,
   createComplexTxStore,
   createRouteSignerStore,
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
+import { type TransactionValidationFatalError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
@@ -298,10 +301,17 @@ type WrappedExtra = ExtraEntry & { tx: Transaction; signatory: AnyAccount };
 
 const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; entries: ExtraEntry[] }) => {
   const wrapped: WrappedExtra[] = [];
+  const dropped: TransactionValidationFatalError[] = [];
 
   for (const entry of entries) {
     const signatory = entry.route.at(-1);
-    if (!signatory) continue;
+    if (!signatory) {
+      // A route with no terminal hop can be neither wrapped nor signed.
+      // Surfaced as a per-entry validation error instead of silently shrinking
+      // the set — a dropped entry used to leave `$preparing` waiting forever.
+      dropped.push({ message: t('staking.claimRewards.extraNoSignerError') });
+      continue;
+    }
 
     const tx = await transactionService.wrapLegacyTransaction(entry.coreTx, entry.route, api);
     // Same reason as in `createComplexTxStore`: the legacy transaction shape
@@ -311,10 +321,60 @@ const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; 
     wrapped.push({ ...entry, tx, signatory });
   }
 
-  return wrapped;
+  return { wrapped, dropped };
 });
 
+/**
+ * Per-extra verdicts, one entry per plan beyond the first: the SAME validator
+ * the primary transaction goes through, plus the extra's own priced fee. An
+ * entry the wrapping step dropped arrives here as an error with no fee. Sign
+ * stays blocked until this list covers every extra plan (see `$preparing`).
+ */
+type ExtraValidation = {
+  errors: ValidationResult['errors'];
+  fee: BN | null;
+};
+
+const validateExtrasFx = createEffect(
+  async ({
+    api,
+    asset,
+    balances,
+    wrapped,
+    dropped,
+  }: {
+    api: ApiPromise;
+    asset: Asset;
+    balances: Record<BalanceId, Balance>;
+    wrapped: WrappedExtra[];
+    dropped: TransactionValidationFatalError[];
+  }): Promise<ExtraValidation[]> => {
+    const validated: ExtraValidation[] = [];
+
+    for (const entry of wrapped) {
+      const { errors, balanceValidationResults } = await validator({
+        api,
+        asset,
+        balances,
+        route: entry.route,
+        transaction: entry.tx,
+      });
+
+      // The validator already asked the node to price this very transaction for
+      // its fee-affordability rule; `required` on the `fee` action is that
+      // quote, so reading it back avoids a second `paymentInfo` round trip.
+      const fee =
+        getActionRequiredAmount(balanceValidationResults, 'fee', entry.signatory.accountId).at(0)?.required ?? null;
+
+      validated.push({ errors, fee });
+    }
+
+    return [...validated, ...dropped.map((error) => ({ errors: [error], fee: null }))];
+  },
+);
+
 const $extraWrapped = createStore<WrappedExtra[]>([]).reset(flowFinished, claimRequested);
+const $extraValidation = createStore<ExtraValidation[]>([]).reset(flowFinished, claimRequested);
 
 const extraWrappingRequested = sample({
   clock: [$extraEntries, $api],
@@ -328,36 +388,80 @@ sample({
 
 sample({
   clock: wrapExtraTxsFx.doneData,
+  fn: ({ wrapped }) => wrapped,
   target: $extraWrapped,
 });
 
-/** Everything the confirm is still waiting on before anything may be signed. */
+const extraValidationRequested = sample({
+  clock: wrapExtraTxsFx.doneData,
+  source: { api: $api, asset: $asset, balances: balanceModel.$balanceMap },
+  fn: ({ api, asset, balances }, { wrapped, dropped }) => ({ api, asset, balances, wrapped, dropped }),
+}).filterMap(({ api, asset, ...rest }) =>
+  nonNullable(api) && nonNullable(asset) ? { api, asset, ...rest } : undefined,
+);
+
+sample({
+  clock: extraValidationRequested,
+  target: validateExtrasFx,
+});
+
+sample({
+  clock: validateExtrasFx.doneData,
+  target: $extraValidation,
+});
+
+/** Extras' validation failures, flattened for the same alert the primary uses. */
+const $extraErrors = $extraValidation.map((entries) => entries.flatMap((entry) => entry.errors));
+
+/**
+ * Everything the confirm is still waiting on before anything may be signed.
+ *
+ * The completeness term counts `$extraValidation`, not `$extraWrapped`: every
+ * extra plan produces a validation entry — a verdict or a dropped-entry error —
+ * so an extra that cannot be wrapped still lets the confirm settle (with its
+ * error shown) instead of spinning forever.
+ */
 const $preparing = combine(
   {
     pendingFee: $pendingFee,
     pendingWrapping: $pendingWrapping,
     validating: $validating,
     wrappingExtra: wrapExtraTxsFx.pending,
+    validatingExtras: validateExtrasFx.pending,
     plans: $plans,
-    extraWrapped: $extraWrapped,
+    extraValidation: $extraValidation,
   },
-  ({ pendingFee, pendingWrapping, validating, wrappingExtra, plans, extraWrapped }) =>
+  ({ pendingFee, pendingWrapping, validating, wrappingExtra, validatingExtras, plans, extraValidation }) =>
     pendingFee ||
     pendingWrapping ||
     validating ||
     wrappingExtra ||
-    extraWrapped.length !== Math.max(plans.length - 1, 0),
+    validatingExtras ||
+    extraValidation.length !== Math.max(plans.length - 1, 0),
 );
 
 /**
- * The fee of one transaction, times the number of transactions.
+ * The primary transaction's quoted fee plus each extra's own quoted fee.
  *
- * The same approximation every multi-shard staking form makes. It is exact for
- * a chunked single-account claim (identical calls, identical route) and an
- * estimate when accounts route differently; the per-transaction figure it is
- * built from is the one the network actually quoted.
+ * Until every extra has been priced (they are a round trip behind the primary,
+ * and a dropped entry never gets a price), the figure falls back to the old
+ * per-transaction × count approximation — `$preparing` keeps Sign blocked for
+ * exactly that window, so the estimate is only ever shown, never signed on.
  */
-const $totalFee = combine($fee, $plans, (fee, plans) => (fee ? fee.mul(new BN(Math.max(plans.length, 1))) : fee));
+const $totalFee = combine(
+  { fee: $fee, plans: $plans, extraValidation: $extraValidation },
+  ({ fee, plans, extraValidation }) => {
+    if (nullable(fee)) return fee;
+
+    const extraFees = extraValidation.map((entry) => entry.fee).filter(nonNullable);
+    const allExtrasPriced =
+      extraValidation.length === Math.max(plans.length - 1, 0) && extraFees.length === extraValidation.length;
+
+    if (!allExtrasPriced) return fee.mul(new BN(Math.max(plans.length, 1)));
+
+    return extraFees.reduce((total, extraFee) => total.add(extraFee), fee);
+  },
+);
 
 // Created ahead of its own section below: the sign gate must stand down in
 // draft mode, where nobody local is expected to sign.
@@ -392,8 +496,14 @@ const $canSign = combine(
     valid: $isTxValid,
     preparing: $preparing,
     noRouteSigner: $noRouteSigner,
+    extraValidation: $extraValidation,
   },
-  ({ tx, valid, preparing, noRouteSigner }) => nonNullable(tx) && valid && !preparing && !noRouteSigner,
+  ({ tx, valid, preparing, noRouteSigner, extraValidation }) =>
+    nonNullable(tx) &&
+    valid &&
+    !preparing &&
+    !noRouteSigner &&
+    extraValidation.every((entry) => entry.errors.length === 0),
 );
 
 const $confirmDraft = combine(
@@ -670,6 +780,7 @@ export const claimRewardsModel = {
   $totalFee,
   $pendingFee,
   $errors,
+  $extraErrors,
   $hasMultisigAccount,
   $multisigDeposit,
   $preparing,

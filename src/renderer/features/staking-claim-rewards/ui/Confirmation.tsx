@@ -45,6 +45,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const totalFee = useUnit(claimRewardsModel.$totalFee);
   const pendingFee = useUnit(claimRewardsModel.$pendingFee);
   const errors = useUnit(claimRewardsModel.$errors);
+  const extraErrors = useUnit(claimRewardsModel.$extraErrors);
   const hasMultisigAccount = useUnit(claimRewardsModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(claimRewardsModel.$multisigDeposit);
   const preparing = useUnit(claimRewardsModel.$preparing);
@@ -52,6 +53,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const canSign = useUnit(claimRewardsModel.$canSign);
 
   const balances = useUnit(balanceModel.$balanceMap);
+
+  // Primary + every extra plan's failures land in the same alert — a claim is
+  // only signable when every transaction of the session validates.
+  const allErrors = useMemo(() => [...errors, ...extraErrors], [errors, extraErrors]);
 
   const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
     const ids = new Set<AccountId>();
@@ -173,7 +178,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </TransactionDetails>
           </Box>
 
-          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          {!isDraftMode && <TransactionValidationError errors={allErrors} wallets={wallets} />}
 
           {/* `$noRouteSigner` is already false in draft mode. */}
           {noRouteSigner && (
