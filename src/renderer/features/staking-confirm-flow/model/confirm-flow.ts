@@ -14,9 +14,11 @@ import {
 } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
+import { basketUtils } from '@/entities/basket';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
@@ -58,6 +60,7 @@ export const createConfirmFlowModel = () => {
   const flowCompleted = createEvent();
 
   const stepChanged = createEvent<Step>();
+  const txSaved = createEvent();
 
   sample({
     clock: changeValidatorsRequested,
@@ -461,6 +464,57 @@ export const createConfirmFlowModel = () => {
       !isDraftMode && hasSomethingToDo && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
 
+  // --- basket ---------------------------------------------------------------
+  //
+  // The same "sign later" affordance every old staking flow carries. The basket
+  // signs the stored core call directly by its initiator (no wrapping in the
+  // basket context), so it is only offered when the initiator's own wallet is
+  // one the basket can sign with — never for watch-only, multisig or proxied
+  // initiators. Draft mode is mutually exclusive by nature: a draft is
+  // "somebody else signs later", the basket is "this wallet signs later". The
+  // something-to-do term keeps a redeem whose live ledger has emptied from
+  // storing a no-op that would still cost a fee later.
+
+  const $canUseBasket = combine(
+    {
+      wallet: $wallet,
+      isDraftMode: draftMode.$isDraftMode,
+      coreTx: $coreTx,
+      hasSomethingToDo: $hasSomethingToDo,
+    },
+    ({ wallet, isDraftMode, coreTx, hasSomethingToDo }) =>
+      !isDraftMode &&
+      nonNullable(wallet) &&
+      basketUtils.isBasketAvailable(wallet) &&
+      nonNullable(coreTx) &&
+      hasSomethingToDo,
+  );
+
+  const basketSaved = sample({
+    clock: txSaved,
+    source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
+    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: ({ coreTx, route }) => [
+      {
+        initiatorAccountId: coreTx!.accountId,
+        coreTx: coreTx!,
+        route,
+        createdAt: Date.now(),
+      },
+    ],
+    target: basketOperations.addTransactions,
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: () => Step.BASKET,
+    target: stepChanged,
+  });
+
   // --- confirm → sign → submit --------------------------------------------
 
   const $confirmDraft = combine(
@@ -589,6 +643,7 @@ export const createConfirmFlowModel = () => {
     $hasSomethingToDo,
     $nothingLeftToRedeem,
     $canSign,
+    $canUseBasket,
     $confirms: confirmModel.$confirms,
 
     $isDraftMode: draftMode.$isDraftMode,
@@ -608,6 +663,7 @@ export const createConfirmFlowModel = () => {
     flowClosed,
     flowCompleted,
     stepChanged,
+    txSaved,
     signingPathChanged,
     startSigning: confirmModel.startSigning,
 
@@ -633,4 +689,5 @@ export const confirmFlowUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

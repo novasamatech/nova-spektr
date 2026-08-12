@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Modal } from '@/shared/ui-kit';
+import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { confirmFlowModel, confirmFlowUtils } from '../model/confirm-flow';
 import { Step } from '../types';
@@ -23,11 +24,26 @@ export const ConfirmFlow = () => {
   const step = useUnit(confirmFlowModel.$step);
   const mode = useUnit(confirmFlowModel.$mode);
   const [isFlowOpen, closeFlow] = useModalClose(!confirmFlowUtils.isNoneStep(step), confirmFlowModel.flowClosed);
+  const [isBasketOpen, closeBasketModal] = useModalClose(
+    confirmFlowUtils.isBasketStep(step),
+    confirmFlowModel.flowClosed,
+  );
 
   if (confirmFlowUtils.isNoneStep(step)) return null;
 
   if (confirmFlowUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isFlowOpen} onClose={closeFlow} />;
+  }
+  if (confirmFlowUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
+        onClose={closeBasketModal}
+      />
+    );
   }
 
   const title =

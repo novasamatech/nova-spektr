@@ -52,6 +52,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const noRouteSigner = useUnit(confirmFlowModel.$noRouteSigner);
   const nothingLeftToRedeem = useUnit(confirmFlowModel.$nothingLeftToRedeem);
   const canSign = useUnit(confirmFlowModel.$canSign);
+  const canUseBasket = useUnit(confirmFlowModel.$canUseBasket);
 
   const isDraftMode = useUnit(confirmFlowModel.$isDraftMode);
   const canSaveAsDraft = useUnit(confirmFlowModel.$canSaveAsDraft);
@@ -197,12 +198,20 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operations.drafts.initiateButton')}
           </Button>
         ) : (
-          <SignButton
-            type={signatoryWallet?.type}
-            disabled={!canSign}
-            isLoading={preparing}
-            onClick={confirmModel.startSigning}
-          />
+          <div className="flex gap-4">
+            {canUseBasket && (
+              <Button pallet="secondary" onClick={() => confirmFlowModel.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )}
+            <SignButton
+              isDefault={canUseBasket}
+              type={signatoryWallet?.type}
+              disabled={!canSign}
+              isLoading={preparing}
+              onClick={confirmModel.startSigning}
+            />
+          </div>
         )}
       </Modal.Footer>
 

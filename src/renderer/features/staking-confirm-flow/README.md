@@ -111,6 +111,7 @@ flowchart TD
     P["Dashboard: validator picker submits"] --> C["Confirm"]
     R["Dashboard: Redeem on a position"] --> C
     C -->|Sign| S["Sign"] --> SUB["Submit"] --> DONE["Extrinsic lands"]
+    C -->|Add to basket| B["Basket entry stored"]
     C -->|draft mode → Save| DR["Draft created"]
 ```
 
@@ -134,6 +135,18 @@ operation form in the app.
 
 The draft's call is built from the draft path's **source account**, which is the account whose ledger the call will act
 on — the same rule the amount flow follows.
+
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the built call is stored in the basket for this wallet to sign later, a success toast confirms it and the flow closes.
+
+The basket signs the stored core call directly by its initiator — no multisig/proxy wrapping happens in the basket
+context — so the button only appears when the initiator's own wallet is one the basket can sign with (Polkadot Vault or
+a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect initiators never see it, and draft mode
+hides it — a draft is "somebody else signs later", the basket is "this wallet signs later". A redeem whose **live**
+ledger has nothing left to withdraw cannot be basketed either: a stored no-op would still cost its signer a fee later,
+so the same something-to-do rule that blocks Sign blocks the basket.
 
 ## Related
 

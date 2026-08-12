@@ -140,12 +140,28 @@ The draft's call is built from the draft signing path's **source account**, not 
 the reason above: the sender of `payout_stakers_by_page` is only the fee payer, and the rewards reach the nominators
 either way.
 
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the session's calls are stored in the basket for later signing, a success toast confirms it and the flow closes.
+
+Unlike a draft, which carries exactly one call data, **the basket takes a list natively** — so a chunked or
+multi-account claim is basketed whole, one entry per plan, and each entry becomes its own extrinsic when the basket
+signs. Nothing partial is ever stored: the button waits until every plan beyond the first has been built, and a session
+where that cannot happen never offers it.
+
+The basket signs each stored call directly by its payer — no multisig/proxy wrapping happens in the basket context — so
+the button only appears when **every** payer's wallet is one the basket can sign with (Polkadot Vault or a single Parity
+Signer shard). Watch-only, multisig, proxied and WalletConnect payers never see it, and draft mode hides it — a draft is
+"somebody else signs later", the basket is "this wallet signs later".
+
 ## Lifecycle
 
 ```mermaid
 flowchart TD
     D["Dashboard claim button"] -->|claimRequested| C["Confirm"]
     C -->|draft mode| DR["Draft created"]
+    C -->|Add to basket| B["Basket entries stored (1 per plan)"]
     C -->|Sign| S["Sign (1 payload per transaction)"]
     S --> SUB["Submit"]
     SUB -->|≥1 success| R["rewardsClaimed + payouts refetch"]

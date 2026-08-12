@@ -23,9 +23,11 @@ import {
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { DEFAULT_STAKING_CHAIN, validatorsService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { basketUtils } from '@/entities/basket';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
@@ -71,6 +73,7 @@ export const createNewPositionFlowModel = () => {
   const destinationChanged = createEvent<string>();
   const continueRequested = createEvent();
   const validatorsCancelled = createEvent();
+  const txSaved = createEvent();
 
   const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
 
@@ -550,6 +553,46 @@ export const createNewPositionFlowModel = () => {
       !isDraftMode && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
 
+  // --- basket ---------------------------------------------------------------
+  //
+  // The same "sign later" affordance every old staking flow carries. The basket
+  // signs the stored core call directly by its initiator (no wrapping in the
+  // basket context), so it is only offered when the initiator's own wallet is
+  // one the basket can sign with — never for watch-only, multisig or proxied
+  // initiators. Draft mode is mutually exclusive by nature: a draft is
+  // "somebody else signs later", the basket is "this wallet signs later".
+
+  const $canUseBasket = combine(
+    { wallet: $wallet, isDraftMode: draftMode.$isDraftMode, coreTx: $coreTx },
+    ({ wallet, isDraftMode, coreTx }) =>
+      !isDraftMode && nonNullable(wallet) && basketUtils.isBasketAvailable(wallet) && nonNullable(coreTx),
+  );
+
+  const basketSaved = sample({
+    clock: txSaved,
+    source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
+    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: ({ coreTx, route }) => [
+      {
+        initiatorAccountId: coreTx!.accountId,
+        coreTx: coreTx!,
+        route,
+        createdAt: Date.now(),
+      },
+    ],
+    target: basketOperations.addTransactions,
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: () => Step.BASKET,
+    target: stepChanged,
+  });
+
   const validatorsStepEntered = sample({
     clock: continueRequested,
     source: { canContinue: $canContinue, chain: $chain, asset: $asset, initiator: $initiator, wallet: $wallet },
@@ -762,6 +805,7 @@ export const createNewPositionFlowModel = () => {
     $noRouteSigner,
     $canContinue,
     $canSign,
+    $canUseBasket,
     /** Node-side verdict on the built call. Gates the confirm, not the form. */
     $isTxValid,
     $confirms: confirmModel.$confirms,
@@ -784,6 +828,7 @@ export const createNewPositionFlowModel = () => {
     destinationChanged,
     continueRequested,
     validatorsCancelled,
+    txSaved,
     signingPathChanged,
     startSigning: confirmModel.startSigning,
 
@@ -811,4 +856,5 @@ export const newPositionFlowUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

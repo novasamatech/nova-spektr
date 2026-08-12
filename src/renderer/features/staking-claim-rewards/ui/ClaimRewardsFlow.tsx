@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Modal } from '@/shared/ui-kit';
+import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { claimRewardsModel, claimRewardsUtils } from '../model/claim';
 import { Step } from '../types';
@@ -21,11 +22,26 @@ export const ClaimRewardsFlow = () => {
 
   const step = useUnit(claimRewardsModel.$step);
   const [isFlowOpen, closeFlow] = useModalClose(!claimRewardsUtils.isNoneStep(step), claimRewardsModel.flowFinished);
+  const [isBasketOpen, closeBasketModal] = useModalClose(
+    claimRewardsUtils.isBasketStep(step),
+    claimRewardsModel.flowFinished,
+  );
 
   if (claimRewardsUtils.isNoneStep(step)) return null;
 
   if (claimRewardsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isFlowOpen} onClose={closeFlow} />;
+  }
+  if (claimRewardsUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
+        onClose={closeBasketModal}
+      />
+    );
   }
 
   return (

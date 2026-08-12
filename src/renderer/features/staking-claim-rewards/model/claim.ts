@@ -19,10 +19,12 @@ import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
+import { basketUtils } from '@/entities/basket';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder, transactionService as callDataService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -38,6 +40,7 @@ const { payoutsResource } = payouts;
 const claimRequested = createEvent<ClaimRequest[]>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
+const txSaved = createEvent();
 /** A claim that made it on chain. The dashboard reacts to this; no toast here. */
 const rewardsClaimed = createEvent<ClaimedRewards>();
 
@@ -571,6 +574,69 @@ const $canSign = combine(
     extraValidation.every((entry) => entry.errors.length === 0 && nonNullable(entry.fee)),
 );
 
+// ---------------------------------------------------------------------------
+// Basket
+//
+// The same "sign later" affordance every old staking flow carries. The basket
+// signs each stored core call directly by its initiator (no wrapping in the
+// basket context), so it is only offered when EVERY payer's wallet is one the
+// basket can sign with — never watch-only, multisig or proxied payers. Unlike a
+// draft (one call data), the basket takes a list natively, so a multi-plan
+// claim goes in whole: one entry per plan, each its own extrinsic later.
+// ---------------------------------------------------------------------------
+
+const $canUseBasket = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    plans: $plans,
+    coreTx: $primaryCoreTx,
+    extras: $extraWrapped,
+  },
+  ({ isDraftMode, plans, coreTx, extras }) =>
+    !isDraftMode &&
+    plans.length > 0 &&
+    plans.every((plan) => basketUtils.isBasketAvailable(plan.wallet)) &&
+    nonNullable(coreTx) &&
+    // Every plan beyond the first must have made it through wrapping — a
+    // partial claim must never be stored as if it were the whole one.
+    extras.length === plans.length - 1,
+);
+
+const basketSaved = sample({
+  clock: txSaved,
+  source: {
+    canUseBasket: $canUseBasket,
+    coreTx: $primaryCoreTx,
+    route: $route,
+    extras: $extraWrapped,
+  },
+  filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+});
+
+sample({
+  clock: basketSaved,
+  fn: ({ coreTx, route, extras }) => {
+    const createdAt = Date.now();
+
+    return [
+      { initiatorAccountId: coreTx!.accountId, coreTx: coreTx!, route, createdAt },
+      ...extras.map((entry) => ({
+        initiatorAccountId: entry.coreTx.accountId,
+        coreTx: entry.coreTx,
+        route: entry.route,
+        createdAt,
+      })),
+    ];
+  },
+  target: basketOperations.addTransactions,
+});
+
+sample({
+  clock: basketSaved,
+  fn: () => Step.BASKET,
+  target: stepChanged,
+});
+
 const $confirmDraft = combine(
   {
     plans: $plans,
@@ -851,6 +917,7 @@ export const claimRewardsModel = {
   $preparing,
   $noRouteSigner,
   $canSign,
+  $canUseBasket,
 
   $canUseDraftMode,
   $isDraftMode: draftMode.$isDraftMode,
@@ -874,6 +941,7 @@ export const claimRewardsModel = {
   refreshPayouts: refreshPayoutsFx,
   flowFinished,
   stepChanged,
+  txSaved,
   signingPathChanged,
 
   draftModeToggled: draftMode.draftModeToggled,
@@ -888,4 +956,5 @@ export const claimRewardsUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

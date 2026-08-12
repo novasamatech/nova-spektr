@@ -51,6 +51,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const preparing = useUnit(claimRewardsModel.$preparing);
   const noRouteSigner = useUnit(claimRewardsModel.$noRouteSigner);
   const canSign = useUnit(claimRewardsModel.$canSign);
+  const canUseBasket = useUnit(claimRewardsModel.$canUseBasket);
 
   const balances = useUnit(balanceModel.$balanceMap);
 
@@ -226,12 +227,20 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operations.drafts.initiateButton')}
           </Button>
         ) : (
-          <SignButton
-            type={signatoryWallet?.type}
-            disabled={!canSign}
-            isLoading={preparing}
-            onClick={confirmModel.startSigning}
-          />
+          <div className="flex gap-4">
+            {canUseBasket && (
+              <Button pallet="secondary" onClick={() => claimRewardsModel.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )}
+            <SignButton
+              isDefault={canUseBasket}
+              type={signatoryWallet?.type}
+              disabled={!canSign}
+              isLoading={preparing}
+              onClick={confirmModel.startSigning}
+            />
+          </div>
         )}
       </Modal.Footer>
     </>

@@ -109,6 +109,7 @@ flowchart TD
     D["Dashboard position row"] -->|Unbond / Add stake| A["Amount"]
     A -->|Continue| C["Confirm"]
     C --> S["Sign"] --> SUB["Submit"] --> DONE["Extrinsic lands"]
+    C -->|Add to basket| B["Basket entry stored"]
     A -->|Draft mode → Save| DR["Draft created"]
 ```
 
@@ -138,6 +139,17 @@ off returns to normal mode, where the no-route-signer guard takes over.
 **Signing and draft creation never share a confirmation.** Draft mode ends at the amount screen: it has its own button
 and its own gate, `Continue` is disabled while it is on, and a created draft closes the flow. This mirrors every other
 operation form in the app.
+
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the built call is stored in the basket for this wallet to sign later, a success toast confirms it and the flow closes.
+
+The basket signs the stored core call directly by its initiator — no multisig/proxy wrapping happens in the basket
+context — so the button only appears when the initiator's own wallet is one the basket can sign with (Polkadot Vault or
+a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect initiators never see it. Basket and draft
+are mutually exclusive by nature — a draft is "somebody else signs later", the basket is "this wallet signs later" — so
+the button is absent in draft mode (which never reaches this confirm anyway).
 
 ## Rules carried over from the old staking flows
 

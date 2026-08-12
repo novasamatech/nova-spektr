@@ -46,6 +46,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const preparing = useUnit(newPositionFlowModel.$preparing);
   const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
   const canSign = useUnit(newPositionFlowModel.$canSign);
+  const canUseBasket = useUnit(newPositionFlowModel.$canUseBasket);
 
   if (!chain || !asset || !initiator) return null;
 
@@ -124,12 +125,20 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          type={signatoryWallet?.type}
-          disabled={!canSign}
-          isLoading={preparing}
-          onClick={newPositionFlowModel.startSigning}
-        />
+        <div className="flex gap-4">
+          {canUseBasket && (
+            <Button pallet="secondary" onClick={() => newPositionFlowModel.txSaved()}>
+              {t('operation.addToBasket')}
+            </Button>
+          )}
+          <SignButton
+            isDefault={canUseBasket}
+            type={signatoryWallet?.type}
+            disabled={!canSign}
+            isLoading={preparing}
+            onClick={newPositionFlowModel.startSigning}
+          />
+        </div>
       </Modal.Footer>
     </>
   );
