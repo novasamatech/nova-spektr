@@ -25,6 +25,12 @@ export { exposurePagesCacheKey } from './exposures/resource';
 export { exposureService } from './exposures/service';
 export { useExposurePages, useExposures } from './exposures/hooks';
 
+export type { EraThreshold } from './era-thresholds/types';
+export type { EraThresholdsResourceParams } from './era-thresholds/resource';
+export { eraThresholds } from './era-thresholds/store';
+export { eraThresholdsService } from './era-thresholds/service';
+export { useEraThresholds } from './era-thresholds/hooks';
+
 export type { ApyResourceParams, NetworkAvgRateParams } from './apy/resource';
 export type { NetworkAvgRate } from './apy/service';
 export { apy } from './apy/store';
