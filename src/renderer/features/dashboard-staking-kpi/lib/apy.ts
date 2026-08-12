@@ -78,23 +78,42 @@ export type NetworkAvgWeight = {
 };
 
 /**
+ * Blended benchmark. `coverage` is the share (0..1) of the positive weight that
+ * the contributing chains actually cover — the consumer must not present the
+ * blend as "the network average" when a chain holding most of the stake could
+ * not be measured (e.g. a transient RPC failure on Polkadot AH would otherwise
+ * leave a Kusama-only "network avg 15%" beside a mostly-Polkadot headline).
+ */
+export type NetworkAvgBlend = {
+  rate: number;
+  days: number;
+  coverage: number;
+};
+
+/**
  * Stake-weighted blend of the per-chain network average rates — the same
  * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
- * along: the label shows the longest window among the contributing chains
- * ("30d" for Polkadot AH even when Kusama AH could only answer for 21).
+ * along: the label shows the longest window of the contributing chains — it
+ * must not claim more history than the dominant component has, and the
+ * per-chain breakdown shows each chain's exact window; "shortest" would
+ * understate the majority component instead. A real tradeoff, revisit if it
+ * confuses.
  */
-export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): { rate: number; days: number } | null {
+export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): NetworkAvgBlend | null {
   let weighted = new BigNumber(0);
   let totalWeight = new BigNumber(0);
+  let totalPositiveWeight = new BigNumber(0);
   let days = 0;
 
   for (const entry of entries) {
+    const weight = new BigNumber(entry.weight || '0');
+    if (weight.gt(0)) totalPositiveWeight = totalPositiveWeight.plus(weight);
+
     if (entry.rate === null) continue;
 
     const rate = Number(entry.rate.ratePercent);
     if (!Number.isFinite(rate)) continue;
 
-    const weight = new BigNumber(entry.weight || '0');
     if (!weight.gt(0)) continue;
 
     weighted = weighted.plus(weight.times(rate));
@@ -104,5 +123,9 @@ export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): { rate: number
 
   if (!totalWeight.gt(0)) return null;
 
-  return { rate: weighted.div(totalWeight).toNumber(), days };
+  return {
+    rate: weighted.div(totalWeight).toNumber(),
+    days,
+    coverage: totalWeight.div(totalPositiveWeight).toNumber(),
+  };
 }
