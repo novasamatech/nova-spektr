@@ -133,7 +133,7 @@ describe('getNetworkAvgRewardRate', () => {
     expect(rate).toEqual({ ratePercent: '5.44', fromEra: 85, toEra: 99, days: 15 });
   });
 
-  test('aligns reward and stake reads by era instead of assuming matching order', async () => {
+  test('honours per-era stake when averaging across the window', async () => {
     storage.erasTotalStakeMulti.mockImplementation((_, eras) =>
       Promise.resolve(
         eras.map(era => ({ era, totalStake: era === 0 ? new BN(TOTAL_STAKED) : new BN(TOTAL_STAKED).muln(2) })),

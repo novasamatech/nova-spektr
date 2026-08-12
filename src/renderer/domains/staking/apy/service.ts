@@ -217,8 +217,10 @@ async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<Ne
   let eraRewards: Awaited<ReturnType<typeof stakingPallet.storage.erasValidatorReward>>;
   let eraStakes: Awaited<ReturnType<typeof stakingPallet.storage.erasTotalStakeMulti>>;
   try {
-    eraRewards = await stakingPallet.storage.erasValidatorReward(api, windowEras);
-    eraStakes = await stakingPallet.storage.erasTotalStakeMulti(api, windowEras);
+    [eraRewards, eraStakes] = await Promise.all([
+      stakingPallet.storage.erasValidatorReward(api, windowEras),
+      stakingPallet.storage.erasTotalStakeMulti(api, windowEras),
+    ]);
   } catch (error) {
     console.warn('era reward/stake history query failed, leaving the network average unknown', error);
 
@@ -229,7 +231,13 @@ async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<Ne
   for (let index = 0; index < windowEras.length; index += 1) {
     const rewardEntry = eraRewards[index];
     const stakeEntry = eraStakes[index];
-    if (!rewardEntry || !stakeEntry || rewardEntry.era !== stakeEntry.era) continue;
+    if (!rewardEntry || !stakeEntry?.totalStake) continue;
+
+    if (rewardEntry.era !== stakeEntry.era) {
+      console.warn(`era mismatch between reward (${rewardEntry.era}) and stake (${stakeEntry.era}) entries, skipping`);
+
+      continue;
+    }
 
     const { reward } = rewardEntry;
     if (!reward) continue;
