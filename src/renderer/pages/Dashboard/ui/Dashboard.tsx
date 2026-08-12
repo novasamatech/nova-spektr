@@ -8,6 +8,7 @@ import { Tabs } from '@/shared/ui-kit';
 import { type Size } from '../lib/layout-engine';
 import { dashboardModel } from '../model/dashboard-model';
 
+import { AddWidgetPopover } from './AddWidgetPopover';
 import { DashboardGrid } from './DashboardGrid';
 
 export type WidgetGridMeta = { label: string; defaultSize: Size; minSize: Size; maxSize: Size };
@@ -27,6 +28,12 @@ export const dashboardGovernanceSlot = createSlot<WidgetSlotProps, WidgetGridMet
 
 // const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 const TABS = ['overview', 'staking', 'governance'] as const;
+
+const TAB_SLOTS: Record<string, typeof dashboardWidgetsSlot> = {
+  overview: dashboardWidgetsSlot,
+  staking: dashboardStakingSlot,
+  governance: dashboardGovernanceSlot,
+};
 
 const EmptyState = ({ t }: { t: (key: string) => string }) => (
   <div className="flex h-full w-full flex-col items-center justify-center">
@@ -48,6 +55,8 @@ export const Dashboard = () => {
   visitedTabs.current.add(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
+
+  const activeSlot = TAB_SLOTS[activeTab];
 
   const accountIdsKey = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
@@ -75,11 +84,14 @@ export const Dashboard = () => {
           <div className="flex items-center gap-x-2 rounded-xl bg-white p-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
             {editMode && (
-              <IconButton
-                name="refresh"
-                aria-label={t('dashboard.resetLayout')}
-                onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
-              />
+              <>
+                {activeSlot && <AddWidgetPopover slot={activeSlot} tab={activeTab} />}
+                <IconButton
+                  name="refresh"
+                  aria-label={t('dashboard.resetLayout')}
+                  onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
+                />
+              </>
             )}
             <Slot id={dashboardPresetSwitcherSlot} />
           </div>

@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useEffect, useMemo, useRef } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
+import { useI18n } from '@/shared/i18n';
 import { getGridMetrics, toGridContentPoint } from '../lib/grid-metrics';
 import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
@@ -37,6 +38,7 @@ type Props<P extends SlotProps> = {
 };
 
 const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
+  const { t } = useI18n();
   const handlers = useUnit(slot.$handlers);
   const widgetLayout = useUnit(dashboardModel.$widgetLayout);
   const layoutSet = useUnit(dashboardModel.layoutSet);
@@ -142,6 +144,11 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
           gridAutoRows: `${ROW_HEIGHT_PX}px`,
         }}
       >
+        {renderKeys.length === 0 && (hiddenWidgets[tab]?.length ?? 0) > 0 && (
+          <div className="col-span-full flex items-center justify-center py-20 text-footnote text-text-tertiary">
+            {t('dashboard.allWidgetsHidden')}
+          </div>
+        )}
         {renderKeys.map((key, index) => {
           const handler = handlersByKey.get(key);
           const rect = effective[key];
