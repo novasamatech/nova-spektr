@@ -98,6 +98,16 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
       }
     : null;
 
+  // "No signer" wins over "nothing to claim": a chain nobody here can sign on
+  // stays blocked no matter what the scan finds. Below that, a scan still in
+  // flight leaves the chip enabled — it asserts nothing about payouts it has
+  // not checked yet; only a finished scan that found nothing disables it.
+  const claimBlockedHint = !chainHasSigner
+    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row?.chain.name ?? '' })
+    : hasUnclaimed || unclaimedPending
+      ? undefined
+      : t('dashboard.staking.positions.detail.actions.nothingToClaim');
+
   // Two frames, not one: the first paints the spinner, the second runs once it
   // is actually on screen — only then mount the flow. Dispatching straight from
   // the click puts the mount in the same task as the click, and the spinner
@@ -306,16 +316,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
                   () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
                   true,
-                  // "No signer" wins over "nothing to claim": a chain we cannot
-                  // sign on stays blocked whatever the scan finds. Below that,
-                  // no "nothing to claim" while the scan is still running: the
-                  // chip stays disabled, but the app does not assert something
-                  // it has not checked yet.
-                  !chainHasSigner
-                    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row.chain.name })
-                    : hasUnclaimed || unclaimedPending
-                      ? undefined
-                      : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
+                  claimBlockedHint,
                 )}
 
                 {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>

@@ -129,8 +129,11 @@ export const createConfirmFlowModel = () => {
 
   // A request that arrives already knowing nobody local signs it (an
   // address-book position) opens with draft mode on, instead of making the
-  // user discover the toggle. Registered after the binding, so the toggle
-  // lands after the binding's own `.reset(flowStarted)` on `$isDraftMode`.
+  // user discover the toggle. This runs after the binding's own
+  // `.reset(flowStarted)` on `$isDraftMode` regardless of registration order:
+  // the toggle routes through the extra `draftModeToggled` event hop, one
+  // graph level deeper than the reset's direct store link, and effector
+  // resolves same-tick conflicts by graph depth, not source order.
   sample({
     clock: flowStarted,
     filter: (request) => request.signingMode === 'draft',

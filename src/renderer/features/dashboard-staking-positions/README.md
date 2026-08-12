@@ -121,16 +121,18 @@ the only thing actually known.
 #### The Claim chip
 
 Claiming is gated by _who can sign on the network_, not by who owns the position: a payout is permissionless, so a
-contact's position is claimable as long as **any** account of this wallet can sign on that chain — the same rule the
-Rewards modal applies to its Claim button. The chip's states, in order of precedence:
+contact's position is claimable as long as **any account of any of the installation's wallets** can sign on that chain —
+the same rule the Rewards modal applies to its Claim button. The chip's states, in order of precedence:
 
-- **No signer on the chain** — disabled, with "No account of this wallet can sign on {network}". This wins over
-  everything else: whatever the payout scan finds, nobody here could sign the claim.
+- **No signer on the chain** — disabled, with "None of your wallets can sign on {network}". This wins over everything
+  else: whatever the payout scan finds, nobody here could sign the claim.
 - **Nothing to claim**, scan finished — disabled, with "Nothing to claim on this position".
 - **Scan still running** — enabled; the chip does not assert "nothing to claim" about payouts nobody has checked yet.
 - Otherwise — enabled, leading with the unclaimed amount.
 
-(As with every chip, an action no host has wired is disabled before any of this, with the "not connected yet" tooltip.)
+(As with every chip, disabling still falls back to the "not connected yet" tooltip when the action is unwired — but a
+`blockedHint` above wins the tooltip text whenever both apply, so an unwired _and_ blocked chip explains the block, not
+the wiring gap.)
 
 ## Lifecycle
 

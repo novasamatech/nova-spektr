@@ -55,23 +55,23 @@ mounted.
 
 ## States / scenarios
 
-| Scenario                                  | What happens                                                                             |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
-| KPI claim, one chain                      | One claim session with every resolved account of that chain                              |
-| KPI claim, several chains                 | One session per chain, run in sequence: the first opens now, the rest queue              |
-| Queued chain after a landed claim         | Closing the successful session opens the next chain's                                    |
-| Queued chain after a cancelled session    | The queue is dropped — cancelling means cancelling                                       |
-| An address with no local account          | A payer of ours on that chain is substituted — the payout is permissionless              |
-| A chain no account of ours can sign on    | Skipped and reported back to the row; the rest of the selection still goes through       |
-| A selection where nothing resolves        | Nothing is dispatched at all — no empty confirm                                          |
-| Position claim on a contact position      | Same payer resolution as a KPI claim — the drawer's Claim chip serves contact positions  |
-| Position claim with no payouts in cache   | Not dispatched; an empty batch would fail on chain                                       |
-| KPI unbond with no position behind it     | Skipped — there is no active stake to cap the amount against                             |
-| KPI redeem with no position behind it     | Skipped — there is no ledger to withdraw from                                            |
-| KPI redeem with nothing unlocked          | Skipped — the call would move nothing and still cost a fee                               |
-| Picked validator set submitted            | Forwarded unchanged; the payload the picker produced is the payload the confirm opens on |
-| Draft saved from any of the staking flows | Bottom-left toast, auto-dismissing, with a `View drafts →` link to the Operations page   |
-| Signed submission                         | No draft toast — the flows' own submit confirmation stands                               |
+| Scenario                                  | What happens                                                                                                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| KPI claim, one chain                      | One claim session with every resolved account of that chain                                                                                       |
+| KPI claim, several chains                 | One session per chain, run in sequence: the first opens now, the rest queue                                                                       |
+| Queued chain after a landed claim         | Closing the successful session opens the next chain's                                                                                             |
+| Queued chain after a cancelled session    | The queue is dropped — cancelling means cancelling                                                                                                |
+| An address with no local account          | A payer of ours on that chain is substituted — the payout is permissionless                                                                       |
+| A chain no account of ours can sign on    | Dropped from that chain alone if the rest of the selection still resolves; `claimBlocked` fires only when the whole selection resolves to nothing |
+| A selection where nothing resolves        | Nothing is dispatched at all — no empty confirm                                                                                                   |
+| Position claim on a contact position      | Same payer resolution as a KPI claim — the drawer's Claim chip serves contact positions                                                           |
+| Position claim with no payouts in cache   | Not dispatched; an empty batch would fail on chain                                                                                                |
+| KPI unbond with no position behind it     | Skipped — there is no active stake to cap the amount against                                                                                      |
+| KPI redeem with no position behind it     | Skipped — there is no ledger to withdraw from                                                                                                     |
+| KPI redeem with nothing unlocked          | Skipped — the call would move nothing and still cost a fee                                                                                        |
+| Picked validator set submitted            | Forwarded unchanged; the payload the picker produced is the payload the confirm opens on                                                          |
+| Draft saved from any of the staking flows | Bottom-left toast, auto-dismissing, with a `View drafts →` link to the Operations page                                                            |
+| Signed submission                         | No draft toast — the flows' own submit confirmation stands                                                                                        |
 
 ### Multi-chain claims
 
