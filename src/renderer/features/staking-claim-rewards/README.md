@@ -97,10 +97,11 @@ and Sign stays disabled until they land. Changing the signing route re-runs them
 **Every transaction of the session is validated and priced, not just the first.** The primary plan goes through the
 complex-tx store as before; each extra plan (a chunk past the batch cap, or another account's claim) is wrapped, then
 run through the **same validator** the primary uses and priced with its own network quote. The fee row is the **sum** of
-those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate,
-during which Sign is still blocked by the preparing gate. A failing extra — an unaffordable fee, or a route that
-resolves without anyone able to sign — blocks Sign and surfaces in the same validation alert as a primary failure,
-rather than being silently dropped.
+those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate.
+That estimate is never signable: while quotes are pending the preparing gate blocks Sign, and an extra that never gets a
+quote fails closed — a failing extra (an unaffordable fee, a route that resolves without anyone able to sign, or a
+validation that failed outright and could not be checked) blocks Sign and surfaces in the same validation alert as a
+primary failure, rather than being silently dropped.
 
 The honest caveat that remains: **balance interactions _across_ plans from the same payer are not modeled.** The
 validator checks each transaction against current balances independently, so a payer with enough free balance for each

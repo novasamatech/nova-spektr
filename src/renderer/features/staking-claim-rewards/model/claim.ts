@@ -15,7 +15,7 @@ import {
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
-import { type TransactionValidationFatalError } from '@/shared/ui-entities';
+import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
@@ -301,7 +301,7 @@ type WrappedExtra = ExtraEntry & { tx: Transaction; signatory: AnyAccount };
 
 const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; entries: ExtraEntry[] }) => {
   const wrapped: WrappedExtra[] = [];
-  const dropped: TransactionValidationFatalError[] = [];
+  const dropped: TransactionValidationDryRunError[] = [];
 
   for (const entry of entries) {
     const signatory = entry.route.at(-1);
@@ -309,7 +309,18 @@ const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; 
       // A route with no terminal hop can be neither wrapped nor signed.
       // Surfaced as a per-entry validation error instead of silently shrinking
       // the set — a dropped entry used to leave `$preparing` waiting forever.
-      dropped.push({ message: t('staking.claimRewards.extraNoSignerError') });
+      //
+      // The dry-run shape is used for its rendering, not its meaning: it is the
+      // only error `TransactionValidationError` renders verbatim under a title
+      // of the sender's choosing (a bare `{ message }` gets a "Dry run error:"
+      // prefix, which would be a lie here). `failureReason` is unused when
+      // `description` is present.
+      dropped.push({
+        dryRunError: true,
+        failureReason: 'no-route-signer',
+        title: t('staking.flow.noSignerTitle'),
+        description: t('staking.claimRewards.extraNoSignerError'),
+      });
       continue;
     }
 
@@ -327,11 +338,15 @@ const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; 
 /**
  * Per-extra verdicts, one entry per plan beyond the first: the SAME validator
  * the primary transaction goes through, plus the extra's own priced fee. An
- * entry the wrapping step dropped arrives here as an error with no fee. Sign
- * stays blocked until this list covers every extra plan (see `$preparing`).
+ * entry the wrapping step dropped, or whose validation failed outright, arrives
+ * here as an error with no fee. Sign stays blocked until this list covers every
+ * extra plan (see `$preparing`), and `$canSign` refuses any entry that is not
+ * both clean and priced.
  */
+type ExtraValidationError = ValidationResult['errors'][number] | TransactionValidationDryRunError;
+
 type ExtraValidation = {
-  errors: ValidationResult['errors'];
+  errors: ExtraValidationError[];
   fee: BN | null;
 };
 
@@ -347,7 +362,7 @@ const validateExtrasFx = createEffect(
     asset: Asset;
     balances: Record<BalanceId, Balance>;
     wrapped: WrappedExtra[];
-    dropped: TransactionValidationFatalError[];
+    dropped: TransactionValidationDryRunError[];
   }): Promise<ExtraValidation[]> => {
     const validated: ExtraValidation[] = [];
 
@@ -365,6 +380,24 @@ const validateExtrasFx = createEffect(
       // quote, so reading it back avoids a second `paymentInfo` round trip.
       const fee =
         getActionRequiredAmount(balanceValidationResults, 'fee', entry.signatory.accountId).at(0)?.required ?? null;
+
+      // No errors AND no priced fee is the signature of a validator that threw
+      // and swallowed it (a clean verdict always carries the fee quote its
+      // affordability rule computed). Fail closed: an extra that could not be
+      // checked must block signing and say so, not pass by silence.
+      if (errors.length === 0 && nullable(fee)) {
+        validated.push({
+          errors: [
+            {
+              dryRunError: true,
+              failureReason: 'extra-validation-failed',
+              description: t('staking.claimRewards.extraValidationFailedError'),
+            },
+          ],
+          fee: null,
+        });
+        continue;
+      }
 
       validated.push({ errors, fee });
     }
@@ -443,10 +476,11 @@ const $preparing = combine(
 /**
  * The primary transaction's quoted fee plus each extra's own quoted fee.
  *
- * Until every extra has been priced (they are a round trip behind the primary,
- * and a dropped entry never gets a price), the figure falls back to the old
- * per-transaction × count approximation — `$preparing` keeps Sign blocked for
- * exactly that window, so the estimate is only ever shown, never signed on.
+ * Until every extra has been priced, the figure falls back to the old
+ * per-transaction × count approximation. That window is never signable: while
+ * quotes are pending `$preparing` blocks Sign, and an extra that never gets a
+ * quote (a dropped route, a validation that failed outright) carries an error
+ * and no fee — both of which `$canSign` refuses.
  */
 const $totalFee = combine(
   { fee: $fee, plans: $plans, extraValidation: $extraValidation },
@@ -503,7 +537,10 @@ const $canSign = combine(
     valid &&
     !preparing &&
     !noRouteSigner &&
-    extraValidation.every((entry) => entry.errors.length === 0),
+    // Clean AND priced — an extra without a fee quote was never actually
+    // checked (dropped route, swallowed validator throw), and fail-closed
+    // means such an entry can never be signed past.
+    extraValidation.every((entry) => entry.errors.length === 0 && nonNullable(entry.fee)),
 );
 
 const $confirmDraft = combine(

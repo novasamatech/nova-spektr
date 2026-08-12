@@ -201,10 +201,31 @@ describe('Staking Claim Rewards - Extra Plans Validation', () => {
     expect(env.getState(claimRewardsModel.$plans)).toHaveLength(2);
     // The dropped entry must not leave the confirm preparing forever…
     expect(env.getState(claimRewardsModel.$preparing)).toBe(false);
-    // …and must surface as an explicit message-only error that blocks signing.
+    // …and must surface as an explicit verbatim-rendered error that blocks
+    // signing (the dry-run shape is the one the alert renders under its own
+    // title, without the misleading "Dry run error:" prefix of bare messages).
     const extraErrors = env.getState(claimRewardsModel.$extraErrors);
     expect(extraErrors).toHaveLength(1);
-    expect(extraErrors[0]).toHaveProperty('message');
+    expect(extraErrors[0]).toMatchObject({ dryRunError: true, description: expect.any(String) });
+    expect(env.getState(claimRewardsModel.$canSign)).toBe(false);
+  });
+
+  it('should fail closed when an extra cannot be validated at all', async () => {
+    // No balance record for the second payer: the validator's fee rule asserts
+    // on the missing balance and the validator swallows the throw into an
+    // empty verdict — no errors, no priced fee. That must read as a blocking
+    // error, not as a pass.
+    await buildEnv([stakingAccountA, stakingAccountB], [balanceFor(stakingAccountA, FUNDED)]);
+
+    await env.executeEvent(claimRewardsModel.claimRequested, [
+      createClaimRequest(stakingAccountA, validatorOne),
+      createClaimRequest(stakingAccountB, validatorTwo),
+    ]);
+
+    expect(env.getState(claimRewardsModel.$preparing)).toBe(false);
+    const extraErrors = env.getState(claimRewardsModel.$extraErrors);
+    expect(extraErrors).toHaveLength(1);
+    expect(extraErrors[0]).toMatchObject({ dryRunError: true, failureReason: 'extra-validation-failed' });
     expect(env.getState(claimRewardsModel.$canSign)).toBe(false);
   });
 });
