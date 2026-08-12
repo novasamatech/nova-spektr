@@ -42,42 +42,51 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await setupTestMetadata('Staking dashboard', 'Populated');
   });
 
-  test('S1: KPI cards and the positions table describe the live position', async ({ stakingDashboardPage }) => {
-    test.setTimeout(TEST_TIMEOUT);
+  // In the @regress rotation as the staking smoke: the KPI locators anchor on
+  // the aria-label title prefix, and this is the test that notices a break —
+  // the rest of the @staking suite only runs on manual dispatch.
+  test(
+    'S1: KPI cards and the positions table describe the live position',
+    { tag: '@regress' },
+    async ({ stakingDashboardPage }) => {
+      test.setTimeout(TEST_TIMEOUT);
 
-    // --- Total staked: a fiat headline over a per-asset subline
-    await expect(stakingDashboardPage.getKpiSubline('totalStaked')).toContainText(elements.amountPattern, {
-      timeout: LIVE_DATA_TIMEOUT,
-    });
-    await expect(stakingDashboardPage.getKpiValue('totalStaked')).toContainText(elements.nonZeroFiatPattern, {
-      timeout: LIVE_DATA_TIMEOUT,
-    });
+      // --- Total staked: a fiat headline over a per-asset subline
+      await expect(stakingDashboardPage.getKpiSubline('totalStaked')).toContainText(elements.amountPattern, {
+        timeout: LIVE_DATA_TIMEOUT,
+      });
+      await expect(stakingDashboardPage.getKpiValue('totalStaked')).toContainText(elements.nonZeroFiatPattern, {
+        timeout: LIVE_DATA_TIMEOUT,
+      });
 
-    // --- Est. APY: a percentage, not the em dash
-    await expect(stakingDashboardPage.getKpiValue('apy')).toContainText(elements.percentPattern, {
-      timeout: LIVE_DATA_TIMEOUT,
-    });
-    await expect(stakingDashboardPage.getKpiSubline('apy')).toContainText(/stake-weighted · [1-9]\d* earning position/);
+      // --- Est. APY: a percentage, not the em dash
+      await expect(stakingDashboardPage.getKpiValue('apy')).toContainText(elements.percentPattern, {
+        timeout: LIVE_DATA_TIMEOUT,
+      });
+      await expect(stakingDashboardPage.getKpiSubline('apy')).toContainText(
+        /stake-weighted · [1-9]\d* earning position/,
+      );
 
-    // --- Active nominations: a non-zero count over a non-zero position count
-    await expect(stakingDashboardPage.getKpiValue('nominations')).toHaveText(/^[1-9]\d*$/, {
-      timeout: LIVE_DATA_TIMEOUT,
-    });
-    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · [1-9]\d* position/);
+      // --- Active nominations: a non-zero count over a non-zero position count
+      await expect(stakingDashboardPage.getKpiValue('nominations')).toHaveText(/^[1-9]\d*$/, {
+        timeout: LIVE_DATA_TIMEOUT,
+      });
+      await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · [1-9]\d* position/);
 
-    // --- Rewards card renders its window subline
-    await expect(stakingDashboardPage.getKpiSubline('rewards')).toContainText(/\d+d$/);
+      // --- Rewards card renders its window subline
+      await expect(stakingDashboardPage.getKpiSubline('rewards')).toContainText(/\d+d$/);
 
-    // --- Positions table
-    const row = stakingDashboardPage.getPositionRows().first();
-    await expect(row).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
-    await expect(row).toContainText(elements.amountPattern);
-    await expect(row).toContainText(elements.activeStatusLabel);
-    await expect(row).toContainText(elements.validatorsCellPattern);
-    await expect(row).toContainText(elements.percentPattern);
-    // A watch-only wallet marks its rows as view-only.
-    await expect(row).toContainText(elements.viewOnlyLabel);
-  });
+      // --- Positions table
+      const row = stakingDashboardPage.getPositionRows().first();
+      await expect(row).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
+      await expect(row).toContainText(elements.amountPattern);
+      await expect(row).toContainText(elements.activeStatusLabel);
+      await expect(row).toContainText(elements.validatorsCellPattern);
+      await expect(row).toContainText(elements.percentPattern);
+      // A watch-only wallet marks its rows as view-only.
+      await expect(row).toContainText(elements.viewOnlyLabel);
+    },
+  );
 
   test('S2: position row opens the detail drawer with no actions for watch-only', async ({ stakingDashboardPage }) => {
     test.setTimeout(TEST_TIMEOUT);
