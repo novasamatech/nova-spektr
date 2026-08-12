@@ -25,7 +25,7 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { stakingPositions } from '@/aggregates/staking-positions';
-import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
+import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { bondExtraValidator, unstakeValidator } from '@/features/operations/OperationsValidation';
@@ -127,7 +127,34 @@ export const createAmountFlowModel = () => {
     },
   );
 
-  const $reservable = $initiatorBalance.map((balance) => (balance ? reservableAmountBN(balance) : BN_ZERO));
+  // Created ahead of its own section below: in draft mode the available
+  // balance must read the path's source, not the initiator, so the binding has
+  // to exist before the balance derivations.
+  const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+
+  // Source balance for draft mode: fetched on-demand once the path is set so
+  // "Available"/Max reflect the eventual signer's balance, not the connected
+  // wallet's initiator (or zero for a contact position).
+  const $draftSourceBalance = wireDraftSourceBalance({
+    $draftPath: draftMode.$draftSigningPath,
+    $chain: $chain,
+    $isDraftMode: draftMode.$isDraftMode,
+    // The staking asset, explicitly — not the wire's native-asset default.
+    $asset: $asset,
+  });
+
+  const $reservable = combine(
+    {
+      isDraftMode: draftMode.$isDraftMode,
+      draftSourceBalance: $draftSourceBalance,
+      initiatorBalance: $initiatorBalance,
+    },
+    ({ isDraftMode, draftSourceBalance, initiatorBalance }) => {
+      if (isDraftMode) return draftSourceBalance ? reservableAmountBN(draftSourceBalance) : BN_ZERO;
+
+      return initiatorBalance ? reservableAmountBN(initiatorBalance) : BN_ZERO;
+    },
+  );
 
   // --- signing route -------------------------------------------------------
 
@@ -300,11 +327,18 @@ export const createAmountFlowModel = () => {
   /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
-  const $available = combine($reservable, $fee, (reservable, fee) => {
-    const available = fee ? reservable.sub(fee) : reservable;
+  const $available = combine(
+    { isDraftMode: draftMode.$isDraftMode, reservable: $reservable, fee: $fee },
+    ({ isDraftMode, reservable, fee }) => {
+      // Draft mode: no fee to subtract — the eventual signer pays it at submit
+      // time, so Max is the draft source's reservable, whole.
+      if (isDraftMode) return reservable;
 
-    return available.isNeg() ? BN_ZERO : available;
-  });
+      const available = fee ? reservable.sub(fee) : reservable;
+
+      return available.isNeg() ? BN_ZERO : available;
+    },
+  );
 
   const $maxAmount = combine(
     { mode: $mode, activeStake: $activeStake, available: $available },
@@ -377,8 +411,9 @@ export const createAmountFlowModel = () => {
   );
 
   // --- draft mode ----------------------------------------------------------
-
-  const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+  //
+  // `draftMode` itself is created up in the balance section — the available
+  // balance branches on it.
 
   // A request that arrives already knowing nobody local signs it (an
   // address-book position) opens with draft mode on, instead of making the
@@ -619,6 +654,7 @@ export const createAmountFlowModel = () => {
     $amount: readonly($amount),
     $amountPlanck,
     $activeStake,
+    $reservable,
     $available,
     $maxAmount,
     $remainingStake,
