@@ -19,7 +19,7 @@ import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder, transactionService as callDataService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -76,6 +76,24 @@ sample({
 const $chain = $requests.map((requests) => requests.at(0)?.chain ?? null);
 const $asset = $requests.map((requests) => requests.at(0)?.asset ?? null);
 const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
+
+/**
+ * No connection → no transaction → no fee and nothing to sign. The same guard
+ * the old staking forms carry: a session opened on a disconnected chain would
+ * otherwise build calls against a stale or absent api. Gates the primary call
+ * below AND `$extraEntries` — the extras wrap and price themselves off their
+ * own entries, independently of the primary transaction existing, so gating the
+ * primary alone would not stop them. The draft path stays ungated on purpose —
+ * a draft is call data for somebody else to sign later.
+ */
+const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+  if (!chain) return false;
+
+  const status = statuses[chain.chainId];
+  if (!status) return false;
+
+  return networkUtils.isConnectedStatus(status);
+});
 
 /**
  * Every transaction the session will sign. One account with no more payouts
@@ -141,7 +159,9 @@ const buildPayoutTx = (plan: ClaimPlan, accountId: AccountId): Transaction =>
     payouts: toPayoutArgs(plan.payouts),
   });
 
-const $primaryCoreTx = $primaryPlan.map((plan) => (plan ? buildPayoutTx(plan, plan.account.accountId) : null));
+const $primaryCoreTx = combine($primaryPlan, $isChainConnected, (plan, isConnected) =>
+  plan && isConnected ? buildPayoutTx(plan, plan.account.accountId) : null,
+);
 
 /**
  * A regular account signs for itself and has no signing path at all
@@ -242,6 +262,7 @@ const $extraEntries = combine(
     proxies: proxyModel.$proxies,
     ownSignerAccountIds: graphModel.$ownSignerAccountIds,
     resolveName: graphModel.$nameResolver,
+    isConnected: $isChainConnected,
   },
   ({
     plans,
@@ -253,8 +274,13 @@ const $extraEntries = combine(
     proxies,
     ownSignerAccountIds,
     resolveName,
+    isConnected,
   }): ExtraEntry[] => {
-    if (nullable(chain) || plans.length < 2) return [];
+    // The connection term is not redundant with the primary's gate: extras
+    // wrap and price through their own effect pipeline, clocked off this very
+    // store — they would proceed against a stale api even with `$primaryCoreTx`
+    // already null.
+    if (nullable(chain) || !isConnected || plans.length < 2) return [];
 
     const routeCache = new Map<AccountId, AnyAccount[]>();
     if (primaryAccountId && primaryRoute.length > 0) {

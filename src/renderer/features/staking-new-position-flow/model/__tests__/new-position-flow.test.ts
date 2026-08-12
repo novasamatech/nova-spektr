@@ -2,7 +2,15 @@ import { BN } from '@polkadot/util';
 import { type EventCallable, type Store, allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Asset, type Chain, type ChainId, type Wallet, CryptoType, SigningType } from '@/shared/core';
+import {
+  type Asset,
+  type Chain,
+  type ChainId,
+  type Wallet,
+  ConnectionStatus,
+  CryptoType,
+  SigningType,
+} from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Step } from '../../types';
@@ -118,6 +126,7 @@ vi.mock('@/features/validator-selection', async () => {
 });
 
 const { newPositionFlowModel } = await import('../new-position-flow');
+const { networkModel } = await import('@/entities/network');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 
 /**
@@ -176,9 +185,15 @@ const validator = (index: number) => ({ accountId: accountId(index), address: `a
 const $chains = () => mocks.chains as Store<unknown[]>;
 const $minBond = () => mocks.minBond as Store<Record<string, string>>;
 
-/** The two things the flow reads about a network. */
+/**
+ * What the flow reads about a network — chains, the minimum bond, and a live
+ * connection (`$coreTx` refuses to build on a disconnected chain).
+ */
 const seeded = (minBondPlanck = dot(1)) =>
-  new Map().set($chains(), [CHAIN]).set($minBond(), { [CHAIN_ID]: minBondPlanck });
+  new Map()
+    .set($chains(), [CHAIN])
+    .set($minBond(), { [CHAIN_ID]: minBondPlanck })
+    .set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.CONNECTED });
 
 /** Walks the form far enough that `Continue` is allowed. */
 async function fillForm(scope: ReturnType<typeof fork>, amount = '100') {

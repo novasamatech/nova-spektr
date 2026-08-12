@@ -14,7 +14,7 @@ import {
 } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
@@ -103,6 +103,22 @@ export const createConfirmFlowModel = () => {
   const $networkStore = combine($chain, $asset, (chain, asset) => (chain && asset ? { chain, asset } : null));
 
   const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
+
+  /**
+   * No connection → no `$coreTx` → no fee and nothing to sign. The same guard
+   * the old staking forms carry: a flow opened on a disconnected chain would
+   * otherwise build a call against a stale or absent api. The draft path stays
+   * ungated on purpose — a draft is call data for somebody else to sign later,
+   * and building it needs no live connection.
+   */
+  const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+    if (!chain) return false;
+
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
+  });
 
   // --- signing route -------------------------------------------------------
 
@@ -212,9 +228,10 @@ export const createConfirmFlowModel = () => {
       initiator: $initiator,
       validators: $validators,
       numSlashingSpans: $numSlashingSpans,
+      isConnected: $isChainConnected,
     },
-    ({ mode, chain, initiator, validators, numSlashingSpans }) => {
-      if (nullable(mode) || nullable(chain) || nullable(initiator)) return null;
+    ({ mode, chain, initiator, validators, numSlashingSpans, isConnected }) => {
+      if (nullable(mode) || nullable(chain) || nullable(initiator) || !isConnected) return null;
 
       if (mode === 'redeem') {
         return transactionBuilder.buildWithdraw({ chain, accountId: initiator.accountId, numSlashingSpans });

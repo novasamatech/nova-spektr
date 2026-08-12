@@ -23,7 +23,7 @@ import {
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { DEFAULT_STAKING_CHAIN, validatorsService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { stakingPositions } from '@/aggregates/staking-positions';
@@ -102,6 +102,22 @@ export const createNewPositionFlowModel = () => {
   const $networkStore = combine($chain, $asset, (chain, asset) => (chain && asset ? { chain, asset } : null));
 
   const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
+
+  /**
+   * No connection → no `$coreTx` → no fee and nothing to sign. The same guard
+   * the old staking forms carry: a flow opened on a disconnected chain would
+   * otherwise build a call against a stale or absent api. The draft path stays
+   * ungated on purpose — a draft is call data for somebody else to sign later,
+   * and building it needs no live connection.
+   */
+  const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+    if (!chain) return false;
+
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
+  });
 
   // --- account -------------------------------------------------------------
 
@@ -292,9 +308,11 @@ export const createNewPositionFlowModel = () => {
       destination: $rewardDestination,
       isDestinationValid: $isDestinationValid,
       validators: $validators,
+      isConnected: $isChainConnected,
     },
-    ({ chain, asset, initiator, amount, destination, isDestinationValid, validators }) => {
-      if (!chain || !asset || !initiator || !amount || !isDestinationValid || validators.length === 0) return null;
+    ({ chain, asset, initiator, amount, destination, isDestinationValid, validators, isConnected }) => {
+      if (!chain || !asset || !initiator || !amount || !isDestinationValid || !isConnected) return null;
+      if (validators.length === 0) return null;
 
       return transactionBuilder.buildBondNominate({
         chain,

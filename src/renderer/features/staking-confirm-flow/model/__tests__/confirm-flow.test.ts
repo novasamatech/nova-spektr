@@ -7,6 +7,7 @@ import {
   type ChainId,
   type Validator,
   type Wallet,
+  ConnectionStatus,
   CryptoType,
   SigningType,
   TransactionType,
@@ -205,8 +206,12 @@ const redeemTarget = (amount = REDEEMABLE) => ({
   signingMode: 'local' as const,
 });
 
+/** `$coreTx` is gated on the chain being connected — most tests want it open. */
+const connected = (values = new Map()) =>
+  values.set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.CONNECTED });
+
 /** An api the mocked pallet never looks at, but `$api` has to be non-null. */
-const withApi = () => new Map().set(networkModel.$apis, { [CHAIN_ID]: {} });
+const withApi = () => connected(new Map().set(networkModel.$apis, { [CHAIN_ID]: {} }));
 
 const signerPath = [{ kind: 'signer' as const, accountId: ALICE }];
 
@@ -251,7 +256,7 @@ describe('staking-confirm-flow · entry', () => {
 
 describe('staking-confirm-flow · built call', () => {
   it('nominates the picked set from the position account, order kept', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(confirmFlowModel.changeValidatorsRequested, {
       scope,
       params: changeTarget([validator(BOB), validator(ALICE), validator(BOB)]),
@@ -265,7 +270,7 @@ describe('staking-confirm-flow · built call', () => {
   });
 
   it('builds no call at all for an empty validator set', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(confirmFlowModel.changeValidatorsRequested, { scope, params: changeTarget([]) });
 
     expect(scope.getState(confirmFlowModel.$coreTx)).toBeNull();
@@ -308,6 +313,18 @@ describe('staking-confirm-flow · built call', () => {
     expect(scope.getState(confirmFlowModel.$coreTx)?.args['numSlashingSpans']).toBe(DEFAULT_SLASHING_SPANS);
   });
 
+  it('builds no call while the chain is disconnected', async () => {
+    // A fork with no seeded statuses reads the same way — both must refuse to
+    // build against a stale or absent api. The draft path is exempt by design.
+    const scope = fork({
+      values: new Map().set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.DISCONNECTED }),
+    });
+    await allSettled(confirmFlowModel.changeValidatorsRequested, { scope, params: changeTarget() });
+
+    expect(scope.getState(confirmFlowModel.$coreTx)).toBeNull();
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+  });
+
   it('does not ask the chain about spans for a validator change', async () => {
     const scope = fork({ values: withApi() });
     await allSettled(confirmFlowModel.changeValidatorsRequested, { scope, params: changeTarget() });
@@ -318,14 +335,14 @@ describe('staking-confirm-flow · built call', () => {
 
 describe('staking-confirm-flow · sign gate', () => {
   it('allows signing once the call, the fee and the validation have landed', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
   });
 
   it('holds Sign while the fee is still being priced', async () => {
-    const scope = fork({ values: new Map().set(complexStub()['$pendingFee'], true) });
+    const scope = fork({ values: connected(new Map().set(complexStub()['$pendingFee'], true)) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$preparing)).toBe(true);
@@ -333,14 +350,14 @@ describe('staking-confirm-flow · sign gate', () => {
   });
 
   it('holds Sign while the validation has not passed', async () => {
-    const scope = fork({ values: new Map().set(validationStub()['$valid'], false) });
+    const scope = fork({ values: connected(new Map().set(validationStub()['$valid'], false)) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
   });
 
   it('refuses a redeem with nothing unlocked behind it', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget('0') });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
