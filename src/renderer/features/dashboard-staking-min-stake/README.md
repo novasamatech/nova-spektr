@@ -43,6 +43,12 @@ and a literally constant series still gets a visible band so the line sits mid-p
 change that never happened. Completed eras share one muted line, the active era's segment, dot and labels carry the
 accent.
 
+**The plot is hand-rolled SVG, not Recharts** — a deliberate divergence from the rewards chart beside it. The design
+draws full-column plateaus with the dot and value label at the column's centre, which Recharts' `stepAfter`
+interpolation cannot produce (its step turns at the data point), and the active era's segment is a second stroke laid
+over the shared line. Eight points don't justify a charting runtime, and the KPI donut already documents Recharts'
+hover-animation crash as a live hazard.
+
 **The plot keeps a K-notation precision floor** (`1,150.0K` vs `1,156.2K`) — the one deliberate exception to the card
 abbreviation rule, confirmed at design review: the house M-shorthand prints the same `1.15M` for all eight eras of a
 flat week. The headline still abbreviates (`1.15M DOT`); the hover card prints full precision (`1,160,234 DOT`), which

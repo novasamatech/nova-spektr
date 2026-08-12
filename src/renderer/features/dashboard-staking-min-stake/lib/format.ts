@@ -8,6 +8,8 @@ export const planckToTokens = (planck: string, precision: number): number => {
   return new BigNumber(planck).shiftedBy(-precision).toNumber();
 };
 
+// The locale is pinned rather than inherited from the system: the labels are
+// asserted verbatim in tests, and the app ships English-only UI text today.
 const group = (value: number): string => Math.round(value).toLocaleString('en-US');
 
 /**

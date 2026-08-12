@@ -4,9 +4,8 @@ import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { useActiveEra, useEraProgress, useEraThresholds } from '@/domains/staking';
 import { useApi } from '@/entities/network';
 import { ERA_DEPTH } from '../lib/constants';
+import { deriveEraDateMs } from '../lib/era';
 import { planckToTokens } from '../lib/format';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Placeholder key for "no chain selected" — resolves to no api, hence no data. */
 const NO_CHAIN: ChainId = '0x00';
@@ -19,9 +18,8 @@ export type MinStakeRow = {
   tokens: number;
   validatorCount: number;
   /**
-   * When the era started, or `null` when it cannot be stated honestly — no
-   * anchor yet, or eras shorter than a day (several eras then share a date and
-   * any single label would be arbitrary; in practice Kusama's 6h eras).
+   * When the era started, or `null` when honesty forbids a date — see
+   * `deriveEraDateMs`.
    */
   dateMs: number | null;
   isActive: boolean;
@@ -64,9 +62,9 @@ export const useMinStakeRows = (chain: Chain | null, precision: number): Result 
   const rows = useMemo(() => {
     if (thresholds === undefined || activeEra === undefined) return undefined;
 
-    const anchor =
-      progress && progress.era === activeEra && progress.eraDurationMs >= DAY_MS
-        ? { startMs: progress.eraStartMs, durationMs: progress.eraDurationMs }
+    const timeline =
+      progress && progress.era === activeEra && progress.eraDurationMs > 0
+        ? { startMs: progress.eraStartMs, eraDurationMs: progress.eraDurationMs }
         : null;
 
     return thresholds.map<MinStakeRow>((threshold) => ({
@@ -74,7 +72,7 @@ export const useMinStakeRows = (chain: Chain | null, precision: number): Result 
       minStake: threshold.minStake,
       tokens: planckToTokens(threshold.minStake, precision),
       validatorCount: threshold.validatorCount,
-      dateMs: anchor ? anchor.startMs - (activeEra - threshold.era) * anchor.durationMs : null,
+      dateMs: deriveEraDateMs(timeline, activeEra, threshold.era),
       isActive: threshold.era === activeEra,
     }));
   }, [thresholds, activeEra, progress, precision]);

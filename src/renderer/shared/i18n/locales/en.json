@@ -1015,7 +1015,7 @@
         "assetSwitch": "Staking network",
         "headlineEra": "era {era} · active",
         "validatorsPerEra": "{validators} elected validators per era",
-        "deltaTitle": "{delta} {symbol} against era {era}, seven eras ago",
+        "deltaTitle": "{delta} {symbol} against era {era}, {eras} eras ago",
         "zoomNote": "axis floor {floor} {symbol} — zoomed, not zero · a step per era",
         "empty": {
           "title": "No era history yet",

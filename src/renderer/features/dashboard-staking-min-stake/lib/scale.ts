@@ -16,6 +16,19 @@ export type ScaleWindow = {
   gridlines: number[];
 };
 
+/**
+ * How far below the smallest value the axis floor sits, as a share of the data
+ * range.
+ */
+const FLOOR_PADDING_RATIO = 0.4;
+/** Headroom above the largest value, as a share of the data range. */
+const CEIL_PADDING_RATIO = 0.2;
+/**
+ * Top strip (share of the window) kept free of gridlines so the tallest step's
+ * label stays clear.
+ */
+const TOP_LABEL_CLEARANCE_RATIO = 0.06;
+
 /** 1-2-5 rounding, so gridline values stay readable. */
 const niceStep = (raw: number): number => {
   const power = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -32,15 +45,13 @@ export const buildWindow = (values: number[]): ScaleWindow => {
   // — so the line sits mid-plot instead of collapsing onto the axis.
   const range = max - min || Math.max(max * 0.001, 1);
 
-  const floor = Math.max(min - range * 0.4, 0);
-  const ceil = max + range * 0.2;
+  const floor = Math.max(min - range * FLOOR_PADDING_RATIO, 0);
+  const ceil = max + range * CEIL_PADDING_RATIO;
   const span = ceil - floor;
   const step = niceStep(span / 3);
 
   const gridlines: number[] = [];
-  // Stop short of the ceiling so the top gridline label never collides with
-  // the tallest step's own label.
-  for (let line = Math.ceil(floor / step) * step; line < ceil - span * 0.06; line += step) {
+  for (let line = Math.ceil(floor / step) * step; line < ceil - span * TOP_LABEL_CLEARANCE_RATIO; line += step) {
     if (line > floor) gridlines.push(line);
   }
 

@@ -47,7 +47,10 @@ export const MinStakeWidget = () => {
     setHover(null);
   }, []);
 
-  const window = useMemo(() => (rows && rows.length > 0 ? buildWindow(rows.map((row) => row.tokens)) : null), [rows]);
+  const scaleWindow = useMemo(
+    () => (rows && rows.length > 0 ? buildWindow(rows.map((row) => row.tokens)) : null),
+    [rows],
+  );
 
   if (!selected) return null;
 
@@ -86,6 +89,7 @@ export const MinStakeWidget = () => {
                     delta: formatSignedTokens(current.tokens - first.tokens),
                     symbol: selected.symbol,
                     era: first.era.toLocaleString('en-US'),
+                    eras: ERA_DEPTH,
                   })}
                 >
                   <Label variant={current.tokens >= first.tokens ? 'orange' : 'green'}>
@@ -106,11 +110,11 @@ export const MinStakeWidget = () => {
         <div className="relative mt-3 flex min-h-0 flex-1 flex-col" style={{ minHeight: CHART_MIN_HEIGHT }}>
           {pending ? (
             <Skeleton width="100%" height="100%" />
-          ) : rows && rows.length > 0 && window ? (
+          ) : rows && rows.length > 0 && scaleWindow ? (
             <>
               <MinStakeStepChart
                 rows={rows}
-                window={window}
+                scaleWindow={scaleWindow}
                 hoveredIndex={hover?.index ?? null}
                 formatDate={formatDate}
                 onHoverChange={setHover}
@@ -141,10 +145,10 @@ export const MinStakeWidget = () => {
           )}
         </div>
 
-        {window && !pending && (
+        {scaleWindow && !pending && (
           <HelpText className="mt-2 text-text-tertiary">
             {t('dashboard.staking.minStake.zoomNote', {
-              floor: formatAxisValue(window.floor, window.step),
+              floor: formatAxisValue(scaleWindow.floor, scaleWindow.step),
               symbol: selected.symbol,
             })}
           </HelpText>

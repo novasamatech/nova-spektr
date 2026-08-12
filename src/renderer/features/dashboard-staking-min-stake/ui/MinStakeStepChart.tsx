@@ -3,7 +3,7 @@ import { type MouseEvent, useCallback, useMemo, useRef } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
 import { type MinStakeRow } from '../hooks/useMinStakeRows';
-import { CHART_VALUE_SHARE, STEP_COLORS } from '../lib/constants';
+import { CHART_VALUE_SHARE, ERA_DATE_FORMAT, STEP_COLORS } from '../lib/constants';
 import { formatAxisValue, formatEraValue } from '../lib/format';
 import { type ScaleWindow, fractionOf } from '../lib/scale';
 
@@ -17,7 +17,7 @@ export type ChartHover = {
 
 type Props = {
   rows: MinStakeRow[];
-  window: ScaleWindow;
+  scaleWindow: ScaleWindow;
   hoveredIndex: number | null;
   formatDate: (date: Date | number, pattern: string) => string;
   onHoverChange: (hover: ChartHover | null) => void;
@@ -34,14 +34,21 @@ const AXIS_CLASS = 'w-10 shrink-0';
  * era, so a curve through the points would draw a change that never happened.
  * Completed eras share one muted line; the active era's segment is re-drawn in
  * the accent on top, matching its dot and label.
+ *
+ * Hand-rolled SVG rather than Recharts (which the rewards chart next to it
+ * uses): the design draws full-column plateaus with the dot and label at the
+ * column's centre, which Recharts' `stepAfter` interpolation cannot produce
+ * (its step turns at the point), and the active era needs its own stroke laid
+ * over the shared line. Eight points also don't need a charting runtime — see
+ * the KPI donut's history with Recharts hover animation.
  */
-export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHoverChange }: Props) => {
+export const MinStakeStepChart = ({ rows, scaleWindow, hoveredIndex, formatDate, onHoverChange }: Props) => {
   const boxRef = useRef<HTMLDivElement>(null);
 
   const geometry = useMemo(() => {
     const count = rows.length;
     const columnWidth = VIEW / count;
-    const yOf = (row: MinStakeRow) => VIEW - fractionOf(window, row.tokens) * CHART_VALUE_SHARE * VIEW;
+    const yOf = (row: MinStakeRow) => VIEW - fractionOf(scaleWindow, row.tokens) * CHART_VALUE_SHARE * VIEW;
 
     const linePoints = rows
       .map((row, index) => {
@@ -66,10 +73,10 @@ export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHo
       columns: rows.map((row, index) => ({
         left: `${((index / count) * 100).toFixed(3)}%`,
         width: `${(100 / count).toFixed(3)}%`,
-        bottom: `${(fractionOf(window, row.tokens) * CHART_VALUE_SHARE * 100).toFixed(2)}%`,
+        bottom: `${(fractionOf(scaleWindow, row.tokens) * CHART_VALUE_SHARE * 100).toFixed(2)}%`,
       })),
     };
-  }, [rows, window]);
+  }, [rows, scaleWindow]);
 
   const handleEnter = useCallback(
     (index: number) => (event: MouseEvent<HTMLDivElement>) => {
@@ -89,26 +96,26 @@ export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHo
       <div className="flex min-h-0 flex-1 gap-2">
         {/* y-axis labels, aligned to the gridlines they describe */}
         <div className={cnTw(AXIS_CLASS, 'relative')}>
-          {window.gridlines.map((line) => (
+          {scaleWindow.gridlines.map((line) => (
             <div
               key={line}
               className="absolute right-0 translate-y-1/2"
-              style={{ bottom: `${(fractionOf(window, line) * CHART_VALUE_SHARE * 100).toFixed(2)}%` }}
+              style={{ bottom: `${(fractionOf(scaleWindow, line) * CHART_VALUE_SHARE * 100).toFixed(2)}%` }}
             >
-              <HelpText className="text-text-tertiary tabular-nums">{formatAxisValue(line, window.step)}</HelpText>
+              <HelpText className="text-text-tertiary tabular-nums">{formatAxisValue(line, scaleWindow.step)}</HelpText>
             </div>
           ))}
           <HelpText className="absolute right-0 -bottom-1 text-text-tertiary tabular-nums">
-            {formatAxisValue(window.floor, window.step)}
+            {formatAxisValue(scaleWindow.floor, scaleWindow.step)}
           </HelpText>
         </div>
 
         <div className="relative min-w-0 flex-1 border-b border-divider">
-          {window.gridlines.map((line) => (
+          {scaleWindow.gridlines.map((line) => (
             <div
               key={line}
               className="absolute inset-x-0 border-t border-divider"
-              style={{ bottom: `${(fractionOf(window, line) * CHART_VALUE_SHARE * 100).toFixed(2)}%` }}
+              style={{ bottom: `${(fractionOf(scaleWindow, line) * CHART_VALUE_SHARE * 100).toFixed(2)}%` }}
             />
           ))}
 
@@ -129,7 +136,9 @@ export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHo
             <polyline
               points={geometry.activePoints}
               fill="none"
-              stroke={STEP_COLORS.accent}
+              // var() resolves in CSS properties only, never in presentation
+              // attributes — the token-based stroke must go through style.
+              style={{ stroke: STEP_COLORS.accent }}
               strokeWidth={2.4}
               strokeLinejoin="round"
               vectorEffect="non-scaling-stroke"
@@ -161,7 +170,7 @@ export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHo
                 className="absolute left-1/2 box-border h-1.5 w-1.5 -translate-x-1/2 translate-y-1/2 rounded-full border-[1.6px]"
                 style={{
                   bottom: geometry.columns[index]?.bottom,
-                  backgroundColor: row.isActive ? STEP_COLORS.accent : '#fff',
+                  backgroundColor: row.isActive ? STEP_COLORS.accent : STEP_COLORS.dotFill,
                   borderColor: row.isActive ? STEP_COLORS.accent : STEP_COLORS.line,
                 }}
               />
@@ -185,7 +194,7 @@ export const MinStakeStepChart = ({ rows, window, hoveredIndex, formatDate, onHo
                 {row.era}
               </HelpText>
               {row.dateMs !== null && (
-                <HelpText className="block text-text-tertiary">{formatDate(row.dateMs, 'MMM d')}</HelpText>
+                <HelpText className="block text-text-tertiary">{formatDate(row.dateMs, ERA_DATE_FORMAT)}</HelpText>
               )}
             </div>
           ))}

@@ -3,7 +3,7 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type MinStakeRow } from '../hooks/useMinStakeRows';
-import { TOOLTIP_WIDTH } from '../lib/constants';
+import { ERA_DATE_FORMAT, TOOLTIP_WIDTH } from '../lib/constants';
 import { formatExactTokens, formatSignedTokens } from '../lib/format';
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 export const MinStakeTooltip = ({ row, previous, asset, showFiat, formatDate }: Props) => {
   const { t } = useI18n();
 
-  const date = row.dateMs === null ? null : formatDate(row.dateMs, 'MMM d');
+  const date = row.dateMs === null ? null : formatDate(row.dateMs, ERA_DATE_FORMAT);
   const title = [
     t('dashboard.staking.minStake.tooltip.era', { era: row.era.toLocaleString('en-US') }),
     date,
