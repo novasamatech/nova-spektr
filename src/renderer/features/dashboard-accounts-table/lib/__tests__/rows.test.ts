@@ -1,11 +1,11 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Address, type Asset, type Chain, type Wallet } from '@/shared/core';
+import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PurposeSplit } from '../balancePurpose';
 import { buildRowFiat, groupRows } from '../rows';
-import { type AccountRow } from '../types';
+
+import { makeRow } from './fixtures';
 
 const ALICE = toAccountId('0x' + '11'.repeat(32));
 const BOB = toAccountId('0x' + '22'.repeat(32));
@@ -24,32 +24,6 @@ const makeSplit = (params: {
   other: new BN(params.other ?? 0),
   vestedHint: BN_ZERO,
 });
-
-const makeRow = (overrides: Partial<AccountRow> & { accountId: AccountId }): AccountRow => {
-  const chainId = overrides.chain?.chainId ?? '0xchain';
-  const symbol = overrides.asset?.symbol ?? 'DOT';
-
-  const chain = (overrides.chain ?? { chainId }) as unknown as Chain;
-  const asset = (overrides.asset ?? { symbol }) as unknown as Asset;
-  const split = overrides.split ?? makeSplit({ transferable: 0 });
-
-  return {
-    id: `${overrides.accountId}-${chainId}-${symbol}`,
-    accountId: overrides.accountId,
-    groupKey: overrides.groupKey ?? overrides.accountId,
-    displayName: overrides.displayName ?? 'Account',
-    displayAddress: (overrides.displayAddress ?? 'addr') as unknown as Address,
-    shortAddress: overrides.shortAddress ?? 'addr',
-    wallet: overrides.wallet ?? null,
-    walletTypeBucket: overrides.walletTypeBucket ?? 'vault',
-    chain,
-    networkName: overrides.networkName ?? 'Polkadot',
-    asset,
-    split,
-    totalBN: overrides.totalBN ?? split.transferable,
-    fiat: overrides.fiat ?? { transferable: null, staked: null, governance: null, other: null, total: null },
-  };
-};
 
 describe('buildRowFiat', () => {
   it('returns all-null buckets when price is null', () => {

@@ -1,6 +1,5 @@
-import { type Address, type Asset, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TableFilters,
   EMPTY_FILTERS,
@@ -9,35 +8,11 @@ import {
   countActiveFilters,
   parseAmountInput,
 } from '../filters';
-import { type AccountRow } from '../types';
+
+import { makeRow } from './fixtures';
 
 const ALICE = toAccountId('0x' + '11'.repeat(32));
 const BOB = toAccountId('0x' + '22'.repeat(32));
-
-const makeRow = (overrides: Partial<AccountRow> & { accountId: AccountId }): AccountRow => {
-  const chainId = overrides.chain?.chainId ?? '0xchain';
-  const symbol = overrides.asset?.symbol ?? 'DOT';
-
-  const chain = (overrides.chain ?? { chainId }) as unknown as Chain;
-  const asset = (overrides.asset ?? { symbol }) as unknown as Asset;
-
-  return {
-    id: `${overrides.accountId}-${chainId}-${symbol}`,
-    accountId: overrides.accountId,
-    groupKey: overrides.groupKey ?? overrides.accountId,
-    displayName: overrides.displayName ?? 'Account',
-    displayAddress: (overrides.displayAddress ?? 'addr') as unknown as Address,
-    shortAddress: overrides.shortAddress ?? 'addr',
-    wallet: overrides.wallet ?? null,
-    walletTypeBucket: overrides.walletTypeBucket ?? 'vault',
-    chain,
-    networkName: overrides.networkName ?? 'Polkadot',
-    asset,
-    split: overrides.split ?? ({} as AccountRow['split']),
-    totalBN: overrides.totalBN ?? ({} as AccountRow['totalBN']),
-    fiat: overrides.fiat ?? { transferable: null, staked: null, governance: null, other: null, total: null },
-  };
-};
 
 describe('parseAmountInput', () => {
   it.each([

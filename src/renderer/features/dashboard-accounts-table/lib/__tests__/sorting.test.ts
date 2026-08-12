@@ -1,34 +1,11 @@
-import { type Address, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DEFAULT_SORT, nextSort, sortGroups, sortRows } from '../sorting';
-import { type AccountGroup, type AccountRow, type TableSortState } from '../types';
+import { type AccountGroup, type TableSortState } from '../types';
+
+import { makeRow } from './fixtures';
 
 const ALICE = toAccountId('0x' + '11'.repeat(32));
-
-const makeRow = (overrides: Partial<AccountRow> & { accountId: AccountId }): AccountRow => {
-  const chainId = overrides.chain?.chainId ?? '0xchain';
-  const chainName = (overrides.chain as unknown as { name?: string } | undefined)?.name ?? 'Polkadot';
-
-  const chain = (overrides.chain ?? { chainId, name: chainName }) as unknown as Chain;
-
-  return {
-    id: overrides.id ?? `${overrides.accountId}-${chainId}`,
-    accountId: overrides.accountId,
-    groupKey: overrides.groupKey ?? overrides.accountId,
-    displayName: overrides.displayName ?? 'Account',
-    displayAddress: (overrides.displayAddress ?? 'addr') as unknown as Address,
-    shortAddress: overrides.shortAddress ?? 'addr',
-    wallet: overrides.wallet ?? null,
-    walletTypeBucket: overrides.walletTypeBucket ?? 'vault',
-    chain,
-    networkName: overrides.networkName ?? 'Polkadot',
-    asset: overrides.asset ?? ({} as AccountRow['asset']),
-    split: overrides.split ?? ({} as AccountRow['split']),
-    totalBN: overrides.totalBN ?? ({} as AccountRow['totalBN']),
-    fiat: overrides.fiat ?? { transferable: null, staked: null, governance: null, other: null, total: null },
-  };
-};
 
 const makeGroup = (overrides: Partial<AccountGroup> & { key: string }): AccountGroup => {
   return {
