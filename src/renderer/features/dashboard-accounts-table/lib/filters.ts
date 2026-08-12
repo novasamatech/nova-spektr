@@ -44,56 +44,44 @@ export const applyFilters = (rows: AccountRow[], filters: TableFilters): Account
   });
 };
 
+const hasMinFilter = (filters: TableFilters): boolean => filters.minTotalFiat.trim() !== '';
+
 export const countActiveFilters = (filters: TableFilters): number => {
   return (
     filters.networks.length +
     filters.chains.length +
     filters.accounts.length +
     filters.walletTypes.length +
-    (filters.minTotalFiat.trim() === '' ? 0 : 1)
+    (hasMinFilter(filters) ? 1 : 0)
   );
 };
 
 export type FilterChip = { id: string; label: string; next: TableFilters };
 
+export type ChipLabels = {
+  field: (field: keyof TableFilters) => string;
+  value: (field: keyof TableFilters, value: string) => string;
+};
+
 /** Removes a single occurrence of `value` from `list`, preserving order. */
 const removeValue = <T>(list: readonly T[], value: T): T[] => list.filter((item) => item !== value);
 
-export const buildFilterChips = (
-  filters: TableFilters,
-  labels: { field: (field: keyof TableFilters) => string; value: (field: keyof TableFilters, value: string) => string },
-): FilterChip[] => {
+const LIST_FIELDS = ['networks', 'chains', 'accounts', 'walletTypes'] as const;
+
+export const buildFilterChips = (filters: TableFilters, labels: ChipLabels): FilterChip[] => {
   const chips: FilterChip[] = [];
 
-  for (const value of filters.networks) {
-    chips.push({
-      id: `networks:${value}`,
-      label: `${labels.field('networks')}: ${labels.value('networks', value)}`,
-      next: { ...filters, networks: removeValue(filters.networks, value) },
-    });
+  for (const field of LIST_FIELDS) {
+    const values = filters[field];
+    for (const value of values) {
+      chips.push({
+        id: `${field}:${value}`,
+        label: `${labels.field(field)}: ${labels.value(field, value)}`,
+        next: { ...filters, [field]: removeValue(values, value) },
+      });
+    }
   }
-  for (const value of filters.chains) {
-    chips.push({
-      id: `chains:${value}`,
-      label: `${labels.field('chains')}: ${labels.value('chains', value)}`,
-      next: { ...filters, chains: removeValue(filters.chains, value) },
-    });
-  }
-  for (const value of filters.accounts) {
-    chips.push({
-      id: `accounts:${value}`,
-      label: `${labels.field('accounts')}: ${labels.value('accounts', value)}`,
-      next: { ...filters, accounts: removeValue(filters.accounts, value) },
-    });
-  }
-  for (const value of filters.walletTypes) {
-    chips.push({
-      id: `walletTypes:${value}`,
-      label: `${labels.field('walletTypes')}: ${labels.value('walletTypes', value)}`,
-      next: { ...filters, walletTypes: removeValue(filters.walletTypes, value) },
-    });
-  }
-  if (filters.minTotalFiat.trim() !== '') {
+  if (hasMinFilter(filters)) {
     chips.push({
       id: 'min',
       label: labels.value('minTotalFiat', filters.minTotalFiat),
