@@ -7,6 +7,7 @@ import {
   buildFilterChips,
   countActiveFilters,
   parseAmountInput,
+  toggleListFilter,
 } from '../filters';
 
 import { makeRow } from './fixtures';
@@ -132,6 +133,39 @@ describe('countActiveFilters', () => {
     const filters: TableFilters = { ...EMPTY_FILTERS, minTotalFiat: '   ' };
 
     expect(countActiveFilters(filters)).toEqual(0);
+  });
+});
+
+describe('toggleListFilter', () => {
+  it('adds a value when absent', () => {
+    const next = toggleListFilter(EMPTY_FILTERS, 'networks', 'Polkadot');
+
+    expect(next.networks).toEqual(['Polkadot']);
+  });
+
+  it('removes a value when present', () => {
+    const filters: TableFilters = { ...EMPTY_FILTERS, networks: ['Polkadot', 'Kusama'] };
+
+    const next = toggleListFilter(filters, 'networks', 'Polkadot');
+
+    expect(next.networks).toEqual(['Kusama']);
+  });
+
+  it('leaves other fields untouched', () => {
+    const filters: TableFilters = {
+      ...EMPTY_FILTERS,
+      chains: ['0x91b1'],
+      accounts: ['alice'],
+      walletTypes: ['vault'],
+      minTotalFiat: '100K',
+    };
+
+    const next = toggleListFilter(filters, 'networks', 'Polkadot');
+
+    expect(next.chains).toEqual(filters.chains);
+    expect(next.accounts).toEqual(filters.accounts);
+    expect(next.walletTypes).toEqual(filters.walletTypes);
+    expect(next.minTotalFiat).toEqual(filters.minTotalFiat);
   });
 });
 

@@ -67,6 +67,45 @@ export type ChipLabels = {
 const removeValue = <T>(list: readonly T[], value: T): T[] => list.filter((item) => item !== value);
 
 const LIST_FIELDS = ['networks', 'chains', 'accounts', 'walletTypes'] as const;
+type ListField = (typeof LIST_FIELDS)[number];
+
+/**
+ * One toggle function per list field, each checked against its own concrete
+ * element type (`TableFilters[F][number]` instantiated at the property's own
+ * key) — keeps `ChainId` / `WalletTypeBucket` precise without a generic
+ * `filters[field]` read, which TS can't narrow to a concrete array type.
+ */
+const listFieldToggles: { [F in ListField]: (filters: TableFilters, value: TableFilters[F][number]) => TableFilters } =
+  {
+    networks: (filters, value) => ({
+      ...filters,
+      networks: filters.networks.includes(value) ? removeValue(filters.networks, value) : [...filters.networks, value],
+    }),
+    chains: (filters, value) => ({
+      ...filters,
+      chains: filters.chains.includes(value) ? removeValue(filters.chains, value) : [...filters.chains, value],
+    }),
+    accounts: (filters, value) => ({
+      ...filters,
+      accounts: filters.accounts.includes(value) ? removeValue(filters.accounts, value) : [...filters.accounts, value],
+    }),
+    walletTypes: (filters, value) => ({
+      ...filters,
+      walletTypes: filters.walletTypes.includes(value)
+        ? removeValue(filters.walletTypes, value)
+        : [...filters.walletTypes, value],
+    }),
+  };
+
+/**
+ * Adds `value` to `field` when absent, removes it when present. Other fields
+ * pass through untouched.
+ */
+export const toggleListFilter = <F extends ListField>(
+  filters: TableFilters,
+  field: F,
+  value: TableFilters[F][number],
+): TableFilters => listFieldToggles[field](filters, value);
 
 export const buildFilterChips = (filters: TableFilters, labels: ChipLabels): FilterChip[] => {
   const chips: FilterChip[] = [];

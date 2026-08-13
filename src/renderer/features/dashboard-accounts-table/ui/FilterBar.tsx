@@ -6,7 +6,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Dropdown, Input, Popover } from '@/shared/ui-kit';
-import { type TableFilters, countActiveFilters, parseAmountInput } from '../lib/filters';
+import { type TableFilters, countActiveFilters, parseAmountInput, toggleListFilter } from '../lib/filters';
 import { type AccountRow, type WalletTypeBucket } from '../lib/types';
 
 type Props = {
@@ -101,6 +101,14 @@ const CheckboxDropdown = <T extends string>({ fieldLabel, options, selected, onT
 
 const AMOUNT_PRESETS = ['100K', '1M'] as const;
 
+const presetPillClass = (active: boolean): string =>
+  cnTw(
+    'flex h-6.5 items-center rounded-full border px-3 text-footnote',
+    active
+      ? 'border-primary-button-background-default bg-badge-background text-tab-text-accent'
+      : 'border-filter-border text-text-secondary hover:bg-block-background',
+  );
+
 const AmountPopover = ({
   currencyCode,
   minTotalFiat,
@@ -143,27 +151,13 @@ const AmountPopover = ({
               <button
                 key={preset}
                 type="button"
-                className={cnTw(
-                  'flex h-6.5 items-center rounded-full border px-3 text-footnote',
-                  minTotalFiat === preset
-                    ? 'border-primary-button-background-default bg-badge-background text-tab-text-accent'
-                    : 'border-filter-border text-text-secondary hover:bg-block-background',
-                )}
+                className={presetPillClass(minTotalFiat === preset)}
                 onClick={() => onChange(preset)}
               >
                 {t('dashboard.accountsTable.filters.presetMin', { value: `$${preset}` })}
               </button>
             ))}
-            <button
-              type="button"
-              className={cnTw(
-                'flex h-6.5 items-center rounded-full border px-3 text-footnote',
-                minTotalFiat === ''
-                  ? 'border-primary-button-background-default bg-badge-background text-tab-text-accent'
-                  : 'border-filter-border text-text-secondary hover:bg-block-background',
-              )}
-              onClick={() => onChange('')}
-            >
+            <button type="button" className={presetPillClass(minTotalFiat === '')} onClick={() => onChange('')}>
               {t('dashboard.accountsTable.filters.presetAny')}
             </button>
           </div>
@@ -205,48 +199,28 @@ export const FilterBar = ({ rows, filters, currencyCode, onChange }: Props) => {
         fieldLabel={t('dashboard.accountsTable.filters.network')}
         options={networkOptions}
         selected={filters.networks}
-        onToggle={(value) => {
-          const networks = filters.networks.includes(value)
-            ? filters.networks.filter((item) => item !== value)
-            : [...filters.networks, value];
-          onChange({ ...filters, networks });
-        }}
+        onToggle={(value) => onChange(toggleListFilter(filters, 'networks', value))}
       />
 
       <CheckboxDropdown
         fieldLabel={t('dashboard.accountsTable.filters.chain')}
         options={chainOptions}
         selected={filters.chains}
-        onToggle={(value) => {
-          const chains = filters.chains.includes(value)
-            ? filters.chains.filter((item) => item !== value)
-            : [...filters.chains, value];
-          onChange({ ...filters, chains });
-        }}
+        onToggle={(value) => onChange(toggleListFilter(filters, 'chains', value))}
       />
 
       <CheckboxDropdown
         fieldLabel={t('dashboard.accountsTable.filters.account')}
         options={accountOptions}
         selected={filters.accounts}
-        onToggle={(value) => {
-          const accounts = filters.accounts.includes(value)
-            ? filters.accounts.filter((item) => item !== value)
-            : [...filters.accounts, value];
-          onChange({ ...filters, accounts });
-        }}
+        onToggle={(value) => onChange(toggleListFilter(filters, 'accounts', value))}
       />
 
       <CheckboxDropdown
         fieldLabel={t('dashboard.accountsTable.filters.walletType')}
         options={walletTypeOptions}
         selected={filters.walletTypes}
-        onToggle={(value) => {
-          const walletTypes = filters.walletTypes.includes(value)
-            ? filters.walletTypes.filter((item) => item !== value)
-            : [...filters.walletTypes, value];
-          onChange({ ...filters, walletTypes });
-        }}
+        onToggle={(value) => onChange(toggleListFilter(filters, 'walletTypes', value))}
       />
 
       <AmountPopover
