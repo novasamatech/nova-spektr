@@ -945,6 +945,7 @@
         "noValue": "—",
         "viewOnly": "view only",
         "localWallet": "Local wallet",
+        "addressBook": "Address book",
         "multisigChip": "{threshold}/{total}",
         "multisigHint": "Multisig — {threshold} of {total} signatures required",
         "draftHint_one": "{count} pending draft",

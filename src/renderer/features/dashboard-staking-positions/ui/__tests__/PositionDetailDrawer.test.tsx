@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createWatch, fork } from 'effector';
 import { Provider } from 'effector-react';
 
+import { WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -55,14 +56,14 @@ const row: PositionRow = {
   draftCount: 0,
 };
 
-const renderDrawer = () => {
+const renderDrawer = (drawerRow: PositionRow = row) => {
   const scope = fork({ values: [[positionActions.$wiredActions, ['changeValidators']]] });
 
   return render(
     <Provider value={scope}>
       <I18Provider>
         <ThemeProvider>
-          <PositionDetailDrawer row={row} onClose={() => {}} />
+          <PositionDetailDrawer row={drawerRow} onClose={() => {}} />
         </ThemeProvider>
       </I18Provider>
     </Provider>,
@@ -103,6 +104,34 @@ const renderValidatorDrawer = () => {
 };
 
 describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
+  test('should badge a contact position as Address book, never Local wallet', async () => {
+    // `wallet: null` is the fact the badge states — nothing local holds the
+    // account, it is known from the address book alone.
+    renderDrawer({ ...row, account: null, wallet: null, accessMode: 'draft' });
+
+    expect(await screen.findByText('Address book')).toBeInTheDocument();
+    expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
+  });
+
+  test('should badge a position held by a local wallet as Local wallet', async () => {
+    const wallet = { id: 1, name: 'My Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'direct' });
+
+    expect(await screen.findByText('Local wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
+  test('should keep the view only badge for a watch-only position', async () => {
+    const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'watchOnly' });
+
+    expect(await screen.findByText('view only')).toBeInTheDocument();
+    expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
   test('should show validator stats instead of nominations for a validator position', async () => {
     renderValidatorDrawer();
 

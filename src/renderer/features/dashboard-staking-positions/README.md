@@ -37,6 +37,11 @@ a row depends on how the account can be signed for:
 Watch-only is not "the buttons are greyed out". The chips are **absent**, and the drawer says so in words: actions are
 unavailable by design, not broken. A disabled control invites the user to keep trying.
 
+The drawer badge next to the account name states provenance, not signability: `Local wallet` (green) when a local wallet
+holds the account, `Address book` (gray) when none does — a contact position must not claim to be a local wallet. A
+watch-only account keeps its own `view only` badge; whether an operation leaves as a signature or a draft stays the
+pencil glyph's business.
+
 `getAccessMode` is exported from the feature barrel — the KPI and rewards-chart widgets classify accounts the same way
 rather than each inventing their own rule.
 
