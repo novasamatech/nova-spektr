@@ -71,6 +71,7 @@ export const InitStep = () => {
               <NoSignerError />
               {!isDraftMode && <StakeFromField />}
               <AmountField />
+              <OverMaxError />
               <MinimumBondError />
               <DestinationField />
               <FeeRow />
@@ -214,6 +215,28 @@ const AmountField = () => {
       />
       <AssetFiatBalance asset={asset} amount={amountPlanck.toString()} className="text-footnote" />
     </div>
+  );
+};
+
+/**
+ * The words behind the field's red frame: the account simply does not have the
+ * amount. Names the figure the frame is silently comparing against.
+ */
+const OverMaxError = () => {
+  const { t } = useI18n();
+
+  const asset = useUnit(newPositionFlowModel.$asset);
+  const amountPlanck = useUnit(newPositionFlowModel.$amountPlanck);
+  const available = useUnit(newPositionFlowModel.$available);
+
+  if (!asset || !amountPlanck.gt(available)) return null;
+
+  return (
+    <Alert active variant="error" title={t('staking.newPosition.overMaxTitle')}>
+      <FootnoteText className="text-text-secondary">
+        {t('staking.newPosition.overMaxDescription', { max: formatAsset(available, asset) })}
+      </FootnoteText>
+    </Alert>
   );
 };
 

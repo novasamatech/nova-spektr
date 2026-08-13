@@ -72,6 +72,7 @@ export const AmountStep = () => {
               {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
               <NoSignerError />
               <AmountField />
+              <OverMaxError />
               <UnlockingLimitError />
               <MinimumBondWarning />
               <ConsequenceCallout />
@@ -138,6 +139,39 @@ const AmountField = () => {
         )}
       </div>
     </div>
+  );
+};
+
+/**
+ * The words behind the field's red frame. What "too much" means depends on the
+ * mode — an unbond is capped by the active stake, adding to it by the balance
+ * that can actually leave the account — so the message names the figure instead
+ * of leaving the user to guess which limit the frame is about.
+ */
+const OverMaxError = () => {
+  const { t } = useI18n();
+
+  const mode = useUnit(amountFlowModel.$mode);
+  const asset = useUnit(amountFlowModel.$asset);
+  const amountPlanck = useUnit(amountFlowModel.$amountPlanck);
+  const maxAmount = useUnit(amountFlowModel.$maxAmount);
+
+  if (!mode || !asset || !amountPlanck.gt(maxAmount)) return null;
+
+  const isUnbond = mode === 'unbond';
+
+  return (
+    <Alert
+      active
+      variant="error"
+      title={t(isUnbond ? 'staking.amountFlow.overMaxUnbondTitle' : 'staking.amountFlow.overMaxAddStakeTitle')}
+    >
+      <FootnoteText className="text-text-secondary">
+        {t(isUnbond ? 'staking.amountFlow.overMaxUnbondDescription' : 'staking.amountFlow.overMaxAddStakeDescription', {
+          max: formatAsset(maxAmount, asset),
+        })}
+      </FootnoteText>
+    </Alert>
   );
 };
 

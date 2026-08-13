@@ -64,7 +64,7 @@ Two boundaries are deliberate:
 | State                     | When it appears                                                         | What the user sees                                                             |
 | ------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Amount                    | The dashboard requests unbond / add stake                               | The screen above, `Continue` disabled until an amount is entered               |
-| Amount too large          | Above the active stake (unbond) or above what is available (add stake)  | The field reads invalid and `Continue` is blocked                              |
+| Amount too large          | Above the active stake (unbond) or above what is available (add stake)  | A red callout names the cap, the field reads invalid, `Continue` is blocked    |
 | Below minimum active bond | Remainder > 0 but under the chain's minimum nominator bond              | Amber callout; `Continue` **stays enabled**                                    |
 | No unbonding slots left   | The ledger already holds the maximum number of unbonding chunks         | Red callout, `Continue` blocked — the node would reject the call outright      |
 | No signer on the route    | Nobody on the resolved route can sign (normal mode)                     | A red "No account to sign with" alert; `Continue` and `Sign` are blocked       |

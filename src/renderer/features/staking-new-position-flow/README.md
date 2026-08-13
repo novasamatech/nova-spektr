@@ -37,6 +37,7 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 | ---------- | ------------------------------------------------ | -------------------------------------------------------------------- |
 | Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                |
 | Below min  | The amount is under the chain minimum            | A red callout, and `Continue` refuses                                |
+| Over max   | The amount is above what the account can stake   | A red callout names the available figure, and `Continue` refuses     |
 | No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses        |
 | Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account |
 | Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit  |
