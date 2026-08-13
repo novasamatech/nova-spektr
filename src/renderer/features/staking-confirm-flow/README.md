@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -147,6 +147,9 @@ a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect i
 hides it — a draft is "somebody else signs later", the basket is "this wallet signs later". A redeem whose **live**
 ledger has nothing left to withdraw cannot be basketed either: a stored no-op would still cost its signer a fee later,
 so the same something-to-do rule that blocks Sign blocks the basket.
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Related
 

@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -154,6 +154,9 @@ The basket signs each stored call directly by its payer — no multisig/proxy wr
 the button only appears when **every** payer's wallet is one the basket can sign with (Polkadot Vault or a single Parity
 Signer shard). Watch-only, multisig, proxied and WalletConnect payers never see it, and draft mode hides it — a draft is
 "somebody else signs later", the basket is "this wallet signs later".
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Lifecycle
 

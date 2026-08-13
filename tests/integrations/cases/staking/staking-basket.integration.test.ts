@@ -9,12 +9,17 @@ import { type AnyAccount, accounts, transactionService } from '@/domains/network
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { stakingPositions } from '@/aggregates/staking-positions';
 import { amountFlowModel } from '@/features/staking-amount-flow/model/amount-flow';
 import { type AmountFlowTarget, Step as AmountStep } from '@/features/staking-amount-flow/types';
 import { claimRewardsModel } from '@/features/staking-claim-rewards/model/claim';
 import { type ClaimRequest, Step as ClaimStep } from '@/features/staking-claim-rewards/types';
 import { confirmFlowModel } from '@/features/staking-confirm-flow/model/confirm-flow';
-import { type ChangeValidatorsTarget, Step as ConfirmStep } from '@/features/staking-confirm-flow/types';
+import {
+  type ChangeValidatorsTarget,
+  type RedeemTarget,
+  Step as ConfirmStep,
+} from '@/features/staking-confirm-flow/types';
 import { type SigningMode } from '@/features/validator-selection';
 import {
   polkadotAssetHubChain,
@@ -30,6 +35,9 @@ import {
   type FeatureTestEnvironment,
   FeatureTestBuilder,
   allureMetadata,
+  createStakingApi,
+  createStakingScenario,
+  nextStakingEra,
   resetAccountHandlers,
   seedAccountHandlers,
 } from '../../utils/index';
@@ -124,6 +132,19 @@ function createChangeValidatorsTarget(account: AnyAccount, wallet: Wallet | null
   };
 }
 
+function createRedeemTarget(account: AnyAccount, wallet: Wallet): RedeemTarget {
+  return {
+    position: createPosition(account.accountId),
+    chain: polkadotAssetHubChain,
+    asset,
+    account,
+    wallet,
+    // The snapshot the dashboard had in hand — the gate reads the LIVE figure.
+    amount: '1000000000',
+    signingMode: 'local',
+  };
+}
+
 function createClaimRequest(
   account: AnyAccount,
   wallet: Wallet,
@@ -162,6 +183,9 @@ describe('Staking Dashboard Flows - Add to Basket', () => {
       await env.executeEventVoid(amountFlowModel.flowClosed);
       await env.executeEventVoid(confirmFlowModel.flowClosed);
       await env.executeEventVoid(claimRewardsModel.flowFinished);
+      // The staking resource pools are module-level and ref-counted — a key
+      // left started outlives the scope and poisons the next test.
+      await env.executeEventVoid(stakingPositions.reset);
 
       // The basket writes through the app's own storage, which outlives the
       // fork scope — drop what this test stored so the next one starts clean.
@@ -285,6 +309,45 @@ describe('Staking Dashboard Flows - Add to Basket', () => {
       await env.executeEventVoid(confirmFlowModel.txSaved);
 
       expect(env.getState(confirmFlowModel.$step)).not.toBe(ConfirmStep.BASKET);
+      expect(env.getState(basketOperations.$list)).toHaveLength(0);
+    });
+
+    it('should refuse a redeem whose live ledger has nothing left to withdraw', async () => {
+      // Same live-chain seeding as the live-redeem gate suite: the only chunk
+      // is still unbonding, so the LIVE redeemable is zero even though the
+      // snapshot the confirm leads with says otherwise. A stored no-op would
+      // still cost its signer a fee later — the basket refuses like Sign does.
+      const era = nextStakingEra();
+      const handle = createStakingApi({
+        chainId: polkadotAssetHubChainId,
+        activeEra: { index: era, startMs: 1_700_000_000_000 },
+        ledgers: {
+          [stakingAccountA.accountId]: {
+            total: '1001000000000',
+            active: '1000000000000',
+            unlocking: [{ value: '1000000000', era: era + 5 }],
+          },
+        },
+        nominations: { [stakingAccountA.accountId]: null },
+      });
+
+      const scenario = await createStakingScenario({
+        chains: [polkadotAssetHubChain],
+        accounts: [stakingAccountA],
+        apis: { [polkadotAssetHubChainId]: handle.api },
+      });
+      env = scenario.env;
+      await scenario.settle();
+
+      await env.executeEvent(confirmFlowModel.redeemRequested, createRedeemTarget(stakingAccountA, vaultWallet));
+
+      expect(env.getState(confirmFlowModel.$hasSomethingToDo)).toBe(false);
+      // The vault wallet passes the wallet term — the live figure is what refuses.
+      expect(env.getState(confirmFlowModel.$canUseBasket)).toBe(false);
+
+      await env.executeEventVoid(confirmFlowModel.txSaved);
+
+      expect(env.getState(confirmFlowModel.$step)).toBe(ConfirmStep.CONFIRM);
       expect(env.getState(basketOperations.$list)).toHaveLength(0);
     });
   });

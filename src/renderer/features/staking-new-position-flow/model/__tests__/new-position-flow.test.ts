@@ -10,6 +10,7 @@ import {
   ConnectionStatus,
   CryptoType,
   SigningType,
+  WalletType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -127,6 +128,8 @@ vi.mock('@/features/validator-selection', async () => {
 
 const { newPositionFlowModel } = await import('../new-position-flow');
 const { networkModel } = await import('@/entities/network');
+const { walletModel } = await import('@/entities/wallet');
+const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 
 /**
@@ -181,6 +184,12 @@ const ACCOUNT = {
 } as unknown as Wallet['accounts'][number];
 
 const validator = (index: number) => ({ accountId: accountId(index), address: `address-${index}` });
+
+/** The wallet behind `ACCOUNT` (`walletId: 1`) — the basket can sign for it. */
+const VAULT_WALLET: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+/** Signs interactively — the basket cannot sign for it later. */
+const WALLET_CONNECT_WALLET: Wallet = { id: 1, name: 'WalletConnect', type: WalletType.WALLET_CONNECT, accounts: [] };
 
 const $chains = () => mocks.chains as Store<unknown[]>;
 const $minBond = () => mocks.minBond as Store<Record<string, string>>;
@@ -332,6 +341,65 @@ describe('staking-new-position-flow · the call', () => {
     await fillForm(scope);
 
     expect(scope.getState(newPositionFlowModel.$coreTx)).toBeNull();
+  });
+});
+
+describe('staking-new-position-flow · basket gate', () => {
+  /** Walks to the confirm with a built call, the state the basket stores from. */
+  async function walkToConfirm(scope: ReturnType<typeof fork>) {
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+  }
+
+  it('stores the built call and moves to the BASKET step for a vault wallet', async () => {
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    const stored: unknown[] = [];
+    createWatch({ unit: basketOperations.addTransactions, scope, fn: (drafts) => stored.push(...drafts) });
+
+    await walkToConfirm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(true);
+
+    await allSettled(newPositionFlowModel.txSaved, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.BASKET);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ initiatorAccountId: ALICE });
+  });
+
+  it('refuses a wallet the basket cannot sign with', async () => {
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [WALLET_CONNECT_WALLET]) });
+    const stored: unknown[] = [];
+    createWatch({ unit: basketOperations.addTransactions, scope, fn: (drafts) => stored.push(...drafts) });
+
+    await walkToConfirm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
+
+    await allSettled(newPositionFlowModel.txSaved, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(stored).toHaveLength(0);
+  });
+
+  it('refuses while there is no call to store', async () => {
+    // The form alone builds nothing — `$coreTx` waits for the validators.
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    await fillForm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$coreTx)).toBeNull();
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
+  });
+
+  it('refuses in draft mode', async () => {
+    // Toggled after the call is built, so the draft term is the one deciding.
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    await walkToConfirm(scope);
+    await allSettled(newPositionFlowModel.toggleDraftMode, { scope, params: true });
+
+    expect(scope.getState(newPositionFlowModel.$coreTx)).not.toBeNull();
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
   });
 });
 

@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -116,6 +116,9 @@ context — so the button only appears when the staking account's own wallet is 
 Vault or a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect accounts never see it. Basket
 and draft are mutually exclusive by nature — a draft is "somebody else signs later", the basket is "this wallet signs
 later" — and draft mode ends at the form screen, so it never reaches this confirm at all.
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Rules carried over from the old flow
 
