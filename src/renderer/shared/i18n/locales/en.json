@@ -643,7 +643,9 @@
         "amountMin": "Total ≥ {value}",
         "amountTitle": "Row total, {currency}",
         "amountPlaceholder": "Minimum, e.g. 100K",
-        "presetAny": "Any"
+        "presetAny": "Any",
+        "presetMin": "≥ {value}",
+        "removeFilter": "Remove {label}"
       },
       "walletTypes": {
         "vault": "Polkadot Vault",
