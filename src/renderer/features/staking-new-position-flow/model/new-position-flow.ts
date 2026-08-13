@@ -161,6 +161,33 @@ export const createNewPositionFlowModel = () => {
     target: $initiator,
   });
 
+  /**
+   * The active wallet actually changed. `$selectedWalletId` only emits on a
+   * real switch — re-clicking the current wallet in the selector fires `select`
+   * with the same id and stays silent here, so a hand-picked initiator survives
+   * a no-op reselect.
+   */
+  const activeWalletChanged = walletSelect.$selectedWalletId.updates;
+
+  /**
+   * The seed above deliberately keeps a still-available initiator — right for
+   * account-list churn, wrong for a deliberate wallet switch: "Stake from" (and
+   * the `Available` derived from it) would keep showing the previous wallet's
+   * account until the chain changed. A switch re-seeds exactly as a fresh open
+   * would: the new wallet's account when the chain can hold one, otherwise the
+   * first candidate.
+   */
+  sample({
+    clock: activeWalletChanged,
+    source: $availableAccounts,
+    fn: (available, walletId) => {
+      const ownAccount = walletId === null ? undefined : available.find((account) => account.walletId === walletId);
+
+      return ownAccount ?? available[0] ?? null;
+    },
+    target: $initiator,
+  });
+
   const $wallet = combine({ initiator: $initiator, wallets: walletModel.$wallets }, ({ initiator, wallets }) =>
     initiator ? (wallets.find((wallet) => wallet.id === initiator.walletId) ?? null) : null,
   );
@@ -192,7 +219,10 @@ export const createNewPositionFlowModel = () => {
     initiator: $initiator,
     chain: $chain,
     resetOn: [newPositionRequested, flowClosed],
-    resetUserOverrideOn: [chainChanged, initiatorChanged],
+    // A wallet switch re-seeds the initiator (see `activeWalletChanged` above),
+    // and a hand-picked path must not pin the field to the previous wallet —
+    // the same reset a chain change performs for the same reason.
+    resetUserOverrideOn: [chainChanged, initiatorChanged, activeWalletChanged],
   });
 
   /**

@@ -54,6 +54,11 @@ whole transaction after the user has paid to find out. Exactly the minimum is le
 not have falls back to the first staking chain, and a minimum looked up under the request would read as zero — which is
 "no floor", the one answer that lets an invalid bond through.
 
+**"Stake from" follows the active wallet.** The field seeds itself with the selected wallet's account (falling back to
+the first candidate the chain can hold), and a wallet switch — mid-form or between opens — re-seeds it the same way, so
+`Available` always quotes the wallet the user just switched to. The switch is deliberate and wins over a hand-picked
+account; re-selecting the already-active wallet changes nothing.
+
 **A picked account nobody can sign for blocks, and says why.** Once an account is chosen, the resolved signing route is
 checked for an actual signer at its end. When there is none — the account is watch-only — `Continue` refuses and a red
 **"No account to sign with"** alert names the two ways forward: add a wallet that controls the account, or save the
