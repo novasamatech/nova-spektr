@@ -1,7 +1,7 @@
 import { cnTw } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
 
-import { GRID_TEMPLATE, NUMERIC_COLUMNS } from './tableLayout';
+import { GRID_TEMPLATE, GROUP_HEADER_CLASS, NUMERIC_COLUMNS, ROW_CLASS } from './tableLayout';
 
 const GROUP_COUNT = 4;
 const ROWS_PER_GROUP = 3;
@@ -15,7 +15,7 @@ const NUMERIC_WIDTH: Record<(typeof NUMERIC_COLUMNS)[number], string> = {
 };
 
 const GroupHeaderStub = () => (
-  <div className="flex h-12 items-center gap-x-2 bg-block-background px-4">
+  <div className={cnTw('flex', GROUP_HEADER_CLASS)}>
     <Skeleton width="12px" height="12px" />
     <Skeleton circle width="24px" />
     <Skeleton width="120px" height="14px" />
@@ -25,7 +25,9 @@ const GroupHeaderStub = () => (
 );
 
 const RowStub = () => (
-  <div className={cnTw(GRID_TEMPLATE, 'min-h-12 border-b border-divider')}>
+  <div className={cnTw(GRID_TEMPLATE, ROW_CLASS)}>
+    {/* 18px = 12px caret glyph + 6px gap, so the chain icon lines up under the
+        group header's caret column rather than the row's own left edge. */}
     <div className="flex items-center gap-x-2 pl-[18px]">
       <Skeleton circle width="16px" />
       <Skeleton width="72px" height="14px" />

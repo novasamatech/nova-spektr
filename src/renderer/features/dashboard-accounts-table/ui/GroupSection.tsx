@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 import { type TFunction } from 'i18next';
 
-import { type Asset } from '@/shared/core';
+import { type Asset, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
@@ -10,7 +10,7 @@ import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type AccountGroup, type AccountRow, type NumericKey } from '../lib/types';
 
-import { GRID_TEMPLATE, NUMERIC_COLUMNS } from './tableLayout';
+import { GRID_TEMPLATE, GROUP_HEADER_CLASS, NUMERIC_COLUMNS, ROW_CLASS } from './tableLayout';
 
 type Props = {
   group: AccountGroup;
@@ -32,9 +32,14 @@ const formatTokenAmount = (value: BN, asset: Asset, t: TFunction): string => {
   return `${number}${suffix} ${asset.symbol}`;
 };
 
-const WalletTypeBadge = ({ group, label }: { group: AccountGroup; label: string }) => (
+type WalletTypeBadgeProps = {
+  wallet: Wallet | null;
+  label: string;
+};
+
+const WalletTypeBadge = ({ wallet, label }: WalletTypeBadgeProps) => (
   <span className="shrink-0" title={label}>
-    {group.wallet ? <WalletIcon type={group.wallet.type} size={16} /> : <Icon name="addressBook" size={14} />}
+    {wallet ? <WalletIcon type={wallet.type} size={16} /> : <Icon name="addressBook" size={14} />}
   </span>
 );
 
@@ -68,8 +73,15 @@ const NumericCell = ({ value, asset, fiatVisible, semibold, vestedAmount }: Nume
 
 const numericValue = (row: AccountRow, key: NumericKey): BN | null => (key === 'total' ? row.totalBN : row.split[key]);
 
-const DataRow = ({ row, fiatVisible }: { row: AccountRow; fiatVisible: boolean }) => (
-  <div className={cnTw(GRID_TEMPLATE, 'min-h-12 border-b border-divider hover:bg-block-background')}>
+type DataRowProps = {
+  row: AccountRow;
+  fiatVisible: boolean;
+};
+
+const DataRow = ({ row, fiatVisible }: DataRowProps) => (
+  <div className={cnTw(GRID_TEMPLATE, ROW_CLASS, 'hover:bg-block-background')}>
+    {/* 18px = 12px caret glyph + 6px gap, so the chain icon lines up under the
+        group header's caret column rather than the row's own left edge. */}
     <div className="flex min-w-0 items-center gap-x-2 pl-[18px]">
       <ChainIcon chain={row.chain} size={16} />
       <FootnoteText className="truncate">{row.chain.name}</FootnoteText>
@@ -99,11 +111,7 @@ export const GroupSection = ({ group, open, onToggle, fiatVisible, formatSubtota
 
   return (
     <div>
-      <button
-        type="button"
-        className="flex h-12 w-full items-center gap-x-2 bg-block-background px-4 text-left"
-        onClick={onToggle}
-      >
+      <button type="button" className={cnTw('flex w-full text-left', GROUP_HEADER_CLASS)} onClick={onToggle}>
         <Icon name={open ? 'down' : 'right'} size={12} className="shrink-0 text-text-tertiary" />
 
         <Identicon address={toAddress(group.accountId)} size={24} />
@@ -121,7 +129,7 @@ export const GroupSection = ({ group, open, onToggle, fiatVisible, formatSubtota
           />
         </div>
 
-        <WalletTypeBadge group={group} label={walletTypeLabel} />
+        <WalletTypeBadge wallet={group.wallet} label={walletTypeLabel} />
 
         <FootnoteText className="shrink-0 text-text-tertiary">
           {t('dashboard.accountsTable.groupMeta', {
