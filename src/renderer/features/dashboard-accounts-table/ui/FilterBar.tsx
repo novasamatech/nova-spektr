@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react';
+import { type ComponentProps, useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -48,8 +48,8 @@ const TRIGGER_CLASS = cnTw(
   'data-[state=open]:border-primary-button-background-default data-[state=open]:text-text-primary',
 );
 
-const TriggerButton = ({ children }: { children: ReactNode }) => (
-  <button type="button" className={TRIGGER_CLASS}>
+const TriggerButton = ({ children, className, ...props }: ComponentProps<'button'>) => (
+  <button type="button" {...props} className={cnTw(TRIGGER_CLASS, className)}>
     <span className="truncate">{children}</span>
     <Icon name="down" size={12} className="shrink-0 text-inherit" />
   </button>
