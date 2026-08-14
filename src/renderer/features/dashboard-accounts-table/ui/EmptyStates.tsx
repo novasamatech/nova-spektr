@@ -11,6 +11,22 @@ export const NoSelection = () => {
   );
 };
 
+export const NoBalances = () => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-y-3 px-4 py-10">
+      <Icon name="noResults" size={64} />
+
+      <BodyText className="font-semibold">{t('dashboard.accountsTable.noBalances.title')}</BodyText>
+
+      <FootnoteText className="max-w-80 text-center text-text-tertiary">
+        {t('dashboard.accountsTable.noBalances.description')}
+      </FootnoteText>
+    </div>
+  );
+};
+
 type EmptyFilteredProps = {
   onClearFilters: () => void;
 };

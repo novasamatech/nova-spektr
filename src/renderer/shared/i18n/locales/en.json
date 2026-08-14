@@ -671,6 +671,10 @@
         "clearFilters": "Clear filters"
       },
       "noSelection": "Select accounts above to view balances",
+      "noBalances": {
+        "title": "No balances to show",
+        "description": "The selected accounts hold nothing on the connected networks."
+      },
       "footer": {
         "showing": "Showing {rows} of {total} rows in {accounts} accounts",
         "note": "Account subtotals are fiat · sorting applies inside every group · \"—\" = not applicable on this chain"

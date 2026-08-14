@@ -22,7 +22,7 @@ import { groupRows } from '../lib/rows';
 import { type GroupOrder, DEFAULT_SORT, nextSort, sortGroups, sortRows } from '../lib/sorting';
 import { type TableSortState } from '../lib/types';
 
-import { EmptyFiltered, NoSelection } from './EmptyStates';
+import { EmptyFiltered, NoBalances, NoSelection } from './EmptyStates';
 import { FilterBar } from './FilterBar';
 import { FilterChips } from './FilterChips';
 import { GroupSection } from './GroupSection';
@@ -171,9 +171,7 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
       return <EmptyFiltered onClearFilters={clearAll} />;
     }
     if (rows.length === 0) {
-      // TODO(spec): dedicated zero-balances state — mock 2a has no frame for a
-      // ready selection whose accounts hold nothing; reuse the selection hint.
-      return <NoSelection />;
+      return <NoBalances />;
     }
 
     return (
@@ -197,8 +195,12 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
     // `card={false}` + our own chrome (same classes as DashboardWidget's CARD_CLASS,
     // but no padding): the header's `border-b` needs to reach the card edges, and
     // the row dividers must be full-bleed too — see KpiWidgetFrame for the same
-    // precedent. This bypasses DashboardWidget's scroll wrapper, so the rows
-    // region below owns the scrolling inside the fixed grid cell.
+    // precedent. DashboardWidget still wraps `children` in its own
+    // `min-h-0 flex-1 overflow-y-auto` div regardless of `card`, and only the rows
+    // region below should scroll — the header/filter bar must stay fixed. So this
+    // chrome div is `h-full overflow-hidden`: it exactly fills DashboardWidget's
+    // wrapper and never scrolls itself, leaving the rows region's own
+    // `overflow-y-auto` (below) as the single active scroller.
     <DashboardWidget card={false}>
       <div className="flex h-full flex-col overflow-hidden rounded-lg border border-token-container-border bg-white shadow-card-shadow">
         <div className="flex items-center gap-3 border-b border-divider px-4 py-3.5">
