@@ -37,6 +37,7 @@ import { bondNominateValidator } from '@/features/operations/OperationsValidatio
 import { createSigningPathModel } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { getAvailableToBond, isBelowMinimumBond } from '../lib/amount-rules';
+import { pickSeedAccount } from '../lib/seed-account';
 import { type NewPositionConfirm, Step } from '../types';
 
 import { confirmModel } from './confirm';
@@ -147,44 +148,46 @@ export const createNewPositionFlowModel = () => {
    */
   sample({
     clock: $availableAccounts,
-    source: { initiator: $initiator, selectedWallet: walletSelect.$selectedWallet },
-    fn: ({ initiator, selectedWallet }, available) => {
+    source: { initiator: $initiator, selectedWalletId: walletSelect.$selectedWalletId },
+    fn: ({ initiator, selectedWalletId }, available) => {
       const stillAvailable = initiator && available.some((account) => account.id === initiator.id);
       if (stillAvailable) return initiator;
 
-      const ownAccount = selectedWallet
-        ? available.find((account) => account.walletId === selectedWallet.id)
-        : undefined;
-
-      return ownAccount ?? available[0] ?? null;
+      return pickSeedAccount(available, selectedWalletId);
     },
     target: $initiator,
   });
 
   /**
-   * The active wallet actually changed. `$selectedWalletId` only emits on a
-   * real switch — re-clicking the current wallet in the selector fires `select`
-   * with the same id and stays silent here, so a hand-picked initiator survives
-   * a no-op reselect.
+   * A wallet switch this form may still act on.
+   *
+   * Only up to the form step. Past it the user has read a specific account on
+   * the confirm, and the confirm rebuilds itself from the live stores on every
+   * transaction change — so repointing the initiator there would put a
+   * signature on an operation nobody reviewed. The gate is not paranoia about
+   * clicks the modal covers anyway: the active wallet moves without one. The
+   * aggregate re-points itself when the wallet drops out of `$wallets` on a
+   * background sync, and the id is persisted with `sync: true`, so a second
+   * window can change it under a confirm standing open here.
    */
-  const activeWalletChanged = walletSelect.$selectedWalletId.updates;
+  const walletSwitchedInForm = sample({
+    clock: walletSelect.walletSwitched,
+    source: $step,
+    filter: (step) => step === Step.NONE || step === Step.INIT,
+    fn: (_, walletId) => walletId,
+  });
 
   /**
    * The seed above deliberately keeps a still-available initiator — right for
    * account-list churn, wrong for a deliberate wallet switch: "Stake from" (and
    * the `Available` derived from it) would keep showing the previous wallet's
    * account until the chain changed. A switch re-seeds exactly as a fresh open
-   * would: the new wallet's account when the chain can hold one, otherwise the
-   * first candidate.
+   * would.
    */
   sample({
-    clock: activeWalletChanged,
+    clock: walletSwitchedInForm,
     source: $availableAccounts,
-    fn: (available, walletId) => {
-      const ownAccount = walletId === null ? undefined : available.find((account) => account.walletId === walletId);
-
-      return ownAccount ?? available[0] ?? null;
-    },
+    fn: (available, walletId) => pickSeedAccount(available, walletId),
     target: $initiator,
   });
 
@@ -219,10 +222,12 @@ export const createNewPositionFlowModel = () => {
     initiator: $initiator,
     chain: $chain,
     resetOn: [newPositionRequested, flowClosed],
-    // A wallet switch re-seeds the initiator (see `activeWalletChanged` above),
-    // and a hand-picked path must not pin the field to the previous wallet —
-    // the same reset a chain change performs for the same reason.
-    resetUserOverrideOn: [chainChanged, initiatorChanged, activeWalletChanged],
+    // A wallet switch re-seeds the initiator (see `walletSwitchedInForm`), and
+    // a hand-picked path must not pin the field to the previous wallet — the
+    // same reset a chain change performs for the same reason. The gated event,
+    // not the raw switch: past the form step nothing re-seeds, so nothing there
+    // may drop the user's chosen path either.
+    resetUserOverrideOn: [chainChanged, initiatorChanged, walletSwitchedInForm],
   });
 
   /**

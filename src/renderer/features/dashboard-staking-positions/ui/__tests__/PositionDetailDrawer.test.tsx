@@ -2,11 +2,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createWatch, fork } from 'effector';
 import { Provider } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
+import { type Wallet, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition } from '@/domains/staking';
 import { type PositionRow } from '../../lib';
 import { positionActions } from '../../model/position-actions';
@@ -37,14 +38,31 @@ const position: StakingPosition = {
   totalUnbonding: '0',
 };
 
+/** The wallet behind the base row — `direct` means a local wallet holds it. */
+const localWallet: Wallet = { id: 1, name: 'My Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+const localAccount: AnyAccount = {
+  id: 'stash-account',
+  accountId,
+  walletId: localWallet.id,
+  name: 'Stash',
+  type: 'universal',
+  cryptoType: CryptoType.SR25519,
+  signingType: SigningType.POLKADOT_VAULT,
+  createdAt: 0,
+};
+
+// A coherent row: `getAccessMode` cannot answer `direct` for an account it
+// never found, so the base fixture carries the account and wallet that verdict
+// implies. Tests that want another mode override all three together.
 const row: PositionRow = {
   id: `${polkadotAssetHubChain.chainId}-${accountId}`,
   position,
   accountId,
   chain: polkadotAssetHubChain,
   asset: dotAsset,
-  account: null,
-  wallet: null,
+  account: localAccount,
+  wallet: localWallet,
   accessMode: 'direct',
   multisig: null,
   status: 'active',
@@ -114,9 +132,7 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
   });
 
   test('should badge a position held by a local wallet as Local wallet', async () => {
-    const wallet = { id: 1, name: 'My Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
-
-    renderDrawer({ ...row, wallet, accessMode: 'direct' });
+    renderDrawer(row);
 
     expect(await screen.findByText('Local wallet')).toBeInTheDocument();
     expect(screen.queryByText('Address book')).not.toBeInTheDocument();

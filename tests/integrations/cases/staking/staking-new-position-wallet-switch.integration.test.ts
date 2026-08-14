@@ -17,6 +17,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { newPositionFlowModel } from '@/features/staking-new-position-flow/model/new-position-flow';
+import { Step } from '@/features/staking-new-position-flow/types';
 import { polkadotAssetHubChain, polkadotAssetHubChainId, stakingAccountA, stakingWallet } from '../../fixtures/index';
 import {
   type FeatureTestEnvironment,
@@ -136,6 +137,22 @@ describe('Staking New Position Flow - Active Wallet Switch', () => {
     await env.executeEventVoid(newPositionFlowModel.newPositionRequested);
 
     expect(env.getState(newPositionFlowModel.$initiator)).toMatchObject({ id: secondAccount.id });
+  });
+
+  it('should leave the initiator alone once the flow is past the form step', async () => {
+    // The confirm rebuilds from the live stores, so a re-seed here would move
+    // the operation to an account the user never read. The active wallet can
+    // change without a click reaching the covered selector: the aggregate
+    // re-points itself when the wallet leaves `$wallets`, and the id syncs
+    // across windows.
+    await env.executeEventVoid(newPositionFlowModel.newPositionRequested);
+    await env.executeEvent(newPositionFlowModel.initiatorChanged, stakingAccountA);
+    await env.executeEvent(newPositionFlowModel.stepChanged, Step.CONFIRM);
+
+    await env.executeEvent(walletSelect.select, secondWallet.id);
+
+    expect(env.getState(newPositionFlowModel.$initiator)).toMatchObject({ id: stakingAccountA.id });
+    expect(env.getState(newPositionFlowModel.$reservable).eq(reservableAmountBN(balanceA))).toBe(true);
   });
 
   it('should keep a hand-picked initiator on a re-select of the current wallet', async () => {
