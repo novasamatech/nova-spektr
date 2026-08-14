@@ -59,7 +59,7 @@ export const countActiveFilters = (filters: TableFilters): number => {
 export type FilterChip = { id: string; label: string; next: TableFilters };
 
 export type ChipLabels = {
-  field: (field: keyof TableFilters) => string;
+  field: (field: ListField) => string;
   value: (field: keyof TableFilters, value: string) => string;
 };
 
@@ -67,7 +67,7 @@ export type ChipLabels = {
 const removeValue = <T>(list: readonly T[], value: T): T[] => list.filter((item) => item !== value);
 
 const LIST_FIELDS = ['networks', 'chains', 'accounts', 'walletTypes'] as const;
-type ListField = (typeof LIST_FIELDS)[number];
+export type ListField = (typeof LIST_FIELDS)[number];
 
 /**
  * One toggle function per list field, each checked against its own concrete

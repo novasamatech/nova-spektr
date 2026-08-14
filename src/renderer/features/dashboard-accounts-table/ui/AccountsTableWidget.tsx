@@ -12,6 +12,7 @@ import { useAccountRows } from '../hooks/useAccountRows';
 import { useTrackedContacts } from '../hooks/useTrackedContacts';
 import {
   type ChipLabels,
+  type ListField,
   type TableFilters,
   EMPTY_FILTERS,
   applyFilters,
@@ -107,21 +108,15 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
   const accountNameByKey = useMemo(() => new Map(rows.map((row) => [row.groupKey, row.displayName])), [rows]);
 
   const chips = useMemo(() => {
+    const fieldLabels: Record<ListField, string> = {
+      networks: t('dashboard.accountsTable.filters.network'),
+      chains: t('dashboard.accountsTable.filters.chain'),
+      accounts: t('dashboard.accountsTable.filters.account'),
+      walletTypes: t('dashboard.accountsTable.filters.walletType'),
+    };
+
     const labels: ChipLabels = {
-      field: (field) => {
-        switch (field) {
-          case 'networks':
-            return t('dashboard.accountsTable.filters.network');
-          case 'chains':
-            return t('dashboard.accountsTable.filters.chain');
-          case 'accounts':
-            return t('dashboard.accountsTable.filters.account');
-          case 'walletTypes':
-            return t('dashboard.accountsTable.filters.walletType');
-          default:
-            return '';
-        }
-      },
+      field: (field) => fieldLabels[field],
       value: (field, value) => {
         switch (field) {
           case 'chains':
@@ -146,7 +141,9 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
     setSearch('');
   };
 
-  const toggleGroup = (key: string) => {
+  // Functional update keeps this stable across renders (no `closedGroups` dep),
+  // so it can be passed directly to `GroupSection` without defeating its memo.
+  const toggleGroup = useCallback((key: string) => {
     setClosedGroups((current) => {
       const next = new Set(current);
       if (next.has(key)) {
@@ -157,13 +154,16 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
 
       return next;
     });
-  };
+  }, []);
 
   const allOpen = closedGroups.size === 0;
   const toggleAllGroups = () => {
     setClosedGroups(allOpen ? new Set(groups.map((group) => group.key)) : new Set());
   };
 
+  // Must be invoked as `{renderBody()}` below, never rendered as `<RenderBody />` —
+  // as a component it would remount on every parent render instead of just
+  // returning fresh JSX.
   const renderBody = () => {
     if (accountIds.length === 0) return <NoSelection />;
     if (!ready) return <TableSkeleton />;
@@ -184,7 +184,7 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
             open={!closedGroups.has(group.key)}
             fiatVisible={fiatVisible}
             formatSubtotal={formatSubtotal}
-            onToggle={() => toggleGroup(group.key)}
+            onToggle={toggleGroup}
           />
         ))}
       </>
@@ -247,9 +247,11 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
           </div>
 
           {/* Task 10 wires export */}
-          <Button variant="fill" pallet="secondary" size="sm" disabled>
-            {t('dashboard.accountsTable.exportCsv')}
-          </Button>
+          <span title={t('dashboard.accountsTable.exportCsvDisabled')}>
+            <Button variant="fill" pallet="secondary" size="sm" disabled>
+              {t('dashboard.accountsTable.exportCsv')}
+            </Button>
+          </span>
         </div>
 
         <FilterBar rows={rows} filters={filters} currencyCode={activeCurrency?.code ?? 'USD'} onChange={setFilters} />

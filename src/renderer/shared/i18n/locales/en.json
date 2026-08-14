@@ -622,6 +622,7 @@
       "rowCount_other": "{count} rows",
       "searchPlaceholder": "Account, address, chain",
       "exportCsv": "Export CSV",
+      "exportCsvDisabled": "Export will be available soon",
       "groupOrderValue": "Accounts by value",
       "groupOrderName": "Accounts A → Z",
       "collapseAll": "Collapse all",

@@ -1,5 +1,6 @@
 import { type BN } from '@polkadot/util';
 import { type TFunction } from 'i18next';
+import { memo } from 'react';
 
 import { type Asset, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -15,7 +16,7 @@ import { GRID_TEMPLATE, GROUP_HEADER_CLASS, NUMERIC_COLUMNS, ROW_CLASS } from '.
 type Props = {
   group: AccountGroup;
   open: boolean;
-  onToggle: () => void;
+  onToggle: (key: string) => void;
   fiatVisible: boolean;
   formatSubtotal: (value: number | null) => string;
 };
@@ -104,14 +105,15 @@ const DataRow = ({ row, fiatVisible }: DataRowProps) => (
   </div>
 );
 
-export const GroupSection = ({ group, open, onToggle, fiatVisible, formatSubtotal }: Props) => {
+export const GroupSection = memo(({ group, open, onToggle, fiatVisible, formatSubtotal }: Props) => {
   const { t } = useI18n();
 
   const walletTypeLabel = t(`dashboard.accountsTable.walletTypes.${group.walletTypeBucket}`);
+  const handleToggle = () => onToggle(group.key);
 
   return (
     <div>
-      <button type="button" className={cnTw('flex w-full text-left', GROUP_HEADER_CLASS)} onClick={onToggle}>
+      <button type="button" className={cnTw('flex w-full text-left', GROUP_HEADER_CLASS)} onClick={handleToggle}>
         <Icon name={open ? 'down' : 'right'} size={12} className="shrink-0 text-text-tertiary" />
 
         <Identicon address={toAddress(group.accountId)} size={24} />
@@ -158,4 +160,4 @@ export const GroupSection = ({ group, open, onToggle, fiatVisible, formatSubtota
       ) : null}
     </div>
   );
-};
+});
