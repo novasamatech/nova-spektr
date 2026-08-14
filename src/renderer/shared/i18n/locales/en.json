@@ -3914,10 +3914,10 @@
       },
       "continueButton": "Continue",
       "maxButton": "Max",
-      "overMaxAddStakeDescription": "The account has {max} available to add.",
+      "overMaxAddStakeDescription": "The account has {max} available to add to your stake.",
       "overMaxAddStakeTitle": "Not enough available balance",
       "overMaxUnbondDescription": "This position has {max} staked — an unbond cannot exceed it.",
-      "overMaxUnbondTitle": "More than is staked",
+      "overMaxUnbondTitle": "More than the active stake",
       "remainingStaked": "remaining staked: {amount}",
       "stakedLabel": "Staked:",
       "title": {

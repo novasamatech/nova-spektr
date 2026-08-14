@@ -101,10 +101,9 @@ const AmountField = () => {
   const amountPlanck = useUnit(amountFlowModel.$amountPlanck);
   const maxAmount = useUnit(amountFlowModel.$maxAmount);
   const remaining = useUnit(amountFlowModel.$remainingStake);
+  const isOverMax = useUnit(amountFlowModel.$isOverMax);
 
   if (!mode || !asset) return null;
-
-  const isOverMax = amountPlanck.gt(maxAmount);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -153,10 +152,10 @@ const OverMaxError = () => {
 
   const mode = useUnit(amountFlowModel.$mode);
   const asset = useUnit(amountFlowModel.$asset);
-  const amountPlanck = useUnit(amountFlowModel.$amountPlanck);
   const maxAmount = useUnit(amountFlowModel.$maxAmount);
+  const isOverMax = useUnit(amountFlowModel.$isOverMax);
 
-  if (!mode || !asset || !amountPlanck.gt(maxAmount)) return null;
+  if (!mode || !asset || !isOverMax) return null;
 
   const isUnbond = mode === 'unbond';
 

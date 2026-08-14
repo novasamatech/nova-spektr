@@ -194,13 +194,14 @@ const AmountField = () => {
   const amount = useUnit(newPositionFlowModel.$amount);
   const amountPlanck = useUnit(newPositionFlowModel.$amountPlanck);
   const available = useUnit(newPositionFlowModel.$available);
+  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
 
   if (!asset) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amountPlanck.gt(available)}
+        invalid={isOverMax}
         value={amount}
         balance={available}
         balancePlaceholder={t('staking.newPosition.availableLabel')}
@@ -226,10 +227,10 @@ const OverMaxError = () => {
   const { t } = useI18n();
 
   const asset = useUnit(newPositionFlowModel.$asset);
-  const amountPlanck = useUnit(newPositionFlowModel.$amountPlanck);
   const available = useUnit(newPositionFlowModel.$available);
+  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
 
-  if (!asset || !amountPlanck.gt(available)) return null;
+  if (!asset || !isOverMax) return null;
 
   return (
     <Alert active variant="error" title={t('staking.newPosition.overMaxTitle')}>

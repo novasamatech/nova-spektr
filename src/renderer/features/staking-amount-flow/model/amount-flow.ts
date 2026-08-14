@@ -424,10 +424,18 @@ export const createAmountFlowModel = () => {
     ({ pendingFee, pendingWrapping, validating }) => pendingFee || pendingWrapping || validating,
   );
 
+  /**
+   * More than `Max` allows — the whole active stake when unbonding, everything
+   * spendable after the fee when adding to it. Both the field's red frame and
+   * the callout that explains it read this one store, so the frame can never
+   * appear without its words.
+   */
+  const $isOverMax = combine($amountPlanck, $maxAmount, (amount, maxAmount) => amount.gt(maxAmount));
+
   /** The amount alone — before anything the node has to say about it. */
   const $isAmountValid = combine(
-    { amount: $amountPlanck, maxAmount: $maxAmount, limitReached: $unlockingLimitReached },
-    ({ amount, maxAmount, limitReached }) => !amount.isZero() && !amount.gt(maxAmount) && !limitReached,
+    { amount: $amountPlanck, isOverMax: $isOverMax, limitReached: $unlockingLimitReached },
+    ({ amount, isOverMax, limitReached }) => !amount.isZero() && !isOverMax && !limitReached,
   );
 
   // --- draft mode ----------------------------------------------------------
@@ -723,6 +731,7 @@ export const createAmountFlowModel = () => {
     $remainingStake,
     $isFullUnbond,
     $isBelowMinimumBond,
+    $isOverMax,
     $unlockingLimitReached,
     $minimumBond,
     $bondingDuration,

@@ -427,6 +427,13 @@ export const createNewPositionFlowModel = () => {
 
   const $isBelowMinimumBond = combine({ amount: $amountPlanck, minimumBond: $minimumBond }, isBelowMinimumBond);
 
+  /**
+   * More than the account can bond — its reservable balance less the fee. Both
+   * the field's red frame and the callout that explains it read this one store,
+   * so the frame can never appear without its words.
+   */
+  const $isOverMax = combine($amountPlanck, $available, (amount, available) => amount.gt(available));
+
   // --- validation ----------------------------------------------------------
 
   const {
@@ -470,8 +477,8 @@ export const createNewPositionFlowModel = () => {
    * stash bonded under it, and the two calls travel as one `BATCH_ALL`.
    */
   const $isAmountValid = combine(
-    { amount: $amountPlanck, available: $available, belowMinimum: $isBelowMinimumBond },
-    ({ amount, available, belowMinimum }) => !amount.isZero() && !amount.gt(available) && !belowMinimum,
+    { amount: $amountPlanck, isOverMax: $isOverMax, belowMinimum: $isBelowMinimumBond },
+    ({ amount, isOverMax, belowMinimum }) => !amount.isZero() && !isOverMax && !belowMinimum,
   );
 
   // --- draft mode ----------------------------------------------------------
@@ -821,6 +828,7 @@ export const createNewPositionFlowModel = () => {
     $reservable,
     $minimumBond,
     $isBelowMinimumBond,
+    $isOverMax,
     $destinationType: readonly($destinationType),
     $destination: readonly($destination),
     $isDestinationValid,
