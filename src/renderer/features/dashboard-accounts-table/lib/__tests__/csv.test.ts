@@ -42,7 +42,7 @@ const makeSplit = (params: {
 });
 
 describe('accountsCsvColumns', () => {
-  test('header order matches the on-screen columns', () => {
+  test('columns render in the documented order, including the CSV-only identity columns', () => {
     const csv = buildCsv(accountsCsvColumns(HEADERS), []);
 
     expect(csv).toBe('Network,Chain,Account,Address,Asset,Transferable,Staked,Governance,Other,Total');

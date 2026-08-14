@@ -163,10 +163,15 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
     setClosedGroups(allOpen ? new Set(groups.map((group) => group.key)) : new Set());
   };
 
-  // Exports exactly what's on screen: `sorted` is filtered + sorted, every
-  // group regardless of collapse state. A collapsed group hides its rows from
-  // view, not from the data — the export must not silently drop them because
-  // the user happened to fold a card.
+  // The row sequence a person actually sees: on-screen group order
+  // (`groupOrder`), then each group's own row sort — not the flat `sorted`
+  // list, which only reflects the row sort and ignores the group reordering.
+  // Collapsed groups are still included: collapse is a display concern, not a
+  // data filter, so folding a card must not silently drop its rows from the
+  // export. Single source of truth for both the button's enabled state and
+  // the exported rows, so they can never disagree.
+  const exportRows = useMemo(() => groups.flatMap((group) => group.rows), [groups]);
+
   const exportCsv = () => {
     const columns = accountsCsvColumns({
       network: t('dashboard.accountsTable.columns.network'),
@@ -182,7 +187,7 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
     });
     const filename = accountsCsvFileName(buildExportFilterParts(filters, search));
 
-    downloadCsv(filename, buildCsv(columns, sorted));
+    downloadCsv(filename, buildCsv(columns, exportRows));
   };
 
   // Must be invoked as `{renderBody()}` below, never rendered as `<RenderBody />` —
@@ -270,8 +275,8 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
             />
           </div>
 
-          <span title={sorted.length === 0 ? t('dashboard.accountsTable.exportCsvEmpty') : undefined}>
-            <Button variant="fill" pallet="secondary" size="sm" disabled={sorted.length === 0} onClick={exportCsv}>
+          <span title={exportRows.length === 0 ? t('dashboard.accountsTable.exportCsvEmpty') : undefined}>
+            <Button variant="fill" pallet="secondary" size="sm" disabled={exportRows.length === 0} onClick={exportCsv}>
               {t('dashboard.accountsTable.exportCsv')}
             </Button>
           </span>
