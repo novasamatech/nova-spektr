@@ -1,12 +1,176 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-14
 
 ## Overview
 
-A full-width widget on the Overview tab: one row per selected account × chain × asset, with balances split by purpose —
-Transferable, Staked, Governance, Other, Total. Rows are grouped by account, each group carrying a fiat subtotal, and
-the table offers filters, a search box, sortable columns and CSV export so the user can find and total exactly the
-holdings they are looking for.
+A full-width widget on the Dashboard's **Overview** tab: **one row per (selected account × chain × asset)** that holds a
+non-zero balance, grouped by account with a fiat subtotal per group. Each numeric cell splits the balance by **purpose**
+— Transferable, Staked, Governance, Other, Total — so a user can see not just how much they hold on a chain but what it
+is doing there. The table adds four checkbox filters, a minimum row-total amount filter, free-text search, per-column
+sort inside every group, and CSV export, so a user with dozens of accounts across many chains can find and total exactly
+the holdings they are looking for.
 
-Feature under construction — spec will be completed when the widget lands.
+Ships customer request **O1** (`tasks/customer-dashboard-requests.md`), built to the approved design **variant 2a** ("1f
+developed") from the claude.ai/design project file `Accounts Table Widget Options.dc.html`.
+
+## Who can use it / when it applies
+
+- Gated by the **`dashboard`** feature flag, DI feature `dashboard/accounts-table`, injected into `dashboardWidgetsSlot`
+  at **order 10** with a default size of **4×6** (full grid width, 6 rows) — existing overview widgets occupy orders
+  0–3, leaving room for this one to split further without renumbering its neighbors.
+- Needs at least one account selected in the dashboard's account picker; an empty selection renders its own "no accounts
+  selected" state rather than an empty table.
+- With the global **"show fiat"** toggle **off**, the table does not disappear: rows, filters, search and CSV export all
+  keep working on token amounts. Only fiat-denominated UI is suppressed — the per-cell fiat subline, every group's fiat
+  subtotal, and the header's grand-total chip.
+- The widget starts its own balance fetch for the dashboard's selected accounts (`balanceSubModel.fetchAccounts` /
+  `fetchAccountIds`), wired the same way as `dashboard-portfolio-overview` so it stays self-sufficient — see
+  "Subscription cost" below for why registering it twice is safe.
+
+## States / scenarios
+
+```mermaid
+flowchart TD
+    START["Overview tab opens"] --> Q1{"Any accounts selected?"}
+    Q1 -- "no" --> NOSEL["No accounts selected"]
+    Q1 -- "yes" --> Q2{"Balance store holds a\nrecord for the selection?"}
+    Q2 -- "no" --> SKEL["Skeleton: 4 group headers × 3 rows"]
+    Q2 -- "yes" --> Q3{"Any non-zero balances\nfor the selection?"}
+    Q3 -- "no" --> NOBAL["No balances to show"]
+    Q3 -- "yes" --> Q4{"Filters/search active\nAND zero rows match?"}
+    Q4 -- "yes" --> EMPTYF["No rows match — Clear filters"]
+    Q4 -- "no" --> TABLE["Grouped table"]
+```
+
+| State                     | When it appears                                                              | What the user sees                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| No selection              | The dashboard's account picker has nothing selected                          | Centered "no accounts selected" message; header chrome and footer are hidden                     |
+| Loading                   | Accounts selected, but the balance store holds no record yet for any of them | Skeleton mirroring the real layout: 4 group headers, 3 stub rows each                            |
+| Loaded                    | The balance store holds at least one record for the selection                | Grouped table: header row, per-account groups with subtotals, data rows                          |
+| Zero balances             | Selection resolved, but every (account, chain, asset) balance is zero        | "No balances to show" empty state — a real answer, not a loading artifact                        |
+| Empty after filter/search | Filters and/or the search box are active and nothing matches                 | "No rows match your filters" + explainer + "Clear filters" button; chips row stays visible       |
+| Filters/search active     | At least one filter or a non-empty search query is set                       | Chips row under the filter bar (one chip per active filter, ×), "N active" badge, filtered table |
+| Fiat off                  | Global "show fiat" toggle is off                                             | Same rows and controls; no fiat sublines, no group subtotals, no grand-total chip                |
+
+The **skeleton vs. empty** distinction follows the same rule as `dashboard-portfolio-overview`: the balance subscription
+writes a record for every (account, chain, asset) it queries, zero balances included, so the first record landing is the
+moment "nothing to show" becomes a statement about the accounts rather than about the app's own progress
+(`hasBalanceRecords` in `lib/balanceRecords.ts`). Until then the widget shows its skeleton, never an empty table or a
+row of zeros.
+
+## The purpose split
+
+Every numeric cell is not "the balance" — it is one balance broken into **why it's frozen or free**, via a waterfall
+partition of `free + reserved` computed once per (account, chain, asset) in `splitBalanceByPurpose`:
+
+```
+free + reserved  →  Transferable  →  Staked  →  Governance  →  Other (remainder)
+```
+
+Each bucket after Transferable is **capped by what's left**, so the buckets always sum exactly to the total and `Other`
+can never go negative even when locks overlap (`pallet_balances`' `frozen` is the _maximum_ of an account's locks, never
+their sum).
+
+- **Staked** comes from the **staking ledger** (`aggregates/staking-positions`, a position's `stake.active`), never from
+  the deprecated `LockTypes.STAKING` lock — that lock type is absent on Asset Hub, where staking holds funds in
+  `reserved` rather than locking `free`. The cell is `null` (renders `—`) on any (chain, asset) that isn't the staking
+  asset of a staking chain, and also `null` **while staking data is still loading**, even on a cell that will turn out
+  to have a position — a pending `—` is never allowed to render as `0`.
+- **Governance** is the conviction-vote lock, and only ever applies to the chain's **native asset** — a parachain's
+  custom token cannot carry a governance lock, so that cell is `—` there.
+- **Vested** is not a column. Design decision (carried from exploration variant 1h into the approved 2a): vesting is
+  non-zero on a small minority of rows, so a dedicated column would be mostly `—`. Instead the vesting amount is folded
+  into **Other** and surfaced as an "incl. X vested" subline under that cell whenever it's non-zero (`split.vestedHint`,
+  capped by `Other` the same way every bucket is capped).
+
+**`—` vs. `0`:** a dash means the bucket does not apply to this (chain, asset) pair, or its data has not been read yet
+(staking, specifically); a `0` means the chain actually reports a zero balance for that bucket. The two must never be
+conflated — a staking cell renders `—` while a fetch is pending and only becomes a number (which may itself be `0`) once
+the ledger has answered.
+
+## Filters, search, sort, grouping
+
+- **Four checkbox filters** — Network, Chain, Account, Wallet type — each a dropdown of every distinct value present in
+  the current selection with a per-option row count. Selections are **OR within a filter, AND across filters** (e.g.
+  "Polkadot or Kusama" AND "Vault or Multisig").
+- **Minimum row-total amount filter** — a popover with a free-text input plus `≥ $100K` / `≥ $1M` presets. Accepts
+  `100K`, `1M`, or a `$`/comma-decorated plain number (`parseAmountInput` in `lib/filters.ts`); a row without a priced
+  total never passes a minimum filter.
+- **Chips row** appears whenever a filter or the search box is active: one chip per filter value with its own ×, plus a
+  "Clear all" button that also clears the search box.
+- **Free-text search** matches the strings the user actually sees on the row — resolved account name, the displayed SS58
+  address, and the chain name (`performSearch` with `getMeta` supplying `chainName`) — never the raw stored `accountId`
+  or unresolved account fields. Search **filters without re-ranking**: the grouped table's order carries meaning
+  (account grouping, in-group sort), so `performSearch`'s relevance ordering is used only to decide which rows match,
+  then the original row order is kept.
+- **Column sort** applies inside every group independently, never across the whole table — clicking a header sorts each
+  account's own rows. Categorical columns (Chain) default ascending; numeric columns (Transferable / Staked / Governance
+  / Other / Total) default descending; a second click on the same header flips direction.
+- **Group order** toggles between "Accounts by value" (fiat subtotal, descending) and "Accounts A→Z" (name, ascending)
+  via a single header control.
+- **Collapse/expand all** toggles every group at once; individual groups fold independently via their own caret.
+  Collapsing is a display concern only — it never removes a group's rows from filtering, sorting, the row-count badge,
+  or CSV export.
+
+## CSV export
+
+Exports the rows in **exactly the on-screen sequence**: current group order, then each group's own current sort — not
+the flat filtered/sorted list, which ignores group reordering. Collapsed groups are included; folding a card must not
+silently drop its rows from the export.
+
+- Every numeric cell is a **full-precision token amount** (`toTokens`, unrounded, ungrouped) — never fiat, never
+  abbreviated. A spreadsheet is where a user does arithmetic on exact values.
+- A bucket that renders `—` on screen (Staked/Governance not applicable, or pending) exports as an **empty cell**, never
+  `0` and never the literal dash.
+- The address column carries the **displayed SS58** (`row.displayAddress`, in the chain's prefix), never the raw
+  `accountId` hex.
+- The filename encodes the active filters (`nova-spektr-accounts-<parts>-YYYY-MM-DD.csv`): network names and wallet
+  types are used as-is, chain and account filters — whose stored values are hex ids, unusable in a filename — contribute
+  a **count** instead (`2-chains`, `3-accounts`), the amount filter contributes its raw input (`min-100K`), and an
+  active search contributes only the literal word `search`, deliberately never the query text itself (it could contain
+  anything, including a contact's name).
+
+## Subscription cost
+
+The widget starts its own balance fetch for the dashboard's selection in `index.ts` — `balanceSubModel.fetchAccounts`
+for wallet accounts, `balanceSubModel.fetchAccountIds` for address-book contacts (paired with every chain whose address
+scheme matches the contact's key). This mirrors `dashboard-portfolio-overview`'s wiring rather than importing it, and it
+is safe to double-register: `balanceSubModel` keys live chain subscriptions by `(account, chain)` and skips a key that
+already exists, so having two overview features register the same accounts never opens a second live subscription — only
+the one-shot fetch effect runs twice, which is cheap.
+
+The widget also calls `stakingPositions.trackAccountIds` (`hooks/useTrackedContacts.ts`) so address-book entries in the
+dashboard selection — which have no wallet account and would otherwise never produce a staking position — get one.
+`features/dashboard-staking-positions` tracks the same contact ids from the Staking tab for the same reason. Both derive
+their tracked set from the same dashboard selection and push it wholesale into the same aggregate store, which dedupes
+and sorts through an `updateFilter`, so the two features cannot fight over the tracked set — but they must stay in
+lockstep: if either hook's derivation of "which ids are contacts, not wallet accounts" ever diverges from the other's,
+that divergence needs a comment explaining why.
+
+## Known gaps / deferred
+
+Deferred from the approved design for this first ship:
+
+- **No per-column filter popovers** on the numeric columns (design explored this; only the bar-level minimum-amount
+  filter shipped).
+- **No group-by control.** The table is always grouped by account; a flat / "group by network" toggle was part of the
+  explored design but not this cut.
+- **Vested has no column of its own** — see "The purpose split" above; it is a deliberate product decision, not an
+  oversight, but is listed here because the design exploration did consider a dedicated column.
+- The fiat figures used for **sorting and subtotals** go through a `Number()` conversion of a `BigNumber`-computed token
+  amount (`buildRowFiat` in `lib/rows.ts`) — display-grade precision, adequate for ranking and a rounded subtotal, not
+  accounting-grade. The **CSV export path stays exact**: it re-derives token amounts through `toTokens` directly and
+  never routes through the fiat conversion.
+
+## Related
+
+- `pages/Dashboard` — hosts `dashboardWidgetsSlot`, owns the account selection this widget reads.
+- `features/dashboard-portfolio-overview` — the fiat-snapshot card at the top of the same tab; this table shares its
+  balance-subscription wiring pattern and its `hasBalanceRecords` skeleton rule.
+- `features/dashboard-staking-positions` — tracks the same address-book contact ids for staking positions from the
+  Staking tab; see "Subscription cost" above for the coordination.
+- `aggregates/staking-positions` — the source of every `Staked` bucket value.
+- `features/assets-balances` — `balanceSubModel`, the pooled per-(account, chain) subscription this widget's fetch
+  effects feed into.
+- `aggregates/currency-select` — the fiat toggle, active currency and price feeds every fiat figure depends on.
