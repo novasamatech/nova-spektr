@@ -36,8 +36,7 @@ import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSub
 import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
-import { getAvailableToBond, isBelowMinimumBond } from '../lib/amount-rules';
-import { pickSeedAccount } from '../lib/seed-account';
+import { getAvailableToBond, isBelowMinimumBond, pickSeedAccount } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
 
 import { confirmModel } from './confirm';
