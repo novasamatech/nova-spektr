@@ -11,10 +11,12 @@ import { getWalletTypeBucket } from './walletTypeBucket';
 /**
  * Planck → whole tokens at full precision. Mirrors
  * `dashboard-staking-kpi/lib/csv.ts#toTokens` — same BigNumber primitive, same
- * shape — kept feature-local rather than shared since fiat math tolerates the
- * `Number()` precision loss the CSV export explicitly avoids.
+ * shape. Exported and reused as-is by `./csv.ts`: this function alone never
+ * loses precision, only `buildRowFiat` below does by wrapping it in `Number()`
+ * for the fiat estimate — the CSV export must not do that, so it imports this
+ * helper directly instead of duplicating it.
  */
-const toTokens = (amount: string, precision: number): string => {
+export const toTokens = (amount: string, precision: number): string => {
   return new BigNumber(amount || '0').shiftedBy(-precision).toFixed();
 };
 

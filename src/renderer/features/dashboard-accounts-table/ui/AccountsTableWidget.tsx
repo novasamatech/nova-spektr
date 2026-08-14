@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { buildCsv, downloadCsv } from '@/shared/lib/csv';
 import { cnTw, formatFiatBalance, performSearch } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { SearchInput } from '@/shared/ui-kit';
@@ -10,6 +11,7 @@ import { currencySelect } from '@/aggregates/currency-select';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useAccountRows } from '../hooks/useAccountRows';
 import { useTrackedContacts } from '../hooks/useTrackedContacts';
+import { accountsCsvColumns, accountsCsvFileName, buildExportFilterParts } from '../lib/csv';
 import {
   type ChipLabels,
   type ListField,
@@ -161,6 +163,28 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
     setClosedGroups(allOpen ? new Set(groups.map((group) => group.key)) : new Set());
   };
 
+  // Exports exactly what's on screen: `sorted` is filtered + sorted, every
+  // group regardless of collapse state. A collapsed group hides its rows from
+  // view, not from the data — the export must not silently drop them because
+  // the user happened to fold a card.
+  const exportCsv = () => {
+    const columns = accountsCsvColumns({
+      network: t('dashboard.accountsTable.columns.network'),
+      chain: t('dashboard.accountsTable.columns.chain'),
+      account: t('dashboard.accountsTable.columns.account'),
+      address: t('dashboard.accountsTable.columns.address'),
+      asset: t('dashboard.accountsTable.columns.asset'),
+      transferable: t('dashboard.accountsTable.columns.transferable'),
+      staked: t('dashboard.accountsTable.columns.staked'),
+      governance: t('dashboard.accountsTable.columns.governance'),
+      other: t('dashboard.accountsTable.columns.other'),
+      total: t('dashboard.accountsTable.columns.total'),
+    });
+    const filename = accountsCsvFileName(buildExportFilterParts(filters, search));
+
+    downloadCsv(filename, buildCsv(columns, sorted));
+  };
+
   // Must be invoked as `{renderBody()}` below, never rendered as `<RenderBody />` —
   // as a component it would remount on every parent render instead of just
   // returning fresh JSX.
@@ -246,9 +270,8 @@ export const AccountsTableWidget = ({ accountIds, allEntries }: Props) => {
             />
           </div>
 
-          {/* Task 10 wires export */}
-          <span title={t('dashboard.accountsTable.exportCsvDisabled')}>
-            <Button variant="fill" pallet="secondary" size="sm" disabled>
+          <span title={sorted.length === 0 ? t('dashboard.accountsTable.exportCsvEmpty') : undefined}>
+            <Button variant="fill" pallet="secondary" size="sm" disabled={sorted.length === 0} onClick={exportCsv}>
               {t('dashboard.accountsTable.exportCsv')}
             </Button>
           </span>

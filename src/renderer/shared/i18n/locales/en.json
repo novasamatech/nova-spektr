@@ -622,7 +622,7 @@
       "rowCount_other": "{count} rows",
       "searchPlaceholder": "Account, address, chain",
       "exportCsv": "Export CSV",
-      "exportCsvDisabled": "Export will be available soon",
+      "exportCsvEmpty": "No rows to export",
       "groupOrderValue": "Accounts by value",
       "groupOrderName": "Accounts A → Z",
       "collapseAll": "Collapse all",
@@ -657,8 +657,11 @@
         "other": "Other"
       },
       "columns": {
+        "network": "Network",
         "chain": "Chain",
+        "account": "Account",
         "address": "Address",
+        "asset": "Asset",
         "transferable": "Transferable",
         "staked": "Staked",
         "governance": "Governance",
