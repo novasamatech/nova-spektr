@@ -122,6 +122,20 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     expect(screen.queryByText('Address book')).not.toBeInTheDocument();
   });
 
+  test('should badge a local multisig with no local signatory as Local wallet', async () => {
+    // The case that separates the rule from the one it replaced: `draft` also
+    // covers a multisig this installation holds as a wallet but cannot sign
+    // for. The badge states provenance, so a local wallet behind the account
+    // means "Local wallet" — signability is the pencil glyph's business, and
+    // keying the badge off `accessMode === 'draft'` would call this a contact.
+    const wallet = { id: 3, name: 'Team Multisig', type: WalletType.MULTISIG, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'draft' });
+
+    expect(await screen.findByText('Local wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
   test('should keep the view only badge for a watch-only position', async () => {
     const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
 
