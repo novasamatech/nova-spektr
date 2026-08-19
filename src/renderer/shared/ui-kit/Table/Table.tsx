@@ -276,25 +276,54 @@ const VirtualizedTableBody = <T,>({
   rowProps,
   onRowClick,
 }: VirtualizedTableBodyProps<T>) => {
+  const rowCount = data.length;
   const bodyRef = useRef<HTMLTableSectionElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
+
+  // The scroll element is an *ancestor* of this table, and React attaches an
+  // ancestor's ref after a descendant's layout effect has already run — so on
+  // first mount `getScrollElement()` answers `null`. Resolving it into state on
+  // every render (a ref read, nothing measured) is what lets the measuring
+  // effect below start once it actually exists.
+  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    const next = virtualization.getScrollElement();
+    setScrollElement(prev => (prev === next ? prev : next));
+  });
 
   // Row positions are relative to the scroll viewport, but the header (and
   // anything the caller renders above the table) pushes the body down — measure
   // that offset, same way `features/multisig-operations` does for its list.
+  //
+  // Deliberately *not* measured on every render: the virtualizer re-renders on
+  // every scroll frame, and a `getBoundingClientRect` there forces a synchronous
+  // layout on each of them. The offset only moves when the viewport or the
+  // content above the body is resized, which is what the observer watches for.
   useLayoutEffect(() => {
     const body = bodyRef.current;
-    const scrollElement = virtualization.getScrollElement();
     if (!body || !scrollElement) return;
 
-    const margin = Math.round(
-      body.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop,
-    );
-    setScrollMargin(prev => (prev === margin ? prev : margin));
-  });
+    const measure = () => {
+      const margin = Math.round(
+        body.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop,
+      );
+      setScrollMargin(prev => (prev === margin ? prev : margin));
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(scrollElement);
+    // The table itself: a header that rewraps, or a caller's block above it
+    // growing, both move the body without resizing the viewport.
+    const table = body.closest('table');
+    if (table) observer.observe(table);
+
+    return () => observer.disconnect();
+  }, [scrollElement, rowCount]);
 
   const virtualizer = useVirtualizer({
-    count: data.length,
+    count: rowCount,
     getScrollElement: virtualization.getScrollElement,
     estimateSize: () => virtualization.rowHeight,
     overscan: virtualization.overscan ?? 10,
