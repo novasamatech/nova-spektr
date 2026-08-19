@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { formatBalance, formatBalanceExact } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type DataTableColumn, type DataTableFilterState, DataTable } from '@/shared/ui-kit';
@@ -49,23 +49,26 @@ export const PositionsTable = ({ rows, onRowClick }: Props) => {
     const planck = (pick: (row: PositionRow) => string | null): ColumnBody => ({
       sortable: true,
       filter: 'range',
+      // `formatted` already carries the shorthand suffix — appending `suffix`
+      // again printed (and searched, and exported) `2MM DOT`.
       text: (row) => {
         const value = pick(row);
         if (value === null) return noValue;
 
-        const formatted = formatBalance(value, row.asset.precision);
-
-        return `${formatted.formatted}${formatted.suffix} ${row.asset.symbol}`;
+        return `${formatBalance(value, row.asset.precision).formatted} ${row.asset.symbol}`;
       },
+      // Export and range-filter read the un-abbreviated amount: `formatted`
+      // would put `2M` in a CSV cell, and a `value` divided by its own
+      // shorthand makes 2M DOT compare as smaller than 900K.
       exportValue: (row) => {
         const value = pick(row);
 
-        return value === null ? '' : formatBalance(value, row.asset.precision, { keepPrecision: true }).formatted;
+        return value === null ? '' : formatBalanceExact(value, row.asset.precision);
       },
       value: (row) => {
         const value = pick(row);
 
-        return value === null ? null : Number(formatBalance(value, row.asset.precision, { keepPrecision: true }).value);
+        return value === null ? null : Number(formatBalanceExact(value, row.asset.precision));
       },
       compare: (a, b) => {
         const left = pick(a);

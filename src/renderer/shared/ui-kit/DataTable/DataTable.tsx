@@ -112,8 +112,11 @@ export const DataTable = <T,>({
       if (prev?.column !== column.id) return { column: column.id, direction: 'asc' };
       if (prev.direction === 'asc') return { column: column.id, direction: 'desc' };
 
-      // Third click clears the sort and returns to the caller's default order.
-      return defaultSort;
+      // Third click folds back onto the same column as ascending rather than
+      // onto `defaultSort`: on the default column those are the same state, so
+      // the header would look dead and that column could never be sorted the
+      // other way at all.
+      return { column: column.id, direction: 'asc' };
     });
   };
 
@@ -170,7 +173,7 @@ export const DataTable = <T,>({
       )}
 
       <div
-        className={cnTw(minWidth && 'overflow-x-auto', scrolls && SCROLL_CLASS)}
+        className={cnTw(minWidth && 'overflow-x-auto [&_.table-container]:overflow-visible', scrolls && SCROLL_CLASS)}
         style={scrolls ? { maxHeight: scrollMaxHeight } : undefined}
       >
         <div className="table-container">

@@ -9,6 +9,7 @@ import { PositionsWidget } from './ui/PositionsWidget';
 export type { CountdownParts, MultisigThreshold, PositionAccessMode, PositionRole, PositionRow } from './lib';
 export {
   canAct,
+  comparePlanck,
   derivePositionRole,
   getAccessMode,
   getCountdownParts,

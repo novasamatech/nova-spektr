@@ -315,7 +315,13 @@ export const ClaimModal = memo(
     }, [claimable]);
 
     /**
-     * The oldest unclaimed era, as dates rather than as an era index.
+     * The unclaimed payout closest to expiring, as dates rather than era
+     * indices.
+     *
+     * Ranked by eras **left**, not by era number: indices are per-chain and
+     * unrelated — Kusama runs about four times Polkadot's — so taking the
+     * numerically smallest across a mixed selection always picked Polkadot and
+     * could contradict the "expires in N days" line right beside it.
      *
      * "Era 1,704" means nothing to anyone reading this line; "earned 2 Jul,
      * expires 24 Sep" is the same fact in the unit people hold money in. Both
@@ -324,26 +330,30 @@ export const ClaimModal = memo(
      * date.
      */
     const oldestUnclaimed = useMemo(() => {
-      let oldest: { chainId: ChainId; era: number } | null = null;
+      let closest: { chainId: ChainId; era: number; erasLeft: number } | null = null;
 
       for (const row of claimable) {
+        const activeEra = eras[row.chainId];
+        if (activeEra === undefined) continue;
+
         for (const payoutEra of row.eras) {
-          if (!oldest || payoutEra < oldest.era) {
-            oldest = { chainId: row.chainId, era: payoutEra };
+          const erasLeft = erasUntilExpiry(payoutEra, activeEra, historyDepths[row.chainId] ?? undefined);
+          if (!closest || erasLeft < closest.erasLeft) {
+            closest = { chainId: row.chainId, era: payoutEra, erasLeft };
           }
         }
       }
 
-      if (!oldest) return null;
+      if (!closest) return null;
 
-      const anchor = eraAnchors[oldest.chainId] ?? null;
-      const historyDepth = historyDepths[oldest.chainId] ?? undefined;
+      const anchor = eraAnchors[closest.chainId] ?? null;
+      const historyDepth = historyDepths[closest.chainId] ?? undefined;
 
       return {
-        earnedAt: eraStartedAt(oldest.era, anchor),
-        expiresAt: eraExpiresAt(oldest.era, anchor, historyDepth ?? undefined),
+        earnedAt: eraStartedAt(closest.era, anchor),
+        expiresAt: eraExpiresAt(closest.era, anchor, historyDepth ?? undefined),
       };
-    }, [claimable, eraAnchors, historyDepths]);
+    }, [claimable, eras, eraAnchors, historyDepths]);
 
     /**
      * Following a slice with the eye is useless if its row is fifty pixels

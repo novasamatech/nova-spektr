@@ -122,6 +122,38 @@ describe('sortRows', () => {
     expect(sortRows(rows, columns, { column: 'actions', direction: 'asc' })).toBe(rows);
     expect(sortRows(rows, columns, null)).toBe(rows);
   });
+
+  /**
+   * A column that compares as big integers (planck amounts run past
+   * `Number.MAX_SAFE_INTEGER`) still has to sink its unknowns in both
+   * directions — multiplying the comparator's own null sentinel by the sort
+   * direction floated every `—` row to the top of a descending sort.
+   */
+  test('unknown values sort last in both directions on a compare column', () => {
+    const compareColumns: DataTableColumn<Row>[] = [
+      {
+        id: 'staked',
+        title: 'Staked',
+        sortable: true,
+        text: r => (r.staked === null ? '—' : String(r.staked)),
+        value: r => r.staked,
+        // The same shape as the real planck comparator: a direction-independent
+        // sentinel for the unknown side, which is exactly what breaks when the
+        // caller multiplies the result by the sort direction.
+        compare: (a, b) => {
+          if (a.staked === null && b.staked === null) return 0;
+          if (a.staked === null) return 1;
+          if (b.staked === null) return -1;
+
+          return a.staked - b.staked;
+        },
+        render: r => r.staked,
+      },
+    ];
+
+    expect(ids(sortRows(rows, compareColumns, { column: 'staked', direction: 'asc' }))).toEqual(['2', '1', '3']);
+    expect(ids(sortRows(rows, compareColumns, { column: 'staked', direction: 'desc' }))).toEqual(['1', '2', '3']);
+  });
 });
 
 describe('filter bookkeeping', () => {

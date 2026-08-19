@@ -2,12 +2,12 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type ChainId } from '@/shared/core';
+import { type AssetId, type ChainId } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
 import { type EraValidatorMap, type StakingPosition, validators as validatorsStore } from '@/domains/staking';
-import { balanceModel } from '@/entities/balance';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
@@ -60,6 +60,18 @@ function derivePositionApy(position: StakingPosition, eraValidators: EraValidato
  * Nothing here starts a subscription: `aggregates/staking-positions` already
  * drives every read this needs, so the widget only joins the caches it filled.
  */
+/** `free + reserved` of one (account, chain, asset), `null` when unread. */
+function totalBalanceOf(
+  balanceMap: Parameters<typeof balanceUtils.getBalance>[0],
+  accountId: AccountId,
+  chainId: ChainId,
+  assetId: AssetId,
+): string | null {
+  const balance = balanceUtils.getBalance(balanceMap, accountId, chainId, assetId);
+
+  return balance ? balance.free.add(balance.reserved).toString() : null;
+}
+
 export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   const { positions, pending } = useStakingPositions();
   const chains = useUnit(networkModel.$chains);
@@ -68,20 +80,6 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   const eraValidators = useUnit(validatorsStore.validatorsResource.$cache);
   const balanceMap = useUnit(balanceModel.$balanceMap);
   const { drafts, available: draftsAvailable } = useVisibleDrafts();
-
-  // Keyed by (chain, account, asset) so a row can find the one balance that
-  // belongs to it without walking the whole map per row.
-  const balanceByKey = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const balance of Object.values(balanceMap)) {
-      map.set(
-        `${balance.chainId}-${balance.accountId}-${balance.assetId}`,
-        balance.free.add(balance.reserved).toString(),
-      );
-    }
-
-    return map;
-  }, [balanceMap]);
 
   const selectedIds = useMemo(() => {
     if (accountIds.length === 0) return null;
@@ -166,7 +164,10 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         // The era's snapshot, so it can lag a bond placed after the election —
         // and it stays `null` until that exposure is read.
         selfStake: position.validator?.ownStake ?? null,
-        totalBalance: balanceByKey.get(`${position.chainId}-${position.accountId}-${asset.assetId}`) ?? null,
+        // `$balanceMap` is already keyed by (account, chain, asset), so the row
+        // reads its one balance straight out of it — re-indexing the whole map
+        // on every subscription tick bought nothing.
+        totalBalance: totalBalanceOf(balanceMap, position.accountId, position.chainId, asset.assetId),
         sharePercent: calculateSharePercent(
           position.stake.total,
           (chainTotals.get(position.chainId) ?? BN_ZERO).toString(),
@@ -187,7 +188,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     signerAccountIds,
     accountByAccountId,
     eraValidators,
-    balanceByKey,
+    balanceMap,
     draftCountByKey,
     pending,
     draftsAvailable,

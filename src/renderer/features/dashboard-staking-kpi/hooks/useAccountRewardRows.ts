@@ -1,10 +1,12 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type Address, type ChainId } from '@/shared/core';
+import { type Address, type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { getRelaychainAsset, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
 import { type PositionRole, derivePositionRole } from '@/features/dashboard-staking-positions';
 import { sumPlanck } from '../lib/amounts';
@@ -13,7 +15,7 @@ import { type RewardWindow, isWindowReady, windowBounds, windowDays } from '../l
 import { filterPositionsByAccounts } from '../lib/summary';
 
 import { useNetworkApys } from './useNetworkApys';
-import { useRawRewardPayouts } from './useRawRewardPayouts';
+import { useRawPayoutsSince, useRawRewardPayouts } from './useRawRewardPayouts';
 
 export type AccountRewardRow = {
   /** `${chainId}-${accountId}`. */
@@ -22,11 +24,19 @@ export type AccountRewardRow = {
   chainId: ChainId;
   networkName: string;
   chainName: string;
+  /** The chain itself — the account cell resolves names against it. */
+  chain: Chain;
   address: Address;
+  /** Wallet the account belongs to, `null` for a foreign / contact address. */
+  wallet: Wallet | null;
   role: PositionRole;
   symbol: string;
   precision: number;
-  /** Bonded ledger total, planck. */
+  /**
+   * Ledger total — bonded plus everything still unbonding, planck. The same
+   * figure the positions table's Staked column prints, so the two tables cannot
+   * disagree about one row.
+   */
   totalStaked: string;
   /** Payouts the indexer recorded inside the window, planck. */
   rewards: string;
@@ -42,6 +52,12 @@ export type AccountRewardRowsResult = {
   days: number | null;
   /** A custom range with only one end picked: nothing to report yet. */
   ready: boolean;
+  /**
+   * Whether the payout history reaches back far enough to answer the window.
+   * `false` for a custom range that starts before the fetched year — the rows
+   * are still listed, but their APY is `null` rather than a confident `0.00%`.
+   */
+  covered: boolean;
 };
 
 /**
@@ -56,6 +72,21 @@ export type AccountRewardRowsResult = {
 export const useAccountRewardRows = (accountIds: string[], window: RewardWindow): AccountRewardRowsResult => {
   const { positions } = useStakingPositions();
   const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
+
+  const walletByAccountId = useMemo(() => {
+    const map = new Map<string, Wallet>();
+
+    for (const account of allAccounts) {
+      if (map.has(account.accountId)) continue;
+
+      const wallet = walletUtils.getWalletById(wallets, account.walletId);
+      if (wallet) map.set(account.accountId, wallet);
+    }
+
+    return map;
+  }, [allAccounts, wallets]);
 
   const scoped = useMemo(() => filterPositionsByAccounts(positions, accountIds), [positions, accountIds]);
 
@@ -71,12 +102,25 @@ export const useAccountRewardRows = (accountIds: string[], window: RewardWindow)
   }, [scoped]);
 
   const rawPayouts = useRawRewardPayouts(payoutRequests);
+  const payoutsSince = useRawPayoutsSince();
   const chainIds = useMemo(() => payoutRequests.map((request) => request.chainId), [payoutRequests]);
   const networkApys = useNetworkApys(chainIds);
 
   const bounds = windowBounds(window);
   const days = windowDays(window);
   const ready = isWindowReady(window);
+
+  /**
+   * Whether the indexer rows actually span the requested window.
+   *
+   * The payout history is fetched from the first of the month twelve months
+   * back, but the Custom picker accepts any past date. A range that starts
+   * before that has no rows to sum, and reporting the resulting `0` as a
+   * realised APY would state a confident `0.00%` about a period nobody looked
+   * at — the same "not read is not zero" rule the rest of this feature
+   * follows.
+   */
+  const covered = ready && (bounds.from === null || bounds.from >= payoutsSince);
 
   const rewardsByKey = useMemo(() => {
     const byKey = new Map<string, string[]>();
@@ -114,20 +158,22 @@ export const useAccountRewardRows = (accountIds: string[], window: RewardWindow)
         chainId: position.chainId,
         networkName: parent?.name ?? chain.name,
         chainName: chain.name,
+        chain,
         address: toAddress(position.accountId, { prefix: chain.addressPrefix }),
+        wallet: walletByAccountId.get(position.accountId) ?? null,
         role: derivePositionRole(position),
         symbol: asset.symbol,
         precision: asset.precision,
-        totalStaked: position.stake.active,
+        totalStaked: position.stake.total,
         rewards,
-        apy: ready ? realisedApy(rewards, position.stake.active, days) : null,
+        apy: covered ? realisedApy(rewards, position.stake.total, days) : null,
         networkApy: networkApys[position.chainId] ?? null,
       });
     }
 
     // Biggest earner first — the row people open the table to find.
     return result.sort((a, b) => Number(b.rewards) - Number(a.rewards));
-  }, [scoped, chains, rewardsByKey, networkApys, days, ready]);
+  }, [scoped, chains, walletByAccountId, rewardsByKey, networkApys, days, covered]);
 
-  return { rows, days, ready };
+  return { rows, days, ready, covered };
 };

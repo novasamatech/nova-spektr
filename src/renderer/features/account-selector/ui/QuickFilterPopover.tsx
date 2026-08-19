@@ -88,6 +88,9 @@ export const QuickFilterPopover = ({ $filters, onChange }: Props) => {
 
   const active = countActive(filters);
 
+  /** Criteria that only address-book contacts carry values for. */
+  const addressBookScoped = filters.chainIds.length > 0 || filters.fields.length > 0;
+
   const toggleChain = (chainId: string) => {
     const next = filters.chainIds.includes(chainId)
       ? filters.chainIds.filter((id) => id !== chainId)
@@ -173,6 +176,14 @@ export const QuickFilterPopover = ({ $filters, onChange }: Props) => {
               }}
             />
           ))}
+
+          {addressBookScoped && (
+            /* `applyPresetFilter` answers network and field criteria from
+               address-book metadata, so a row without it cannot match one.
+               Saying so beats letting the user combine `Source: Wallet` with a
+               network chip and read the empty result as a bug. */
+            <FootnoteText className="text-text-tertiary">{t('presets.quickFilter.addressBookOnly')}</FootnoteText>
+          )}
 
           {active > 0 && (
             <button

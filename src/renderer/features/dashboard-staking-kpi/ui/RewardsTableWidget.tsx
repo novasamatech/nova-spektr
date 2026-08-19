@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { formatBalance, formatBalanceExact } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
 import { type DataTableColumn, type DataTableFilterState, DataTable, Tooltip } from '@/shared/ui-kit';
+import { comparePlanck } from '@/features/dashboard-staking-positions';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type AccountRewardRow, useAccountRewardRows } from '../hooks/useAccountRewardRows';
@@ -30,7 +31,7 @@ const MIN_WIDTH = 1180;
 export const RewardsTableWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
   const [rewardWindow, setRewardWindow] = useState<RewardWindow>(DEFAULT_REWARD_WINDOW);
-  const { rows, days, ready } = useAccountRewardRows(accountIds, rewardWindow);
+  const { rows, days, ready, covered } = useAccountRewardRows(accountIds, rewardWindow);
 
   const columns = useMemo<DataTableColumn<AccountRewardRow>[]>(() => {
     const amount = (
@@ -43,23 +44,21 @@ export const RewardsTableWidget = ({ accountIds }: Props) => {
       width,
       sortable: true,
       filter: 'range',
-      text: (row) => {
-        const formatted = formatBalance(pick(row), row.precision);
-
-        return `${formatted.formatted}${formatted.suffix} ${row.symbol}`;
-      },
-      exportValue: (row) => formatBalance(pick(row), row.precision, { keepPrecision: true }).formatted,
-      value: (row) => Number(formatBalance(pick(row), row.precision, { keepPrecision: true }).value),
-      render: (row) => {
-        const formatted = formatBalance(pick(row), row.precision);
-
-        return (
-          <FootnoteText className="tabular-nums">
-            {formatted.formatted}
-            {formatted.suffix} {row.symbol}
-          </FootnoteText>
-        );
-      },
+      // `formatted` already carries the shorthand suffix; appending `suffix`
+      // again printed `2MM DOT`. Sorting, the range filter and the export read
+      // the un-abbreviated amount instead — a `value` divided by its own
+      // shorthand makes 2M DOT compare as smaller than 900K.
+      text: (row) => `${formatBalance(pick(row), row.precision).formatted} ${row.symbol}`,
+      exportValue: (row) => formatBalanceExact(pick(row), row.precision),
+      value: (row) => Number(formatBalanceExact(pick(row), row.precision)),
+      // Planck amounts run past `Number.MAX_SAFE_INTEGER`, so the order is
+      // settled on the raw integers rather than on `value`.
+      compare: (a, b) => comparePlanck(pick(a), pick(b)),
+      render: (row) => (
+        <FootnoteText className="tabular-nums">
+          {formatBalance(pick(row), row.precision).formatted} {row.symbol}
+        </FootnoteText>
+      ),
     });
 
     return [
@@ -85,10 +84,15 @@ export const RewardsTableWidget = ({ accountIds }: Props) => {
         id: 'account',
         title: t('dashboard.staking.rewardsTable.columns.account'),
         width: '18%',
+        // The chain and the wallet are what make the resolver run the full
+        // chain (custom name → contact → identity → wallet name); without them
+        // the cell prints a generic-prefix address next to the chain-prefixed
+        // one in the Address column.
         render: (row) => (
           <NamedAccount
             accountId={pjsSchema.helpers.toAccountId(row.accountId)}
-            chain={undefined}
+            chain={row.chain}
+            wallet={row.wallet ?? undefined}
             variant="short"
             iconSize={20}
             hideExplorers
@@ -174,7 +178,11 @@ export const RewardsTableWidget = ({ accountIds }: Props) => {
         <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsTable.pickRange')}</BodyText>
       )}
 
-      {ready && days !== null ? (
+      {ready && !covered ? (
+        // Rows still list what is staked; the earnings column simply has no
+        // data to report over a range older than the fetched history.
+        <HelpText className="mt-2 text-text-tertiary">{t('dashboard.staking.rewardsTable.outOfHistory')}</HelpText>
+      ) : ready && days !== null ? (
         <HelpText className="mt-2 text-text-tertiary">
           {t('dashboard.staking.rewardsTable.windowHint', { days })}
         </HelpText>

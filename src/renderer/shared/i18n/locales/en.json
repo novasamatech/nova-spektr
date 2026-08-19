@@ -1083,6 +1083,7 @@
         "pickRange": "Pick both ends of the date range to see rewards for it",
         "searchPlaceholder": "Search network, chain or address",
         "windowHint": "Yield is annualised from {days} days at the current bonded amount",
+        "outOfHistory": "Reward history only reaches back 12 months — APY is not reported for an earlier range",
         "apyHint": "Rewards received in the window, annualised over the amount staked today. A position that changed size mid-window is not adjusted for.",
         "networkAverage": "network {value}%",
         "columns": {
@@ -3269,7 +3270,8 @@
       "title": "Filter accounts",
       "network": "Network",
       "source": "Source",
-          "clear": "Clear filters"
+          "addressBookOnly": "Network and address-book filters match address-book contacts only",
+      "clear": "Clear filters"
     }
   },
   "price": {

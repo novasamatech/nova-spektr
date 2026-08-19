@@ -37,6 +37,7 @@ const parseBound = (raw: string): number | null => {
 export const DataTableFilterPopover = <T,>({ column, rows, filters, active, onFiltersChange }: Props<T>) => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [rawBounds, setRawBounds] = useState<{ min: string; max: string }>({ min: '', max: '' });
 
   const stop = (event: MouseEvent) => event.stopPropagation();
 
@@ -54,13 +55,31 @@ export const DataTableFilterPopover = <T,>({ column, rows, filters, active, onFi
   const setBound = (bound: 'min' | 'max', raw: string) => {
     const current = filters.range[column.id] ?? { min: null, max: null };
 
+    setRawBounds(prev => ({ ...prev, [bound]: raw }));
     onFiltersChange({
       ...filters,
       range: { ...filters.range, [column.id]: { ...current, [bound]: parseBound(raw) } },
     });
   };
 
+  /**
+   * What the box shows while it is being typed in.
+   *
+   * Rendering `String(parsed)` swallowed a trailing separator — `0.` parses to
+   * `0`, so the dot was wiped on the next render and a decimal could never be
+   * entered at all. The raw text wins as long as it still means the value the
+   * filter holds, which also lets an external clear take the box back to
+   * empty.
+   */
+  const boundValue = (bound: 'min' | 'max', value: number | null): string => {
+    const raw = rawBounds[bound];
+    if (parseBound(raw) === value) return raw;
+
+    return value === null ? '' : String(value);
+  };
+
   const clearColumn = () => {
+    setRawBounds({ min: '', max: '' });
     onFiltersChange({
       text: { ...filters.text, [column.id]: '' },
       enum: { ...filters.enum, [column.id]: [] },
@@ -112,13 +131,13 @@ export const DataTableFilterPopover = <T,>({ column, rows, filters, active, onFi
           {column.filter === 'range' && (
             <div className="flex items-center gap-x-2">
               <Input
-                value={range.min === null ? '' : String(range.min)}
+                value={boundValue('min', range.min)}
                 placeholder={t('dataTable.min')}
                 width="full"
                 onChange={value => setBound('min', value)}
               />
               <Input
-                value={range.max === null ? '' : String(range.max)}
+                value={boundValue('max', range.max)}
                 placeholder={t('dataTable.max')}
                 width="full"
                 onChange={value => setBound('max', value)}

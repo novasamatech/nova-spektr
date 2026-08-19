@@ -93,19 +93,25 @@ export const sortRows = <T>(rows: T[], columns: DataTableColumn<T>[], sort: Tabl
   const sign = sort.direction === 'asc' ? 1 : -1;
 
   return [...rows].sort((a, b) => {
-    if (column.compare) {
-      return column.compare(a, b) * sign;
-    }
-
+    // Unknowns are settled before the direction is applied, so they sink in
+    // both directions. Leaving it to `compare` and multiplying its result by
+    // `sign` floated every `—` row to the top of a descending sort — which is
+    // most rows on a column like Self stake.
     if (column.value) {
       const left = column.value(a);
       const right = column.value(b);
 
-      if (left === null && right === null) return 0;
-      if (left === null) return 1;
-      if (right === null) return -1;
+      if (left === null || right === null) {
+        if (left === null && right === null) return 0;
 
-      return (left - right) * sign;
+        return left === null ? 1 : -1;
+      }
+
+      if (!column.compare) return (left - right) * sign;
+    }
+
+    if (column.compare) {
+      return column.compare(a, b) * sign;
     }
 
     return columnText(column, a).localeCompare(columnText(column, b)) * sign;

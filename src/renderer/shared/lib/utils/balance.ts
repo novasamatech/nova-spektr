@@ -129,6 +129,24 @@ export const formatBalance = (
   };
 };
 
+/**
+ * The amount as a plain decimal string in whole tokens — no `K`/`M`/`B`/`T`
+ * shorthand, full precision, no group separators.
+ *
+ * `formatBalance().value` is divided by whichever shorthand it picked, so `2M
+ * DOT` yields `"2"` while `900K DOT` yields `"900000"`. That is fine for a
+ * label printed next to its own suffix, and wrong for anything that compares,
+ * filters or exports the number: sorting would put the 2M position below the
+ * 900k one, and a CSV cell would read `2M` instead of an amount a spreadsheet
+ * can sum. This is the form to use for all three.
+ */
+export const formatBalanceExact = (balance: string | BN = '0', precision = 0): string => {
+  return formatBalance(balance, precision, {
+    shorthands: { K: false, M: false, B: false, T: false },
+    keepPrecision: true,
+  }).value;
+};
+
 export const formatAsset = (value: BN | string, asset: Asset, config?: FormatBalanceConfig) => {
   return `${formatBalance(value, asset.precision, config).formatted} ${asset.symbol}`;
 };
