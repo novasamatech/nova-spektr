@@ -49,9 +49,12 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     target: wrapTransactionFx,
   });
 
+  // Clearing the transaction ends the attempt outright — the flow closed, or its
+  // inputs went away.
+  const transactionCleared = sample({ clock: transaction, filter: (t) => nullable(t) });
+
   sample({
-    clock: transaction,
-    filter: (t) => nullable(t),
+    clock: transactionCleared,
     fn: () => null,
     target: $tx,
   });
@@ -77,7 +80,14 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     target: $error,
   });
 
-  $error.reset(wrapTransactionFx.done, retry);
+  // The error dies with the attempt it describes, on both of the ways an attempt can
+  // end: superseded by a new call, or cleared outright. Resetting only on `.done` left
+  // the failure readable for the whole gap until a new wrap landed — long enough for
+  // the next flow to open and read last time's failure, and a rejection is reported
+  // immediately, held back by no settle delay. `transactionCleared` is what covers the
+  // gap a call-only reset leaves: a flow that reopens before its inputs are complete
+  // never calls the effect at all.
+  $error.reset(wrapTransactionFx, retry, transactionCleared);
 
   return {
     $tx,

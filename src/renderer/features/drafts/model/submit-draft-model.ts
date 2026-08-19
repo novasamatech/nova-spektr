@@ -493,6 +493,17 @@ const confirmModel = {
   startSigning: confirmStore.startSigning,
 };
 
+// The confirm store is only ever written by `init`, so without this it still holds the
+// previous flow's item when the next one opens: the confirm screen would render the
+// last draft's account, fee and call args, and — now that `$confirms` is a readiness
+// requirement — the flow would report `ready` off that stale item instead of waiting.
+// Declared above the `confirmModel.init` sample so the reset lands first when
+// `flowStarted` fans out.
+sample({
+  clock: flowStarted,
+  target: confirmStore.resetConfirm,
+});
+
 // --- Readiness of the confirm screen ---
 
 // Tier 1 blocks: answers we already know without waiting for any RPC.

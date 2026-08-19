@@ -40,6 +40,14 @@ export const OperationBlocked = ({ reason, chain, onRetry, onClose }: Props) => 
         // (networkModel.events.chainConnected filters out disabled connections and
         // is a no-op for them). Sending the user to the settings page is correct
         // for both remediations.
+        //
+        // End the flow first. Navigating unmounts the page that hosts this modal but
+        // says nothing to the model behind it: the flow would stay open forever with
+        // its readiness timers armed and its auto-retry still firing at a node nobody
+        // is waiting on, and any global flag the flow set on entry (e.g. the drafts
+        // flow's `setDraftFlowActive`) would leak into every later operation.
+        onClose();
+
         return navigate(Paths.NETWORK);
       case 'reload':
         return window.location.reload();

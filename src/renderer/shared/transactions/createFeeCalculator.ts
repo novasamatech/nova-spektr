@@ -45,9 +45,12 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
     console.error('fee calculation failed', err);
   });
 
+  // Clearing the extrinsic ends the attempt outright — the flow closed, or its inputs
+  // went away.
+  const extrinsicCleared = sample({ clock: extrinsic, filter: nullable });
+
   sample({
-    clock: extrinsic,
-    filter: nullable,
+    clock: extrinsicCleared,
     fn: () => null,
     target: $fee,
   });
@@ -91,7 +94,13 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
     target: $error,
   });
 
-  $error.reset(fetchFeeFx.done, retry);
+  // The error dies with the attempt it describes, on both of the ways an attempt can
+  // end: superseded by a new call, or cleared outright. Resetting only on `.done` left
+  // the last failure readable for the whole gap until a new estimate landed — long
+  // enough for the next flow to open and read it as `fee-unavailable`. `extrinsicCleared`
+  // is what covers the gap a call-only reset leaves: a flow that reopens before its
+  // inputs are complete never calls the effect at all.
+  $error.reset(fetchFeeFx, retry, extrinsicCleared);
 
   return {
     $: $fee,
