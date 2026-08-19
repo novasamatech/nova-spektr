@@ -13,6 +13,8 @@ import { useStakingPositions } from '@/aggregates/staking-positions';
 import { useVisibleDrafts } from '@/features/drafts';
 import { type PositionRow, averageApy, calculateSharePercent, getAccessMode, getMultisigThreshold } from '../lib';
 
+import { useSignerAccountIds } from './useSignerAccountIds';
+
 export type PositionRowsResult = {
   rows: PositionRow[];
   /** The first load has not finished — render skeletons, not an empty state. */
@@ -78,6 +80,10 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     return map;
   }, [allAccounts]);
 
+  // One set for the whole table: `getAccessMode` runs per row and would
+  // otherwise rebuild it every time.
+  const signerAccountIds = useSignerAccountIds();
+
   const draftCountByKey = useMemo(() => {
     const counts = new Map<string, number>();
     if (!draftsAvailable) return counts;
@@ -125,7 +131,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         asset,
         account,
         wallet,
-        accessMode: getAccessMode(account, wallets),
+        accessMode: getAccessMode(account, wallets, signerAccountIds),
         multisig: getMultisigThreshold(account),
         status: position.status,
         staked: position.stake.total,
@@ -146,6 +152,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     selectedIds,
     chains,
     wallets,
+    signerAccountIds,
     accountByAccountId,
     eraValidators,
     draftCountByKey,

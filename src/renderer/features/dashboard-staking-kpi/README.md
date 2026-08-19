@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 

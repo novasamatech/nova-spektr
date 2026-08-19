@@ -1,8 +1,9 @@
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { collectSignerAccountIds, isSignerAccount } from '@/features/signing-path';
+import { isSignerAccount } from '@/features/signing-path';
 
 import { type MultisigThreshold, type PositionAccessMode } from './types';
 
@@ -25,8 +26,21 @@ import { type MultisigThreshold, type PositionAccessMode } from './types';
  * multisig does not make the parent signable here. Nested multisig reachability
  * lives in the signing-path graph; a dashboard row does not need to re-derive
  * it, and pretending otherwise would be a guess.
+ *
+ * `signerAccountIds` is passed in rather than derived here, for two reasons. It
+ * is the same set for every row, and this runs once per row of a table and once
+ * per account of the KPI selection — rebuilding it inside would make the work
+ * quadratic in the size of the wallet. And it has to come from the account
+ * domain's own list: the accounts hanging off `Wallet` are a deprecated mirror
+ * of it, and `useChainHasSigner` — the rule this one has to agree with — reads
+ * the domain list. Two signer sets from two sources is the drift this whole
+ * file exists to avoid. Build it with `collectSignerAccountIds`.
  */
-export function getAccessMode(account: AnyAccount | null | undefined, wallets: Wallet[]): PositionAccessMode {
+export function getAccessMode(
+  account: AnyAccount | null | undefined,
+  wallets: Wallet[],
+  signerAccountIds: ReadonlySet<AccountId>,
+): PositionAccessMode {
   // No local account at all — the address is known only from the address book.
   if (nullable(account)) return 'draft';
 
@@ -37,15 +51,15 @@ export function getAccessMode(account: AnyAccount | null | undefined, wallets: W
 
   if (!isSignerAccount(account)) return 'watchOnly';
 
-  const signers = collectSignerAccountIds(wallets.flatMap((w) => w.accounts));
-
   if (accountUtils.isAnyMultisigAccount(account)) {
-    return account.signatories.some((signatory) => signers.has(signatory.accountId)) ? 'multisig' : 'draft';
+    return account.signatories.some((signatory) => signerAccountIds.has(signatory.accountId)) ? 'multisig' : 'draft';
   }
 
   if (accountUtils.isProxiedAccount(account)) {
     // A proxied account is only as signable as the proxies it delegates to.
-    return account.connections.some((connection) => signers.has(connection.proxyAccountId)) ? 'direct' : 'draft';
+    return account.connections.some((connection) => signerAccountIds.has(connection.proxyAccountId))
+      ? 'direct'
+      : 'draft';
   }
 
   return 'direct';

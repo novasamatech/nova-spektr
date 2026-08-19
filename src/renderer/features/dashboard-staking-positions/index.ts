@@ -16,6 +16,7 @@ export type {
 } from './model/position-actions';
 export { positionActions } from './model/position-actions';
 export { usePositionRows } from './hooks/usePositionRows';
+export { useSignerAccountIds } from './hooks/useSignerAccountIds';
 
 export const dashboardStakingPositionsFeature = createFeature({
   name: 'dashboard/staking-positions',

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { type ChainId, type Wallet, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { collectSignerAccountIds } from '@/features/signing-path';
 import { canAct, getAccessMode, getMultisigThreshold } from '../position-access';
 
 const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(16).padStart(64, '0')}`);
@@ -68,12 +69,21 @@ function makeWallet(id: number, type: WalletType, accounts: AccountFixture[]): W
   return { id, name: `Wallet ${id}`, type, accounts };
 }
 
+/**
+ * The signer set the caller hands in. In the app it comes from the account
+ * domain's list; here the fixture wallets are the whole world, so it is derived
+ * from them.
+ */
+function signersOf(wallets: Wallet[]) {
+  return collectSignerAccountIds(wallets.flatMap((wallet) => wallet.accounts));
+}
+
 describe('getAccessMode', () => {
   it('reports a signable local account as direct', () => {
     const account = baseAccount();
     const wallets = [makeWallet(1, WalletType.POLKADOT_VAULT, [account])];
 
-    expect(getAccessMode(account, wallets)).toEqual('direct');
+    expect(getAccessMode(account, wallets, signersOf(wallets))).toEqual('direct');
   });
 
   it('reports a watch-only wallet as watchOnly', () => {
@@ -83,7 +93,7 @@ describe('getAccessMode', () => {
     });
     const wallets = [makeWallet(1, WalletType.WATCH_ONLY, [account])];
 
-    expect(getAccessMode(account, wallets)).toEqual('watchOnly');
+    expect(getAccessMode(account, wallets, signersOf(wallets))).toEqual('watchOnly');
   });
 
   it('reports a multisig with a local signatory as multisig', () => {
@@ -95,14 +105,14 @@ describe('getAccessMode', () => {
       makeWallet(2, WalletType.POLKADOT_VAULT, [signatory]),
     ];
 
-    expect(getAccessMode(multisig, wallets)).toEqual('multisig');
+    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('multisig');
   });
 
   it('reports a multisig without a local signatory as draft', () => {
     const multisig = multisigAccount();
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig])];
 
-    expect(getAccessMode(multisig, wallets)).toEqual('draft');
+    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('draft');
   });
 
   it('does not count a watch-only key as a signatory', () => {
@@ -117,7 +127,7 @@ describe('getAccessMode', () => {
 
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig]), makeWallet(2, WalletType.WATCH_ONLY, [watched])];
 
-    expect(getAccessMode(multisig, wallets)).toEqual('draft');
+    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('draft');
   });
 
   // The rule that decides this lives in the signing-path graph, and the graph
@@ -138,13 +148,13 @@ describe('getAccessMode', () => {
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig]), makeWallet(2, WalletType.WATCH_ONLY, [signer])];
 
     // As a signatory of someone else's multisig …
-    expect(getAccessMode(multisig, wallets)).toEqual('multisig');
+    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('multisig');
     // … and as a position of its own.
-    expect(getAccessMode(signer, wallets)).toEqual('direct');
+    expect(getAccessMode(signer, wallets, signersOf(wallets))).toEqual('direct');
   });
 
   it('reports an address with no local account as draft', () => {
-    expect(getAccessMode(null, [])).toEqual('draft');
+    expect(getAccessMode(null, [], signersOf([]))).toEqual('draft');
   });
 
   it('lands an address-book position on draft, with its actions still offered', () => {
@@ -156,7 +166,7 @@ describe('getAccessMode', () => {
 
     expect(rowAccount).toBeNull();
 
-    const mode = getAccessMode(rowAccount, wallets);
+    const mode = getAccessMode(rowAccount, wallets, signersOf(wallets));
 
     expect(mode).toEqual('draft');
     expect(canAct(mode)).toBe(true);
@@ -166,7 +176,7 @@ describe('getAccessMode', () => {
     const contactMultisig = multisigAccount({ walletId: -1 });
     const wallets = [makeWallet(2, WalletType.POLKADOT_VAULT, [baseAccount({ walletId: 2, accountId: BOB })])];
 
-    expect(getAccessMode(contactMultisig, wallets)).toEqual('draft');
+    expect(getAccessMode(contactMultisig, wallets, signersOf(wallets))).toEqual('draft');
   });
 
   it('follows the proxy: a proxied account is direct only when the proxy is local', () => {
@@ -181,8 +191,8 @@ describe('getAccessMode', () => {
     const withProxy = [makeWallet(1, WalletType.PROXIED, [proxied]), makeWallet(2, WalletType.POLKADOT_VAULT, [proxy])];
     const withoutProxy = [makeWallet(1, WalletType.PROXIED, [proxied])];
 
-    expect(getAccessMode(proxied, withProxy)).toEqual('direct');
-    expect(getAccessMode(proxied, withoutProxy)).toEqual('draft');
+    expect(getAccessMode(proxied, withProxy, signersOf(withProxy))).toEqual('direct');
+    expect(getAccessMode(proxied, withoutProxy, signersOf(withoutProxy))).toEqual('draft');
   });
 });
 

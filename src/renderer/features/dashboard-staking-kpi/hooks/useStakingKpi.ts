@@ -9,7 +9,7 @@ import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import { type StakingSummary, summarizePositions, useStakingPositions } from '@/aggregates/staking-positions';
-import { getAccessMode } from '@/features/dashboard-staking-positions';
+import { getAccessMode, useSignerAccountIds } from '@/features/dashboard-staking-positions';
 import { type AccessMode } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
 import { type NetworkAvgBlend } from '../lib/apy';
@@ -124,14 +124,18 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     return result;
   }, [accountByAccountId, wallets]);
 
+  // Built once for the whole selection rather than inside `getAccessMode`: the
+  // loop below runs per account, and the set is the same for all of them.
+  const signerAccountIds = useSignerAccountIds();
+
   const accessByAccount = useMemo(() => {
     const result: Record<string, AccessMode> = {};
     for (const [accountId, account] of accountByAccountId) {
-      result[accountId] = getAccessMode(account, wallets);
+      result[accountId] = getAccessMode(account, wallets, signerAccountIds);
     }
 
     return result;
-  }, [accountByAccountId, wallets]);
+  }, [accountByAccountId, wallets, signerAccountIds]);
 
   // --- Total staked -------------------------------------------------------
 
