@@ -6,7 +6,7 @@ import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState 
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon } from '@/shared/ui';
+import { Button, FootnoteText, IconButton } from '@/shared/ui';
 import { ConfirmModal, Input, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type PresetFilterCriteria,
@@ -341,17 +341,16 @@ const SortablePresetItem = ({
           {name}
         </FootnoteText>
       </button>
-      <button
-        type="button"
-        aria-label={deleteLabel}
+      <IconButton
+        name="delete"
+        size={14}
+        ariaLabel={deleteLabel}
         className={cnTw(
-          'mr-2 shrink-0 rounded p-1 text-icon-default opacity-0 transition-opacity',
-          'group-hover:opacity-100 hover:text-text-negative focus-visible:opacity-100',
+          'mr-1.5 opacity-0 transition-[color,opacity]',
+          'group-hover:opacity-100 hover:text-text-negative focus:text-text-negative focus-visible:opacity-100',
         )}
         onClick={onDelete}
-      >
-        <Icon name="delete" size={14} />
-      </button>
+      />
     </div>
   );
 };
