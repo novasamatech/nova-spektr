@@ -60,16 +60,13 @@ describe('features/wallets/RenameWallet/model/rename-wallet-model', () => {
       address: toAddress(walletAccount.accountId),
       accountId: walletAccount.accountId,
       source: 'backend',
-      entityNames: [],
       chainId: null,
       chainName: null,
-      categoryName: null,
-      contactTypeName: null,
       derivationPath: null,
       ownerAccountId: null,
       signatories: null,
       threshold: null,
-      tags: [],
+      fields: [],
     };
 
     const scope = fork({

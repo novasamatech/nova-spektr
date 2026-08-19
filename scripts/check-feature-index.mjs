@@ -8,7 +8,8 @@
  *
  * With `--changed <base-ref>` it additionally diffs HEAD against the merge base
  * with <base-ref> and fails when a changed feature/aggregate has no spec or its
- * code changed without a spec update (used in CI with the PR base).
+ * code changed without a spec update (used in CI with the PR base). Tests and
+ * stories are not product behaviour, so changes confined to them are ignored.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -36,6 +37,7 @@ const map = readFileSync(MAP_PATH, 'utf8');
 const errors = [];
 
 const REVIEWED_DATE_PATTERN = /Last reviewed: (\d{4}-\d{2}-\d{2})/;
+const TEST_FILE_PATTERN = /(^|\/)__tests__\/|\.(test|spec)\.[jt]sx?$|\.stories\.[jt]sx?$/;
 
 // Re-join list items wrapped by prettier (proseWrap: always indents
 // continuation lines of a "- " item with two spaces).
@@ -157,6 +159,10 @@ if (changedFlagIndex !== -1) {
   for (const file of diffOutput.split('\n')) {
     const match = file.match(/^src\/renderer\/(features|aggregates)\/([\w.-]+)\/(.+)$/);
     if (!match) continue;
+    // Tests and stories describe the code, not the product. A change confined to
+    // them (a type rename rippling through fixtures, an added case) says nothing
+    // about behaviour, so it must not demand a spec or a re-review stamp.
+    if (TEST_FILE_PATTERN.test(match[3])) continue;
     const key = `${match[1]}/${match[2]}`;
     const module = changedModules.get(key) ?? {
       layer: match[1],

@@ -17,16 +17,13 @@ function createBackendContact(overrides: Partial<BackendContact> = {}): BackendC
     name: 'Known Contact',
     address: toAddress(createAccountId('known-contact')),
     accountId: createAccountId('known-contact'),
-    entityNames: [],
     chainId: null,
     chainName: null,
-    categoryName: null,
-    contactTypeName: null,
     derivationPath: null,
     ownerAccountId: null,
     signatories: null,
     threshold: null,
-    tags: [],
+    fields: [],
     ...overrides,
   };
 }

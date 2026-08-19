@@ -30,7 +30,7 @@ notes.
 - `wallet-connect-wallet-pairing`
 - `watch-only-wallet`
 - `watch-only-wallet-pairing`
-- `account-presets` (aggregate)
+- [`account-presets`](../aggregates/account-presets/README.md) (aggregate)
 - [`wallet-select`](../aggregates/wallet-select/README.md) (aggregate)
 
 > See also: [`multisig-wallet`](#multisig), [`proxied-wallet`](#proxy) — wallet types managed in their own product

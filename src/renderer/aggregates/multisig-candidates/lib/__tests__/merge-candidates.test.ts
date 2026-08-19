@@ -63,11 +63,8 @@ const backendContactWithSignatories: Contact = {
   address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as any,
   accountId: ALICE_ID,
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: [
@@ -75,7 +72,7 @@ const backendContactWithSignatories: Contact = {
     '0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48',
   ],
   threshold: 2,
-  tags: [],
+  fields: [],
 };
 
 const backendContactNullSignatories: Contact = {
@@ -84,16 +81,13 @@ const backendContactNullSignatories: Contact = {
   address: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' as any,
   accountId: BOB_ID,
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: null,
   threshold: null,
-  tags: [],
+  fields: [],
 };
 
 const backendContactEmptySignatories: Contact = {
@@ -102,16 +96,13 @@ const backendContactEmptySignatories: Contact = {
   address: '5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZ5GPjGNRdnW' as any,
   accountId: EVE_ID,
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: [],
   threshold: 2,
-  tags: [],
+  fields: [],
 };
 
 const localContact: Contact = {
