@@ -30,13 +30,16 @@ book. Filter criteria based on address-book metadata only ever match accounts kn
 - **Custom Selection** — a fixed, hand-picked set of accounts (`selectedIds`).
 - **Smart Filter** — criteria evaluated live against the merged account list:
   - **Source Type** — wallet / My Contacts / External Source (OR within the list).
-  - **Network**, **Entity**, **Category**, **Contact Type** — multi-selects over values present in the external address
-    book (OR within each list). Network is keyed by `chainId` (stable across backend renames); the chain's display name
-    is shown.
-  - **Tags** — one multi-select per tag name (OR within a tag's values, AND across tag names).
-  - Criteria groups combine with AND. Any address-book-derived criterion (everything except Source Type) restricts
-    matches to accounts present in the external address book. Filter groups with no values in the address book are
-    hidden in the editor.
+  - **Network** — multi-select over chains present on external contacts, keyed by `chainId` (stable across backend
+    renames); the chain's display name is shown.
+  - **Address-book fields** — one multi-select per admin-defined field found on the synced external contacts (e.g.
+    Entity, Category, Contact Type — but the set is fully dynamic). A field appears in the editor as soon as some
+    contact carries a value for it and disappears when none does. Matching is keyed by the backend's stable field and
+    option ids, so admins renaming a field or option does not break saved presets; the criterion also stores
+    display-label snapshots. A saved criterion whose field/option no longer exists in the address book is still shown
+    (marked "removed") so it can be inspected and cleared — while present, it matches nothing.
+  - Criteria groups combine with AND; within one field's selected options — OR. Any address-book-derived criterion
+    (everything except Source Type) restricts matches to accounts present in the external address book.
 
 ### Deleting a preset
 
@@ -57,12 +60,15 @@ remain), otherwise the current selection stays put.
 5. Delete: see "Deleting a preset" above.
 
 Presets and per-surface activation are stored locally (localStorage) and sync across windows. Presets saved by older app
-versions may lack newer criteria fields — they are treated as having those criteria empty.
+versions may lack newer criteria fields — they are treated as having those criteria empty. Criteria saved by retired
+schema versions (name-keyed Entity/Category/Contact Type/tag lists) are dropped on read: they were produced against a
+mapping that never matched, so no working preset relies on them.
 
 ## Related
 
 - Rendered by `widgets/PresetManagementModal` (editor modal) and `features/account-selector` (surface switcher tabs).
-- Backend contact metadata (Network, Entity, Category, Contact Type, tags) comes from the external address book backend
-  (`domains/backend/contacts`); values reflect whatever headings the backend exposes.
+- Backend contact metadata (chain + admin-defined fields) comes from the external address book backend
+  (`domains/backend/contacts`); the field set is dynamic — admins create, rename and delete fields at runtime, and the
+  filter UI reflects whatever the backend exposes.
 - Display names follow the app-wide resolution order: for indexed wallets (multisig/proxied) the address-book name wins
   over the auto-generated wallet name; otherwise the user's wallet account name wins.

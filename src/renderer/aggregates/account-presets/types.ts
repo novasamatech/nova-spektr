@@ -1,16 +1,25 @@
 import { type Address, type ID, type WalletType } from '@/shared/core';
-import { type ContactTag } from '@/shared/core/types/contact';
+import { type ContactField } from '@/shared/core/types/contact';
 
 export type AccountSource = 'wallet' | 'local-contact' | 'backend-contact';
 
+/**
+ * A criterion over one admin-defined address-book field. Matching runs on the
+ * stable backend ids (admins can rename fields/options without breaking saved
+ * presets); `fieldName` and option `value`s are display snapshots used to
+ * render a criterion whose field no longer exists in the address book.
+ */
+export type FieldCriterion = {
+  fieldId: string;
+  fieldName: string;
+  options: { id: string; value: string }[];
+};
+
 export type PresetFilterCriteria = {
   sources: AccountSource[];
-  entityNames: string[];
-  categoryNames: string[];
-  tags: ContactTag[];
   /** Keyed by chainId — chain names may be renamed on the backend. */
   chainIds: string[];
-  contactTypeNames: string[];
+  fields: FieldCriterion[];
 };
 
 export type PresetType = 'filter' | 'custom';
@@ -25,11 +34,8 @@ export type AccountPreset = {
 
 export const EMPTY_FILTERS: PresetFilterCriteria = {
   sources: [],
-  entityNames: [],
-  categoryNames: [],
-  tags: [],
   chainIds: [],
-  contactTypeNames: [],
+  fields: [],
 };
 
 /**
@@ -50,10 +56,6 @@ export type AccountEntry = {
   walletName?: string;
   walletType?: WalletType;
 
-  entityNames?: string[];
-  categoryName?: string | null;
-  tags?: ContactTag[];
   chainId?: string | null;
-  chainName?: string | null;
-  contactTypeName?: string | null;
+  fields?: ContactField[];
 };

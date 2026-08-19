@@ -64,16 +64,13 @@ const createBackendContact = (
   overrides: Pick<BackendContact, 'id' | 'accountId' | 'name' | 'address'>,
 ): BackendContact => ({
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: null,
   threshold: null,
-  tags: [],
+  fields: [],
   ...overrides,
 });
 

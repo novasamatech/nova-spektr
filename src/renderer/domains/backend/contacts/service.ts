@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
-import { type BackendContact, type Contact, type ContactTag } from '@/shared/core';
+import { type BackendContact, type Contact, type ContactField } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 
 export class HttpError extends Error {
@@ -22,21 +22,17 @@ const backendContactSchema = z.object({
   ownerAccountId: z.string().nullish(),
   signatories: z.array(z.string()).nullish(),
   threshold: z.number().nullish(),
+  // Fields are admin-defined and fully dynamic — the field identity lives on
+  // `fieldOption.field`, there is no fixed set of names to rely on.
   contactFieldOptions: z
     .array(
       z.object({
-        fieldOption: z.object({ value: z.string() }),
-        field: z.object({ name: z.string() }).nullish(),
-      }),
-    )
-    .optional()
-    .default([]),
-  contactTagOptions: z
-    .array(
-      z.object({
-        tagOption: z.object({
+        fieldOption: z.object({
+          id: z.string(),
           value: z.string(),
-          tag: z.object({ name: z.string() }),
+          field: z
+            .object({ id: z.string(), name: z.string(), multiSelect: z.boolean().optional().default(false) })
+            .nullish(),
         }),
       }),
     )
@@ -47,30 +43,26 @@ type RawBackendContact = z.infer<typeof backendContactSchema>;
 
 const PAGE_SIZE = 100;
 
-function groupTagOptions(raw: RawBackendContact): ContactTag[] {
-  const tagMap = new Map<string, string[]>();
-  for (const { tagOption } of raw.contactTagOptions) {
-    const existing = tagMap.get(tagOption.tag.name);
-    if (existing) {
-      existing.push(tagOption.value);
-    } else {
-      tagMap.set(tagOption.tag.name, [tagOption.value]);
+function groupContactFields(raw: RawBackendContact): ContactField[] {
+  const byFieldId = new Map<string, ContactField>();
+  for (const { fieldOption } of raw.contactFieldOptions) {
+    const field = fieldOption.field;
+    if (!field) continue;
+
+    let group = byFieldId.get(field.id);
+    if (!group) {
+      group = { fieldId: field.id, fieldName: field.name, multiSelect: field.multiSelect, values: [] };
+      byFieldId.set(field.id, group);
     }
+    group.values.push({ optionId: fieldOption.id, value: fieldOption.value });
   }
 
-  return Array.from(tagMap, ([tagName, values]) => ({ tagName, values }));
-}
-
-function extractFieldValues(raw: RawBackendContact, fieldName: string): string[] {
-  return raw.contactFieldOptions.filter(cfo => cfo.field?.name === fieldName).map(cfo => cfo.fieldOption.value);
+  return Array.from(byFieldId.values());
 }
 
 function mapToContact(raw: RawBackendContact): BackendContact {
   const accountId = toAccountId(raw.accountId);
   const address = toAddress(raw.accountId);
-
-  const categoryValues = extractFieldValues(raw, 'Category');
-  const contactTypeValues = extractFieldValues(raw, 'Contact Type');
 
   return {
     id: raw.id,
@@ -78,16 +70,13 @@ function mapToContact(raw: RawBackendContact): BackendContact {
     address,
     accountId,
     source: 'backend',
-    entityNames: extractFieldValues(raw, 'Entity'),
     chainId: raw.chain?.chainId ?? null,
     chainName: raw.chain?.name ?? null,
-    categoryName: categoryValues[0] ?? null,
-    contactTypeName: contactTypeValues[0] ?? null,
     derivationPath: raw.derivationPath ?? null,
     ownerAccountId: raw.ownerAccountId ?? null,
     signatories: raw.signatories ?? null,
     threshold: raw.threshold ?? null,
-    tags: groupTagOptions(raw),
+    fields: groupContactFields(raw),
   };
 }
 

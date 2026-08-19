@@ -83,10 +83,6 @@
       "urlPlaceholder": "https://example.com/api"
     },
     "backendContact": {
-      "category": "Category",
-      "chain": "Chain",
-      "contactType": "Type",
-      "entity": "Entity",
       "managedTooltip": "This contact is managed externally",
       "synced": "Synced"
     },
@@ -526,14 +522,9 @@
         "namePlaceholder": "Preset name",
         "sourceType": "Source Type",
         "network": "Network",
-        "entity": "Entity",
-        "category": "Category",
-        "contactType": "Contact Type",
-        "tags": "Tags",
         "anyNetwork": "Any network",
-        "anyCategory": "Any category",
-        "anyContactType": "Any type",
-        "anyTags": "Any tags",
+        "anyValue": "Any",
+        "removedField": "removed",
         "matchingAccounts": "Matching Accounts ({count})",
         "searchAccounts": "Search accounts...",
         "noMatches": "No accounts match these filters",

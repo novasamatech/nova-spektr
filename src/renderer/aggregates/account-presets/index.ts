@@ -4,6 +4,7 @@ export {
   type AccountEntry,
   type AccountPreset,
   type AccountSource,
+  type FieldCriterion,
   type PresetFilterCriteria,
   type PresetType,
   EMPTY_FILTERS,

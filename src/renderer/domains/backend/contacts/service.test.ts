@@ -135,7 +135,10 @@ describe('backendContactsService.fetchAllContacts', () => {
     warnSpy.mockRestore();
   });
 
-  it('flattens field/tag options and carries multisig signatories/threshold', async () => {
+  it('groups contactFieldOptions by field and carries multisig signatories/threshold', async () => {
+    const entityField = { id: 'f-entity', name: 'Entity', multiSelect: true };
+    const categoryField = { id: 'f-category', name: 'Category', multiSelect: false };
+
     const raw = rawContact({
       id: 'multi-1',
       name: 'Treasury Multisig',
@@ -145,16 +148,11 @@ describe('backendContactsService.fetchAllContacts', () => {
       signatories: ['0xsig1', '0xsig2'],
       threshold: 2,
       contactFieldOptions: [
-        { fieldOption: { value: 'Nova Wallet' }, field: { name: 'Entity' } },
-        { fieldOption: { value: 'Foundation' }, field: { name: 'Entity' } },
-        { fieldOption: { value: 'DeFi' }, field: { name: 'Category' } },
-        { fieldOption: { value: 'Multisig' }, field: { name: 'Contact Type' } },
-        { fieldOption: { value: 'Unrelated' }, field: { name: 'Other Field' } },
-      ],
-      contactTagOptions: [
-        { tagOption: { value: 'red', tag: { name: 'Priority' } } },
-        { tagOption: { value: 'blue', tag: { name: 'Priority' } } },
-        { tagOption: { value: 'internal', tag: { name: 'Visibility' } } },
+        { fieldOption: { id: 'fo-nova', value: 'Nova Wallet', field: entityField } },
+        { fieldOption: { id: 'fo-foundation', value: 'Foundation', field: entityField } },
+        { fieldOption: { id: 'fo-defi', value: 'DeFi', field: categoryField } },
+        // Rows without the field relation cannot be attributed and are skipped.
+        { fieldOption: { id: 'fo-orphan', value: 'Orphan', field: null } },
       ],
     });
 
@@ -166,12 +164,22 @@ describe('backendContactsService.fetchAllContacts', () => {
       throw new Error('expected a backend contact');
     }
 
-    expect(contact.entityNames).toEqual(['Nova Wallet', 'Foundation']);
-    expect(contact.categoryName).toBe('DeFi');
-    expect(contact.contactTypeName).toBe('Multisig');
-    expect(contact.tags).toEqual([
-      { tagName: 'Priority', values: ['red', 'blue'] },
-      { tagName: 'Visibility', values: ['internal'] },
+    expect(contact.fields).toEqual([
+      {
+        fieldId: 'f-entity',
+        fieldName: 'Entity',
+        multiSelect: true,
+        values: [
+          { optionId: 'fo-nova', value: 'Nova Wallet' },
+          { optionId: 'fo-foundation', value: 'Foundation' },
+        ],
+      },
+      {
+        fieldId: 'f-category',
+        fieldName: 'Category',
+        multiSelect: false,
+        values: [{ optionId: 'fo-defi', value: 'DeFi' }],
+      },
     ]);
     expect(contact.signatories).toEqual(['0xsig1', '0xsig2']);
     expect(contact.threshold).toBe(2);
@@ -182,7 +190,7 @@ describe('backendContactsService.fetchAllContacts', () => {
     expect(contact.address).toBe(ALICE_POLKADOT_ADDRESS);
   });
 
-  it('defaults entityNames/categoryName/contactTypeName/tags/signatories/threshold when absent', async () => {
+  it('defaults fields/signatories/threshold when absent', async () => {
     authFetchMock.mockResolvedValueOnce(jsonResponse({ data: [rawContact()], total: 1 }));
 
     const [contact] = await backendContactsService.fetchAllContacts('https://backend.test');
@@ -191,10 +199,7 @@ describe('backendContactsService.fetchAllContacts', () => {
       throw new Error('expected a backend contact');
     }
 
-    expect(contact.entityNames).toEqual([]);
-    expect(contact.categoryName).toBeNull();
-    expect(contact.contactTypeName).toBeNull();
-    expect(contact.tags).toEqual([]);
+    expect(contact.fields).toEqual([]);
     expect(contact.signatories).toBeNull();
     expect(contact.threshold).toBeNull();
   });

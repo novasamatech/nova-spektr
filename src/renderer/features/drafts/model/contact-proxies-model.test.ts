@@ -44,16 +44,13 @@ const makeContact = (accountId: AccountId): BackendContact => ({
   address: accountId as unknown as Address,
   accountId,
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: null,
   threshold: null,
-  tags: [],
+  fields: [],
 });
 
 const plainContact = makeContact(SEED);
