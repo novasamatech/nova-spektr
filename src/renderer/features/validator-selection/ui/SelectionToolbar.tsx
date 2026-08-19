@@ -25,19 +25,27 @@ export const SelectionToolbar = () => {
     pending: validatorSelectionModel.$pending,
   });
 
+  // The table's own failure panel owns the empty-and-failed state: it says what
+  // went wrong and carries the retry. Anything here would either repeat it or —
+  // as "0 active validators" did — contradict it.
+  const failedEmpty = failed && pending && !loading;
+  const failedStale = failed && !pending && !loading;
+
   // "600 active validators" would be a lie in every state below: while the set
   // is on its way the count is not known yet, and after a failed refresh the
   // number on screen belongs to the previous era.
   const metaLabel = loading
     ? t('staking.validatorSelection.loading.meta')
-    : failed && !pending
-      ? t('staking.validatorSelection.loadFailed.metaStale')
-      : nonNullable(meta.era)
-        ? t('staking.validatorSelection.toolbar.meta', {
-            count: meta.validatorCount,
-            era: meta.era.toLocaleString(),
-          })
-        : t('staking.validatorSelection.toolbar.metaNoEra', { count: meta.validatorCount });
+    : failedEmpty
+      ? null
+      : failedStale
+        ? t('staking.validatorSelection.loadFailed.metaStale')
+        : nonNullable(meta.era)
+          ? t('staking.validatorSelection.toolbar.meta', {
+              count: meta.validatorCount,
+              era: meta.era.toLocaleString(),
+            })
+          : t('staking.validatorSelection.toolbar.metaNoEra', { count: meta.validatorCount });
 
   return (
     <div className="flex items-center gap-x-2 px-5 pb-3">
@@ -78,7 +86,7 @@ export const SelectionToolbar = () => {
 
       <FootnoteText className="ms-auto shrink-0 text-text-tertiary">{metaLabel}</FootnoteText>
 
-      {failed && !pending && !loading ? (
+      {failedStale ? (
         <Button variant="text" size="sm" onClick={() => events.retryRequested()}>
           {t('staking.validatorSelection.loadFailed.action')}
         </Button>
