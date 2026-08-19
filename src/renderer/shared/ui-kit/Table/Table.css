@@ -1,6 +1,14 @@
 .table-container {
+  /*
+   * The surface every part of the table paints itself on. The sticky header has
+   * to be opaque or the rows scroll through it, and the hover tint has to
+   * composite against the same colour the container uses — so the value lives
+   * in one place rather than being spelled `white` in four.
+   */
+  --table-surface: white;
+
   border: none;
-  background-color: white;
+  background-color: var(--table-surface);
   width: 100%;
   overflow: hidden;
 }
@@ -12,7 +20,7 @@
 }
 
 .table-header {
-  background-color: white;
+  background-color: var(--table-surface);
 }
 
 /*
@@ -34,7 +42,7 @@
   top: 0;
   z-index: 1;
   box-shadow: inset 0 -1px 0 var(--divider);
-  background-color: white;
+  background-color: var(--table-surface);
 }
 
 /*
@@ -44,7 +52,7 @@
  */
 .table-container--sticky-header .table-header-cell--sortable:hover {
   background-image: linear-gradient(var(--action-background-hover), var(--action-background-hover));
-  background-color: white;
+  background-color: var(--table-surface);
 }
 
 .table-header-cell {

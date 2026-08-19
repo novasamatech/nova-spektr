@@ -54,7 +54,7 @@ async function getLegacyClaimedEras(api: ApiPromise, stash: AccountId): Promise<
 
     return new Set(entry?.ledger?.legacyClaimedRewards ?? []);
   } catch (error) {
-    console.warn(error);
+    console.warn('Staking payouts: legacy claimed eras unavailable, treating none as claimed', error);
 
     return new Set();
   }
@@ -80,7 +80,7 @@ async function getClaimedPages(
   const responses = await Promise.all(
     chunk(keys, CLAIMED_REWARDS_CHUNK).map(part =>
       stakingPallet.storage.claimedRewards(api, part).catch((error: unknown) => {
-        console.warn(error);
+        console.warn('Staking payouts: claimedRewards chunk failed, dropping its keys from the candidates', error);
 
         for (const { era, validator } of part) {
           unknown.add(exposureKey(era, validator));
@@ -113,7 +113,7 @@ async function getExposureMetadata(api: ApiPromise, eras: EraIndex[]) {
         .erasStakersOverview(api, era)
         .then(items => ({ era, items }))
         .catch((error: unknown) => {
-          console.warn(error);
+          console.warn('Staking payouts: erasStakersOverview failed for era', era, error);
 
           return null;
         }),
@@ -176,7 +176,7 @@ async function collectChainExposures(
 
     return exposures;
   } catch (error) {
-    console.warn(error);
+    console.warn('Staking payouts: on-chain exposure scan failed for stash', stash, error);
 
     return [];
   }
@@ -241,7 +241,7 @@ async function resolvePayoutPages(
       const pages = await stakingPallet.storage
         .erasStakersPaged(api, exposure.era, exposure.validator)
         .catch((error: unknown) => {
-          console.warn(error);
+          console.warn('Staking payouts: erasStakersPaged failed for', exposure.era, exposure.validator, error);
 
           return [];
         });
