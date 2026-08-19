@@ -76,9 +76,12 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
   the mean of what the chain's last ~30 days of completed eras actually paid, net of the current median commission, and
   unmeasurable is left `null` rather than guessed at from the curve — a benchmark nobody can verify against a real
   payout is worse than no benchmark. It is blended the same way as the headline, by the same fiat weights, and shown
-  only once it is complete: not loading, a headline to sit beside, a benchmark that resolved, and full coverage of the
-  earning stake. A benchmark that could not measure a chain holding part of the stake would describe a different
-  portfolio than the headline next to it, so it stays hidden rather than being presented as "the" network average.
+  only once it is complete: not loading, a headline to sit beside, a benchmark that resolved, full coverage of the
+  earning stake, and a contributing chain set exactly equal to the headline's — the two readings fail independently (the
+  headline still has a curve fallback, the benchmark does not), and a benchmark covering more or fewer chains than the
+  figure beside it is a false comparison in either direction. A benchmark that could not measure a chain holding part of
+  the stake would describe a different portfolio than the headline next to it, so it stays hidden rather than being
+  presented as "the" network average.
 
 - **Nominated validators** — how many distinct validators the selection nominates, counted **per chain**: the same key
   elected on Polkadot and on Kusama is two validators, because it is two nomination sets and two rewards. The subline

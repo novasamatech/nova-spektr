@@ -20,7 +20,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   kpiTitles: Record<StakingKpiCard, string> = {
     totalStaked: 'Total staked',
     apy: 'Est. APY',
-    nominations: 'Active nominations',
+    nominations: 'Nominated validators',
     rewards: 'Rewards',
   };
 
@@ -29,7 +29,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   redeemLinkLabel = 'Redeem →';
 
   apyBreakdownTitle = 'Estimated APY breakdown';
-  nominationsBreakdownTitle = 'Active nominations breakdown';
+  nominationsBreakdownTitle = 'Nomination spread';
   positionsModalTitle = 'Staking positions';
   /** Green chip of a fully matured unbonding chunk: `{amount} ready`. */
   readyChipPattern = /ready/;

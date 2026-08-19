@@ -47,7 +47,9 @@ export const RewardsWidget = ({ accountIds }: Props) => {
   const unclaimedLabel = kpi.unclaimedFooter
     ? `${t('dashboard.staking.kpi.rewards.unclaimed')} ${formatAssetAmounts(kpi.unclaimedFooter.amounts)}`
     : null;
-  const ariaLabel = [title, subline, unclaimedLabel].filter(Boolean).join(', ');
+  // The token amounts always ride along: with fiat off the subline drops them,
+  // and a label without any value announces nothing.
+  const ariaLabel = [title, rewardTokens, subline, unclaimedLabel].filter(Boolean).join(', ');
 
   return (
     <KpiWidgetFrame>
