@@ -63,6 +63,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
 
   const isOpen = row !== null;
   const watchOnly = row?.accessMode === 'watchOnly';
+  // The badge states a fact about provenance, and `wallet` is that fact: an
+  // address-book contact (or a contact multisig) has no local wallet behind it,
+  // and wearing "Local wallet" there is a lie. A local wallet that merely
+  // cannot sign (watch-only, a multisig without a local signatory) is still a
+  // local wallet — signability is the pencil glyph's business, not this badge's.
+  const isContact = row !== null && row.wallet === null;
   // While the payout scan is in flight `unclaimed.total` is a placeholder `'0'`,
   // not an answer. Reading it as one made the drawer open with "Nothing to claim
   // on this position" over a position that turned out to have rewards.
@@ -97,6 +103,16 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
         signingMode: toSigningMode(row.accessMode),
       }
     : null;
+
+  // "No signer" wins over "nothing to claim": a chain nobody here can sign on
+  // stays blocked no matter what the scan finds. Below that, a scan still in
+  // flight leaves the chip enabled — it asserts nothing about payouts it has
+  // not checked yet; only a finished scan that found nothing disables it.
+  const claimBlockedHint = !chainHasSigner
+    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row?.chain.name ?? '' })
+    : hasUnclaimed || unclaimedPending
+      ? undefined
+      : t('dashboard.staking.positions.detail.actions.nothingToClaim');
 
   // Two frames, not one: the first paints the spinner, the second runs once it
   // is actually on screen — only then mount the flow. Dispatching straight from
@@ -173,8 +189,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                   variant="short"
                   iconSize={32}
                 />
-                <Label variant={watchOnly ? 'gray' : 'green'}>
-                  {watchOnly ? t('dashboard.staking.positions.viewOnly') : t('dashboard.staking.positions.localWallet')}
+                <Label variant={watchOnly || isContact ? 'gray' : 'green'}>
+                  {watchOnly
+                    ? t('dashboard.staking.positions.viewOnly')
+                    : isContact
+                      ? t('dashboard.staking.positions.addressBook')
+                      : t('dashboard.staking.positions.localWallet')}
                 </Label>
               </div>
 
@@ -305,16 +325,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
                   () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
                   true,
-                  // "No signer" wins over "nothing to claim": a chain we cannot
-                  // sign on stays blocked whatever the scan finds. Below that,
-                  // no "nothing to claim" while the scan is still running: the
-                  // chip stays disabled, but the app does not assert something
-                  // it has not checked yet.
-                  !chainHasSigner
-                    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row.chain.name })
-                    : hasUnclaimed || unclaimedPending
-                      ? undefined
-                      : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
+                  claimBlockedHint,
                 )}
 
                 {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>

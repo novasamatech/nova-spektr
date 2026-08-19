@@ -86,6 +86,9 @@ describe('Staking New Position Flow - Route Signer Guard', () => {
 
     expect(env.getState(newPositionFlowModel.$noRouteSigner)).toBe(true);
     expect(env.getState(newPositionFlowModel.$canContinue)).toBe(false);
+    // The confirm's own gate holds on the same verdict — the form gate is not
+    // the only thing standing between a watch-only account and the sign step.
+    expect(env.getState(newPositionFlowModel.$canSign)).toBe(false);
   });
 
   it('should not block the flow for a signable account', async () => {

@@ -113,7 +113,11 @@ function buildPositionClaimRequest(
   const payouts = readPayouts(position.accountId, chain.chainId, eras, cache);
   if (payouts.length === 0) return null;
 
-  return { chain, asset, account: payer.account, wallet: payer.wallet, payouts };
+  // `signingMode` comes from the resolved payer, not from `payload.signingMode`:
+  // payouts are permissionless, so the payer's mode wins — a contact position
+  // arrives as `draft`, yet the substituted payer can sign, and the flow should
+  // open ready to do exactly that.
+  return { chain, asset, account: payer.account, wallet: payer.wallet, payouts, signingMode: 'local' };
 }
 
 export const createStakingDashboardActions = ({

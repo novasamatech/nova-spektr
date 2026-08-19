@@ -52,7 +52,6 @@ export type ValidationResult = {
 export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationResult>;
 
 export function createTxValidator<A>(params?: {
-  DEBUG?: boolean;
   additionalBalanceRules?: ValidatorRule<A>[];
   dryRunRules?: DryRunRule<A>[];
 }): Validator<A> {
@@ -161,19 +160,18 @@ export function createTxValidator<A>(params?: {
 
       return result;
     } catch (error) {
-      if (params?.DEBUG) {
-        const message: TransactionValidationFatalError = {
-          message: error instanceof Error ? error.message : nonNullable(error) ? error.toString() : 'Unknown error',
-        };
+      // Fail closed: a thrown validation must never read as "valid". Returning
+      // a zero-error result here would flip `$valid` to true for any transient
+      // failure (missing signatory/balance asserts, RPC fee-quote errors).
+      const fatalError: TransactionValidationFatalError = {
+        message: error instanceof Error ? error.message : nonNullable(error) ? error.toString() : 'Unknown error',
+      };
 
-        return {
-          errors: [message],
-          balanceValidationResults: [],
-          available: [],
-        };
-      }
-
-      return result;
+      return {
+        errors: [fatalError],
+        balanceValidationResults: [],
+        available: [],
+      };
     }
   };
 

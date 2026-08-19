@@ -2,10 +2,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createWatch, fork } from 'effector';
 import { Provider } from 'effector-react';
 
+import { type Wallet, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition } from '@/domains/staking';
 import { type PositionRow } from '../../lib';
 import { positionActions } from '../../model/position-actions';
@@ -36,14 +38,31 @@ const position: StakingPosition = {
   totalUnbonding: '0',
 };
 
+/** The wallet behind the base row — `direct` means a local wallet holds it. */
+const localWallet: Wallet = { id: 1, name: 'My Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+const localAccount: AnyAccount = {
+  id: 'stash-account',
+  accountId,
+  walletId: localWallet.id,
+  name: 'Stash',
+  type: 'universal',
+  cryptoType: CryptoType.SR25519,
+  signingType: SigningType.POLKADOT_VAULT,
+  createdAt: 0,
+};
+
+// A coherent row: `getAccessMode` cannot answer `direct` for an account it
+// never found, so the base fixture carries the account and wallet that verdict
+// implies. Tests that want another mode override all three together.
 const row: PositionRow = {
   id: `${polkadotAssetHubChain.chainId}-${accountId}`,
   position,
   accountId,
   chain: polkadotAssetHubChain,
   asset: dotAsset,
-  account: null,
-  wallet: null,
+  account: localAccount,
+  wallet: localWallet,
   accessMode: 'direct',
   multisig: null,
   status: 'active',
@@ -55,14 +74,14 @@ const row: PositionRow = {
   draftCount: 0,
 };
 
-const renderDrawer = () => {
+const renderDrawer = (drawerRow: PositionRow = row) => {
   const scope = fork({ values: [[positionActions.$wiredActions, ['changeValidators']]] });
 
   return render(
     <Provider value={scope}>
       <I18Provider>
         <ThemeProvider>
-          <PositionDetailDrawer row={row} onClose={() => {}} />
+          <PositionDetailDrawer row={drawerRow} onClose={() => {}} />
         </ThemeProvider>
       </I18Provider>
     </Provider>,
@@ -103,6 +122,46 @@ const renderValidatorDrawer = () => {
 };
 
 describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
+  test('should badge a contact position as Address book, never Local wallet', async () => {
+    // `wallet: null` is the fact the badge states — nothing local holds the
+    // account, it is known from the address book alone.
+    renderDrawer({ ...row, account: null, wallet: null, accessMode: 'draft' });
+
+    expect(await screen.findByText('Address book')).toBeInTheDocument();
+    expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
+  });
+
+  test('should badge a position held by a local wallet as Local wallet', async () => {
+    renderDrawer(row);
+
+    expect(await screen.findByText('Local wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
+  test('should badge a local multisig with no local signatory as Local wallet', async () => {
+    // The case that separates the rule from the one it replaced: `draft` also
+    // covers a multisig this installation holds as a wallet but cannot sign
+    // for. The badge states provenance, so a local wallet behind the account
+    // means "Local wallet" — signability is the pencil glyph's business, and
+    // keying the badge off `accessMode === 'draft'` would call this a contact.
+    const wallet = { id: 3, name: 'Team Multisig', type: WalletType.MULTISIG, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'draft' });
+
+    expect(await screen.findByText('Local wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
+  test('should keep the view only badge for a watch-only position', async () => {
+    const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'watchOnly' });
+
+    expect(await screen.findByText('view only')).toBeInTheDocument();
+    expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
+    expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
   test('should show validator stats instead of nominations for a validator position', async () => {
     renderValidatorDrawer();
 

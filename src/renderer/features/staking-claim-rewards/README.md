@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -84,6 +84,7 @@ the first transaction, so a session abandoned halfway still claimed the ones wit
 | Multisig               | A multisig sits on the route                                          | The multisig deposit row alongside the fee                                                          |
 | Other networks skipped | The request spanned more than one chain                               | A warning that rewards on the other network(s) were left out and must be claimed from there         |
 | Unaffordable           | The signer cannot cover the fee, or cannot reserve the deposit        | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it       |
+| No signer on the route | The chosen payer's route ends without anyone able to sign             | A red "No account to sign with" alert, and **Sign is blocked**. Switching the payer clears it       |
 | Draft mode             | The claim is exactly one transaction, and the address book is healthy | The standard draft toggle, an address-book signing-path picker, and "Save as draft" instead of Sign |
 | Sign / Submit          | Sign pressed                                                          | The shared `OperationSign` / `OperationSubmit` screens                                              |
 
@@ -92,15 +93,32 @@ what is being covered — is in hand the moment the button is pressed. The wrapp
 each cost a round trip, so they are not awaited: the modal opens immediately, they stream in behind their own loaders,
 and Sign stays disabled until they land. Changing the signing route re-runs them in place.
 
+**A payer nobody can sign for blocks, and says why.** The route behind the payer is checked for an actual signer at its
+end; when there is none — a watch-only payer — Sign is blocked behind a red **"No account to sign with"** alert rather
+than a silently dead button. The dashboard substitutes a signable payer before dispatching (see _Who pays_), so this is
+a backstop: it catches a payer switched to a watch-only account on the confirm itself. The guard stands down in draft
+mode.
+
+**A multisig route adds the shared description field** — the note the initiator attaches for the other signatories,
+published to the shared address book once the operation is included. Whether the field, an error or nothing shows is
+decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md) aggregate; a
+plain route, and draft mode, show nothing.
+
 ### The fee shown for a batched claim
 
-The network is asked to price **one** transaction — the primary one — and the confirm shows that figure times the number
-of transactions, the same approximation every multi-shard staking form makes. It is exact for a chunked single-account
-claim (identical calls, identical route) and an estimate when accounts route differently (one signing directly, another
-through a multisig). Validation likewise runs against the primary transaction. The consequence worth knowing: a claim
-split across many chunks by an account with barely enough free balance can pass validation and still run out on the last
-chunk. Rare — it needs more than ten unclaimed payouts _and_ a nearly empty stash — and the failure is a failed
-extrinsic, not a lost reward: the payouts stay unclaimed and can be retried.
+**Every transaction of the session is validated and priced, not just the first.** The primary plan goes through the
+complex-tx store as before; each extra plan (a chunk past the batch cap, or another account's claim) is wrapped, then
+run through the **same validator** the primary uses and priced with its own network quote. The fee row is the **sum** of
+those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate.
+That estimate is never signable: while quotes are pending the preparing gate blocks Sign, and an extra that never gets a
+quote fails closed — a failing extra (an unaffordable fee, a route that resolves without anyone able to sign, or a
+validation that failed outright and could not be checked) blocks Sign and surfaces in the same validation alert as a
+primary failure, rather than being silently dropped.
+
+The honest caveat that remains: **balance interactions _across_ plans from the same payer are not modeled.** The
+validator checks each transaction against current balances independently, so a payer with enough free balance for each
+chunk individually but not for all of them together still passes and can run out partway through the session. The
+failure is a failed extrinsic, not a lost reward: the payouts stay unclaimed and can be retried.
 
 ## Drafts
 
@@ -113,9 +131,32 @@ chunked or multi-account claim has nothing single to save; offering the toggle t
 what the screen totals. The toggle is hidden rather than disabled, because the reason is structural and no user action
 inside the modal can change it.
 
+Each request carries a `signingMode` — the **payer's** mode, not the nominator's: payouts are permissionless, so
+producers substitute a signable payer where they can and send `local` even for an address-book nominator. A session
+whose every request says `draft` (no signable payer at all) opens with the toggle already on; no current producer emits
+that, so it is the model's contract rather than a live path.
+
 The draft's call is built from the draft signing path's **source account**, not the stash — which is correct here for
 the reason above: the sender of `payout_stakers_by_page` is only the fee payer, and the rewards reach the nominators
 either way.
+
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the session's calls are stored in the basket for later signing, a success toast confirms it and the flow closes.
+
+Unlike a draft, which carries exactly one call data, **the basket takes a list natively** — so a chunked or
+multi-account claim is basketed whole, one entry per plan, and each entry becomes its own extrinsic when the basket
+signs. Nothing partial is ever stored: the button waits until every plan beyond the first has been built, and a session
+where that cannot happen never offers it.
+
+The basket signs each stored call directly by its payer — no multisig/proxy wrapping happens in the basket context — so
+the button only appears when **every** payer's wallet is one the basket can sign with (Polkadot Vault or a single Parity
+Signer shard). Watch-only, multisig, proxied and WalletConnect payers never see it, and draft mode hides it — a draft is
+"somebody else signs later", the basket is "this wallet signs later".
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Lifecycle
 
@@ -123,6 +164,7 @@ either way.
 flowchart TD
     D["Dashboard claim button"] -->|claimRequested| C["Confirm"]
     C -->|draft mode| DR["Draft created"]
+    C -->|Add to basket| B["Basket entries stored (1 per plan)"]
     C -->|Sign| S["Sign (1 payload per transaction)"]
     S --> SUB["Submit"]
     SUB -->|≥1 success| R["rewardsClaimed + payouts refetch"]

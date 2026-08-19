@@ -9,6 +9,7 @@ import { Address, AssetBalance, TransactionDetails, TransactionValidationError }
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -44,7 +45,8 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(newPositionFlowModel.$multisigDeposit);
   const preparing = useUnit(newPositionFlowModel.$preparing);
   const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
-  const isTxValid = useUnit(newPositionFlowModel.$isTxValid);
+  const canSign = useUnit(newPositionFlowModel.$canSign);
+  const canUseBasket = useUnit(newPositionFlowModel.$canUseBasket);
 
   if (!chain || !asset || !initiator) return null;
 
@@ -111,6 +113,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             </Alert>
           </Box>
         )}
+
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
       </ScrollArea>
 
       <Modal.Footer align="between">
@@ -119,12 +125,20 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          type={signatoryWallet?.type}
-          disabled={!isTxValid || preparing || noRouteSigner}
-          isLoading={preparing}
-          onClick={newPositionFlowModel.startSigning}
-        />
+        <div className="flex gap-4">
+          {canUseBasket && (
+            <Button pallet="secondary" onClick={() => newPositionFlowModel.txSaved()}>
+              {t('operation.addToBasket')}
+            </Button>
+          )}
+          <SignButton
+            isDefault={canUseBasket}
+            type={signatoryWallet?.type}
+            disabled={!canSign}
+            isLoading={preparing}
+            onClick={newPositionFlowModel.startSigning}
+          />
+        </div>
       </Modal.Footer>
     </>
   );

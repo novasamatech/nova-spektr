@@ -9,6 +9,7 @@ import { isSignerAccount } from '@/features/signing-path';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type RedeemTarget } from '@/features/staking-confirm-flow';
+import { type SigningMode } from '@/features/validator-selection';
 
 /**
  * Everything the KPI row leaves out.
@@ -135,7 +136,16 @@ export function resolveClaimRequests(entries: KpiClaimEntry[], sources: Resoluti
       continue;
     }
 
-    requests.push({ chain, asset, account: payer.account, wallet: payer.wallet, payouts: entry.payouts });
+    // The payer's mode, not the nominator's: `resolveClaimPayer` only returns
+    // an account `isSignerAccount` accepts, so the request is signable here.
+    requests.push({
+      chain,
+      asset,
+      account: payer.account,
+      wallet: payer.wallet,
+      payouts: entry.payouts,
+      signingMode: 'local',
+    });
   }
 
   return { requests, skipped };
@@ -176,6 +186,14 @@ export function readPayouts(
   return cache[payoutsCacheKey(chainId, accountId, activeEra)]?.payouts ?? [];
 }
 
+// The flows read `draft` as "start with draft mode on": an address-book
+// position has nobody local to sign, a watch-only account holds no key.
+function deriveSigningMode(resolved: ResolvedAccount | null): SigningMode {
+  if (!resolved) return 'draft';
+
+  return isSignerAccount(resolved.account) ? 'local' : 'watchOnly';
+}
+
 /**
  * A KPI request → the position a flow opens on.
  *
@@ -208,6 +226,7 @@ function resolvePositionTarget(
     asset,
     account: resolved?.account ?? null,
     wallet: resolved?.wallet ?? null,
+    signingMode: deriveSigningMode(resolved),
   };
 }
 

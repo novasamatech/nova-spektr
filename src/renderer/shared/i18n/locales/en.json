@@ -885,7 +885,7 @@
           "earnedColumn": "Earned",
           "claim": "Claim",
           "claimAll": "Claim all",
-          "noSigner": "No account of this wallet can sign on {network}.",
+          "noSigner": "None of your wallets can sign on {network}.",
           "donutCaption": "Earned per validator over the period",
           "attributing": "Working out which validator earned what…",
           "allNetworks": "All networks",
@@ -946,6 +946,7 @@
         "noValue": "—",
         "viewOnly": "view only",
         "localWallet": "Local wallet",
+        "addressBook": "Address book",
         "multisigChip": "{threshold}/{total}",
         "multisigHint": "Multisig — {threshold} of {total} signatures required",
         "draftHint_one": "{count} pending draft",
@@ -1021,7 +1022,7 @@
             "nothingInPeriod": "No rewards attributed in this window.",
             "scanningPayouts": "Checking what is still unclaimed…",
             "nothingToClaim": "Nothing to claim on this position.",
-            "noSigner": "No account of this wallet can sign on {network}."
+            "noSigner": "None of your wallets can sign on {network}."
           },
           "watchOnlyNote": "Watch-only account — data only. Actions are unavailable by design, not disabled.",
           "validator": {
@@ -3890,6 +3891,8 @@
       "maxButton": "Max",
       "networkLabel": "Network",
       "networkPlaceholder": "Select a network",
+      "overMaxDescription": "The account has {max} available to stake.",
+      "overMaxTitle": "Not enough available balance",
       "payoutAccountPlaceholder": "Payout account",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
@@ -3912,6 +3915,10 @@
       },
       "continueButton": "Continue",
       "maxButton": "Max",
+      "overMaxAddStakeDescription": "The account has {max} available to add to your stake.",
+      "overMaxAddStakeTitle": "Not enough available balance",
+      "overMaxUnbondDescription": "This position has {max} staked — an unbond cannot exceed it.",
+      "overMaxUnbondTitle": "More than the active stake",
       "remainingStaked": "remaining staked: {amount}",
       "stakedLabel": "Staked:",
       "title": {
@@ -3925,6 +3932,8 @@
       "unlockingLimitTitle": "No unbonding slots left"
     },
     "claimRewards": {
+      "extraNoSignerError": "One of the additional transactions has no account that can sign it. Change who pays for the claim, or claim those rewards separately.",
+      "extraValidationFailedError": "One of the additional transactions could not be checked. Close this window and try the claim again.",
       "hint": "Rewards go straight to the stash's transferable balance. Anyone can send this call — the rewards reach the nominators either way.",
       "hintBatched": "This claim is too large for one transaction, so it is split into {total} of them. You sign each in turn, and they are submitted together.",
       "labels": {
@@ -3954,7 +3963,9 @@
     },
     "flow": {
       "noSignerHint": "None of your wallets can sign for this account on this network. Add a wallet that controls it, or save the operation as a draft.",
-      "noSignerTitle": "No account to sign with"
+      "noSignerTitle": "No account to sign with",
+      "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
+      "nothingToRedeemTitle": "Nothing left to redeem"
     }
   },
   "time": {

@@ -14,9 +14,12 @@ import {
 } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { basketUtils } from '@/entities/basket';
+import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
+import { stakingPositions } from '@/aggregates/staking-positions';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -57,6 +60,7 @@ export const createConfirmFlowModel = () => {
   const flowCompleted = createEvent();
 
   const stepChanged = createEvent<Step>();
+  const txSaved = createEvent();
 
   sample({
     clock: changeValidatorsRequested,
@@ -104,6 +108,22 @@ export const createConfirmFlowModel = () => {
 
   const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
 
+  /**
+   * No connection → no `$coreTx` → no fee and nothing to sign. The same guard
+   * the old staking forms carry: a flow opened on a disconnected chain would
+   * otherwise build a call against a stale or absent api. The draft path stays
+   * ungated on purpose — a draft is call data for somebody else to sign later,
+   * and building it needs no live connection.
+   */
+  const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+    if (!chain) return false;
+
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
+  });
+
   // --- signing route -------------------------------------------------------
 
   const { $signingPath, signingPathChanged, $signatoryFromPath, $pathRoute } = createSigningPathModel({
@@ -126,6 +146,20 @@ export const createConfirmFlowModel = () => {
   // one of the stashes whose slashing spans have to be read.
 
   const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+
+  // A request that arrives already knowing nobody local signs it (an
+  // address-book position) opens with draft mode on, instead of making the
+  // user discover the toggle. This runs after the binding's own
+  // `.reset(flowStarted)` on `$isDraftMode` regardless of registration order:
+  // the toggle routes through the extra `draftModeToggled` event hop, one
+  // graph level deeper than the reset's direct store link, and effector
+  // resolves same-tick conflicts by graph depth, not source order.
+  sample({
+    clock: flowStarted,
+    filter: (request) => request.signingMode === 'draft',
+    fn: () => true,
+    target: draftMode.draftModeToggled,
+  });
 
   const $draftSourceAccountId = draftMode.$draftSigningPath.map((path) => path.at(0)?.accountId ?? null);
 
@@ -198,9 +232,10 @@ export const createConfirmFlowModel = () => {
       initiator: $initiator,
       validators: $validators,
       numSlashingSpans: $numSlashingSpans,
+      isConnected: $isChainConnected,
     },
-    ({ mode, chain, initiator, validators, numSlashingSpans }) => {
-      if (nullable(mode) || nullable(chain) || nullable(initiator)) return null;
+    ({ mode, chain, initiator, validators, numSlashingSpans, isConnected }) => {
+      if (nullable(mode) || nullable(chain) || nullable(initiator) || !isConnected) return null;
 
       if (mode === 'redeem') {
         return transactionBuilder.buildWithdraw({ chain, accountId: initiator.accountId, numSlashingSpans });
@@ -281,6 +316,72 @@ export const createConfirmFlowModel = () => {
       pendingFee || pendingWrapping || validating || readingSpans,
   );
 
+  // --- live redeemable -------------------------------------------------------
+  //
+  // The figure the confirm leads with is the snapshot on purpose (see
+  // `$request`); the sign gate is not. `withdraw_unbonded` takes no amount — it
+  // withdraws whatever the ledger holds at execution — so a live figure that
+  // merely differs from the snapshot is fine to sign. A live figure of zero is
+  // not: the call would move nothing and still cost a fee, and the era
+  // advancing under an open confirm is exactly when that happens.
+
+  /** The live aggregate position behind an open redeem, `null` otherwise. */
+  const $livePosition = combine(stakingPositions.$positions, $request, (positions, request) => {
+    if (nullable(request) || request.mode !== 'redeem') return null;
+
+    return (
+      positions.find(
+        (position) => position.accountId === request.position.accountId && position.chainId === request.chain.chainId,
+      ) ?? null
+    );
+  });
+
+  /**
+   * Live planck redeemable for the open redeem; `null` while the aggregate has
+   * not answered yet. A position it does not hold once settled means the ledger
+   * is gone — nothing redeemable, not an unfinished load, so the gate must not
+   * wait on it forever.
+   */
+  const $liveRedeemable = combine(
+    { mode: $mode, position: $livePosition, pending: stakingPositions.$pending },
+    ({ mode, position, pending }) => {
+      if (mode !== 'redeem') return null;
+      if (position) return new BN(position.redeemable);
+
+      return pending ? null : BN_ZERO;
+    },
+  );
+
+  /**
+   * Nothing to redeem is not an operation.
+   *
+   * The dashboard already refuses to open the flow for a position with no
+   * unlocked chunk, but the snapshot it opened on can go stale mid-confirm — so
+   * the gate reads the _live_ redeemable, and a load still in flight holds it
+   * the same way the old withdraw form held on its era read. Blocks the sign
+   * gate and the draft save alike — a draft of a no-op is still a no-op, just
+   * paid for by somebody else later.
+   */
+  const $hasSomethingToDo = combine(
+    { mode: $mode, liveRedeemable: $liveRedeemable, validators: $validators },
+    ({ mode, liveRedeemable, validators }) =>
+      mode === 'redeem'
+        ? nonNullable(liveRedeemable) && liveRedeemable.gt(BN_ZERO)
+        : toNominationTargets(validators).length > 0,
+  );
+
+  /**
+   * The ledger moved under the open confirm: it leads with the snapshot amount,
+   * yet the live ledger has nothing left to withdraw. Signing is already
+   * blocked through `$hasSomethingToDo`; this names the state so the user sees
+   * why instead of a dead button under a nonzero figure.
+   */
+  const $nothingLeftToRedeem = combine(
+    { mode: $mode, amount: $amount, liveRedeemable: $liveRedeemable },
+    ({ mode, amount, liveRedeemable }) =>
+      mode === 'redeem' && nonNullable(liveRedeemable) && liveRedeemable.isZero() && new BN(amount).gt(BN_ZERO),
+  );
+
   // --- draft transaction ---------------------------------------------------
 
   /**
@@ -319,9 +420,10 @@ export const createConfirmFlowModel = () => {
       isPathComplete: draftMode.$isDraftPathComplete,
       callData: $draftCallDataHex,
       network: $networkStore,
+      hasSomethingToDo: $hasSomethingToDo,
     },
-    ({ isDraftMode, isPathComplete, callData, network }) =>
-      isDraftMode && isPathComplete && nonNullable(callData) && nonNullable(network),
+    ({ isDraftMode, isPathComplete, callData, network, hasSomethingToDo }) =>
+      isDraftMode && isPathComplete && nonNullable(callData) && nonNullable(network) && hasSomethingToDo,
   );
 
   draftMode.connectSave({
@@ -336,20 +438,6 @@ export const createConfirmFlowModel = () => {
   wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished: flowClosed });
 
   // --- sign gate -----------------------------------------------------------
-
-  /**
-   * Nothing to redeem is not an operation.
-   *
-   * The dashboard already refuses to open the flow for a position with no
-   * unlocked chunk; the gate is kept here too, because a session that opened
-   * against a figure the ledger no longer holds would otherwise pay a fee for a
-   * call that moves nothing.
-   */
-  const $hasSomethingToDo = combine(
-    { mode: $mode, amount: $amount, validators: $validators },
-    ({ mode, amount, validators }) =>
-      mode === 'redeem' ? new BN(amount).gt(BN_ZERO) : toNominationTargets(validators).length > 0,
-  );
 
   const $routeSigner = createRouteSignerStore($route);
 
@@ -375,6 +463,57 @@ export const createConfirmFlowModel = () => {
     ({ isDraftMode, hasSomethingToDo, txValid, preparing, tx, noRouteSigner }) =>
       !isDraftMode && hasSomethingToDo && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
+
+  // --- basket ---------------------------------------------------------------
+  //
+  // The same "sign later" affordance every old staking flow carries. The basket
+  // signs the stored core call directly by its initiator (no wrapping in the
+  // basket context), so it is only offered when the initiator's own wallet is
+  // one the basket can sign with — never for watch-only, multisig or proxied
+  // initiators. Draft mode is mutually exclusive by nature: a draft is
+  // "somebody else signs later", the basket is "this wallet signs later". The
+  // something-to-do term keeps a redeem whose live ledger has emptied from
+  // storing a no-op that would still cost a fee later.
+
+  const $canUseBasket = combine(
+    {
+      wallet: $wallet,
+      isDraftMode: draftMode.$isDraftMode,
+      coreTx: $coreTx,
+      hasSomethingToDo: $hasSomethingToDo,
+    },
+    ({ wallet, isDraftMode, coreTx, hasSomethingToDo }) =>
+      !isDraftMode &&
+      nonNullable(wallet) &&
+      basketUtils.isBasketAvailable(wallet) &&
+      nonNullable(coreTx) &&
+      hasSomethingToDo,
+  );
+
+  const basketSaved = sample({
+    clock: txSaved,
+    source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
+    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: ({ coreTx, route }) => [
+      {
+        initiatorAccountId: coreTx!.accountId,
+        coreTx: coreTx!,
+        route,
+        createdAt: Date.now(),
+      },
+    ],
+    target: basketOperations.addTransactions,
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: () => Step.BASKET,
+    target: stepChanged,
+  });
 
   // --- confirm → sign → submit --------------------------------------------
 
@@ -501,7 +640,10 @@ export const createConfirmFlowModel = () => {
     $multisigDeposit,
     $preparing,
     $noRouteSigner,
+    $hasSomethingToDo,
+    $nothingLeftToRedeem,
     $canSign,
+    $canUseBasket,
     $confirms: confirmModel.$confirms,
 
     $isDraftMode: draftMode.$isDraftMode,
@@ -521,6 +663,7 @@ export const createConfirmFlowModel = () => {
     flowClosed,
     flowCompleted,
     stepChanged,
+    txSaved,
     signingPathChanged,
     startSigning: confirmModel.startSigning,
 
@@ -546,4 +689,5 @@ export const confirmFlowUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

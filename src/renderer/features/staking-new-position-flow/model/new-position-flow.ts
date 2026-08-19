@@ -23,18 +23,20 @@ import {
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { DEFAULT_STAKING_CHAIN, validatorsService } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { basketUtils } from '@/entities/basket';
+import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
+import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
-import { getAvailableToBond, isBelowMinimumBond } from '../lib/amount-rules';
+import { getAvailableToBond, isBelowMinimumBond, pickSeedAccount } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
 
 import { confirmModel } from './confirm';
@@ -71,6 +73,7 @@ export const createNewPositionFlowModel = () => {
   const destinationChanged = createEvent<string>();
   const continueRequested = createEvent();
   const validatorsCancelled = createEvent();
+  const txSaved = createEvent();
 
   const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
 
@@ -103,6 +106,22 @@ export const createNewPositionFlowModel = () => {
 
   const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
 
+  /**
+   * No connection → no `$coreTx` → no fee and nothing to sign. The same guard
+   * the old staking forms carry: a flow opened on a disconnected chain would
+   * otherwise build a call against a stale or absent api. The draft path stays
+   * ungated on purpose — a draft is call data for somebody else to sign later,
+   * and building it needs no live connection.
+   */
+  const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+    if (!chain) return false;
+
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
+  });
+
   // --- account -------------------------------------------------------------
 
   const $availableAccounts = combine({ list: walletModel.$availableAccounts, chain: $chain }, ({ list, chain }) =>
@@ -128,17 +147,46 @@ export const createNewPositionFlowModel = () => {
    */
   sample({
     clock: $availableAccounts,
-    source: { initiator: $initiator, selectedWallet: walletSelect.$selectedWallet },
-    fn: ({ initiator, selectedWallet }, available) => {
+    source: { initiator: $initiator, selectedWalletId: walletSelect.$selectedWalletId },
+    fn: ({ initiator, selectedWalletId }, available) => {
       const stillAvailable = initiator && available.some((account) => account.id === initiator.id);
       if (stillAvailable) return initiator;
 
-      const ownAccount = selectedWallet
-        ? available.find((account) => account.walletId === selectedWallet.id)
-        : undefined;
-
-      return ownAccount ?? available[0] ?? null;
+      return pickSeedAccount(available, selectedWalletId);
     },
+    target: $initiator,
+  });
+
+  /**
+   * A wallet switch this form may still act on.
+   *
+   * Only up to the form step. Past it the user has read a specific account on
+   * the confirm, and the confirm rebuilds itself from the live stores on every
+   * transaction change — so repointing the initiator there would put a
+   * signature on an operation nobody reviewed. The gate is not paranoia about
+   * clicks the modal covers anyway: the active wallet moves without one. The
+   * aggregate re-points itself when the wallet drops out of `$wallets` on a
+   * background sync, and the id is persisted with `sync: true`, so a second
+   * window can change it under a confirm standing open here.
+   */
+  const walletSwitchedInForm = sample({
+    clock: walletSelect.walletSwitched,
+    source: $step,
+    filter: (step) => step === Step.NONE || step === Step.INIT,
+    fn: (_, walletId) => walletId,
+  });
+
+  /**
+   * The seed above deliberately keeps a still-available initiator — right for
+   * account-list churn, wrong for a deliberate wallet switch: "Stake from" (and
+   * the `Available` derived from it) would keep showing the previous wallet's
+   * account until the chain changed. A switch re-seeds exactly as a fresh open
+   * would.
+   */
+  sample({
+    clock: walletSwitchedInForm,
+    source: $availableAccounts,
+    fn: (available, walletId) => pickSeedAccount(available, walletId),
     target: $initiator,
   });
 
@@ -173,7 +221,12 @@ export const createNewPositionFlowModel = () => {
     initiator: $initiator,
     chain: $chain,
     resetOn: [newPositionRequested, flowClosed],
-    resetUserOverrideOn: [chainChanged, initiatorChanged],
+    // A wallet switch re-seeds the initiator (see `walletSwitchedInForm`), and
+    // a hand-picked path must not pin the field to the previous wallet — the
+    // same reset a chain change performs for the same reason. The gated event,
+    // not the raw switch: past the form step nothing re-seeds, so nothing there
+    // may drop the user's chosen path either.
+    resetUserOverrideOn: [chainChanged, initiatorChanged, walletSwitchedInForm],
   });
 
   /**
@@ -215,7 +268,34 @@ export const createNewPositionFlowModel = () => {
     },
   );
 
-  const $reservable = $initiatorBalance.map((balance) => (balance ? reservableAmountBN(balance) : BN_ZERO));
+  // Created ahead of its own section below: in draft mode the available
+  // balance must read the path's source, not the initiator, so the binding has
+  // to exist before the balance derivations.
+  const draftMode = createDraftModeBinding({ formInitiated: newPositionRequested, chainChanged });
+
+  // Source balance for draft mode: fetched on-demand once the path is set so
+  // "Available"/Max reflect the eventual signer's balance, not the connected
+  // wallet's initiator.
+  const $draftSourceBalance = wireDraftSourceBalance({
+    $draftPath: draftMode.$draftSigningPath,
+    $chain: $chain,
+    $isDraftMode: draftMode.$isDraftMode,
+    // The staking asset, explicitly — not the wire's native-asset default.
+    $asset: $asset,
+  });
+
+  const $reservable = combine(
+    {
+      isDraftMode: draftMode.$isDraftMode,
+      draftSourceBalance: $draftSourceBalance,
+      initiatorBalance: $initiatorBalance,
+    },
+    ({ isDraftMode, draftSourceBalance, initiatorBalance }) => {
+      if (isDraftMode) return draftSourceBalance ? reservableAmountBN(draftSourceBalance) : BN_ZERO;
+
+      return initiatorBalance ? reservableAmountBN(initiatorBalance) : BN_ZERO;
+    },
+  );
 
   /**
    * Keyed by the _resolved_ chain, never by `$chainId`.
@@ -265,9 +345,11 @@ export const createNewPositionFlowModel = () => {
       destination: $rewardDestination,
       isDestinationValid: $isDestinationValid,
       validators: $validators,
+      isConnected: $isChainConnected,
     },
-    ({ chain, asset, initiator, amount, destination, isDestinationValid, validators }) => {
-      if (!chain || !asset || !initiator || !amount || !isDestinationValid || validators.length === 0) return null;
+    ({ chain, asset, initiator, amount, destination, isDestinationValid, validators, isConnected }) => {
+      if (!chain || !asset || !initiator || !amount || !isDestinationValid || !isConnected) return null;
+      if (validators.length === 0) return null;
 
       return transactionBuilder.buildBondNominate({
         chain,
@@ -327,7 +409,12 @@ export const createNewPositionFlowModel = () => {
   /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
-  const $available = combine($reservable, $fee, (reservable, fee) => getAvailableToBond({ reservable, fee }));
+  const $available = combine(
+    { isDraftMode: draftMode.$isDraftMode, reservable: $reservable, fee: $fee },
+    // Draft mode: no fee to subtract — the eventual signer pays it at submit
+    // time, so Max is the draft source's reservable, whole.
+    ({ isDraftMode, reservable, fee }) => (isDraftMode ? reservable : getAvailableToBond({ reservable, fee })),
+  );
 
   sample({
     clock: maxAmountRequested,
@@ -338,6 +425,13 @@ export const createNewPositionFlowModel = () => {
   });
 
   const $isBelowMinimumBond = combine({ amount: $amountPlanck, minimumBond: $minimumBond }, isBelowMinimumBond);
+
+  /**
+   * More than the account can bond — its reservable balance less the fee. Both
+   * the field's red frame and the callout that explains it read this one store,
+   * so the frame can never appear without its words.
+   */
+  const $isOverMax = combine($amountPlanck, $available, (amount, available) => amount.gt(available));
 
   // --- validation ----------------------------------------------------------
 
@@ -382,13 +476,14 @@ export const createNewPositionFlowModel = () => {
    * stash bonded under it, and the two calls travel as one `BATCH_ALL`.
    */
   const $isAmountValid = combine(
-    { amount: $amountPlanck, available: $available, belowMinimum: $isBelowMinimumBond },
-    ({ amount, available, belowMinimum }) => !amount.isZero() && !amount.gt(available) && !belowMinimum,
+    { amount: $amountPlanck, isOverMax: $isOverMax, belowMinimum: $isBelowMinimumBond },
+    ({ amount, isOverMax, belowMinimum }) => !amount.isZero() && !isOverMax && !belowMinimum,
   );
 
   // --- draft mode ----------------------------------------------------------
-
-  const draftMode = createDraftModeBinding({ formInitiated: newPositionRequested, chainChanged });
+  //
+  // `draftMode` itself is created up in the balances section — the available
+  // balance branches on it.
 
   /**
    * Draft-mode transaction, built from the path's own source rather than from
@@ -477,6 +572,67 @@ export const createNewPositionFlowModel = () => {
     ({ isDraftMode, amountValid, destinationValid, initiator, preparing, noRouteSigner }) =>
       !isDraftMode && amountValid && destinationValid && nonNullable(initiator) && !preparing && !noRouteSigner,
   );
+
+  /**
+   * Sign gate for the confirm step, mirroring `staking-confirm-flow`.
+   *
+   * `nonNullable(tx)` matters on its own: validation passing says nothing about
+   * the wrapped transaction still being there — a route change can drop it
+   * while the last verdict is still `true`. The draft term is symmetry with the
+   * siblings; this flow's draft mode ends at the form screen (`$canContinue`
+   * refuses to walk further), so it can never actually be `true` here.
+   */
+  const $canSign = combine(
+    {
+      isDraftMode: draftMode.$isDraftMode,
+      txValid: $isTxValid,
+      preparing: $preparing,
+      tx: $tx,
+      noRouteSigner: $noRouteSigner,
+    },
+    ({ isDraftMode, txValid, preparing, tx, noRouteSigner }) =>
+      !isDraftMode && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
+  );
+
+  // --- basket ---------------------------------------------------------------
+  //
+  // The same "sign later" affordance every old staking flow carries. The basket
+  // signs the stored core call directly by its initiator (no wrapping in the
+  // basket context), so it is only offered when the initiator's own wallet is
+  // one the basket can sign with — never for watch-only, multisig or proxied
+  // initiators. Draft mode is mutually exclusive by nature: a draft is
+  // "somebody else signs later", the basket is "this wallet signs later".
+
+  const $canUseBasket = combine(
+    { wallet: $wallet, isDraftMode: draftMode.$isDraftMode, coreTx: $coreTx },
+    ({ wallet, isDraftMode, coreTx }) =>
+      !isDraftMode && nonNullable(wallet) && basketUtils.isBasketAvailable(wallet) && nonNullable(coreTx),
+  );
+
+  const basketSaved = sample({
+    clock: txSaved,
+    source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
+    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: ({ coreTx, route }) => [
+      {
+        initiatorAccountId: coreTx!.accountId,
+        coreTx: coreTx!,
+        route,
+        createdAt: Date.now(),
+      },
+    ],
+    target: basketOperations.addTransactions,
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: () => Step.BASKET,
+    target: stepChanged,
+  });
 
   const validatorsStepEntered = sample({
     clock: continueRequested,
@@ -671,6 +827,7 @@ export const createNewPositionFlowModel = () => {
     $reservable,
     $minimumBond,
     $isBelowMinimumBond,
+    $isOverMax,
     $destinationType: readonly($destinationType),
     $destination: readonly($destination),
     $isDestinationValid,
@@ -689,6 +846,8 @@ export const createNewPositionFlowModel = () => {
     $preparing,
     $noRouteSigner,
     $canContinue,
+    $canSign,
+    $canUseBasket,
     /** Node-side verdict on the built call. Gates the confirm, not the form. */
     $isTxValid,
     $confirms: confirmModel.$confirms,
@@ -711,6 +870,7 @@ export const createNewPositionFlowModel = () => {
     destinationChanged,
     continueRequested,
     validatorsCancelled,
+    txSaved,
     signingPathChanged,
     startSigning: confirmModel.startSigning,
 
@@ -738,4 +898,5 @@ export const newPositionFlowUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

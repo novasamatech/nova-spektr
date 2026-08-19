@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -33,15 +33,17 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 
 ## States / scenarios
 
-| State      | When                                  | What the user sees                                                   |
-| ---------- | ------------------------------------- | -------------------------------------------------------------------- |
-| Form       | The flow opens                        | Network, stake from, amount, rewards destination, fee                |
-| Below min  | The amount is under the chain minimum | A red callout, and `Continue` refuses                                |
-| Validators | `Continue` on a valid form            | The shared validator picker, scoped to this flow's chain and account |
-| Confirm    | A validator set is submitted          | Amount, rewards destination, validator count, fee, multisig deposit  |
-| Sign       | `Sign` on the confirm                 | The standard signing step                                            |
-| Submit     | The signature is in                   | The standard submit step                                             |
-| Draft      | Draft mode is on                      | The form saves a draft instead of signing, and the flow ends there   |
+| State      | When                                             | What the user sees                                                   |
+| ---------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                |
+| Below min  | The amount is under the chain minimum            | A red callout, and `Continue` refuses                                |
+| Over max   | The amount is above what the account can stake   | A red callout names the available figure, and `Continue` refuses     |
+| No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses        |
+| Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account |
+| Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit  |
+| Sign       | `Sign` on the confirm                            | The standard signing step                                            |
+| Submit     | The signature is in                              | The standard submit step                                             |
+| Draft      | Draft mode is on                                 | The form saves a draft instead of signing, and the flow ends there   |
 
 **The minimum bond blocks rather than warns** — the opposite of what the unbond screen does with the same figure. The
 reason is the call, not the policy: `staking.nominate` rejects a stash bonded below `MinNominatorBond`, and the bond and
@@ -51,6 +53,22 @@ whole transaction after the user has paid to find out. Exactly the minimum is le
 **The minimum is read against the resolved chain**, not the requested one. A requested network the running config does
 not have falls back to the first staking chain, and a minimum looked up under the request would read as zero — which is
 "no floor", the one answer that lets an invalid bond through.
+
+**"Stake from" follows the active wallet.** The field seeds itself with the selected wallet's account (falling back to
+the first candidate the chain can hold), and a wallet switch — mid-form or between opens — re-seeds it the same way, so
+`Available` always quotes the wallet the user just switched to. The switch is deliberate and wins over a hand-picked
+account; re-selecting the already-active wallet changes nothing.
+
+**A picked account nobody can sign for blocks, and says why.** Once an account is chosen, the resolved signing route is
+checked for an actual signer at its end. When there is none — the account is watch-only — `Continue` refuses and a red
+**"No account to sign with"** alert names the two ways forward: add a wallet that controls the account, or save the
+operation as a draft for whoever can sign. An empty account field is not this error — `Continue` simply waits for one —
+and the guard stands down in draft mode, where nobody local is expected to sign.
+
+**A multisig route adds the shared description field to the confirm** — the note the initiator attaches for the other
+signatories, published to the shared address book once the operation is included. Whether the field, an error or nothing
+shows is decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md)
+aggregate; a plain route shows nothing.
 
 ### The fee before there is a call
 
@@ -87,6 +105,26 @@ event, never by navigation.
 Draft mode is the shared binding, as in every other staking flow: the form saves a draft instead of walking to the
 confirm, the draft is built from the draft path's own source account, and a saved draft ends the flow. The dashboard's
 draft toast names the operation `newPosition`.
+
+The figures follow the draft, too: **Available and `Max` read the draft path's source account** — the account the bond
+will actually spend from — not the connected wallet's pick, and no fee is subtracted, because the eventual signer pays
+it at submit time. Until a source is chosen the available balance reads zero rather than borrowing a figure from an
+account the draft will not spend from.
+
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the built `bond` + `nominate` batch is stored in the basket for this wallet to sign later, a success toast confirms it
+and the flow closes.
+
+The basket signs the stored core call directly by its initiator — no multisig/proxy wrapping happens in the basket
+context — so the button only appears when the staking account's own wallet is one the basket can sign with (Polkadot
+Vault or a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect accounts never see it. Basket
+and draft are mutually exclusive by nature — a draft is "somebody else signs later", the basket is "this wallet signs
+later" — and draft mode ends at the form screen, so it never reaches this confirm at all.
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Rules carried over from the old flow
 

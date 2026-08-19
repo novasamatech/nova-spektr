@@ -6,6 +6,7 @@ import { type AnyAccount, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { claimRewardsModel } from '@/features/staking-claim-rewards/model/claim';
 import { type ClaimRequest } from '@/features/staking-claim-rewards/types';
+import { type SigningMode } from '@/features/validator-selection';
 import {
   polkadotAssetHubChain,
   polkadotAssetHubChainId,
@@ -45,13 +46,14 @@ const watchOnlyAccount: AnyAccount = {
   createdAt: 0,
 };
 
-function createClaimRequest(account: AnyAccount, wallet: Wallet): ClaimRequest {
+function createClaimRequest(account: AnyAccount, wallet: Wallet, signingMode: SigningMode = 'local'): ClaimRequest {
   return {
     chain: polkadotAssetHubChain,
     asset: polkadotAssetHubChain.assets[0]!,
     account,
     wallet,
     payouts: [{ era: 100, validator: validatorOne, page: 0, amount: '1000000000' }],
+    signingMode,
   };
 }
 
@@ -113,5 +115,30 @@ describe('Staking Claim Rewards - Route Signer Guard', () => {
     await buildEnv([stakingAccountA]);
 
     expect(env.getState(claimRewardsModel.$noRouteSigner)).toBe(false);
+  });
+
+  describe('signing mode carry-over', () => {
+    // Producers currently always resolve a signable payer and send `local`
+    // (payouts are permissionless — the payer's mode wins), so the `draft`
+    // branch is the model's contract for future producers, not a live path.
+    it('should start in draft mode when every request says draft', async () => {
+      await buildEnv([watchOnlyAccount]);
+
+      await env.executeEvent(claimRewardsModel.claimRequested, [
+        createClaimRequest(watchOnlyAccount, watchOnlyWallet, 'draft'),
+      ]);
+
+      expect(env.getState(claimRewardsModel.$isDraftMode)).toBe(true);
+    });
+
+    it('should stay in normal mode for a local session', async () => {
+      await buildEnv([stakingAccountA]);
+
+      await env.executeEvent(claimRewardsModel.claimRequested, [
+        createClaimRequest(stakingAccountA, stakingWallet, 'local'),
+      ]);
+
+      expect(env.getState(claimRewardsModel.$isDraftMode)).toBe(false);
+    });
   });
 });

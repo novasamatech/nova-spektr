@@ -37,6 +37,11 @@ a row depends on how the account can be signed for:
 Watch-only is not "the buttons are greyed out". The chips are **absent**, and the drawer says so in words: actions are
 unavailable by design, not broken. A disabled control invites the user to keep trying.
 
+The drawer badge next to the account name states provenance, not signability: `Local wallet` (green) when a local wallet
+holds the account, `Address book` (gray) when none does — a contact position must not claim to be a local wallet. A
+watch-only account keeps its own `view only` badge; whether an operation leaves as a signature or a draft stays the
+pencil glyph's business.
+
 `getAccessMode` is exported from the feature barrel — the KPI and rewards-chart widgets classify accounts the same way
 rather than each inventing their own rule.
 
@@ -120,6 +125,22 @@ is absent rather than disabled — a validator nominates nobody, so the picker h
 The unbonding countdown comes from the chain's era anchor. Without one the strip falls back to the era count, which is
 the only thing actually known.
 
+#### The Claim chip
+
+Claiming is gated by _who can sign on the network_, not by who owns the position: a payout is permissionless, so a
+contact's position is claimable as long as **any account of any of the installation's wallets** can sign on that chain —
+the same rule the Rewards modal applies to its Claim button. The chip's states, in order of precedence:
+
+- **No signer on the chain** — disabled, with "None of your wallets can sign on {network}". This wins over everything
+  else: whatever the payout scan finds, nobody here could sign the claim.
+- **Nothing to claim**, scan finished — disabled, with "Nothing to claim on this position".
+- **Scan still running** — enabled; the chip does not assert "nothing to claim" about payouts nobody has checked yet.
+- Otherwise — enabled, leading with the unclaimed amount.
+
+(As with every chip, disabling still falls back to the "not connected yet" tooltip when the action is unwired — but a
+`blockedHint` above wins the tooltip text whenever both apply, so an unwired _and_ blocked chip explains the block, not
+the wiring gap.)
+
 ## Lifecycle
 
 Changing validators is the one thing this feature completes on its own: picking a set needs no transaction. The picker
@@ -158,7 +179,8 @@ which turns it into a `nominate` transaction.
   it unlocks; redeeming is requested from the KPI drill-down, which is where the approved design puts it.
 - **A draft row's actions rely on the flows' own draft mode.** An address-book position renders with the pencil glyph
   and its chips enabled; turning the hand-off into a draft is the flow's job, and the toast that confirms it belongs to
-  the wiring feature.
+  the wiring feature. Claim is the deliberate exception: a payout is permissionless, so a contact position's claim is
+  signed by a substituted payer of ours rather than saved as a draft.
 
 ## Related
 
