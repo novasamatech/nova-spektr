@@ -2000,7 +2000,8 @@
         "section": "the {action} of {balance}"
       },
       "fatal": {
-        "intro": "Dry run error:"
+        "intro": "Dry run error:",
+        "internal": "This operation could not be checked. Please try again — if it keeps happening, the network may be unreachable."
       },
       "network": {
         "title": "Network connection error"
@@ -3962,6 +3963,15 @@
       "noSignerTitle": "No account to sign with",
       "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
       "nothingToRedeemTitle": "Nothing left to redeem"
+    },
+    "payout": {
+      "confirmTitle": "Claim Rewards",
+      "eraCount_one": "{count} era",
+      "eraCount_other": "{count} eras",
+      "payoutCount_one": "{count} payout",
+      "payoutCount_other": "{count} payouts",
+      "validatorCount_one": "{count} validator",
+      "validatorCount_other": "{count} validators"
     }
   },
   "time": {

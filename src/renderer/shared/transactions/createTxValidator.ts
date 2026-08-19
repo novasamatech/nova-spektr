@@ -163,7 +163,15 @@ export function createTxValidator<A>(params?: {
       // Fail closed: a thrown validation must never read as "valid". Returning
       // a zero-error result here would flip `$valid` to true for any transient
       // failure (missing signatory/balance asserts, RPC fee-quote errors).
+      //
+      // `internal`, not a dry-run failure: nothing was checked, so the user is
+      // told the check could not run rather than being handed a JS message
+      // under a "Dry run error" heading. The detail goes to the console, which
+      // is where it is of any use.
+      console.error('Transaction validation could not complete', error);
+
       const fatalError: TransactionValidationFatalError = {
+        kind: 'internal',
         message: error instanceof Error ? error.message : nonNullable(error) ? error.toString() : 'Unknown error',
       };
 
