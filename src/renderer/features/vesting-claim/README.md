@@ -123,8 +123,8 @@ staking/vote lock still dominates `frozen`).
 ### Can the claim actually be paid for?
 
 Worth spelling out, because a vesting account is the one account most likely to look like it cannot pay. On Polkadot and
-Kusama `UnvestedFundsAllowedWithdrawReasons` is `except(TRANSFER | RESERVE)`, so pallet_vesting's lock blocks exactly
-two things: **transfers and reserves**. It does _not_ block transaction payment. So an account whose entire balance is
+Kusama `UnvestedFundsAllowedWithdrawReasons` is `except(TRANSFER | RESERVE)`, so pallet*vesting's lock blocks exactly
+two things: **transfers and reserves**. It does \_not* block transaction payment. So an account whose entire balance is
 still vesting can pay its own claim fee out of that locked balance, down to the existential deposit — no
 chicken-and-egg.
 

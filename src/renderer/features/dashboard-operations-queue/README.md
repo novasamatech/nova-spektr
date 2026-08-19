@@ -1,6 +1,6 @@
 # Operations Queue
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -21,8 +21,9 @@ Operations page, not here.
 - The **Drafts** subsection additionally requires the backend to be reachable and the wallet to hold draft-read
   permission. Without that, drafts are absent entirely and the card shows multisig signatures only — a local-only wallet
   still gets a useful queue.
-- The card sits in the dashboard widget slot at the default second position, but users can drag-reorder widgets in edit
-  mode, so its position is a default rather than a guarantee.
+- The card is a dashboard widget with a default place and a default size on the grid, and a minimum size below which it
+  stops being readable. Users arrange and resize widgets themselves in edit mode, so both are defaults rather than
+  guarantees.
 
 ## States / scenarios
 
