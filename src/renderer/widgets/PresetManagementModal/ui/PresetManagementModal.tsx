@@ -40,7 +40,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   const [editFilters, setEditFilters] = useState<PresetFilterCriteria>(EMPTY_FILTERS);
   const [editSelectedIds, setEditSelectedIds] = useState<string[]>([]);
   const [pendingSelectNew, setPendingSelectNew] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteCandidateId, setDeleteCandidateId] = useState<string | null>(null);
 
   const [dragIds, setDragIds] = useState<string[] | null>(null);
   const dragIdsRef = useRef<string[] | null>(null);
@@ -134,23 +134,26 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   };
 
   const handleDelete = () => {
-    if (selectedId === null) return;
+    if (deleteCandidateId === null) return;
 
-    const deletedPreset = presetsById.get(selectedId);
+    const deletedPreset = presetsById.get(deleteCandidateId);
     if (!deletedPreset) return;
 
-    const deletedIndex = presets.findIndex((p) => p.id === selectedId);
-    accountPresetsModel.presetDeleted(selectedId);
+    const deletedIndex = presets.findIndex((p) => p.id === deleteCandidateId);
+    accountPresetsModel.presetDeleted(deleteCandidateId);
 
     toast.success(t('dashboard.presets.modal.deletedToast', { name: deletedPreset.name }));
 
-    const remaining = presets.filter((p) => p.id !== selectedId);
-    if (remaining.length > 0) {
-      const nextIndex = Math.min(deletedIndex, remaining.length - 1);
-      const next = remaining[nextIndex];
-      if (next) selectPreset(next.id);
-    } else {
-      resetEditor();
+    // Move the editor off the deleted preset; an unrelated selection stays put.
+    if (selectedId === deleteCandidateId) {
+      const remaining = presets.filter((p) => p.id !== deleteCandidateId);
+      if (remaining.length > 0) {
+        const nextIndex = Math.min(deletedIndex, remaining.length - 1);
+        const next = remaining[nextIndex];
+        if (next) selectPreset(next.id);
+      } else {
+        resetEditor();
+      }
     }
   };
 
@@ -184,7 +187,9 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
                       index={index}
                       name={preset.name}
                       isSelected={selectedId === id && !isNewPreset}
+                      deleteLabel={t('dashboard.presets.modal.delete')}
                       onClick={() => selectPreset(id)}
+                      onDelete={() => setDeleteCandidateId(id)}
                     />
                   );
                 })}
@@ -252,18 +257,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
       </Modal.Content>
 
       <Modal.Footer align="between">
-        <div>
-          {!isNewPreset && (
-            <button
-              type="button"
-              className="flex items-center gap-x-1.5 rounded px-2 py-1.5 text-footnote text-text-tertiary transition-colors hover:bg-action-background-hover hover:text-text-negative"
-              onClick={() => setIsDeleteConfirmOpen(true)}
-            >
-              <Icon name="delete" size={14} />
-              {t('dashboard.presets.modal.delete')}
-            </button>
-          )}
-        </div>
+        <div />
         <Button size="sm" variant="fill" pallet="primary" disabled={!canSave} onClick={handleSave}>
           {t('dashboard.presets.modal.save')}
         </Button>
@@ -272,13 +266,15 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
       <ConfirmModal
         title={t('dashboard.presets.modal.deleteConfirmTitle')}
         description={t('dashboard.presets.modal.deleteConfirmDescription', {
-          name: selectedId !== null ? (presetsById.get(selectedId)?.name ?? '') : '',
+          name: deleteCandidateId !== null ? (presetsById.get(deleteCandidateId)?.name ?? '') : '',
         })}
         cancelText={t('dashboard.presets.modal.cancel')}
-        confirmText={t('dashboard.presets.modal.delete')}
+        confirmText={t('dashboard.presets.modal.deleteConfirmAction')}
         type="warning"
-        isOpen={isDeleteConfirmOpen}
-        onToggle={setIsDeleteConfirmOpen}
+        isOpen={deleteCandidateId !== null}
+        onToggle={(open) => {
+          if (!open) setDeleteCandidateId(null);
+        }}
         onConfirm={handleDelete}
       />
     </Modal>
@@ -292,10 +288,20 @@ type SortablePresetItemProps = {
   index: number;
   name: string;
   isSelected: boolean;
+  deleteLabel: string;
   onClick: () => void;
+  onDelete: () => void;
 };
 
-const SortablePresetItem = ({ id, index, name, isSelected, onClick }: SortablePresetItemProps) => {
+const SortablePresetItem = ({
+  id,
+  index,
+  name,
+  isSelected,
+  deleteLabel,
+  onClick,
+  onDelete,
+}: SortablePresetItemProps) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const { ref, isDragging } = useSortable({ id, index, handle: handleRef });
 
@@ -328,12 +334,23 @@ const SortablePresetItem = ({ id, index, name, isSelected, onClick }: SortablePr
           <circle cx="11" cy="13" r="1.5" />
         </svg>
       </div>
-      <button type="button" className="min-w-0 flex-1 py-2.5 pr-4 text-left" onClick={onClick}>
+      <button type="button" className="min-w-0 flex-1 py-2.5 text-left" onClick={onClick}>
         <FootnoteText
           className={cnTw('w-full truncate', isSelected ? 'font-semibold text-text-primary' : 'text-text-secondary')}
         >
           {name}
         </FootnoteText>
+      </button>
+      <button
+        type="button"
+        aria-label={deleteLabel}
+        className={cnTw(
+          'mr-2 shrink-0 rounded p-1 text-icon-default opacity-0 transition-opacity',
+          'group-hover:opacity-100 hover:text-text-negative focus-visible:opacity-100',
+        )}
+        onClick={onDelete}
+      >
+        <Icon name="delete" size={14} />
       </button>
     </div>
   );

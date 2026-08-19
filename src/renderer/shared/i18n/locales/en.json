@@ -541,6 +541,7 @@
         "delete": "Delete Preset",
         "deleteConfirmTitle": "Delete Preset",
         "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
+        "deleteConfirmAction": "Delete",
         "cancel": "Cancel",
         "save": "Save",
         "savedToast": "Preset \"{name}\" saved",

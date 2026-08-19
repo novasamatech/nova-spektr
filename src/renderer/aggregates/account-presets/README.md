@@ -1,6 +1,6 @@
 # Account presets
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -40,10 +40,11 @@ book. Filter criteria based on address-book metadata only ever match accounts kn
 
 ### Deleting a preset
 
-Deletion is available only inside the management modal and always asks for confirmation: a warning dialog names the
-preset ("Are you sure you want to delete …?") with Cancel / Delete Preset actions. On confirm the preset is removed, a
-toast confirms it, and the editor moves to the neighbouring preset (or resets to the empty "New Preset" form when none
-remain).
+Deletion is available only inside the management modal: hovering a preset in the left-rail list reveals a trash icon on
+that row. Clicking it always asks for confirmation — a warning dialog names the preset ("Are you sure you want to delete
+…?") with Cancel / Delete actions. On confirm the preset is removed and a toast confirms it; if the deleted preset was
+open in the editor, the editor moves to the neighbouring preset (or resets to the empty "New Preset" form when none
+remain), otherwise the current selection stays put.
 
 ## Lifecycle
 
