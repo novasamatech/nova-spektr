@@ -2,55 +2,43 @@ import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { dashboardStakingSlot, dashboardWidgetsSlot } from '@/pages/Dashboard';
+import { dashboardWidgetsSlot } from '@/pages/Dashboard';
 
-import { MonthlyRewardsWidget } from './ui/MonthlyRewardsWidget';
-import { StakingOverviewWidget } from './ui/StakingOverviewWidget';
 import { StakingSummaryWidget } from './ui/StakingSummaryWidget';
-import { TotalRewardsWidget } from './ui/TotalRewardsWidget';
 
 const enableFlag = $features.map(({ dashboard }) => dashboard);
 
-export const dashboardStakingFeature = createFeature({
-  name: 'dashboard/staking',
-  input: createStore({}),
-  enable: enableFlag,
-});
-
-export const dashboardTotalRewardsFeature = createFeature({
-  name: 'dashboard/total-rewards',
-  input: createStore({}),
-  enable: enableFlag,
-});
-
+/**
+ * The Staking tab is served by `dashboard-staking-kpi`,
+ * `dashboard-staking-positions` and `dashboard-staking-rewards-chart`. What
+ * remains here is the summary card of the Overview tab, which lives in a
+ * different slot and is out of that rework's scope.
+ *
+ * **Only `StakingSummaryWidget` is live.** It reaches `Price` and
+ * `useStakingOverview` (which reaches `useActiveValidatorCount`); those four
+ * modules are the whole reachable graph of this feature.
+ *
+ * Everything else is the pre-rework Staking tab, kept deliberately and marked
+ * `@deprecated` rather than deleted: `StakingOverviewWidget`,
+ * `TotalRewardsWidget` and `MonthlyRewardsWidget` (the three widgets this
+ * feature used to inject into `dashboardStakingSlot`), their detail modals,
+ * `ChainAllocationChart`, `ChartTooltip`, and the hooks reachable only from
+ * them. Each carries a pointer to what replaced it.
+ *
+ * **Delete the deprecated set once the staking tab migration is complete** —
+ * i.e. once nothing in the new widgets is still owed to it (per-chain
+ * allocation, the nominated-validator list). Until then they are the reference
+ * for behaviour the rework has not reproduced yet.
+ */
 export const dashboardStakingSummaryFeature = createFeature({
   name: 'dashboard/staking-summary',
   input: createStore({}),
   enable: enableFlag,
 });
 
-export const dashboardMonthlyRewardsFeature = createFeature({
-  name: 'dashboard/monthly-rewards',
-  input: createStore({}),
-  enable: enableFlag,
-});
-
-dashboardStakingFeature.inject(dashboardStakingSlot, {
-  order: 0,
-  render: StakingOverviewWidget,
-});
-
-dashboardTotalRewardsFeature.inject(dashboardStakingSlot, {
-  order: 1,
-  render: TotalRewardsWidget,
-});
-
 dashboardStakingSummaryFeature.inject(dashboardWidgetsSlot, {
   order: 2,
   render: StakingSummaryWidget,
-});
-
-dashboardMonthlyRewardsFeature.inject(dashboardStakingSlot, {
-  order: 2,
-  render: MonthlyRewardsWidget,
+  defaultSize: { w: 2, h: 3 },
+  minSize: { w: 1, h: 2 },
 });

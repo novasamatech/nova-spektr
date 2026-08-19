@@ -146,16 +146,13 @@ const makeBackendContact = (
   address: toAddress(accountId, { prefix: 0 }),
   accountId,
   source: 'backend',
-  entityNames: [],
   chainId: null,
   chainName: null,
-  categoryName: null,
-  contactTypeName: null,
   derivationPath: null,
   ownerAccountId: null,
   signatories: null,
   threshold: null,
-  tags: [],
+  fields: [],
   ...extra,
 });
 

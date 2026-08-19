@@ -35,6 +35,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.RESTAKE]: 'returnToStakeConfirm',
   [TransactionType.DESTINATION]: 'destinationConfirm',
   [TransactionType.UNSTAKE]: 'unstakeConfirm',
+  [TransactionType.PAYOUT_STAKERS_BY_PAGE]: 'redeemConfirm',
   // Technical
   [TransactionType.CHILL]: 'unknownConfirm',
   [TransactionType.BATCH_ALL]: 'unknownConfirm',

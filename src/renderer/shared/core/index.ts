@@ -3,7 +3,7 @@ export { kernelModel } from './model/kernel-model';
 export * from './types/general';
 export * from './types/utility';
 
-export type { BackendContact, Contact, ContactTag, LocalContact } from './types/contact';
+export type { BackendContact, Contact, ContactField, ContactFieldValue, LocalContact } from './types/contact';
 export { isBackendContact, isLocalContact } from './types/contact';
 export type { Signatory } from './types/signatory';
 

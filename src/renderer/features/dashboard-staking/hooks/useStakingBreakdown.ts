@@ -32,6 +32,10 @@ type Params = {
   allEntries: EntryLike[];
 };
 
+/**
+ * @deprecated Superseded by `useStakingKpi().breakdownRows` in
+ *   `features/dashboard-staking-kpi`.
+ */
 export const useStakingBreakdown = ({ stakingData, chainSummary, accountIds, allEntries }: Params) => {
   const currency = useUnit(currencySelect.$activeCurrency);
   const pricesParams = useUnit(currencySelect.$currentPricesParams);

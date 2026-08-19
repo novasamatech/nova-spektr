@@ -92,8 +92,8 @@ signatory — but only when no saved path exists.
 > **Two things are called "initiator".** The path runs outermost-first: it starts at the **source** account that
 > executes the call and ends at the account that **signs** it.
 >
-> - The **source** — the path's _first_ node — is the submit flow's canonical initiator (`$initiator`). This matters
->   for nested multisigs, where `multisigAccountId` stores the deepest hop, not the root.
+> - The **source** — the path's _first_ node — is the submit flow's canonical initiator (`$initiator`). This matters for
+>   nested multisigs, where `multisigAccountId` stores the deepest hop, not the root.
 > - The **signer** — the path's _last_ node — is what the UI labels "Initiator" in the signing-path panel, what
 >   `initiatorAccountId` stores, and the person a co-signer is waiting on. This is the one the operations search
 >   matches.

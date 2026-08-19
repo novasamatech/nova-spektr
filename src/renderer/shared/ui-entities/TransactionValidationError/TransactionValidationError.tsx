@@ -35,7 +35,21 @@ const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; perm
 });
 
 export type TransactionValidationFatalError = {
+  /**
+   * Technical detail. Rendered as-is for a dry-run failure, where it is the
+   * node's own reason and the only useful thing to show. For `internal` it is a
+   * developer-facing string (a thrown JS error) and stays out of the UI.
+   */
   message: string;
+  /**
+   * What produced the error.
+   *
+   * `dryRun` (the default) is a check that ran and reported a reason.
+   * `internal` is a validation that could not finish at all — nothing was
+   * checked, so there is no reason to report and "Dry run error: Cannot read
+   * properties of undefined" would misattribute the failure twice over.
+   */
+  kind?: 'dryRun' | 'internal';
 };
 
 export type TransactionValidationPermissionError = {
@@ -95,8 +109,14 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
     for (const error of fatalErrors) {
       errorNodes.push(
         <span data-testid={TEST_IDS.VALIDATIONS.FATAL}>
-          {t('general.transactionErrors.fatal.intro')}
-          <span className="break-all">{` ${error.message}`}</span>
+          {error.kind === 'internal' ? (
+            t('general.transactionErrors.fatal.internal')
+          ) : (
+            <>
+              {t('general.transactionErrors.fatal.intro')}
+              <span className="break-all">{` ${error.message}`}</span>
+            </>
+          )}
         </span>,
       );
     }

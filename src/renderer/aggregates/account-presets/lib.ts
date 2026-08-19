@@ -1,5 +1,5 @@
 import { type Address, type ID, WalletType } from '@/shared/core';
-import { type ContactTag } from '@/shared/core/types/contact';
+import { type ContactField } from '@/shared/core/types/contact';
 
 import { type AccountEntry, type AccountPreset, type AccountSource, type PresetFilterCriteria } from './types';
 
@@ -32,9 +32,22 @@ export const computeSourceBreakdown = (entries: AccountEntry[]): SourceBreakdown
   return breakdown;
 };
 
+/**
+ * Presets persisted by older app versions may lack newer criteria fields or
+ * carry retired ones (name-keyed entity/category/type/tag lists) — pick only
+ * the current shape and default the rest.
+ */
+export const normalizePresetFilters = (filters: Partial<PresetFilterCriteria>): PresetFilterCriteria => ({
+  sources: filters.sources ?? [],
+  chainIds: filters.chainIds ?? [],
+  fields: filters.fields ?? [],
+});
+
 export function applyPresetFilter(filters: PresetFilterCriteria, entries: AccountEntry[]): AccountEntry[] {
-  const { sources, entityNames, categoryNames, tags } = filters;
-  const needsBackendMetadata = entityNames.length > 0 || categoryNames.length > 0 || tags.length > 0;
+  const { sources, chainIds, fields } = normalizePresetFilters(filters);
+  // A criterion with no options selected constrains nothing.
+  const fieldCriteria = fields.filter(criterion => criterion.options.length > 0);
+  const needsBackendMetadata = chainIds.length > 0 || fieldCriteria.length > 0;
 
   return entries.filter(entry => {
     if (sources.length > 0 && !sources.some(s => entry.sources.includes(s))) return false;
@@ -42,22 +55,17 @@ export function applyPresetFilter(filters: PresetFilterCriteria, entries: Accoun
     if (!needsBackendMetadata) return true;
     if (!entry.sources.includes('backend-contact')) return false;
 
-    // sources.includes('backend-contact') guarantees these are populated by buildMergedEntries.
-    const entityList = entry.entityNames!;
-    const tagList = entry.tags!;
+    if (chainIds.length > 0 && (entry.chainId == null || !chainIds.includes(entry.chainId))) return false;
 
-    if (entityNames.length > 0 && !entityList.some(e => entityNames.includes(e))) return false;
-    if (categoryNames.length > 0 && (entry.categoryName == null || !categoryNames.includes(entry.categoryName))) {
-      return false;
-    }
-    if (
-      tags.length > 0 &&
-      !tags.every(t => tagList.some(et => et.tagName === t.tagName && t.values.some(v => et.values.includes(v))))
-    ) {
-      return false;
-    }
+    // sources.includes('backend-contact') guarantees this is populated by buildMergedEntries.
+    const entryFields = entry.fields!;
 
-    return true;
+    return fieldCriteria.every(criterion => {
+      const group = entryFields.find(f => f.fieldId === criterion.fieldId);
+      if (!group) return false;
+
+      return criterion.options.some(option => group.values.some(v => v.optionId === option.id));
+    });
   });
 }
 
@@ -96,9 +104,8 @@ export type BackendContactSeed = {
   name: string;
   address: Address;
   accountId: string;
-  entityNames: string[];
-  categoryName: string | null;
-  tags: ContactTag[];
+  chainId: string | null;
+  fields: ContactField[];
 };
 
 type Draft = {
@@ -112,9 +119,8 @@ type Draft = {
   walletAccountName?: string;
   localContactName?: string;
   backendContactName?: string;
-  entityNames?: string[];
-  categoryName?: string | null;
-  tags?: ContactTag[];
+  chainId?: string | null;
+  fields?: ContactField[];
 };
 
 const pushSource = (draft: Draft, source: AccountSource) => {
@@ -166,9 +172,8 @@ const finalizeDraft = (draft: Draft): AccountEntry => {
     entry.walletType = draft.walletType;
   }
   if (draft.sources.includes('backend-contact')) {
-    entry.entityNames = draft.entityNames ?? [];
-    entry.categoryName = draft.categoryName ?? null;
-    entry.tags = draft.tags ?? [];
+    entry.chainId = draft.chainId ?? null;
+    entry.fields = draft.fields ?? [];
   }
 
   return entry;
@@ -237,9 +242,8 @@ export function buildMergedEntries({
       source: 'backend-contact',
     });
     draft.backendContactName = contact.name;
-    draft.entityNames = contact.entityNames;
-    draft.categoryName = contact.categoryName;
-    draft.tags = contact.tags;
+    draft.chainId = contact.chainId;
+    draft.fields = contact.fields;
   }
 
   return Array.from(byAccountId.values(), finalizeDraft);

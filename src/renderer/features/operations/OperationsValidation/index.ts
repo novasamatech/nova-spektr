@@ -11,6 +11,7 @@ export { changeSignatoriesValidateModel } from './model/change-signatories-valid
 export { bondNominateValidateModel } from './model/bond-nominate-validate-model';
 export { nominateValidateModel } from './model/nominate-validate-model';
 export { payeeValidateModel } from './model/payee-validate-model';
+export { payoutValidateModel } from './model/payout-validate-model';
 export { bondExtraValidateModel } from './model/bond-extra-validate-model';
 export { restakeValidateModel } from './model/restake-validate-model';
 export { unstakeValidateModel } from './model/unstake-validate-model';

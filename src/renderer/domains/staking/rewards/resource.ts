@@ -14,8 +14,16 @@ export type StakingRewardsParams = {
   since?: number;
 };
 
-export function rewardsCacheKey(chainId: ChainId, since?: number): string {
-  return `${chainId}-${since ?? 'all'}`;
+/**
+ * Keyed by the account set as well as the window, mirroring the resource key.
+ *
+ * A chain+window key alone is shared by every account selection on that chain,
+ * so changing the selection starts a refetch while the cache still holds the
+ * previous set's map — and a consumer reading it back sees a settled `0` for an
+ * account that simply was not in that request.
+ */
+export function rewardsCacheKey(chainId: ChainId, accounts: AccountId[], since?: number): string {
+  return `${chainId}-${[...accounts].sort().join('_')}-${since ?? 'all'}`;
 }
 
 export function monthlyCacheKey(chainId: ChainId, accounts: AccountId[]): string {
@@ -65,9 +73,9 @@ export const stakingRewardsResource = createQueryResource<StakingRewardsParams>(
   })
   .cache({
     store: $rewardsCache,
-    map: (state, rewards, { chainId, since }) => ({
+    map: (state, rewards, { chainId, accounts, since }) => ({
       ...state,
-      [rewardsCacheKey(chainId, since)]: rewards,
+      [rewardsCacheKey(chainId, accounts, since)]: rewards,
     }),
     staleAfter: 10 * 60 * 1000,
   })

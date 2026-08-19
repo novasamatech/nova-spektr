@@ -1,12 +1,15 @@
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatBalance, formatFiatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, formatBalance, formatFiatBalance, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CHART_TOOLTIP_STYLE, FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { Identicon, VoteChart } from '@/shared/ui-entities';
+import { VoteChart } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type ActiveReferendum, type OurVote } from '../hooks/useActiveReferendums';
 
 type Props = {
@@ -21,6 +24,8 @@ type VoteRow = OurVote & {
 
 export const ReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
   const { t } = useI18n();
+  const chains = useUnit(networkModel.$chains);
+  const chain = chains[referendum.chainId];
 
   const ayePercent = referendum.ayePercent * 100;
 
@@ -61,16 +66,12 @@ export const ReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
         title: t('dashboard.activeReferendums.detail.account'),
         width: '33%',
         render: (_, item) => (
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
             />
-            <Identicon address={toAddress(item.address)} size={20} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-            </div>
+            <NamedAccount accountId={toAccountId(item.address)} chain={chain} variant="short" iconSize={20} />
           </div>
         ),
       },
@@ -127,7 +128,7 @@ export const ReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
         ),
       },
     ],
-    [t],
+    [t, chain],
   );
 
   return (

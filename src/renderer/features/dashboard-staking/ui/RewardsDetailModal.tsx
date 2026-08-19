@@ -25,6 +25,11 @@ type Props = {
   onClose: () => void;
 };
 
+/**
+ * @deprecated Superseded by `ClaimModal` and `BreakdownModal` of
+ *   `features/dashboard-staking-kpi`. Reachable only from the deprecated
+ *   `TotalRewardsWidget`.
+ */
 export const RewardsDetailModal = memo(
   ({ chainSummary, rewardsMap, accountIds, allEntries, currency, onClose }: Props) => {
     const { t } = useI18n();

@@ -4,10 +4,11 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Label, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { type ScoreBreakdown } from '@/domains/staking';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import {
   type ScoreTone,
@@ -71,7 +72,7 @@ export const ValidatorDetailPane = () => {
       <ScrollArea>
         <div className="flex flex-col gap-y-4 p-4">
           <div className="flex items-start justify-between gap-x-2">
-            <Account
+            <NamedAccount
               accountId={validator.accountId}
               chain={chain}
               title={getDisplayedLabel(validator.accountId, { names: displayedNames, addresses: displayedAddresses })}

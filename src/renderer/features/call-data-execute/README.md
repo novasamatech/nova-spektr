@@ -4,10 +4,10 @@
 
 ## Overview
 
-Executes an **arbitrary extrinsic from its encoded call data**. A power user pastes (or builds) a hex-encoded call, picks
-the chain and the account to run it from, and Spektr wraps it through the account's signing path, previews the decoded
-arguments, and signs and submits it. It is the escape hatch for operations the dedicated flows do not cover — including
-executing pending multisig call data that was shared out-of-band.
+Executes an **arbitrary extrinsic from its encoded call data**. A power user pastes (or builds) a hex-encoded call,
+picks the chain and the account to run it from, and Spektr wraps it through the account's signing path, previews the
+decoded arguments, and signs and submits it. It is the escape hatch for operations the dedicated flows do not cover —
+including executing pending multisig call data that was shared out-of-band.
 
 ## Who can use it / when it applies
 
@@ -35,13 +35,13 @@ they are about to sign rather than trusting an opaque blob.
 
 The flow is **form → confirm → sign → submit**.
 
-| State           | When it appears                              | What the user sees                                                                   |
-| --------------- | -------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Form            | Modal opened                                 | Network, initiator/signatory, Paste/Build call-data input, decoded args, fee         |
-| Invalid input   | Empty, no `0x` prefix, or undecodable call   | Inline field error; submit disabled                                                  |
-| Insufficient fee| Signatory cannot cover the fee               | Signatory field error; submit disabled                                               |
-| Confirm         | "Continue" pressed                           | Chain, initiator/signatory, decoded call arguments, fee                              |
-| Sign / Submit   | Confirmed                                     | Standard sign and submit screens                                                     |
+| State            | When it appears                            | What the user sees                                                           |
+| ---------------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| Form             | Modal opened                               | Network, initiator/signatory, Paste/Build call-data input, decoded args, fee |
+| Invalid input    | Empty, no `0x` prefix, or undecodable call | Inline field error; submit disabled                                          |
+| Insufficient fee | Signatory cannot cover the fee             | Signatory field error; submit disabled                                       |
+| Confirm          | "Continue" pressed                         | Chain, initiator/signatory, decoded call arguments, fee                      |
+| Sign / Submit    | Confirmed                                  | Standard sign and submit screens                                             |
 
 **Draft mode** turns the form into "compose a draft": no signatory or fee check is required and saving the draft
 redirects to the Operations page.

@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { type ComponentProps } from 'react';
 
 import { type BackendContact, type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,6 +10,21 @@ import { Copy, Label, Tooltip } from '@/shared/ui-kit';
 type Props = {
   contact: BackendContact;
   onSendTo?: (contact: Contact) => void;
+};
+
+type LabelVariant = ComponentProps<typeof Label>['variant'];
+
+const FIELD_LABEL_VARIANTS: LabelVariant[] = ['blue', 'purple', 'orange', 'green', 'gray'];
+
+// Fields are admin-defined, so chip colors can't be hardcoded per field — pick a
+// stable variant from the field name instead.
+const getFieldLabelVariant = (fieldName: string): LabelVariant => {
+  let hash = 0;
+  for (let i = 0; i < fieldName.length; i++) {
+    hash = (hash * 31 + fieldName.charCodeAt(i)) | 0;
+  }
+
+  return FIELD_LABEL_VARIANTS[Math.abs(hash) % FIELD_LABEL_VARIANTS.length]!;
 };
 
 export const BackendContactRow = ({ contact, onSendTo }: Props) => {
@@ -53,27 +68,19 @@ export const BackendContactRow = ({ contact, onSendTo }: Props) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
-          {contact.categoryName && <Label variant="blue">{contact.categoryName}</Label>}
-          {contact.contactTypeName && <Label variant="gray">{contact.contactTypeName}</Label>}
           {contact.chainName && <Label variant="lightBlue">{contact.chainName}</Label>}
           {!nullable(contact.threshold) && !nullable(contact.signatories) && (
             <Label variant="darkGray">
               {contact.threshold}/{contact.signatories.length}
             </Label>
           )}
-          {contact.tags.map((tag) =>
-            tag.values.map((value) => (
-              <Label key={`${tag.tagName}-${value}`} variant="orange">
-                {tag.tagName}: {value}
+          {contact.fields.map((field) =>
+            field.values.map((optionValue) => (
+              <Label key={optionValue.optionId} variant={getFieldLabelVariant(field.fieldName)}>
+                {field.fieldName}: {optionValue.value}
               </Label>
             )),
           )}
-          {contact.entityNames.map((entityName) => (
-            <Fragment key={entityName}>
-              <FootnoteText className="text-text-tertiary">{'\u00b7'}</FootnoteText>
-              <Label variant="purple">{entityName}</Label>
-            </Fragment>
-          ))}
         </div>
       </Plate>
     </li>

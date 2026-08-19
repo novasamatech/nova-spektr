@@ -30,8 +30,8 @@ notes.
 - `wallet-connect-wallet-pairing`
 - `watch-only-wallet`
 - `watch-only-wallet-pairing`
-- `account-presets` (aggregate)
-- `wallet-select` (aggregate)
+- [`account-presets`](../aggregates/account-presets/README.md) (aggregate)
+- [`wallet-select`](../aggregates/wallet-select/README.md) (aggregate)
 
 > See also: [`multisig-wallet`](#multisig), [`proxied-wallet`](#proxy) — wallet types managed in their own product
 > areas.
@@ -69,7 +69,12 @@ notes.
 ## Staking
 
 - `staking-navigation` (no spec planned)
-- `staking-basket`
+- [`staking-amount-flow`](./staking-amount-flow/README.md)
+- [`staking-basket`](./staking-basket/README.md)
+- [`staking-claim-rewards`](./staking-claim-rewards/README.md)
+- [`staking-confirm-flow`](./staking-confirm-flow/README.md)
+- [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
+- [`staking-new-position-flow`](./staking-new-position-flow/README.md)
 - `staking-bond-extra`
 - [`staking-bond-nominate`](./staking-bond-nominate/README.md)
 - [`staking-nominate`](./staking-nominate/README.md)
@@ -81,6 +86,7 @@ notes.
 - [`validator-selection`](./validator-selection/README.md)
 - [`staking-accounts`](../aggregates/staking-accounts/README.md) (aggregate)
 - `staking-network` (aggregate)
+- [`staking-positions`](../aggregates/staking-positions/README.md) (aggregate)
 - [`staking-validators`](../aggregates/staking-validators/README.md) (aggregate)
 
 > See also: [`dashboard-staking`](#dashboard) — staking summary on the dashboard.
@@ -172,12 +178,15 @@ notes.
 
 ## Dashboard
 
-- `dashboard-governance`
+- [`dashboard-governance`](./dashboard-governance/README.md)
 - `dashboard-navigation` (no spec planned)
 - [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
-- `dashboard-price-charts`
-- `dashboard-staking`
+- [`dashboard-price-charts`](./dashboard-price-charts/README.md)
+- [`dashboard-staking`](./dashboard-staking/README.md)
+- [`dashboard-staking-kpi`](./dashboard-staking-kpi/README.md)
+- [`dashboard-staking-positions`](./dashboard-staking-positions/README.md)
+- [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)
 
 > See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
 > the Portfolio Overview card.

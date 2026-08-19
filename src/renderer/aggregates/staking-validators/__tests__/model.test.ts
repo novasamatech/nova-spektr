@@ -1,7 +1,8 @@
-import { allSettled, fork } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type EraIndex } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import type * as NetworkDomain from '@/domains/network';
@@ -9,23 +10,47 @@ import { type AccountIdentity } from '@/domains/network';
 import type * as StakingDomain from '@/domains/staking';
 import {
   type EraValidator,
+  type ValidatorsResourceParams,
   AssetHubChains,
   DEFAULT_RECOMMENDATION_CRITERIA,
   DEFAULT_STAKING_CHAIN,
+  validators,
 } from '@/domains/staking';
+import { networkModel } from '@/entities/network';
 import { type CriteriaFlags, $persistedCriteria, stakingValidators } from '../model';
 
-import { $identityCache, $validatorsCache, requestIdentitiesFx } from './domainMocks';
+import {
+  $eraCache,
+  $identityCache,
+  $validatorsCache,
+  $validatorsPending,
+  requestIdentitiesFx,
+  validatorsFail,
+  validatorsPush,
+  validatorsStart,
+} from './domainMocks';
 
 vi.mock('@/domains/staking', async importOriginal => {
   const actual = await importOriginal<typeof StakingDomain>();
-  const { $validatorsCache } = await import('./domainMocks');
+  const { $validatorsCache, $validatorsPending, $eraCache, validatorsFail, validatorsPush, validatorsStart } =
+    await import('./domainMocks');
 
   return {
     ...actual,
     validators: {
       ...actual.validators,
-      validatorsResource: { ...actual.validators.validatorsResource, $cache: $validatorsCache },
+      validatorsResource: {
+        ...actual.validators.validatorsResource,
+        $cache: $validatorsCache,
+        $pending: $validatorsPending,
+        fail: validatorsFail,
+        push: validatorsPush,
+        start: validatorsStart,
+      },
+    },
+    era: {
+      ...actual.era,
+      eraResource: { ...actual.era.eraResource, $cache: $eraCache },
     },
   };
 });
@@ -316,6 +341,96 @@ describe('stakingValidators chain scope', () => {
 
     expect(scope.getState(stakingValidators.$chainId)).toBe(CHAIN);
     expect(scope.getState(stakingValidators.$validatorList)).toHaveLength(1);
+  });
+});
+
+describe('stakingValidators request health', () => {
+  const ERA = 100 as EraIndex;
+  const api = {} as unknown as ApiPromise;
+
+  const makeParams = (era: EraIndex = ERA): ValidatorsResourceParams => ({
+    chainId: CHAIN,
+    api,
+    era,
+    timelineApi: api,
+  });
+
+  const forkHealth = async () => {
+    const scope = fork({
+      values: [[$eraCache, { [CHAIN]: ERA }]],
+      handlers: [[requestIdentitiesFx, () => ({})]],
+    });
+    await allSettled(networkModel.$apis, { scope, params: { [CHAIN]: api } });
+
+    return scope;
+  };
+
+  it('reports a failed request of the scoped chain and era', async () => {
+    const scope = await forkHealth();
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(false);
+
+    await allSettled(validatorsFail, { scope, params: { params: makeParams(), error: new Error('rpc') } });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(true);
+  });
+
+  it('ignores a failure that belongs to another era', async () => {
+    const scope = await forkHealth();
+
+    await allSettled(validatorsFail, {
+      scope,
+      params: { params: makeParams((ERA - 1) as EraIndex), error: new Error('rpc') },
+    });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(false);
+  });
+
+  it('retires the failure when a set for the chain lands anyway', async () => {
+    const scope = await forkHealth();
+
+    await allSettled(validatorsFail, { scope, params: { params: makeParams(), error: new Error('rpc') } });
+    await allSettled(validatorsPush, { scope, params: { params: makeParams(), result: {} } });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(false);
+  });
+
+  it('restarts the request and clears the failure on retry', async () => {
+    const scope = await forkHealth();
+
+    const started: ValidatorsResourceParams[] = [];
+    createWatch({ unit: validatorsStart, scope, fn: params => started.push(params) });
+
+    await allSettled(validatorsFail, { scope, params: { params: makeParams(), error: new Error('rpc') } });
+    await allSettled(stakingValidators.retryRequested, { scope });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(false);
+    expect(started).toEqual([makeParams()]);
+  });
+
+  it('does not retry without a connected api', async () => {
+    const scope = fork({ values: [[$eraCache, { [CHAIN]: ERA }]], handlers: [[requestIdentitiesFx, () => ({})]] });
+
+    const started: ValidatorsResourceParams[] = [];
+    createWatch({ unit: validatorsStart, scope, fn: params => started.push(params) });
+
+    await allSettled(stakingValidators.retryRequested, { scope });
+
+    expect(started).toEqual([]);
+  });
+
+  it('reports loading while the request of the scoped key is in flight', async () => {
+    const key = validators.validatorsResource.createKey(makeParams());
+    const scope = fork({
+      values: [
+        [$eraCache, { [CHAIN]: ERA }],
+        [$validatorsPending, { [key]: true }],
+      ],
+      handlers: [[requestIdentitiesFx, () => ({})]],
+    });
+    await allSettled(networkModel.$apis, { scope, params: { [CHAIN]: api } });
+
+    expect(scope.getState(stakingValidators.$loading)).toBe(true);
   });
 });
 

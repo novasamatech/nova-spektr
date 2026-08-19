@@ -169,7 +169,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <DashboardWidget colSpan={4}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
@@ -184,7 +184,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
 
   return (
     <>
-      <DashboardWidget colSpan={4}>
+      <DashboardWidget>
         <div className="flex items-center gap-2">
           <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
         </div>

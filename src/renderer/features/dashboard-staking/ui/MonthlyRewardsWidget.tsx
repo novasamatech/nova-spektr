@@ -143,6 +143,11 @@ const StackedShape = memo(({ barProps, barData }: { barProps: BarShapeProps; bar
 // Skeleton height is in Tailwind grid units (×4px), so 15 = 60px, 35 = 140px
 const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
 
+/**
+ * @deprecated Superseded by `features/dashboard-staking-rewards-chart`. No
+ *   longer injected into any slot — kept only until the staking tab migration
+ *   is finished. See the note in `features/dashboard-staking/index.ts`.
+ */
 export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [mode, setMode] = useState<ChainMode>('dot');
@@ -173,7 +178,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <DashboardWidget colSpan={4} className="relative">
+      <DashboardWidget className="relative">
         <FootnoteText className="text-text-tertiary">{t('dashboard.monthlyRewards.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
@@ -188,7 +193,7 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
     : formatFiatBalance(total.fiat).formatted;
 
   return (
-    <DashboardWidget colSpan={4} className="relative">
+    <DashboardWidget className="relative">
       <div className="flex items-start justify-between">
         <div>
           <FootnoteText className="text-text-tertiary">{t('dashboard.monthlyRewards.title')}</FootnoteText>

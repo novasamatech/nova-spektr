@@ -36,16 +36,13 @@ function makeContact(
     name,
     address: accountId as unknown as Address,
     accountId,
-    entityNames: [],
     chainId: opts.chainId ?? null,
     chainName: null,
-    categoryName: null,
-    contactTypeName: null,
     derivationPath: null,
     ownerAccountId: null,
     signatories: opts.signatories ?? null,
     threshold: opts.threshold ?? null,
-    tags: [],
+    fields: [],
   };
 }
 

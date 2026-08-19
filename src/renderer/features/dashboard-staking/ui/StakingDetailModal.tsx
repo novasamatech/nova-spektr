@@ -26,6 +26,11 @@ type Props = {
   onClose: () => void;
 };
 
+/**
+ * @deprecated Superseded by `BreakdownModal` and `PositionsModal` of
+ *   `features/dashboard-staking-kpi`. Reachable only from the deprecated
+ *   `StakingOverviewWidget`.
+ */
 export const StakingDetailModal = memo(
   ({ chainSummary, stakingData, accountIds, allEntries, currency, onClose }: Props) => {
     const { t } = useI18n();

@@ -18,6 +18,12 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
+/**
+ * @deprecated Superseded by `features/dashboard-staking-kpi` (the Total staked,
+ *   Est. APY and Active nominations cards). No longer injected into any slot —
+ *   kept only until the staking tab migration is finished. See the note in
+ *   `features/dashboard-staking/index.ts`.
+ */
 export const StakingOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { chains, stakingDataByChain, totalFiat, totalActiveValidators, pending, fiatFlag, currency } =

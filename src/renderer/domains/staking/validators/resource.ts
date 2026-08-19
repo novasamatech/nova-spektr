@@ -30,6 +30,10 @@ export const validatorsResource = createQueryResource<ValidatorsResourceParams>(
 
     return validatorsService.getEraValidators({ api, chainId, era, timelineApi, overviews });
   })
+  // The era walk is many storage reads against public RPC — a rate limit in any
+  // of them used to fail the whole set once and for all, leaving the validator
+  // picker on skeletons until the app restarted.
+  .retry({ count: 3, delay: 1000 })
   .cache({
     store: $validatorsCache,
     map: (state, validators, { chainId }) => ({

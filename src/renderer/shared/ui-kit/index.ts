@@ -30,6 +30,7 @@ export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { type LabelVariant, Label } from './Label/Label';
 export { Modal, useModalOverlay } from './Modal/Modal';
+export { Drawer, useDrawerOverlay } from './Drawer/Drawer';
 export { type Step, StepIndicator } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
@@ -40,7 +41,14 @@ export { ProgressWithDividers } from './ProgressWithDividers/ProgressWithDivider
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { RadioGroup } from './RadioGroup/RadioGroup';
-export { type Column, type SortDirection, type TableRowProps, type TableSort, Table } from './Table';
+export {
+  type Column,
+  type SortDirection,
+  type TableRowProps,
+  type TableSort,
+  type TableVirtualization,
+  Table,
+} from './Table';
 export { Indicator } from './Indicator/Indicator';
 export { NotificationProvider, useNotification } from './NotificationContext';
 export { Speedometer } from './Speedometer/Speedomenter';

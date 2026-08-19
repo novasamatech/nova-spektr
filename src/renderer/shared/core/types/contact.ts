@@ -9,9 +9,22 @@ type BaseContact = {
   accountId: AccountId;
 };
 
-export type ContactTag = {
-  tagName: string;
-  values: string[];
+export type ContactFieldValue = {
+  optionId: string;
+  value: string;
+};
+
+/**
+ * One admin-defined address-book field with this contact's selected option(s).
+ * Fields are dynamic: admins create, rename and delete them at runtime, so
+ * consumers must not depend on specific field names. Ids are the stable keys;
+ * names/values are display labels.
+ */
+export type ContactField = {
+  fieldId: string;
+  fieldName: string;
+  multiSelect: boolean;
+  values: ContactFieldValue[];
 };
 
 export type LocalContact = BaseContact & {
@@ -20,16 +33,13 @@ export type LocalContact = BaseContact & {
 
 export type BackendContact = BaseContact & {
   source: 'backend';
-  entityNames: string[];
   chainId: string | null;
   chainName: string | null;
-  categoryName: string | null;
-  contactTypeName: string | null;
   derivationPath: string | null;
   ownerAccountId: string | null;
   signatories: string[] | null;
   threshold: number | null;
-  tags: ContactTag[];
+  fields: ContactField[];
 };
 
 export type Contact = LocalContact | BackendContact;

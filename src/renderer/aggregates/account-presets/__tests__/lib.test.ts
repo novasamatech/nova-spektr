@@ -1,8 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Address, WalletType } from '@/shared/core';
-import { applyPresetFilter, buildMergedEntries, matchPreset } from '../lib';
+import { type Address, type ContactField, WalletType } from '@/shared/core';
+import { applyPresetFilter, buildMergedEntries, matchPreset, normalizePresetFilters } from '../lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria } from '../types';
+
+const entityField = (values: { optionId: string; value: string }[]): ContactField => ({
+  fieldId: 'f-entity',
+  fieldName: 'Entity',
+  multiSelect: true,
+  values,
+});
+
+const typeField = (optionId: string, value: string): ContactField => ({
+  fieldId: 'f-type',
+  fieldName: 'Contact Type',
+  multiSelect: false,
+  values: [{ optionId, value }],
+});
 
 const wallet: AccountEntry = {
   id: 'w1',
@@ -32,9 +46,14 @@ const backendContact: AccountEntry = {
   accountId: '0x3',
   aliases: ['Bob Backend'],
   sources: ['backend-contact'],
-  entityNames: ['Parity', 'W3F'],
-  categoryName: 'Treasury',
-  tags: [{ tagName: 'team', values: ['core', 'infra'] }],
+  chainId: '0xdot',
+  fields: [
+    entityField([
+      { optionId: 'fo-parity', value: 'Parity' },
+      { optionId: 'fo-w3f', value: 'W3F' },
+    ]),
+    typeField('fo-multisig', 'Multisig'),
+  ],
 };
 
 const backendContact2: AccountEntry = {
@@ -44,12 +63,11 @@ const backendContact2: AccountEntry = {
   accountId: '0x4',
   aliases: ['Charlie Backend'],
   sources: ['backend-contact'],
-  entityNames: ['W3F'],
-  categoryName: 'Grants',
-  tags: [{ tagName: 'team', values: ['research'] }],
+  chainId: '0xksm',
+  fields: [entityField([{ optionId: 'fo-w3f', value: 'W3F' }]), typeField('fo-wallet', 'Wallet')],
 };
 
-// Same address as `wallet` (`0x1`) but also labeled in the external address book.
+// Known to both a wallet and the external address book.
 const walletAndBackend: AccountEntry = {
   id: 'w-x',
   name: 'Treasury',
@@ -60,13 +78,24 @@ const walletAndBackend: AccountEntry = {
   walletId: 9,
   walletName: 'MS-1',
   walletType: WalletType.MULTISIG,
-  entityNames: ['Treasury Co'],
-  categoryName: 'Treasury',
-  tags: [],
+  chainId: '0xdot',
+  fields: [entityField([{ optionId: 'fo-treasury', value: 'Treasury Co' }])],
 };
 
 const entries = [wallet, localContact, backendContact, backendContact2, walletAndBackend];
-const empty: PresetFilterCriteria = { sources: [], entityNames: [], categoryNames: [], tags: [] };
+const empty: PresetFilterCriteria = { sources: [], chainIds: [], fields: [] };
+
+const entityCriterion = (options: { id: string; value: string }[]) => ({
+  fieldId: 'f-entity',
+  fieldName: 'Entity',
+  options,
+});
+
+const typeCriterion = (options: { id: string; value: string }[]) => ({
+  fieldId: 'f-type',
+  fieldName: 'Contact Type',
+  options,
+});
 
 describe('applyPresetFilter', () => {
   it('returns all entries when all filters are empty', () => {
@@ -94,43 +123,111 @@ describe('applyPresetFilter', () => {
     ]);
   });
 
-  it('filters by entity name', () => {
-    expect(applyPresetFilter({ ...empty, entityNames: ['Parity'] }, entries)).toEqual([backendContact]);
+  it('filters by field option id', () => {
+    const filters = { ...empty, fields: [entityCriterion([{ id: 'fo-parity', value: 'Parity' }])] };
+    expect(applyPresetFilter(filters, entries)).toEqual([backendContact]);
   });
 
-  it('entity filter matches any of the contact entityNames (OR)', () => {
-    expect(applyPresetFilter({ ...empty, entityNames: ['W3F'] }, entries)).toEqual([backendContact, backendContact2]);
+  it('field criterion matches any selected option (OR within a field)', () => {
+    const filters = { ...empty, fields: [entityCriterion([{ id: 'fo-w3f', value: 'W3F' }])] };
+    expect(applyPresetFilter(filters, entries)).toEqual([backendContact, backendContact2]);
   });
 
-  it('filters by category name', () => {
-    expect(applyPresetFilter({ ...empty, categoryNames: ['Treasury'] }, entries)).toEqual([
+  it('field criteria combine with AND across fields', () => {
+    const filters = {
+      ...empty,
+      fields: [
+        entityCriterion([{ id: 'fo-w3f', value: 'W3F' }]),
+        typeCriterion([{ id: 'fo-wallet', value: 'Wallet' }]),
+      ],
+    };
+    expect(applyPresetFilter(filters, entries)).toEqual([backendContact2]);
+  });
+
+  it('entries without backend-contact source are excluded when field filters are active', () => {
+    const filters = { ...empty, fields: [entityCriterion([{ id: 'fo-parity', value: 'Parity' }])] };
+    const result = applyPresetFilter(filters, entries);
+    expect(result.some(e => !e.sources.includes('backend-contact'))).toBe(false);
+  });
+
+  it('entries lacking the criterion field entirely do not match', () => {
+    const filters = { ...empty, fields: [typeCriterion([{ id: 'fo-multisig', value: 'Multisig' }])] };
+    expect(applyPresetFilter(filters, entries)).toEqual([backendContact]);
+  });
+
+  it('a criterion over a removed field matches nothing', () => {
+    const filters = {
+      ...empty,
+      fields: [{ fieldId: 'f-gone', fieldName: 'Removed', options: [{ id: 'fo-gone', value: 'Gone' }] }],
+    };
+    expect(applyPresetFilter(filters, entries)).toEqual([]);
+  });
+
+  it('a criterion with no selected options constrains nothing', () => {
+    const filters = { ...empty, fields: [entityCriterion([])] };
+    expect(applyPresetFilter(filters, entries)).toEqual(entries);
+  });
+
+  it('filters by chainId', () => {
+    expect(applyPresetFilter({ ...empty, chainIds: ['0xdot'] }, entries)).toEqual([backendContact, walletAndBackend]);
+  });
+
+  it('chain filter matches any of the listed chains (OR)', () => {
+    expect(applyPresetFilter({ ...empty, chainIds: ['0xdot', '0xksm'] }, entries)).toEqual([
       backendContact,
+      backendContact2,
       walletAndBackend,
     ]);
   });
 
-  it('filters by tags (AND across tag names, OR within values)', () => {
-    expect(applyPresetFilter({ ...empty, tags: [{ tagName: 'team', values: ['core'] }] }, entries)).toEqual([
-      backendContact,
-    ]);
-  });
-
-  it('entries without backend-contact source are excluded when entity/category/tag filters are active', () => {
-    const result = applyPresetFilter({ ...empty, entityNames: ['Parity'] }, entries);
+  it('chain filter excludes entries without backend-contact source', () => {
+    const result = applyPresetFilter({ ...empty, chainIds: ['0xdot'] }, entries);
     expect(result.some(e => !e.sources.includes('backend-contact'))).toBe(false);
   });
 
-  it('combines source + entity (AND across dimensions)', () => {
-    expect(applyPresetFilter({ ...empty, sources: ['backend-contact'], entityNames: ['W3F'] }, entries)).toEqual([
-      backendContact,
-      backendContact2,
-    ]);
+  it('combines source + field (AND across dimensions)', () => {
+    const filters = {
+      ...empty,
+      sources: ['backend-contact' as const],
+      fields: [entityCriterion([{ id: 'fo-w3f', value: 'W3F' }])],
+    };
+    expect(applyPresetFilter(filters, entries)).toEqual([backendContact, backendContact2]);
+  });
+
+  it('accepts legacy criteria objects with retired name-keyed lists', () => {
+    const legacy = {
+      sources: [],
+      entityNames: ['W3F'],
+      categoryNames: [],
+      contactTypeNames: [],
+      tags: [],
+    } as unknown as PresetFilterCriteria;
+    expect(applyPresetFilter(legacy, entries)).toEqual(entries);
   });
 
   it('returns empty array when nothing matches', () => {
-    expect(applyPresetFilter({ ...empty, sources: ['local-contact'], entityNames: ['NonExistent'] }, entries)).toEqual(
-      [],
-    );
+    const filters = {
+      ...empty,
+      sources: ['local-contact' as const],
+      fields: [entityCriterion([{ id: 'fo-parity', value: 'Parity' }])],
+    };
+    expect(applyPresetFilter(filters, entries)).toEqual([]);
+  });
+});
+
+describe('normalizePresetFilters', () => {
+  it('fills fields missing from legacy persisted criteria and drops retired keys', () => {
+    const legacy = { sources: [], entityNames: ['W3F'], categoryNames: [], tags: [] };
+    expect(normalizePresetFilters(legacy)).toEqual({ sources: [], chainIds: [], fields: [] });
+  });
+
+  it('keeps complete criteria intact', () => {
+    const full: PresetFilterCriteria = {
+      sources: ['wallet'],
+      chainIds: ['0xdot'],
+      fields: [entityCriterion([{ id: 'fo-w3f', value: 'W3F' }])],
+    };
+    expect(normalizePresetFilters(full)).toEqual(full);
   });
 });
 
@@ -194,9 +291,8 @@ describe('buildMergedEntries', () => {
           name: 'External Alice',
           address: '0xA' as Address,
           accountId: '0xA',
-          entityNames: ['Co'],
-          categoryName: null,
-          tags: [],
+          chainId: null,
+          fields: [entityField([{ optionId: 'fo-co', value: 'Co' }])],
         },
       ],
     });
@@ -206,7 +302,7 @@ describe('buildMergedEntries', () => {
     expect(entry.id).toBe('w-id');
     expect(entry.sources).toEqual(['wallet', 'local-contact', 'backend-contact']);
     expect(entry.aliases).toEqual(['My Wallet', 'Local Alice', 'External Alice']);
-    expect(entry.entityNames).toEqual(['Co']);
+    expect(entry.fields).toEqual([entityField([{ optionId: 'fo-co', value: 'Co' }])]);
   });
 
   it('uses backend-contact name when wallet is indexed (multisig/proxied)', () => {
@@ -229,9 +325,8 @@ describe('buildMergedEntries', () => {
           name: 'Treasury Multisig',
           address: '0xB' as Address,
           accountId: '0xB',
-          entityNames: [],
-          categoryName: null,
-          tags: [],
+          chainId: null,
+          fields: [],
         },
       ],
     });
@@ -262,9 +357,8 @@ describe('buildMergedEntries', () => {
           name: 'Alice External',
           address: '0xC' as Address,
           accountId: '0xC',
-          entityNames: [],
-          categoryName: null,
-          tags: [],
+          chainId: null,
+          fields: [],
         },
       ],
     });
@@ -295,14 +389,33 @@ describe('buildMergedEntries', () => {
           name: 'treasury',
           address: '0xE' as Address,
           accountId: '0xE',
-          entityNames: [],
-          categoryName: null,
-          tags: [],
+          chainId: null,
+          fields: [],
         },
       ],
     });
 
     expect(result[0]!.aliases).toEqual(['Treasury']);
+  });
+
+  it('threads chain and field metadata onto backend-sourced entries', () => {
+    const result = buildMergedEntries({
+      walletSeeds: [],
+      localContacts: [],
+      backendContacts: [
+        {
+          id: 'bc-id',
+          name: 'Typed Contact',
+          address: '0xG' as Address,
+          accountId: '0xG',
+          chainId: '0xdot',
+          fields: [typeField('fo-multisig', 'Multisig')],
+        },
+      ],
+    });
+
+    expect(result[0]!.chainId).toBe('0xdot');
+    expect(result[0]!.fields).toEqual([typeField('fo-multisig', 'Multisig')]);
   });
 
   it('preserves wallet-first id when both wallet and contact share an accountId', () => {

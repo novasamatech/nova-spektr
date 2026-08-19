@@ -48,6 +48,7 @@ export type ChainGovernanceData = {
   delegatedAmount: string;
   blockTimeMs: number | null;
   currentBlock: number | null;
+  chainId: ChainId;
   chainName: string;
   symbol: string;
   precision: number;
@@ -289,6 +290,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     delegatedAmount: claimData.delegated.toString(),
     blockTimeMs: blockTime?.toNumber() ?? null,
     currentBlock,
+    chainId,
     chainName: chain.name,
     symbol: asset.symbol,
     precision: asset.precision,

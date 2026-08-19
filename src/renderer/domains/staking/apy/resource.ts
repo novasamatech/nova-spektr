@@ -6,7 +6,7 @@ import { stakingPallet } from '@/shared/pallet/staking';
 import { createQueryResource } from '@/shared/query';
 
 import { perbillToPercent } from './calculator';
-import { apyService } from './service';
+import { type NetworkAvgRate, apyService } from './service';
 
 export type ApyResourceParams = {
   api: ApiPromise;
@@ -32,6 +32,40 @@ export const apyResource = createQueryResource<ApyResourceParams>({
   .cache({
     store: $apyCache,
     map: (state, apy, { chainId }) => ({ ...state, [chainId]: apy }),
+    staleAfter: Number.POSITIVE_INFINITY,
+  })
+  .build();
+
+export type NetworkAvgRateParams = ApyResourceParams;
+
+const $networkAvgRateCache = createStore<Record<ChainId, NetworkAvgRate | null>>({});
+
+/**
+ * Trailing ~30d network average reward rate per chain. Era-keyed like
+ * `apyResource`: a rollover changes the key and triggers exactly one refetch; a
+ * window of closed eras never changes, so a non-null result never goes stale; a
+ * `null` (unknown) result is not cached and is re-requested on the next mount -
+ * deliberate, it doubles as retry after a transient failure. To keep that retry
+ * cheap, the validator prefs (the heaviest read, duplicated with `apyResource`
+ * — accepted, once per era per chain) load lazily: an unmeasurable chain never
+ * pays for them.
+ */
+export const networkAvgRateResource = createQueryResource<NetworkAvgRateParams>({
+  key: ({ chainId, era }) => [chainId, String(era)],
+})
+  .name('networkAvgRewardRate')
+  .request<NetworkAvgRate | null>(async ({ api, timelineApi, chain, era }) => {
+    const loadValidators = async () => {
+      const prefs = await stakingPallet.storage.erasValidatorPrefs(api, era);
+
+      return prefs.map(({ prefs }) => ({ commission: perbillToPercent(prefs.commission) }));
+    };
+
+    return apyService.getNetworkAvgRewardRate({ api, timelineApi, chain, era, loadValidators });
+  })
+  .cache({
+    store: $networkAvgRateCache,
+    map: (state, rate, { chainId }) => ({ ...state, [chainId]: rate }),
     staleAfter: Number.POSITIVE_INFINITY,
   })
   .build();

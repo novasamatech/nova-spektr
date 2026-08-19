@@ -17,6 +17,7 @@ import {
   BondNominateConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
+  PayoutConfirmation,
   RestakeConfirmation,
   UnstakeConfirmation,
   WithdrawConfirmation,
@@ -26,6 +27,7 @@ import {
   bondNominateValidateModel,
   nominateValidateModel,
   payeeValidateModel,
+  payoutValidateModel,
   restakeValidateModel,
   unstakeValidateModel,
   withdrawValidateModel,
@@ -45,6 +47,7 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.RESTAKE]: t('operations.titles.restake'),
     [TransactionType.DESTINATION]: t('operations.titles.destination'),
     [TransactionType.UNSTAKE]: t('operations.titles.unstake'),
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: t('operations.titles.payoutStakers'),
   };
 
   return Title[transaction.type];
@@ -59,6 +62,7 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.RESTAKE]: t('operations.modalTitles.restakeOn'),
     [TransactionType.DESTINATION]: t('operations.modalTitles.destinationOn'),
     [TransactionType.UNSTAKE]: t('operations.modalTitles.unstakeOn'),
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: t('operations.modalTitles.payoutStakersOn'),
   };
 
   return Title[transaction.type];
@@ -73,6 +77,7 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
     [TransactionType.RESTAKE]: 'returnToStakeMst',
     [TransactionType.DESTINATION]: 'destinationMst',
     [TransactionType.UNSTAKE]: 'unstakeMst',
+    [TransactionType.PAYOUT_STAKERS_BY_PAGE]: 'redeemMst',
   };
 
   return Icon[transaction.type];
@@ -163,6 +168,9 @@ basketSDK(stakingBasketFeature, {
     if (tx.type === TransactionType.DESTINATION) {
       return <PayeeConfirmation id={transaction.id} hideSignButton />;
     }
+    if (tx.type === TransactionType.PAYOUT_STAKERS_BY_PAGE) {
+      return <PayoutConfirmation id={transaction.id} hideSignButton />;
+    }
 
     return null;
   },
@@ -213,6 +221,18 @@ basketSDK(stakingBasketFeature, {
     // TODO implement
     if (transaction.coreTx.type === TransactionType.DESTINATION) {
       return payeeValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    // Matched through `getCoreTx`, not on `coreTx.type`: a claim of several
+    // payouts is stored as one `batchAll`, and the branches above — which read
+    // the raw type — would let it through unvalidated. The call handed to the
+    // validator stays the stored one, so the fee is quoted for the whole batch.
+    if (basketOperationsService.getCoreTx(transaction).type === TransactionType.PAYOUT_STAKERS_BY_PAGE) {
+      return payoutValidateModel
         .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
         .then(({ result }) => {
           return result ? errors.concat(result) : errors;

@@ -25,11 +25,14 @@ import { type TransactionVote, type VoteTransaction } from '@/entities/governanc
 
 import { TransferType } from './common/constants';
 
+export const MAX_PAYOUT_CALLS_PER_BATCH = 10;
+
 export const transactionBuilder = {
   buildTransfer,
   buildBondNominate,
   buildBondExtra,
   buildNominate,
+  buildPayoutStakers,
   buildRestake,
   buildWithdraw,
   buildUnstake,
@@ -195,17 +198,53 @@ function buildNominate({ chain, accountId, nominators }: NominateParams): Transa
   };
 }
 
+type PayoutStakersParams = {
+  chain: Chain;
+  accountId: AccountId;
+  payouts: { validatorStash: Address | AccountId; era: number; page: number }[];
+};
+function buildPayoutStakers({ chain, accountId, payouts }: PayoutStakersParams): Transaction {
+  if (payouts.length === 0) {
+    throw new Error('buildPayoutStakers requires at least one payout');
+  }
+  if (payouts.length > MAX_PAYOUT_CALLS_PER_BATCH) {
+    throw new Error(`buildPayoutStakers accepts at most ${MAX_PAYOUT_CALLS_PER_BATCH} payouts, got ${payouts.length}`);
+  }
+
+  const sortedPayouts = [...payouts].sort((a, b) => a.era - b.era || a.validatorStash.localeCompare(b.validatorStash));
+
+  const payoutTxs = sortedPayouts.map(({ validatorStash, era, page }) => ({
+    chainId: chain.chainId,
+    accountId,
+    type: TransactionType.PAYOUT_STAKERS_BY_PAGE,
+    args: { validatorStash, era, page },
+  }));
+
+  if (payoutTxs.length === 1) return payoutTxs[0]!;
+
+  return buildBatchAll({ chain, accountId, transactions: payoutTxs });
+}
+
 type WithdrawParams = {
   chain: Chain;
   accountId: AccountId;
+  /**
+   * The stash's slashing-span count, read from the chain.
+   *
+   * `withdraw_unbonded` compares it with `>=` against the real count when it
+   * closes a ledger out, so too large only costs weight while too small fails
+   * the extrinsic. Defaults to the historical `1` for callers that cannot read
+   * it — right for every stash that has never been slashed.
+   */
+  numSlashingSpans?: number;
 };
-function buildWithdraw({ chain, accountId }: WithdrawParams): Transaction {
+function buildWithdraw({ chain, accountId, numSlashingSpans = 1 }: WithdrawParams): Transaction {
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.REDEEM,
     args: {
-      numSlashingSpans: 1,
+      numSlashingSpans,
     },
   };
 }

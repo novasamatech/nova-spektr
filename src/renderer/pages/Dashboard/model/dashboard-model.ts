@@ -4,18 +4,50 @@ import { persist } from 'effector-storage/local';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
+import { type Rect, GRID_COLUMNS, clampRect, resolveCollisions } from '../lib/layout-engine';
 
 const tabChanged = createEvent<string>();
-const widgetOrderChanged = createEvent<{ tab: string; order: string[] }>();
 const editModeToggled = createEvent();
+
+const layoutSet = createEvent<{ tab: string; layout: Record<string, Rect> }>();
+const widgetMoved = createEvent<{ tab: string; key: string; x: number; y: number }>();
+const widgetResized = createEvent<{ tab: string; key: string; w: number; h: number }>();
+const layoutReset = createEvent<{ tab: string }>();
 
 const $activeTab = createStore('overview');
 const $editMode = createStore(false);
 $editMode.on(editModeToggled, (state) => !state);
 
-const $widgetOrder = createStore<Record<string, string[]>>({});
-persist({ store: $widgetOrder, key: 'dashboard-widget-order', sync: true });
-$widgetOrder.on(widgetOrderChanged, (state, { tab, order }) => ({ ...state, [tab]: order }));
+const $widgetLayout = createStore<Record<string, Record<string, Rect>>>({});
+persist({ store: $widgetLayout, key: 'dashboard-widget-layout-v1', sync: true });
+
+$widgetLayout
+  .on(layoutSet, (state, { tab, layout }) => ({ ...state, [tab]: layout }))
+  // Both reducers clamp to the grid's own bounds before storing. The callers
+  // already clamp against each widget's declared min/max — which only they know
+  // — but the store is the layout's public API and must not be able to persist
+  // a rect that hangs off the grid.
+  .on(widgetMoved, (state, { tab, key, x, y }) => {
+    const tabLayout = state[tab];
+    if (!tabLayout?.[key]) return state;
+    const moved = { ...tabLayout, [key]: clampRect({ ...tabLayout[key]!, x, y }) };
+
+    return { ...state, [tab]: resolveCollisions(moved, key) };
+  })
+  .on(widgetResized, (state, { tab, key, w, h }) => {
+    const current = state[tab]?.[key];
+    if (!current) return state;
+    // A resize caps the width at the right edge rather than sliding the widget
+    // left to make room: the user grabbed a corner, not the widget.
+    const rect = {
+      ...current,
+      w: Math.max(1, Math.min(w, GRID_COLUMNS - current.x)),
+      h: Math.max(1, h),
+    };
+
+    return { ...state, [tab]: resolveCollisions({ ...state[tab], [key]: rect }, key) };
+  })
+  .on(layoutReset, (state, { tab }) => ({ ...state, [tab]: {} }));
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
@@ -61,9 +93,12 @@ export const dashboardModel = {
   $selectedAccounts,
   $selectedContactAccountIds,
   $activeTab,
-  $widgetOrder,
+  $widgetLayout,
   $editMode,
   tabChanged,
-  widgetOrderChanged,
+  layoutSet,
+  widgetMoved,
+  widgetResized,
+  layoutReset,
   editModeToggled,
 };

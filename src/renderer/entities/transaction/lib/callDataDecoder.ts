@@ -403,6 +403,13 @@ const getCallDataParser: Record<
   [TransactionType.STAKE_MORE]: (decoded): Record<string, any> => {
     return { maxAdditional: decoded.args[0]!.toString() };
   },
+  [TransactionType.PAYOUT_STAKERS_BY_PAGE]: (decoded): Record<string, any> => {
+    return {
+      validatorStash: decoded.args[0]!.toString(),
+      era: Number(decoded.args[1]!.toString()),
+      page: Number(decoded.args[2]!.toString()),
+    };
+  },
   [TransactionType.DESTINATION]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
     try {
@@ -640,6 +647,7 @@ const getStakingTxType = (method: string, section: string): TransactionType | un
     nominate: TransactionType.NOMINATE,
     bondExtra: TransactionType.STAKE_MORE,
     setPayee: TransactionType.DESTINATION,
+    payoutStakersByPage: TransactionType.PAYOUT_STAKERS_BY_PAGE,
   }[method];
 };
 

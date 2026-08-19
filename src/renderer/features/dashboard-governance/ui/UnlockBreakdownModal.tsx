@@ -1,13 +1,15 @@
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 import { Pie, PieChart, Tooltip } from 'recharts';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
-import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
+import { networkModel } from '@/entities/network';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type AccountUnlockRow } from '../hooks/useUnlockSchedule';
 
 import { ChartTooltip } from './ChartTooltip';
@@ -32,6 +34,7 @@ type TableRow = AccountUnlockRow & {
 
 export const UnlockBreakdownModal = memo(({ title, totalFiat, rows, allEntries, currency, onClose }: Props) => {
   const { t } = useI18n();
+  const chains = useUnit(networkModel.$chains);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, { name: string; address: string }>();
@@ -75,16 +78,17 @@ export const UnlockBreakdownModal = memo(({ title, totalFiat, rows, allEntries, 
         title: t('dashboard.unlockSchedule.breakdown.account'),
         width: '35%',
         render: (_, item) => (
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: FALLBACK_COLORS[item.colorIndex % FALLBACK_COLORS.length] }}
             />
-            <Identicon address={toAddress(item.address)} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-            </div>
+            <NamedAccount
+              accountId={toAccountId(item.address)}
+              chain={chains[item.chainId]}
+              variant="short"
+              iconSize={20}
+            />
           </div>
         ),
       },
@@ -133,7 +137,7 @@ export const UnlockBreakdownModal = memo(({ title, totalFiat, rows, allEntries, 
         ),
       },
     ],
-    [t, currency],
+    [t, currency, chains],
   );
 
   const showChart = chartData.length > 0;

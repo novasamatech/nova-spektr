@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import {
   type Column,
   type TableSort,
@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from '@/shared/ui-kit';
 import { type EraValidator } from '@/domains/staking';
+import { NamedAccount } from '@/widgets/NameResolver';
 import {
   type ScoreTone,
   type SortColumn,
@@ -33,7 +34,9 @@ const { events } = validatorSelectionModel;
 /** What a cell shows when the chain reported nothing for it. */
 const UNKNOWN_VALUE = '—';
 
-const SKELETON_ROW_COUNT = 8;
+// Enough to fill the full-height modal viewport: fewer left a block of blank
+// white under them, which read as "the list is empty" rather than "loading".
+const SKELETON_ROW_COUNT = 14;
 
 /**
  * Grey / amber / green, matching the detail pane. Grey is deliberate at the
@@ -47,6 +50,15 @@ const SCORE_TONE_CLASS: Record<ScoreTone, string> = {
 };
 
 const SORT_COLUMNS: SortColumn[] = ['validator', 'score', 'eraPoints', 'nominators', 'ownStake', 'commission', 'apy'];
+
+/**
+ * Fixed height every row renders at (20px line + 16px padding each side, and
+ * nothing in a cell is taller than that) — what lets the table virtualize.
+ * Mounting all ~600 elected validators at once, each with an identicon and a
+ * checkbox, blocked the main thread for over a second before the modal could
+ * paint.
+ */
+const ROW_HEIGHT = 54;
 
 function isSortColumn(value: string): value is SortColumn {
   return SORT_COLUMNS.some((column) => column === value);
@@ -100,6 +112,7 @@ function toRow(validator: EraValidator, score: number | null): ValidatorRow {
 
 export const ValidatorTable = () => {
   const { t } = useI18n();
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const {
     chain,
@@ -117,6 +130,7 @@ export const ValidatorTable = () => {
     displayedAddresses,
     detailValidator,
     scores,
+    failed,
   } = useUnit({
     chain: validatorSelectionModel.$chain,
     asset: validatorSelectionModel.$asset,
@@ -133,6 +147,7 @@ export const ValidatorTable = () => {
     displayedAddresses: validatorSelectionModel.$displayedAddresses,
     detailValidator: validatorSelectionModel.$detailValidator,
     scores: validatorSelectionModel.$scores,
+    failed: validatorSelectionModel.$failed,
   });
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
@@ -142,13 +157,15 @@ export const ValidatorTable = () => {
     [displayedNames, displayedAddresses],
   );
 
-  const rows = useMemo(
-    () =>
-      pending
-        ? SKELETON_ROWS
-        : visible.map((validator) => toRow(validator, scores[validator.accountId]?.overall ?? null)),
-    [pending, visible, scores],
-  );
+  // A failed request means the skeletons are waiting for data that will not
+  // arrive — showing them anyway is the lie this state exists to avoid.
+  const showLoadFailed = failed && pending;
+
+  const rows = useMemo(() => {
+    if (pending) return showLoadFailed ? [] : SKELETON_ROWS;
+
+    return visible.map((validator) => toRow(validator, scores[validator.accountId]?.overall ?? null));
+  }, [pending, showLoadFailed, visible, scores]);
 
   const isReadOnly = signingMode === 'watchOnly';
   const atLimit = selectedCount >= maxNominations;
@@ -219,7 +236,10 @@ export const ValidatorTable = () => {
 
           return (
             <div className="flex min-w-0 items-center gap-x-2">
-              <Account
+              {/* `title` is the model's already-resolved name, which the plain
+                  resolver cannot reproduce: it carries the sub-identity suffix
+                  the rows are told apart by. */}
+              <NamedAccount
                 hideAddress
                 hideExplorers
                 accountId={validator.accountId}
@@ -353,12 +373,13 @@ export const ValidatorTable = () => {
   };
 
   return (
-    <ScrollArea>
+    <ScrollArea viewportRef={viewportRef}>
       <Table
         columns={columns}
         data={rows}
         sort={sort}
         getRowKey={(row) => row.rowKey}
+        virtualization={{ getScrollElement: () => viewportRef.current, rowHeight: ROW_HEIGHT }}
         // Deliberately not `disabled` for a blocked validator. `disabled` drops
         // the row's click handler along with its hover, which made a blocked row
         // the one row in the table you could not open - so the numbers a user
@@ -376,6 +397,8 @@ export const ValidatorTable = () => {
       />
 
       {!pending && rows.length === 0 ? <NoValidators /> : null}
+
+      {showLoadFailed ? <LoadFailed /> : null}
     </ScrollArea>
   );
 };
@@ -391,6 +414,22 @@ const NoValidators = () => {
       />
       <Button variant="text" size="sm" onClick={() => events.clearSearchAndFilters()}>
         {t('staking.validatorSelection.empty.action')}
+      </Button>
+    </div>
+  );
+};
+
+const LoadFailed = () => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex flex-col items-center gap-y-2 py-6">
+      <EmptyMessage
+        title={t('staking.validatorSelection.loadFailed.title')}
+        description={t('staking.validatorSelection.loadFailed.description')}
+      />
+      <Button variant="text" size="sm" onClick={() => events.retryRequested()}>
+        {t('staking.validatorSelection.loadFailed.action')}
       </Button>
     </div>
   );

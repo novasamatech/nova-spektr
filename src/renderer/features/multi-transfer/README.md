@@ -25,8 +25,8 @@ creates locked vesting schedules from a CSV.
 ## The CSV contract
 
 Required columns are `recipient` and `amount`; `#` starts a comment line. Amounts are **planks**, not decimal tokens.
-Limits: 1000 rows and 1 MB. Uploading a new file or changing the network **discards the parsed CSV and every row issue**,
-because each rule depends on chain constants and nothing validated against the previous chain can be trusted.
+Limits: 1000 rows and 1 MB. Uploading a new file or changing the network **discards the parsed CSV and every row
+issue**, because each rule depends on chain constants and nothing validated against the previous chain can be trusted.
 
 | Field       | Meaning           | Rules                                                                                                   |
 | ----------- | ----------------- | ------------------------------------------------------------------------------------------------------- |
@@ -45,14 +45,14 @@ once a file is loaded; before that a two-transfer dummy gives a plausible early 
 
 The flow is **form → confirm → sign → submit**.
 
-| State              | When it appears                           | What the user sees                                                                    |
-| ------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| Form               | Modal opened                              | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit)   |
-| Empty / malformed  | File parses to no rows, or bad headers    | Inline error; submit disabled                                                         |
-| Rows with errors   | ≥1 row fails a rule                       | Alert listing the failing rows; blocks submit                                         |
-| Rows with warnings | ≥1 row raises a warning (e.g. duplicate)  | Amber alert; does **not** block submit                                                |
-| Confirm            | "Continue" pressed                        | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data     |
-| Sign / Submit      | Confirmed                                 | Standard sign and submit screens                                                      |
+| State              | When it appears                          | What the user sees                                                                  |
+| ------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| Form               | Modal opened                             | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit) |
+| Empty / malformed  | File parses to no rows, or bad headers   | Inline error; submit disabled                                                       |
+| Rows with errors   | ≥1 row fails a rule                      | Alert listing the failing rows; blocks submit                                       |
+| Rows with warnings | ≥1 row raises a warning (e.g. duplicate) | Amber alert; does **not** block submit                                              |
+| Confirm            | "Continue" pressed                       | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data   |
+| Sign / Submit      | Confirmed                                | Standard sign and submit screens                                                    |
 
 **Draft mode** turns the form into "compose a draft" instead of "sign now": no signatory is required, the transaction is
 built from the draft signing-path's source account, and saving the draft redirects to the Operations page.

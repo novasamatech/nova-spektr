@@ -149,7 +149,7 @@ export const createFeature = <T = object>({
     if (isSlotIdentifier(identifier)) {
       const slotHandlerBody = normalizeSlotHandler(body as InferHandlerBody<typeof identifier>);
       const handler = {
-        order: slotHandlerBody.order,
+        ...slotHandlerBody,
         render: (props: never) => {
           useGate(gate);
 

@@ -20,7 +20,7 @@ describe('accountPresetsModel', () => {
       params: {
         name: 'Work',
         type: 'filter',
-        filters: { sources: ['wallet'], entityNames: [], categoryNames: [], tags: [] },
+        filters: { ...EMPTY_FILTERS, sources: ['wallet'] },
         selectedIds: [],
       },
     });

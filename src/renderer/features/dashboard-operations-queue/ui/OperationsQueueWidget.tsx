@@ -42,7 +42,7 @@ export const OperationsQueueWidget = ({ accountIds }: Props) => {
 
   if (accountIds.length === 0) {
     return (
-      <DashboardWidget colSpan={4}>
+      <DashboardWidget>
         <FootnoteText className="text-text-tertiary">{t('dashboard.operationsQueue.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
@@ -56,7 +56,7 @@ export const OperationsQueueWidget = ({ accountIds }: Props) => {
   const isEmpty = !isLoading && scopedDrafts.length === 0 && awaiting.length === 0;
 
   return (
-    <DashboardWidget colSpan={4}>
+    <DashboardWidget>
       <FootnoteText className="text-text-tertiary">{t('dashboard.operationsQueue.title')}</FootnoteText>
 
       <div className="mt-3 flex max-h-[420px] flex-col gap-y-4 overflow-y-auto pr-1">

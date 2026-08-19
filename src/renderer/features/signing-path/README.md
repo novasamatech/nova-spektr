@@ -1,6 +1,6 @@
 # Signing path
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -60,9 +60,12 @@ The first keeps the user informed — they can see that the proxy exists and lea
 them out of dead ends: a branch with no signer of theirs at the bottom could be picked, hop by hop, and never completed.
 
 Reachability is judged against the accounts the user can actually sign with — watch-only accounts cannot, so they never
-terminate a branch. **Drafts are the exception**: a draft may be finished by a co-signer on someone else's machine, so
-branches that _this_ user cannot complete are still offered, and the sources come from the address book instead of the
-wallet.
+terminate a branch. That rule is this feature's to define, and it is published rather than restated: anything elsewhere
+that merely _predicts_ whether a path exists — a dashboard deciding whether to offer a Claim button, a KPI tile deciding
+a network is actionable — asks the same predicate, because a screen that hides an action this flow would have completed
+is worse than no screen at all. **Drafts are the exception**: a draft may be finished by a co-signer on someone else's
+machine, so branches that _this_ user cannot complete are still offered, and the sources come from the address book
+instead of the wallet.
 
 ```mermaid
 flowchart TD

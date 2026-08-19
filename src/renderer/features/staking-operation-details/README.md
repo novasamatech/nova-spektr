@@ -1,6 +1,6 @@
 # Staking Operation Details
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -21,6 +21,7 @@ Applies automatically to any multisig operation whose (core) call is one of the 
 | restake    | "Restake"                | re-bonded value  |
 | redeem     | "Withdraw Unstaked"      | withdrawn value  |
 | set payee  | "Set reward destination" | —                |
+| claim      | "Claim Rewards"          | —                |
 
 The asset is resolved from the call's asset id (staking on Asset Hub is asset-based, not implicitly native). Each action
 also carries its own icon.

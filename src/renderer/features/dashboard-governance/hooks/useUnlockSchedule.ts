@@ -3,6 +3,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
+import { type ChainId } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
@@ -31,6 +32,8 @@ export type AccountUnlockRow = {
   fiatValueNum: number;
   symbol: string;
   precision: number;
+  /** The row renders an account, and an address needs its chain's prefix. */
+  chainId: ChainId;
   chainName: string;
   chainIcon: string;
 };
@@ -170,6 +173,7 @@ export const useUnlockSchedule = (accountIds: string[]): UnlockScheduleData => {
           fiatValueNum: parseFloat(fiat) || 0,
           symbol: data.symbol,
           precision: data.precision,
+          chainId: data.chainId,
           chainName: data.chainName,
           chainIcon: data.icon.colored,
         };

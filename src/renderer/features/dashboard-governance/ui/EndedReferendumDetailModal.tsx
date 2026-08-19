@@ -1,10 +1,12 @@
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { cnTw, formatBalance, toAccountId } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Identicon } from '@/shared/ui-entities';
 import { type Column, Modal, Table } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type EndedReferendum, type EndedVote } from '../hooks/useEndedReferendums';
 
 import { OUTCOME_I18N_KEY, OUTCOME_STYLES, formatEndDate } from './referendum-helpers';
@@ -16,6 +18,8 @@ type Props = {
 
 export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) => {
   const { t, formatDate } = useI18n();
+  const chains = useUnit(networkModel.$chains);
+  const chain = chains[referendum.chainId];
 
   const { formatted: lockedFormatted } = formatBalance(referendum.totalLockedAmount, referendum.precision);
   const outcomeLabel = t(`dashboard.referendums.${OUTCOME_I18N_KEY[referendum.outcome]}`);
@@ -27,13 +31,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
         title: t('dashboard.activeReferendums.detail.account'),
         width: '30%',
         render: (_, item) => (
-          <div className="flex items-center gap-2">
-            <Identicon address={toAddress(item.address)} size={20} />
-            <div className="min-w-0">
-              <FootnoteText className="truncate font-semibold">{item.name}</FootnoteText>
-              <FootnoteText className="text-text-tertiary">{toShortAddress(item.address)}</FootnoteText>
-            </div>
-          </div>
+          <NamedAccount accountId={toAccountId(item.address)} chain={chain} variant="short" iconSize={20} />
         ),
       },
       {
@@ -103,7 +101,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
         },
       },
     ],
-    [t],
+    [t, chain],
   );
 
   return (

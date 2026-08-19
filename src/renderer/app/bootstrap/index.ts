@@ -20,7 +20,15 @@ import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardOperationsQueueFeature } from '@/features/dashboard-operations-queue';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
-import { dashboardStakingFeature } from '@/features/dashboard-staking';
+import { dashboardStakingSummaryFeature } from '@/features/dashboard-staking';
+import {
+  dashboardStakingApyFeature,
+  dashboardStakingNominationsFeature,
+  dashboardStakingRewardsFeature,
+  dashboardStakingTotalStakedFeature,
+} from '@/features/dashboard-staking-kpi';
+import { dashboardStakingPositionsFeature } from '@/features/dashboard-staking-positions';
+import { dashboardStakingRewardsChartFeature } from '@/features/dashboard-staking-rewards-chart';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { multiTransferFeature } from '@/features/multi-transfer';
@@ -78,7 +86,13 @@ export const bootstrap = () => {
     dashboardPriceChartsFeature,
     dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
-    dashboardStakingFeature,
+    dashboardStakingSummaryFeature,
+    dashboardStakingTotalStakedFeature,
+    dashboardStakingApyFeature,
+    dashboardStakingNominationsFeature,
+    dashboardStakingRewardsFeature,
+    dashboardStakingPositionsFeature,
+    dashboardStakingRewardsChartFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,
@@ -146,6 +160,12 @@ export const bootstrap = () => {
 
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
+
+    import('@/features/staking-claim-rewards').then(({ stakingClaimRewardsFeature }) => stakingClaimRewardsFeature),
+    import('@/features/staking-amount-flow').then(({ stakingAmountFlowFeature }) => stakingAmountFlowFeature),
+    import('@/features/staking-confirm-flow').then(({ stakingConfirmFlowFeature }) => stakingConfirmFlowFeature),
+    import('@/features/staking-new-position-flow').then(({ stakingNewPositionFlowFeature }) => stakingNewPositionFlowFeature),
+    import('@/features/staking-dashboard-actions').then(({ stakingDashboardActionsFeature }) => stakingDashboardActionsFeature),
 
     import('@/features/staking-unstake').then(({ stakingUnstakeFeature }) => stakingUnstakeFeature),
     import('@/features/staking-withdraw').then(({ stakingWithdrawFeature }) => stakingWithdrawFeature),

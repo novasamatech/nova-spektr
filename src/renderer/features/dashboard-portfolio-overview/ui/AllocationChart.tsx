@@ -61,7 +61,13 @@ export const AllocationChart = memo(({ data, total, scopeLabel, scopeColor, coun
           outerRadius={95}
           dataKey="value"
           stroke="none"
-          animationDuration={400}
+          // Off, not slower: every hover re-renders this ring, and with
+          // animation on Recharts mounts and unmounts its `JavascriptAnimate`
+          // on each of those renders while the unmount sets state on the way
+          // out. Sweeping the pointer across the ring queues them faster than
+          // React can flush and blows the update-depth limit — seen for real on
+          // the staking donut, same shape.
+          isAnimationActive={false}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
         >

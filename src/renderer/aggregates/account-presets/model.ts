@@ -188,9 +188,8 @@ const $allEntries = combine(
       name: c.name,
       address: c.address,
       accountId: c.accountId,
-      entityNames: c.entityNames,
-      categoryName: c.categoryName,
-      tags: c.tags,
+      chainId: c.chainId,
+      fields: c.fields,
     }));
 
     return buildMergedEntries({ walletSeeds, localContacts: localSeeds, backendContacts: backendSeeds });

@@ -68,4 +68,21 @@ describe('createFeature', () => {
     const screenIdle = render(<>{slot.render({ props: undefined })}</>);
     expect(screenIdle.container).toMatchInlineSnapshot(`<div />`);
   });
+
+  it('forwards extra slot-handler metadata through inject', () => {
+    const slot = createSlot<void, { size: { w: number; h: number } }>({ name: 'metaSlot' });
+    const feature = createFeature({ name: 'test/meta', enable: createStore(true) });
+
+    feature.inject(slot, {
+      order: 1,
+      size: { w: 3, h: 2 },
+      render: () => null,
+    });
+
+    // eslint-disable-next-line effector/no-getState
+    const handlers = slot.$handlers.getState();
+    expect(handlers).toHaveLength(1);
+    expect(handlers[0]?.body.order).toBe(1);
+    expect(handlers[0]?.body.size).toEqual({ w: 3, h: 2 });
+  });
 });

@@ -1,9 +1,9 @@
-import { createEffect, createStore } from 'effector';
+import { createEffect, createEvent, createStore } from 'effector';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AccountIdentity } from '@/domains/network';
-import { type EraValidatorMap } from '@/domains/staking';
+import { type EraValidatorMap, type ValidatorsResourceParams } from '@/domains/staking';
 
 /**
  * Writable stand-ins for the domain resource caches, which are exposed as
@@ -19,3 +19,18 @@ export const $validatorsCache = createStore<Record<ChainId, EraValidatorMap>>({}
 export const $identityCache = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
 
 export const requestIdentitiesFx = createEffect(() => ({}));
+
+/**
+ * Callable stand-ins for the validators resource's request lifecycle. The real
+ * `fail`/`push` are read-only derivatives of an internal effect, so a test
+ * cannot fire them without touching an api - these can be driven directly.
+ */
+export const validatorsFail = createEvent<{ params: ValidatorsResourceParams; error: Error }>();
+
+export const validatorsPush = createEvent<{ params: ValidatorsResourceParams; result: EraValidatorMap }>();
+
+export const validatorsStart = createEvent<ValidatorsResourceParams>();
+
+export const $validatorsPending = createStore<Record<string, boolean>>({});
+
+export const $eraCache = createStore<Record<ChainId, EraIndex>>({});

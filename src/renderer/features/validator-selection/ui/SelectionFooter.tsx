@@ -65,10 +65,12 @@ export const SelectionFooter = ({ onGoBack }: Props) => {
 const ContextNote = () => {
   const { t } = useI18n();
 
-  const { signingMode, signingInfo, showingNote } = useUnit({
+  const { signingMode, signingInfo, showingNote, pending, failed } = useUnit({
     signingMode: validatorSelectionModel.$signingMode,
     signingInfo: validatorSelectionModel.$signingInfo,
     showingNote: validatorSelectionModel.$showingNote,
+    pending: validatorSelectionModel.$pending,
+    failed: validatorSelectionModel.$failed,
   });
 
   if (signingMode === 'watchOnly') {
@@ -95,6 +97,16 @@ const ContextNote = () => {
         ) : null}
       </div>
     );
+  }
+
+  // "Showing 0 of 0" reads as an empty list, not as one that is on its way.
+  // With nothing fetched *and* the request given up, the wait is over: the
+  // table says so and offers the retry, and a footer still promising the list
+  // is coming would contradict it.
+  if (pending) {
+    if (failed) return null;
+
+    return <FootnoteText className="text-text-tertiary">{t('staking.validatorSelection.loading.meta')}</FootnoteText>;
   }
 
   return (

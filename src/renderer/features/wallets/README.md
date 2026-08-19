@@ -14,15 +14,15 @@ pairing a new one. Two groups live here:
 
 ## Who can use it / when it applies
 
-| Flow                     | Wallet types                          | Entered from                                                          |
-| ------------------------ | ------------------------------------- | --------------------------------------------------------------------- |
-| Key constructor          | Polkadot Vault only                   | Vault pairing (onboarding) and wallet details                          |
-| Import / export keys     | Polkadot Vault only                   | Import: pairing + wallet details. **Export: wallet details only**      |
-| Derivations address (QR) | Polkadot Vault only                   | Automatically, after keys are added by the constructor or the importer |
-| Rename wallet            | All                                   | Wallet details — inline header field, or the dropdown's "Rename"       |
+| Flow                     | Wallet types                           | Entered from                                                           |
+| ------------------------ | -------------------------------------- | ---------------------------------------------------------------------- |
+| Key constructor          | Polkadot Vault only                    | Vault pairing (onboarding) and wallet details                          |
+| Import / export keys     | Polkadot Vault only                    | Import: pairing + wallet details. **Export: wallet details only**      |
+| Derivations address (QR) | Polkadot Vault only                    | Automatically, after keys are added by the constructor or the importer |
+| Rename wallet            | All                                    | Wallet details — inline header field, or the dropdown's "Rename"       |
 | Forget / hide wallet     | All except Proxied & Flexible Multisig | Wallet details dropdown                                                |
-| Shard selector           | Polkadot Vault only                   | Assets page                                                            |
-| Route guards             | n/a                                   | App shell and `/onboarding` routes                                     |
+| Shard selector           | Polkadot Vault only                    | Assets page                                                            |
+| Route guards             | n/a                                    | App shell and `/onboarding` routes                                     |
 
 ## Dynamic derivations
 
@@ -44,17 +44,17 @@ because a collision is symmetric, it is flagged on **both** colliding keys as so
 never been touched. Submitting force-reveals every error on every key, so nothing invalid can slip through unseen. Only
 the first error of a key is displayed.
 
-| Error                   | What the user sees                                                       |
-| ----------------------- | ------------------------------------------------------------------------ |
-| Empty                   | The derivation path cannot be empty                                       |
-| Leading/trailing spaces | Remove spaces at the beginning or end of the path                         |
-| Inner spaces            | The derivation path name can't contain spaces                             |
-| Bad start / bad end     | Must start with `/` or `//`; cannot end with a slash                      |
-| Password path           | `///password` derivations are not supported                               |
-| Empty segment           | A segment between separators is missing (e.g. `//`)                       |
-| Soft derivation on EVM  | Ethereum chains don't support soft derivations — `//` (hard) only         |
-| Invalid shard range     | A shard range must produce at least 2 shards                              |
-| Duplicate               | The path is already in use **on that same chain** — choose another        |
+| Error                   | What the user sees                                                 |
+| ----------------------- | ------------------------------------------------------------------ |
+| Empty                   | The derivation path cannot be empty                                |
+| Leading/trailing spaces | Remove spaces at the beginning or end of the path                  |
+| Inner spaces            | The derivation path name can't contain spaces                      |
+| Bad start / bad end     | Must start with `/` or `//`; cannot end with a slash               |
+| Password path           | `///password` derivations are not supported                        |
+| Empty segment           | A segment between separators is missing (e.g. `//`)                |
+| Soft derivation on EVM  | Ethereum chains don't support soft derivations — `//` (hard) only  |
+| Invalid shard range     | A shard range must produce at least 2 shards                       |
+| Duplicate               | The path is already in use **on that same chain** — choose another |
 
 **Duplicates are scoped to the exact chain.** The same path on two different chains is legitimate and is not an error,
 even when those chains share a relay chain. (This corrected an earlier rule that treated all chains under one relay
@@ -93,8 +93,8 @@ export → import round-trips. The file's root public key must match the wallet'
 match." Every bad path in the file is reported **together**, with the offending values listed, rather than one at a
 time. Rows for chains the app doesn't know are silently skipped.
 
-Imported keys are **merged, never replaced**: duplicates — both inside the file and against the wallet's existing keys
-— are dropped and reported as a count. The success alert reads "{n} key(s) added for {m} network(s)".
+Imported keys are **merged, never replaced**: duplicates — both inside the file and against the wallet's existing keys —
+are dropped and reported as a count. The success alert reads "{n} key(s) added for {m} network(s)".
 
 ### Export
 
@@ -117,8 +117,8 @@ back to their requests to become real accounts.
 
 Available on every wallet type, inline in the details header or via a modal. The name must be non-empty and unique
 across wallets, case-insensitively; re-submitting the wallet's own current name is a no-op. Renaming also **updates the
-matching address-book contact** (creating a local one if none exists) — the UI states this. Polkadot Vault account
-names are deliberately left untouched; other wallet types have their accounts renamed with the wallet.
+matching address-book contact** (creating a local one if none exists) — the UI states this. Polkadot Vault account names
+are deliberately left untouched; other wallet types have their accounts renamed with the wallet.
 
 ### Forget / hide
 
@@ -130,8 +130,8 @@ Hidden for Proxied and Flexible Multisig wallets. Two different outcomes:
 
 If the wallet is a signatory or proxy that other wallets depend on, a **"Linked wallets will be removed"** dialog is
 shown first. Only wallets that would be left with no other reason to exist are taken down with it — a multisig with
-other remaining signatories survives. Both confirmations offer "Do not show this again", after which the step is
-skipped on later forgets.
+other remaining signatories survives. Both confirmations offer "Do not show this again", after which the step is skipped
+on later forgets.
 
 > ⚠️ The linked-wallets copy says the related accounts will be "hidden", but they are **deleted**. Either the copy or
 > the behaviour should change.

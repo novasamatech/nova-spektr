@@ -19,6 +19,8 @@ export const dashboardGovernanceFeature = createFeature({
 dashboardGovernanceFeature.inject(dashboardGovernanceSlot, {
   order: 0,
   render: GovernanceOverviewWidget,
+  defaultSize: { w: 2, h: 4 },
+  minSize: { w: 1, h: 2 },
 });
 
 export const dashboardUnlockScheduleFeature = createFeature({
@@ -30,6 +32,8 @@ export const dashboardUnlockScheduleFeature = createFeature({
 dashboardUnlockScheduleFeature.inject(dashboardGovernanceSlot, {
   order: 1,
   render: UnlockScheduleWidget,
+  defaultSize: { w: 2, h: 4 },
+  minSize: { w: 1, h: 2 },
 });
 
 export const dashboardReferendumsFeature = createFeature({
@@ -41,4 +45,6 @@ export const dashboardReferendumsFeature = createFeature({
 dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
   order: 2,
   render: ReferendumsWidget,
+  defaultSize: { w: 4, h: 5 },
+  minSize: { w: 2, h: 3 },
 });
