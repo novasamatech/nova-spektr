@@ -1,6 +1,6 @@
 # Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -35,3 +35,11 @@ reimplementing sign/submit itself.
   screens.
 - Every other operation-producing feature (staking, governance, fellowship, proxy) supplies its own
   `OperationsConfirm/<Type>` and `OperationsValidation` entries, consumed the same way.
+
+## An operation without an amount
+
+Most confirmation screens lead with the amount the user is about to move. **Claim rewards** cannot: the call names an
+(era, validator, page) and the runtime settles what that page owes at execution, so any figure shown beforehand is a
+prediction that can differ from what lands. Its confirmation therefore states the _scope_ of the claim — how many
+payouts, over how many eras, across how many validators — and validates only what is genuinely in question, which is
+whether the payer can afford the fee.

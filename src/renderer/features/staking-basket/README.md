@@ -49,12 +49,17 @@ show a stale fee and a validator list from an era that has ended. Redeem goes fu
 reached when the entry was created. A queued unstake whose ledger has since changed must fail in the basket even though
 it was valid when queued.
 
-## Known coverage gap
+## Claim rewards states its scope, not an amount
 
-Claim rewards is named and iconed in the list, but has **no confirmation panel and no re-validation** of its own: the
-detail area is empty and the entry passes the validation step unconditionally. Everything else in the table above has
-both. Until that is filled in, a basketed claim is signed on less checking than any other staking operation in the
-queue.
+Every other queued operation opens on the amount it moves. A claim cannot: `payout_stakers_by_page` names an (era,
+validator, page) and the runtime settles what that page owes at execution, so a figure shown at confirm time is a
+prediction that can differ from what lands. Its confirmation says what the claim will settle instead — how many payouts,
+over how many eras, across how many validators — and its validation asks the one question that can still stop it: can
+the payer afford the fee.
+
+A claim of several payouts is stored as **one `batchAll`**, and it is recognised through the same unwrapping the list
+uses, so a batched claim is confirmed and validated like a single one. The fee is quoted for the whole batch, never for
+one call of it.
 
 ## Related
 

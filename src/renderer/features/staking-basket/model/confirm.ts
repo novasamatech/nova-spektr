@@ -12,10 +12,12 @@ import { type BasketTransaction, basketOperationsService } from '@/aggregates/ba
 import {
   type BondExtraConfirm,
   type PayeeConfirm,
+  type PayoutConfirm,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
   nominateConfirmModel,
   payeeConfirmModel,
+  payoutConfirmModel,
   restakeConfirmModel,
   unstakeConfirmModel,
   withdrawConfirmModel,
@@ -25,6 +27,7 @@ import { type NominateConfirm } from '@/features/operations/OperationsConfirm/No
 import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
 import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
+import { collectPayoutCalls, summarizePayouts } from '../lib/payout-calls';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -214,6 +217,54 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies WithdrawConfirm;
+});
+
+const preparePayoutDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
+  const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
+
+  assert(chain, 'Chain not found');
+
+  return {
+    id: transaction.id,
+    chain,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
+    route: transaction.route,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    ...summarizePayouts(collectPayoutCalls(transaction.coreTx)),
+    fee: fee.toString(),
+    totalFee: fee.toString(),
+    multisigDeposit: '0',
+  } satisfies PayoutConfirm;
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    connections: networkModel.$connections,
+  },
+  filter: (_, operation) => {
+    return basketOperationsService.getCoreTx(operation).type === TransactionType.PAYOUT_STAKERS_BY_PAGE;
+  },
+  fn: ({ accounts, chains, apis, connections }, operation) => ({
+    accounts,
+    chains,
+    apis,
+    connections,
+    transaction: operation,
+  }),
+  target: preparePayoutDataFx,
+});
+
+sample({
+  clock: preparePayoutDataFx.doneData,
+  fn: (data) => [data],
+  target: payoutConfirmModel.init,
 });
 
 sample({

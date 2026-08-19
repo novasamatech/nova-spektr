@@ -9,6 +9,7 @@ export * from './VerifyProxy';
 
 export * from './BondNominate';
 export * from './Nominate';
+export * from './Payout';
 export * from './Payee';
 export * from './Restake';
 export * from './BondExtra';
