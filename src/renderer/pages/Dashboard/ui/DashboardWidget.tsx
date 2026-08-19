@@ -10,11 +10,29 @@ type Props = {
   children: ReactNode;
   className?: string;
   card?: boolean;
+  /**
+   * Whether content taller than the cell scrolls inside the widget. Widgets
+   * whose content is sized from the cell rather than from the content itself —
+   * a chart filling the box — pass `false`: for them a scrollbar can never be
+   * the right answer, and offering one is actively harmful, see below.
+   */
+  scroll?: boolean;
 };
 
 const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
-export const DashboardWidget = memo(({ children, className, card = true }: Props) => {
+/**
+ * Vertical only, on purpose. `overflow-y: auto` alone leaves the x axis at
+ * `visible`, which CSS then computes to `auto` — so a child a fraction of a
+ * pixel too wide (Recharts rounds its width up) earns a horizontal scrollbar.
+ * That scrollbar takes height from the box, which pushes `min-h-full` content
+ * past the remaining height, which raises the vertical scrollbar, which takes
+ * width, which changes what the chart rounds to — and the pair blinks in and
+ * out for as long as the widget is on screen.
+ */
+const SCROLL_CLASS = 'overflow-x-hidden overflow-y-auto';
+
+export const DashboardWidget = memo(({ children, className, card = true, scroll = true }: Props) => {
   const { t } = useI18n();
   const ctx = useWidgetSortable();
   const rect = ctx?.rect;
@@ -57,7 +75,7 @@ export const DashboardWidget = memo(({ children, className, card = true }: Props
           </svg>
         </button>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+      <div className={cnTw('min-h-0 flex-1', scroll ? SCROLL_CLASS : 'overflow-hidden')}>{children}</div>
       {ctx?.editMode && rect && <WidgetResizeHandle />}
     </div>
   );
