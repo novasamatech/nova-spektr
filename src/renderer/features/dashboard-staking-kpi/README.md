@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-11
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -70,6 +70,19 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
   answers "what is the stake that _is_ earning earning", so an idle ledger must not halve it. A chain whose APY is
   unknown is skipped rather than counted as zero, for the same reason. With nothing weighable the card shows a grey em
   dash instead of a confident `0.0%`.
+
+  A footer line — `network avg 14.2% · 30d` — gives the number something to be judged against. Unlike the headline,
+  which falls back to the NPoS inflation curve when a chain reports no era reward, the benchmark is **realized-only**:
+  the mean of what the chain's last ~30 days of completed eras actually paid, net of the current median commission, and
+  unmeasurable is left `null` rather than guessed at from the curve — a benchmark nobody can verify against a real
+  payout is worse than no benchmark. It is blended the same way as the headline, by the same fiat weights, and shown
+  only once it is complete: not loading, a headline to sit beside, a benchmark that resolved, full coverage of the
+  earning stake, and a contributing chain set exactly equal to the headline's — the two readings fail independently (the
+  headline still has a curve fallback, the benchmark does not), and a benchmark covering more or fewer chains than the
+  figure beside it is a false comparison in either direction. A benchmark that could not measure a chain holding part of
+  the stake would describe a different portfolio than the headline next to it, so it stays hidden rather than being
+  presented as "the" network average.
+
 - **Nominated validators** — how many distinct validators the selection nominates, counted **per chain**: the same key
   elected on Polkadot and on Kusama is two validators, because it is two nomination sets and two rewards. The subline
   carries how many of them the era actually backs, which is what the card used to lead with. The headline moved because
@@ -173,7 +186,10 @@ chain's own era duration.
 
 - **Est. APY** opens the donut breakdown: one segment per position, hover-linked in both directions — the donut centre
   swaps to the hovered row, and hovering a row dims the other segments. A single position renders as a full ring rather
-  than disappearing.
+  than disappearing. Each row carries its own network average, under the row's APY, with **its exact window** —
+  `network avg 15.2% · 21d` on a Kusama row next to `· 30d` on a Polkadot one, because the two chains' history depths
+  genuinely differ. The row deliberately ignores the card footer's coverage gate: a single chain's average is complete
+  by definition, so a benchmark that could not cover every chain still degrades into detail here, never into nothing.
 - **Nominated validators** opens the nomination spread — where the selection's stake actually went, as opposed to where
   it was pointed. The table lists **every nomination of every account**, grouped by account (largest position first) and
   labelled with what the era did with it:
@@ -284,9 +300,12 @@ there everything is local: click a card or a footer link to open its drill-down,
 CSV. The only outbound step is a claim/redeem/unbond request handed to a staking flow, which takes over from the modal.
 
 Nothing here starts a chain subscription on mount — ledgers, nominations, eras and exposures are driven by the positions
-aggregate. The cards do drive three of their own reads (network APY, the 30-day reward window, and the unclaimed payout
-scan per stash), each through the shared ref-counted pools so a second card asking for the same data joins the request
-in flight instead of duplicating it.
+aggregate. The cards do drive four of their own reads (network APY, the network average benchmark, the 30-day reward
+window, and the unclaimed payout scan per stash), each through the shared ref-counted pools so a second card asking for
+the same data joins the request in flight instead of duplicating it. The benchmark is one more era-keyed read per chain
+(`networkAvgRateResource`: `erasValidatorPrefs` for the current median commission, plus `erasValidatorReward` and
+`erasTotalStakeMulti` batched over the trailing window) — cached like the network APY read it sits beside, so a rollover
+is the only thing that ever triggers a refetch.
 
 ## Related
 

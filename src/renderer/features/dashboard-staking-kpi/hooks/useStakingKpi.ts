@@ -3,7 +3,6 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { type CurrencyItem } from '@/domains/price';
@@ -13,15 +12,15 @@ import { type StakingSummary, summarizePositions, useStakingPositions } from '@/
 import { getAccessMode } from '@/features/dashboard-staking-positions';
 import { type AccessMode } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
-import { computeWeightedApy, earningStakeByChain } from '../lib/apy';
+import { type NetworkAvgBlend } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { type UnbondingFooter, type UnclaimedFooter, getUnbondingFooter, getUnclaimedFooter } from '../lib/footer';
 import { type NominationRow, buildNominationRows } from '../lib/nominations';
 import { filterPositionsByAccounts, withdrawablePositions } from '../lib/summary';
 import { type BreakdownRow, type ClaimRow, type PositionRow } from '../lib/types';
 
+import { useApyKpi } from './useApyKpi';
 import { useChainEras, useChainHistoryDepths, useEraDurations } from './useChainEras';
-import { useNetworkApys } from './useNetworkApys';
 import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './useRewardsWindow';
 import { useStakingChainAssets } from './useStakingChainAssets';
 import { unclaimedKey, useUnclaimedPayoutsByPosition } from './useUnclaimedPayouts';
@@ -48,6 +47,11 @@ export type StakingKpiData = {
   /** Estimated APY. */
   weightedApy: number | null;
   earningPositionCount: number;
+  /**
+   * Blended trailing-window network benchmark; `null` while unknown. The UI
+   * must check `coverage` before presenting it as "the network average".
+   */
+  networkAvg: NetworkAvgBlend | null;
 
   /** Nominated validators. */
   activeValidatorCount: number;
@@ -95,7 +99,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     [positions],
   );
 
-  const apyByChain = useNetworkApys(chainIds);
+  const { weightedApy, networkAvg, apyByChain, avgRateByChain } = useApyKpi(positions, chainIds, toFiat);
   const rewardsSince = useRewardsWindowStart();
   const { byChain: rewardsByChain } = useRewardsWindow(chainIds, stakingAccountIds, rewardsSince);
   const unclaimed = useUnclaimedPayoutsByPosition(positions);
@@ -158,20 +162,6 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
       }),
     };
   }, [summary, assets, toFiat, positions]);
-
-  // --- Estimated APY ------------------------------------------------------
-
-  const weightedApy = useMemo(() => {
-    const earningStake = earningStakeByChain(positions);
-
-    return computeWeightedApy(
-      keys(earningStake).map((chainId) => ({
-        chainId,
-        apy: apyByChain[chainId] ?? null,
-        weight: toFiat(chainId, earningStake[chainId] ?? '0'),
-      })),
-    );
-  }, [positions, apyByChain, toFiat]);
 
   // --- Rewards ------------------------------------------------------------
 
@@ -317,13 +307,14 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         fiat,
         color: getColorByPriceId(asset?.priceId ?? '', index),
         apy: apyByChain[position.chainId] ?? null,
+        networkAvgRate: avgRateByChain[position.chainId] ?? null,
         validatorCount: position.activeValidators.length,
         earning: position.status === 'active',
       } satisfies BreakdownRow;
     });
 
     return rows.sort((a, b) => b.value - a.value);
-  }, [positions, assets, toFiat, apyByChain]);
+  }, [positions, assets, toFiat, apyByChain, avgRateByChain]);
 
   return {
     positions,
@@ -338,6 +329,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
 
     weightedApy,
     earningPositionCount: summary.earningPositionCount,
+    networkAvg,
 
     activeValidatorCount: summary.activeValidatorCount,
     positionCount: summary.positionCount,

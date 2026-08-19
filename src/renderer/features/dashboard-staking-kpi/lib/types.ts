@@ -1,6 +1,6 @@
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type UnbondingChunk, type UnclaimedPayout } from '@/domains/staking';
+import { type NetworkAvgRate, type UnbondingChunk, type UnclaimedPayout } from '@/domains/staking';
 
 import { type AccessMode } from './access';
 
@@ -63,6 +63,8 @@ export type BreakdownRow = {
   color: string;
   /** APY of the chain, percent — `null` when unknown. */
   apy: number | null;
+  /** Trailing-window network average of the chain — `null` when unknown. */
+  networkAvgRate: NetworkAvgRate | null;
   validatorCount: number;
   earning: boolean;
 };

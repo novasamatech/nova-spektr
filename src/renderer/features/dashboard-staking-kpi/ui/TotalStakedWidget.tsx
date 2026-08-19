@@ -34,11 +34,19 @@ export const TotalStakedWidget = ({ accountIds }: Props) => {
   // subline would only repeat the headline.
   const showFiat = kpi.fiatFlag !== false;
 
+  // An explicit aria-label replaces the card's inner text for screen readers,
+  // so it must carry what the card shows. The system tests anchor on the title
+  // prefix of this label.
+  const unbondingLabel = kpi.unbondingFooter
+    ? `${t('dashboard.staking.kpi.totalStaked.unbonding')} ${formatAssetAmounts(kpi.unbondingFooter.amounts)}`
+    : null;
+  const ariaLabel = [title, stakedTokens, unbondingLabel].filter(Boolean).join(', ');
+
   return (
     <KpiWidgetFrame>
       <KpiCard
         title={title}
-        ariaLabel={title}
+        ariaLabel={ariaLabel}
         loading={kpi.pending}
         value={showFiat ? <Price amount={kpi.totalStakedFiat} currency={kpi.currency} /> : stakedTokens}
         subline={showFiat ? stakedTokens : null}

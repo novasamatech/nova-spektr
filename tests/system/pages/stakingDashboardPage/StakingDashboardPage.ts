@@ -47,7 +47,9 @@ export class StakingDashboardPage extends BasePage<StakingDashboardPageElements>
   // --- KPI row -------------------------------------------------------------
 
   public getKpiCard(card: StakingKpiCard): Locator {
-    return this.getPanel().getByLabel(this.pageElements.kpiTitles[card], { exact: true });
+    const title = this.pageElements.kpiTitles[card];
+
+    return this.getPanel().getByLabel(new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(,|$)`));
   }
 
   /**

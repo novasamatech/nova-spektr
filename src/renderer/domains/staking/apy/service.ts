@@ -4,7 +4,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { type Chain, type EraIndex } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { getEraDurationMs } from '../era/duration';
+import { getEraDurationMs, getErasInDays } from '../era/duration';
 import { type ApyValidator } from '../types';
 
 import {
@@ -16,6 +16,8 @@ import {
 } from './calculator';
 
 const MILLISECONDS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+const NETWORK_AVG_WINDOW_DAYS = 30;
 
 type ChainRef = Pick<Chain, 'chainId'>;
 
@@ -23,6 +25,7 @@ export const apyService = {
   getStakersEraReward,
   getAvgRewardPercent,
   getNetworkApy,
+  getNetworkAvgRewardRate,
   getValidatorsApy,
 };
 
@@ -147,6 +150,135 @@ async function getNetworkApy(params: NetworkApyParams): Promise<string | null> {
   const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
 
   return calculateExpectedApy(avgRewardPercent, medianCommission).toFixed(2);
+}
+
+export type NetworkAvgRate = {
+  /**
+   * Net-of-median-commission average reward rate over the window, percent, 2
+   * dp.
+   */
+  ratePercent: string;
+  /**
+   * Inclusive lower bound of the eras that actually produced a rate. The range
+   * `[fromEra, toEra]` may contain gaps — eras with no recorded reward or zero
+   * stake are skipped rather than counted.
+   */
+  fromEra: EraIndex;
+  /**
+   * Inclusive upper bound of the eras that actually produced a rate. The range
+   * `[fromEra, toEra]` may contain gaps — eras with no recorded reward or zero
+   * stake are skipped rather than counted.
+   */
+  toEra: EraIndex;
+  /** The eras that actually produced a rate, expressed in days. */
+  days: number;
+};
+
+type NetworkAvgRateParams = {
+  api: ApiPromise;
+  timelineApi?: ApiPromise | null;
+  chain: ChainRef;
+  era: EraIndex;
+  /**
+   * Lazily loaded validator commissions — the full validator-set prefs read is
+   * the most expensive query involved, and a `null` result is never cached by
+   * the query layer, so it must only run once an average actually exists.
+   */
+  loadValidators: () => Promise<Pick<ApyValidator, 'commission'>[]>;
+};
+
+/**
+ * Network average reward rate over a trailing ~30 day window, in percent.
+ *
+ * The benchmark shown beside the dashboard's Est. APY: the mean of per-era
+ * realized rates (`erasValidatorReward × erasPerYear / erasTotalStake`) over
+ * the last ~30 days of completed eras, capped by the runtime `HistoryDepth` (84
+ * eras ≈ 21 days on Kusama Asset Hub). Made net of the current median
+ * commission so it is directly comparable with `getNetworkApy`. Realized-only
+ * on purpose — no NPoS-curve fallback: a benchmark that cannot be measured is
+ * left unknown, never guessed.
+ */
+async function getNetworkAvgRewardRate(params: NetworkAvgRateParams): Promise<NetworkAvgRate | null> {
+  const { api, timelineApi, chain, era, loadValidators } = params;
+
+  const eraDurationMs = getEraDurationMs(api, timelineApi, chain);
+  const erasPerYear = MILLISECONDS_PER_YEAR / eraDurationMs;
+
+  let historyDepth: number;
+  try {
+    historyDepth = stakingPallet.consts.historyDepth(api);
+  } catch (error) {
+    console.warn('history depth unavailable, leaving the network average unknown', error);
+
+    return null;
+  }
+
+  const targetEras = getErasInDays(NETWORK_AVG_WINDOW_DAYS, eraDurationMs);
+  const windowSize = Math.min(targetEras, historyDepth, era);
+  if (windowSize <= 0) return null;
+
+  const windowEras = Array.from({ length: windowSize }, (_, index) => era - windowSize + index);
+
+  let eraRewards: Awaited<ReturnType<typeof stakingPallet.storage.erasValidatorReward>>;
+  let eraStakes: Awaited<ReturnType<typeof stakingPallet.storage.erasTotalStakeMulti>>;
+  try {
+    [eraRewards, eraStakes] = await Promise.all([
+      stakingPallet.storage.erasValidatorReward(api, windowEras),
+      stakingPallet.storage.erasTotalStakeMulti(api, windowEras),
+    ]);
+  } catch (error) {
+    console.warn('era reward/stake history query failed, leaving the network average unknown', error);
+
+    return null;
+  }
+
+  const contributions: { era: EraIndex; rate: number }[] = [];
+  for (let index = 0; index < windowEras.length; index += 1) {
+    const rewardEntry = eraRewards[index];
+    const stakeEntry = eraStakes[index];
+    if (!rewardEntry || !stakeEntry?.totalStake) continue;
+
+    if (rewardEntry.era !== stakeEntry.era) {
+      console.warn(`era mismatch between reward (${rewardEntry.era}) and stake (${stakeEntry.era}) entries, skipping`);
+
+      continue;
+    }
+
+    const { reward } = rewardEntry;
+    if (!reward) continue;
+
+    const rewardValue = new BigNumber(reward.toString());
+    if (!rewardValue.isGreaterThan(0)) continue;
+
+    const totalStaked = new BigNumber(stakeEntry.totalStake.toString());
+    if (!totalStaked.isGreaterThan(0)) continue;
+
+    contributions.push({
+      era: rewardEntry.era,
+      rate: rewardValue.multipliedBy(erasPerYear).div(totalStaked).toNumber(),
+    });
+  }
+
+  if (contributions.length === 0) return null;
+
+  let validators: Pick<ApyValidator, 'commission'>[];
+  try {
+    validators = await loadValidators();
+  } catch (error) {
+    console.warn('validator prefs query failed, leaving the network average unknown', error);
+
+    return null;
+  }
+
+  const grossAverage = contributions.reduce((acc, { rate }) => acc + rate, 0) / contributions.length;
+  const medianCommission = getMedianCommission(validators.map(validator => validator.commission));
+
+  return {
+    ratePercent: calculateExpectedApy(grossAverage, medianCommission).toFixed(2),
+    fromEra: contributions[0]!.era,
+    toEra: contributions[contributions.length - 1]!.era,
+    days: Math.max(1, Math.round((contributions.length * eraDurationMs) / MILLISECONDS_PER_DAY)),
+  };
 }
 
 type ValidatorsApyParams = {

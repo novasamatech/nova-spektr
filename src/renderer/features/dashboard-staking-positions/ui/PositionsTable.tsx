@@ -62,9 +62,9 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
         row.apy === null ? (
           <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
         ) : (
-          <FootnoteText className="text-text-positive">
-            {t('dashboard.stakingOverview.apy', { apy: row.apy.toFixed(1) })}
-          </FootnoteText>
+          // The column header already says APY — a bare percent keeps the cell
+          // on one line (same format as the nominations table).
+          <FootnoteText className="text-text-positive">{`${row.apy.toFixed(1)}%`}</FootnoteText>
         ),
 
       activeValidatorCount: (row) => (
@@ -109,11 +109,14 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
       className={scrolls ? 'overflow-y-auto' : undefined}
       style={scrolls ? { maxHeight: SCROLL_MAX_HEIGHT } : undefined}
     >
+      {/* Always sticky: below the row threshold the nearest scrollport is the
+          widget shell, and the header must survive scrolling there too — not
+          only inside the table's own scroller. */}
       <Table
         columns={columns}
         data={rows}
         sort={sort}
-        stickyHeader={scrolls}
+        stickyHeader
         getRowKey={(row) => row.id}
         onSortChange={onSortChange}
         onRowClick={onRowClick}

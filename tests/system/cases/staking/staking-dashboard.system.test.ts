@@ -42,6 +42,10 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await setupTestMetadata('Staking dashboard', 'Populated');
   });
 
+  // Deliberately NOT in the @regress rotation: this is a live-chain test
+  // (mainnet stashes, 120s data timeouts) and the rotation holds live-network
+  // suites out by convention — locator regressions surface on the suite's
+  // manual dispatch instead.
   test('S1: KPI cards and the positions table describe the live position', async ({ stakingDashboardPage }) => {
     test.setTimeout(TEST_TIMEOUT);
 
@@ -63,7 +67,9 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await expect(stakingDashboardPage.getKpiValue('nominations')).toHaveText(/^[1-9]\d*$/, {
       timeout: LIVE_DATA_TIMEOUT,
     });
-    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · [1-9]\d* position/);
+    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(
+      /validators · [1-9]\d* backed this era/,
+    );
 
     // --- Rewards card renders its window subline
     await expect(stakingDashboardPage.getKpiSubline('rewards')).toContainText(/\d+d$/);
@@ -220,7 +226,7 @@ test.describe('Staking dashboard — empty state (watch-only)', { tag: '@staking
     await expect(stakingDashboardPage.getKpiValue('apy')).toHaveText(elements.emDash, { timeout: LIVE_DATA_TIMEOUT });
     await expect(stakingDashboardPage.getKpiSubline('totalStaked')).toHaveText(elements.emDash);
     await expect(stakingDashboardPage.getKpiValue('totalStaked')).toContainText('0');
-    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · 0 position/);
+    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · 0 backed this era/);
 
     for (const card of ['totalStaked', 'apy', 'nominations', 'rewards'] as const) {
       await expect(stakingDashboardPage.getKpiSkeletons(card)).toHaveCount(0);

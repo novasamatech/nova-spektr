@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-14
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -88,8 +88,10 @@ descending by default, and clearing the sort returns to that default rather than
 - **Unclaimed** — the amount plus how long it has left. An unclaimed payout is not merely uncollected: it is destroyed
   once its era leaves the runtime history. The chip is red under 14 days, amber to 30, green beyond.
 
-Beyond 20 rows the table body becomes the scroll container — about eight rows visible, header pinned, and a footer
-saying how many there are in total. The card must not push the rest of the dashboard off the screen.
+The header row is always sticky — below the row threshold the widget shell is what scrolls, and the column names must
+survive that scrolling too. Beyond 20 rows the table body additionally becomes its own scroll container — about eight
+rows visible, header pinned to it, and a footer saying how many there are in total. The card must not push the rest of
+the dashboard off the screen.
 
 Loading renders the same table with the cells blanked: same header, same widths, same row height, so nothing moves when
 the data lands.
