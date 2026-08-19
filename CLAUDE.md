@@ -65,6 +65,10 @@ Project documentation:
 5. Document Results: Add review to 'tasks/todo.md'
 6. Capture Lessons: Update 'tasks/lessons.md' after corrections
 
+**`tasks/` is local-only and must never be committed.** It's git-ignored working scratch for plans, notes and throwaway
+scripts. Never `git add` anything under `tasks/`, never include it in a commit or PR, and don't reference its files from
+committed code or docs.
+
 ## Feature Spec READMEs
 
 Non-trivial features and aggregates carry a colocated `README.md` product spec, indexed in the Feature Map
