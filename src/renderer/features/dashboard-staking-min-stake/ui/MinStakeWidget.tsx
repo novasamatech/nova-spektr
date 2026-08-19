@@ -5,7 +5,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
-import { Label, Skeleton } from '@/shared/ui-kit';
+import { Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useMinStakeRows } from '../hooks/useMinStakeRows';
@@ -84,18 +84,23 @@ export const MinStakeWidget = () => {
                 {t('dashboard.staking.minStake.headlineEra', { era: current.era.toLocaleString('en-US') })}
               </FootnoteText>
               {current !== first && (
-                <span
-                  title={t('dashboard.staking.minStake.deltaTitle', {
-                    delta: formatSignedTokens(current.tokens - first.tokens),
-                    symbol: selected.symbol,
-                    era: first.era.toLocaleString('en-US'),
-                    eras: ERA_DEPTH,
-                  })}
-                >
-                  <Label variant={current.tokens >= first.tokens ? 'orange' : 'green'}>
-                    {formatSignedPercent(current.tokens, first.tokens)}
-                  </Label>
-                </span>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <span>
+                      <Label variant={current.tokens >= first.tokens ? 'orange' : 'green'}>
+                        {formatSignedPercent(current.tokens, first.tokens)}
+                      </Label>
+                    </span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('dashboard.staking.minStake.deltaTitle', {
+                      delta: formatSignedTokens(current.tokens - first.tokens),
+                      symbol: selected.symbol,
+                      era: first.era.toLocaleString('en-US'),
+                      eras: ERA_DEPTH,
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
               )}
               <span className="flex-1" />
               <HelpText className="whitespace-nowrap text-text-tertiary">
