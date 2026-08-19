@@ -2,7 +2,7 @@ import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { dashboardGovernanceSlot } from '@/pages/Dashboard';
+import { dashboardGovernanceSlot, defineWidget } from '@/pages/Dashboard';
 
 import { GovernanceOverviewWidget } from './ui/GovernanceOverviewWidget';
 import { ReferendumsWidget } from './ui/ReferendumsWidget';
@@ -16,13 +16,16 @@ export const dashboardGovernanceFeature = createFeature({
   enable: enableFlag,
 });
 
-dashboardGovernanceFeature.inject(dashboardGovernanceSlot, {
-  order: 0,
-  label: 'dashboard.governanceOverview.title',
-  render: GovernanceOverviewWidget,
-  defaultSize: { w: 2, h: 4 },
-  minSize: { w: 1, h: 2 },
-});
+dashboardGovernanceFeature.inject(
+  dashboardGovernanceSlot,
+  defineWidget({
+    order: 0,
+    label: 'dashboard.governanceOverview.title',
+    render: GovernanceOverviewWidget,
+    defaultSize: { w: 2, h: 4 },
+    minSize: { w: 1, h: 2 },
+  }),
+);
 
 export const dashboardUnlockScheduleFeature = createFeature({
   name: 'dashboard/unlock-schedule',
@@ -30,13 +33,16 @@ export const dashboardUnlockScheduleFeature = createFeature({
   enable: enableFlag,
 });
 
-dashboardUnlockScheduleFeature.inject(dashboardGovernanceSlot, {
-  order: 1,
-  label: 'dashboard.unlockSchedule.title',
-  render: UnlockScheduleWidget,
-  defaultSize: { w: 2, h: 4 },
-  minSize: { w: 1, h: 2 },
-});
+dashboardUnlockScheduleFeature.inject(
+  dashboardGovernanceSlot,
+  defineWidget({
+    order: 1,
+    label: 'dashboard.unlockSchedule.title',
+    render: UnlockScheduleWidget,
+    defaultSize: { w: 2, h: 4 },
+    minSize: { w: 1, h: 2 },
+  }),
+);
 
 export const dashboardReferendumsFeature = createFeature({
   name: 'dashboard/referendums',
@@ -44,10 +50,13 @@ export const dashboardReferendumsFeature = createFeature({
   enable: enableFlag,
 });
 
-dashboardReferendumsFeature.inject(dashboardGovernanceSlot, {
-  order: 2,
-  label: 'dashboard.activeReferendums.title',
-  render: ReferendumsWidget,
-  defaultSize: { w: 4, h: 5 },
-  minSize: { w: 2, h: 3 },
-});
+dashboardReferendumsFeature.inject(
+  dashboardGovernanceSlot,
+  defineWidget({
+    order: 2,
+    label: 'dashboard.activeReferendums.title',
+    render: ReferendumsWidget,
+    defaultSize: { w: 4, h: 5 },
+    minSize: { w: 2, h: 3 },
+  }),
+);

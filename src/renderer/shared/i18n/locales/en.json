@@ -915,6 +915,7 @@
       },
       "rewardsChart": {
         "title": "Rewards",
+        "widgetName": "Rewards chart",
         "assetSwitch": "Rewards asset",
         "rangeSwitch": "Rewards period",
         "range": {

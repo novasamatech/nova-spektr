@@ -6,7 +6,7 @@ import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { vestingPortfolioModel } from '@/aggregates/vesting-portfolio';
 import { balanceSubModel } from '@/features/assets-balances';
-import { dashboardWidgetsSlot } from '@/pages/Dashboard';
+import { dashboardWidgetsSlot, defineWidget } from '@/pages/Dashboard';
 import { dashboardModel } from '@/pages/Dashboard/model/dashboard-model';
 
 import { PortfolioOverviewWidget, portfolioVestingSlot } from './ui/PortfolioOverviewWidget';
@@ -44,10 +44,13 @@ sample({
   target: balanceSubModel.fetchAccountIds,
 });
 
-dashboardPortfolioOverviewFeature.inject(dashboardWidgetsSlot, {
-  order: 0,
-  label: 'dashboard.portfolioOverview.title',
-  render: PortfolioOverviewWidget,
-  defaultSize: { w: 2, h: 6 },
-  minSize: { w: 2, h: 3 },
-});
+dashboardPortfolioOverviewFeature.inject(
+  dashboardWidgetsSlot,
+  defineWidget({
+    order: 0,
+    label: 'dashboard.portfolioOverview.title',
+    render: PortfolioOverviewWidget,
+    defaultSize: { w: 2, h: 6 },
+    minSize: { w: 2, h: 3 },
+  }),
+);

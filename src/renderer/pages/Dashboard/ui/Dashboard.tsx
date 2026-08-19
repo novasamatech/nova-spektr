@@ -1,22 +1,35 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useRef } from 'react';
+import { type FunctionComponent, useMemo, useRef } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
+import { type SlotProps } from '@/shared/di/createSlot';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { type Size } from '../lib/layout-engine';
 import { dashboardModel } from '../model/dashboard-model';
 
-import { AddWidgetPopover } from './AddWidgetPopover';
+import { AddWidgetMenu } from './AddWidgetMenu';
 import { DashboardGrid } from './DashboardGrid';
 
-export type WidgetGridMeta = { label: string; defaultSize: Size; minSize: Size; maxSize: Size };
+export type WidgetGridMeta = { label: string; defaultSize: Size; minSize: Size; maxSize?: Size };
 
 type WidgetSlotProps = {
   accountIds: string[];
   allEntries: { accountId: string; name: string; address: string }[];
 };
+
+/**
+ * Types a grid widget's injection meta at the call site.
+ *
+ * A slot accepts its meta as `Partial`, so a widget injected without a `label`
+ * would type-check and then show its raw DI key in the "Add widget" list.
+ * Passing the object through here restores the check the slot type cannot
+ * make.
+ */
+export const defineWidget = <P extends SlotProps>(
+  widget: WidgetGridMeta & { order: number; render: FunctionComponent<P> },
+) => widget;
 
 export const dashboardPresetSwitcherSlot = createSlot({ name: 'dashboardPresetSwitcher' });
 
@@ -85,7 +98,7 @@ export const Dashboard = () => {
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
             {editMode && (
               <>
-                {activeSlot && <AddWidgetPopover slot={activeSlot} tab={activeTab} />}
+                {activeSlot && <AddWidgetMenu slot={activeSlot} tab={activeTab} />}
                 <IconButton
                   name="refresh"
                   ariaLabel={t('dashboard.resetLayout')}

@@ -2,7 +2,7 @@ import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { dashboardWidgetsSlot } from '@/pages/Dashboard';
+import { dashboardWidgetsSlot, defineWidget } from '@/pages/Dashboard';
 
 import { StakingSummaryWidget } from './ui/StakingSummaryWidget';
 
@@ -36,10 +36,13 @@ export const dashboardStakingSummaryFeature = createFeature({
   enable: enableFlag,
 });
 
-dashboardStakingSummaryFeature.inject(dashboardWidgetsSlot, {
-  order: 2,
-  label: 'dashboard.stakingSummary.title',
-  render: StakingSummaryWidget,
-  defaultSize: { w: 2, h: 3 },
-  minSize: { w: 1, h: 2 },
-});
+dashboardStakingSummaryFeature.inject(
+  dashboardWidgetsSlot,
+  defineWidget({
+    order: 2,
+    label: 'dashboard.stakingSummary.title',
+    render: StakingSummaryWidget,
+    defaultSize: { w: 2, h: 3 },
+    minSize: { w: 1, h: 2 },
+  }),
+);

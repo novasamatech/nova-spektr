@@ -7,6 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { getGridMetrics, toGridContentPoint } from '../lib/grid-metrics';
 import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
+import { partitionWidgets } from '../lib/widget-visibility';
 import { dashboardModel } from '../model/dashboard-model';
 
 import { type WidgetGridMeta } from './Dashboard';
@@ -49,42 +50,26 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const { available, hiddenAvailableCount } = useMemo(() => {
-    const hidden = new Set(hiddenWidgets[tab] ?? []);
-    const visible: typeof handlers = [];
-    let hiddenCount = 0;
-    for (const h of handlers) {
-      try {
-        if (!h.available() || h.key == null) continue;
-        if (hidden.has(h.key)) {
-          hiddenCount += 1;
-          continue;
-        }
-        visible.push(h);
-      } catch {
-        // unavailable handler — skip
-      }
-    }
-    visible.sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0));
-
-    return { available: visible, hiddenAvailableCount: hiddenCount };
-  }, [handlers, hiddenWidgets, tab]);
+  const { visible: available, hidden } = useMemo(
+    () => partitionWidgets(handlers, hiddenWidgets[tab] ?? []),
+    [handlers, hiddenWidgets, tab],
+  );
 
   const sizes = useMemo(() => {
     const map: Record<string, Size> = {};
     const mins: Record<string, Size> = {};
     const maxes: Record<string, Size> = {};
     for (const h of available) {
-      map[h.key!] = h.body.defaultSize ?? FALLBACK_DEFAULT;
-      mins[h.key!] = h.body.minSize ?? FALLBACK_MIN;
-      maxes[h.key!] = h.body.maxSize ?? FALLBACK_MAX;
+      map[h.key] = h.body.defaultSize ?? FALLBACK_DEFAULT;
+      mins[h.key] = h.body.minSize ?? FALLBACK_MIN;
+      maxes[h.key] = h.body.maxSize ?? FALLBACK_MAX;
     }
 
     return { defaults: map, mins, maxes };
   }, [available]);
 
   const orderedKeys = useMemo(() => {
-    const keys = available.map((h) => h.key!);
+    const keys = available.map((h) => h.key);
     // A stored layout (including the empty `{}` left by a reset) means seed new
     // widgets by body.order. Only on genuine first load (no stored tab) do we
     // migrate from the legacy widget order.
@@ -137,7 +122,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   };
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
-  const handlersByKey = useMemo(() => new Map(available.map((h) => [h.key!, h])), [available]);
+  const handlersByKey = useMemo(() => new Map(available.map((h) => [h.key, h])), [available]);
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
@@ -151,8 +136,10 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
           gridAutoRows: `${ROW_HEIGHT_PX}px`,
         }}
       >
-        {renderKeys.length === 0 && hiddenAvailableCount > 0 && (
-          <div className="col-span-full flex items-center justify-center py-20 text-footnote text-text-tertiary">
+        {renderKeys.length === 0 && hidden.length > 0 && (
+          // Spans rows rather than padding itself: the hint is a grid item and
+          // the grid's auto rows are only ROW_HEIGHT_PX tall.
+          <div className="col-span-full row-span-3 flex items-center justify-center text-footnote text-text-tertiary">
             {editMode ? t('dashboard.allWidgetsHidden') : t('dashboard.allWidgetsHiddenView')}
           </div>
         )}

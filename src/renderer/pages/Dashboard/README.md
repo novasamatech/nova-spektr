@@ -10,7 +10,7 @@ Each dashboard tab (Overview, Staking, Governance) shows a set of widgets on a *
 user can drag widgets to new positions and resize them on both axes; the layout is a **free 2D mesh** — a widget keeps
 the column it is placed in — kept tidy by **vertical compaction** (widgets float up so there are never vertical gaps).
 Each tab's arrangement is saved per browser and restored on the next visit. In edit mode a widget can also be **hidden**
-(the eye button on its card); hidden widgets are restored from the **"Add widget"** popover in the header.
+(the eye button on its card); hidden widgets are restored from the **"Add widget"** menu in the header.
 
 Widgets declare a **default size**, a **minimum size** and optionally a **maximum size**; the grid uses these to place
 new widgets and to bound resizing. A maximum is declared by widgets whose content cannot use extra space (e.g. the
@@ -60,7 +60,7 @@ flowchart TD
 | **Resize**             | Drag the bottom-right handle                              | The widget grows/shrinks in column + row units, clamped to its minimum size, its maximum size (if declared) and the grid edge; the change commits once on release |
 | **Reset**              | "Reset layout" button (edit mode)                         | The active tab returns to every widget's default size and position; the tab's hidden widgets are all restored                                                     |
 | **Hide**               | Eye button on a widget card (edit mode)                   | The widget disappears from the grid; its rect is dropped and the tab compacts up. The hidden set persists per tab                                                 |
-| **Restore**            | "Add widget" popover in the header (edit mode)            | The widget re-enters at the bottom of the tab at its default size — same path as "New widget appears"                                                             |
+| **Restore**            | "Add widget" menu in the header (edit mode)               | The widget re-enters at the bottom of the tab at its default size — same path as "New widget appears"                                                             |
 | **New widget appears** | A widget becomes available (e.g. a feature flag turns on) | It is placed at the bottom of the tab; existing widgets keep their positions                                                                                      |
 | **Widget removed**     | A widget becomes unavailable                              | Its rect is dropped; remaining widgets compact up                                                                                                                 |
 
@@ -82,7 +82,8 @@ that later turned off doesn't count).
 ## Related
 
 - **Widget injection** — each widget is injected into a tab's slot and declares its `defaultSize` / `minSize` /
-  `maxSize` there; the grid reads these to size and place it. It also declares a `label` — the i18n key of the widget's
-  card title — used by the "Add widget" popover to name hidden widgets.
+  `maxSize` there; the grid reads these to size and place it. It also declares a `label` — the i18n key naming the
+  widget in the "Add widget" list. That is the widget's card title, except where two cards on a tab would read the same
+  (the staking tab's "Rewards" KPI and rewards chart), where the list needs them tellable apart.
 - **Account presets / selection** — drive which accounts the widgets show; unrelated to placement, but a tab with no
   selected accounts renders its empty state instead of the grid.
