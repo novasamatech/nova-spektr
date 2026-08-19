@@ -109,11 +109,14 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
       className={scrolls ? 'overflow-y-auto' : undefined}
       style={scrolls ? { maxHeight: SCROLL_MAX_HEIGHT } : undefined}
     >
+      {/* Always sticky: below the row threshold the nearest scrollport is the
+          widget shell, and the header must survive scrolling there too — not
+          only inside the table's own scroller. */}
       <Table
         columns={columns}
         data={rows}
         sort={sort}
-        stickyHeader={scrolls}
+        stickyHeader
         getRowKey={(row) => row.id}
         onSortChange={onSortChange}
         onRowClick={onRowClick}
