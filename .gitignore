@@ -43,3 +43,6 @@ allure-results
 # Superpowers brainstorming artifacts
 .superpowers/
 docs/superpowers/
+
+# Local agent working notes — never committed
+/tasks/
