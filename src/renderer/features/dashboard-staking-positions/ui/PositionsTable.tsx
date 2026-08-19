@@ -50,23 +50,33 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
         </FootnoteText>
       ),
 
-      status: (row) => <PositionStatusPill status={row.position.status} statusReason={row.position.statusReason} />,
+      status: (row) => (
+        <PositionStatusPill
+          status={row.position.status}
+          statusReason={row.position.statusReason}
+          kind={row.position.kind}
+        />
+      ),
 
       apy: (row) =>
         row.apy === null ? (
           <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
         ) : (
-          <FootnoteText className="text-text-positive">
-            {t('dashboard.stakingOverview.apy', { apy: row.apy.toFixed(1) })}
-          </FootnoteText>
+          // The column header already says APY — a bare percent keeps the cell
+          // on one line (same format as the nominations table).
+          <FootnoteText className="text-text-positive">{`${row.apy.toFixed(1)}%`}</FootnoteText>
         ),
 
       activeValidatorCount: (row) => (
         <FootnoteText className="text-text-secondary">
-          {t('dashboard.staking.positions.validatorsValue', {
-            active: row.activeValidatorCount,
-            total: row.nominationCount,
-          })}
+          {row.position.kind === 'validator'
+            ? row.position.validator?.nominatorCount == null
+              ? t('dashboard.staking.positions.noValue')
+              : t('dashboard.staking.positions.nominatorsValue', { count: row.position.validator.nominatorCount })
+            : t('dashboard.staking.positions.validatorsValue', {
+                active: row.activeValidatorCount,
+                total: row.nominationCount,
+              })}
         </FootnoteText>
       ),
 
@@ -99,11 +109,14 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
       className={scrolls ? 'overflow-y-auto' : undefined}
       style={scrolls ? { maxHeight: SCROLL_MAX_HEIGHT } : undefined}
     >
+      {/* Always sticky: below the row threshold the nearest scrollport is the
+          widget shell, and the header must survive scrolling there too — not
+          only inside the table's own scroller. */}
       <Table
         columns={columns}
         data={rows}
         sort={sort}
-        stickyHeader={scrolls}
+        stickyHeader
         getRowKey={(row) => row.id}
         onSortChange={onSortChange}
         onRowClick={onRowClick}

@@ -10,6 +10,7 @@ import { type CurrencyItem } from '@/domains/price';
 import { networkModel } from '@/entities/network';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { formatAssetAmount } from '../lib/amounts';
+import { parseRatePercent } from '../lib/apy';
 import { type BreakdownRow } from '../lib/types';
 
 import { DonutBreakdown } from './DonutBreakdown';
@@ -89,52 +90,68 @@ export const BreakdownModal = memo(
               <div className="max-h-80 min-w-0 flex-1">
                 <ScrollArea>
                   <div className="flex flex-col gap-1 pe-2">
-                    {rows.map((row) => (
-                      <div
-                        key={row.key}
-                        className={cnTw(
-                          'flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors',
-                          hoveredId === row.key ? 'bg-hover' : 'bg-transparent',
-                        )}
-                        onMouseEnter={() => setHoveredId(row.key)}
-                        onMouseLeave={() => setHoveredId(null)}
-                      >
-                        <span
-                          className="h-6 w-1 shrink-0 rounded-full"
-                          style={{ backgroundColor: row.color }}
-                          aria-hidden
-                        />
-                        <div className="min-w-0 flex-1">
-                          <NamedAccount
-                            accountId={row.accountId}
-                            chain={chains[row.chainId]}
-                            wallet={walletByAccount[row.accountId]}
-                            titleClass="truncate font-semibold"
-                            variant="short"
-                            iconSize={20}
-                            hideExplorers
+                    {rows.map((row) => {
+                      const networkAvgRate =
+                        row.networkAvgRate === null ? null : parseRatePercent(row.networkAvgRate.ratePercent);
+
+                      return (
+                        <div
+                          key={row.key}
+                          className={cnTw(
+                            'flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors',
+                            hoveredId === row.key ? 'bg-hover' : 'bg-transparent',
+                          )}
+                          onMouseEnter={() => setHoveredId(row.key)}
+                          onMouseLeave={() => setHoveredId(null)}
+                        >
+                          <span
+                            className="h-6 w-1 shrink-0 rounded-full"
+                            style={{ backgroundColor: row.color }}
+                            aria-hidden
                           />
-                          <HelpText className="text-text-tertiary">
-                            {row.chainName}
-                            {}
-                            {' · '}
-                            {formatAssetAmount({ symbol: row.symbol, precision: row.precision, amount: row.stake })}
-                          </HelpText>
+                          <div className="min-w-0 flex-1">
+                            <NamedAccount
+                              accountId={row.accountId}
+                              chain={chains[row.chainId]}
+                              wallet={walletByAccount[row.accountId]}
+                              titleClass="truncate font-semibold"
+                              variant="short"
+                              iconSize={20}
+                              hideExplorers
+                            />
+                            <HelpText className="text-text-tertiary">
+                              {row.chainName}
+                              {}
+                              {' · '}
+                              {formatAssetAmount({ symbol: row.symbol, precision: row.precision, amount: row.stake })}
+                            </HelpText>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <FootnoteText
+                              className={cnTw(
+                                'tabular-nums',
+                                row.earning ? 'text-text-positive' : 'text-text-tertiary',
+                              )}
+                            >
+                              {row.apy === null
+                                ? t('dashboard.staking.kpi.apy.unknown')
+                                : t('dashboard.staking.kpi.apy.value', { apy: row.apy.toFixed(1) })}
+                            </FootnoteText>
+                            {row.networkAvgRate !== null && networkAvgRate !== null && (
+                              <HelpText className="text-text-tertiary tabular-nums">
+                                {t('dashboard.staking.kpi.apy.networkAvg', {
+                                  rate: networkAvgRate.toFixed(1),
+                                  days: row.networkAvgRate.days,
+                                })}
+                              </HelpText>
+                            )}
+                            <HelpText className="text-text-tertiary tabular-nums">
+                              <Price amount={row.fiat} currency={currency} />
+                            </HelpText>
+                          </div>
                         </div>
-                        <div className="shrink-0 text-right">
-                          <FootnoteText
-                            className={cnTw('tabular-nums', row.earning ? 'text-text-positive' : 'text-text-tertiary')}
-                          >
-                            {row.apy === null
-                              ? t('dashboard.staking.kpi.apy.unknown')
-                              : t('dashboard.staking.kpi.apy.value', { apy: row.apy.toFixed(1) })}
-                          </FootnoteText>
-                          <HelpText className="text-text-tertiary tabular-nums">
-                            <Price amount={row.fiat} currency={currency} />
-                          </HelpText>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               </div>

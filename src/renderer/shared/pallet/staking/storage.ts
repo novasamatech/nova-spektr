@@ -70,6 +70,18 @@ export const storage = {
   },
 
   /**
+   * The total amount staked, for several eras at once.
+   */
+  erasTotalStakeMulti(api: ApiPromise, eras: number[]) {
+    const schema = pjsSchema.vec(pjsSchema.u128);
+
+    return substrateRpcPool
+      .call(() => getQuery(api, 'erasTotalStake').multi(eras))
+      .then(schema.parse)
+      .then(stakes => zipWith(eras, stakes, (era, totalStake) => ({ era, totalStake })));
+  },
+
+  /**
    * The total validator era payout for the last `HistoryDepth` eras.
    */
   erasValidatorReward(api: ApiPromise, eras: number[]) {

@@ -362,3 +362,28 @@ describe('stakingPallet storage.bondedEras', () => {
     ]);
   });
 });
+
+describe('stakingPallet storage.erasTotalStakeMulti', () => {
+  it('should zip eras with their total stakes in order', async () => {
+    const totalStakes = registry.createType('Vec<u128>', [1000, 2000]);
+
+    const query = Object.assign(vi.fn(), {
+      multi: vi.fn().mockResolvedValue(totalStakes),
+    });
+
+    const api = {
+      query: {
+        staking: { erasTotalStake: query },
+      },
+      runtimeChain: { toString: () => 'test-chain' },
+    } as unknown as ApiPromise;
+
+    const result = await storage.erasTotalStakeMulti(api, [10, 11]);
+
+    expect(query.multi).toHaveBeenCalledWith([10, 11]);
+    expect(result).toEqual([
+      { era: 10, totalStake: new BN(1000) },
+      { era: 11, totalStake: new BN(2000) },
+    ]);
+  });
+});

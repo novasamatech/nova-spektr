@@ -25,6 +25,7 @@ import {
   nominations as nominationsModel,
   positionsService,
   staking as stakingModel,
+  validatorPrefs as validatorPrefsModel,
   validators as validatorsModel,
 } from '@/domains/staking';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -38,6 +39,7 @@ const { exposuresResource, exposurePagesResource } = exposuresModel;
 const { nominationsResource, minBondResource } = nominationsModel;
 const { validatorsResource } = validatorsModel;
 const { stakingResource } = stakingModel;
+const { validatorPrefsResource } = validatorPrefsModel;
 
 const reset = createEvent();
 
@@ -257,6 +259,11 @@ const $chainOnlyRequests = $chainRequests.map(requests => requests.map(({ chainI
 
 bindResourcePool(stakingResource, $stakingRequests);
 bindResourcePool(nominationsResource, $nominationsRequests);
+// Same request shape as nominations: every account that can hold a ledger on
+// the chain is asked whether it registered as a validator. The prefs map is
+// keyed by the queried account, mirroring the nominations wiring - on-chain
+// both maps are keyed by stash.
+bindResourcePool(validatorPrefsResource, $nominationsRequests);
 bindResourcePool(minBondResource, $chainOnlyRequests);
 bindResourcePool(eraResource, $chainOnlyRequests);
 
@@ -381,13 +388,24 @@ const $positions = combine(
     chainAccounts: $chainAccounts,
     ledgers: stakingResource.$cache,
     nominations: nominationsResource.$cache,
+    validatorPrefs: validatorPrefsResource.$cache,
     exposurePages: exposurePagesResource.$cache,
     validators: validatorsResource.$cache,
     eras: $eras,
     eraProgress: eraProgressResource.$cache,
     nominated: $nominatedValidators,
   },
-  ({ chainAccounts, ledgers, nominations, exposurePages, validators, eras, eraProgress, nominated }) => {
+  ({
+    chainAccounts,
+    ledgers,
+    nominations,
+    validatorPrefs,
+    exposurePages,
+    validators,
+    eras,
+    eraProgress,
+    nominated,
+  }) => {
     const inputs: DerivePositionInput[] = [];
 
     for (const { chainId, accountIds } of chainAccounts) {
@@ -421,6 +439,7 @@ const $positions = combine(
           chainId,
           stake,
           nomination: chainNominations[accountId] ?? null,
+          validatorPrefs: validatorPrefs[chainId]?.[accountId] ?? null,
           exposures: chainExposures,
           validators: chainValidators,
           activeEra,
@@ -467,11 +486,12 @@ const $pending = combine(
     chainAccounts: $chainAccounts,
     ledgers: stakingResource.$cache,
     nominations: nominationsResource.$cache,
+    validatorPrefs: validatorPrefsResource.$cache,
     eras: $eras,
     connections: networkModel.$connections,
     statuses: networkModel.$connectionStatuses,
   },
-  ({ chainAccounts, ledgers, nominations, eras, connections, statuses }) => {
+  ({ chainAccounts, ledgers, nominations, validatorPrefs, eras, connections, statuses }) => {
     return chainAccounts.some(({ chainId, accountIds }) => {
       if (accountIds.length === 0) return false;
 
@@ -500,7 +520,13 @@ const $pending = combine(
       const chainNominations = nominations[chainId];
       if (nullable(chainNominations)) return true;
 
-      return bonded.some(accountId => !(accountId in chainNominations));
+      // Same coverage rule as nominations: without the prefs answer a
+      // validator position would first render as a bonded nominator and then
+      // flip - the skeleton is the honest state.
+      const chainPrefs = validatorPrefs[chainId];
+      if (nullable(chainPrefs)) return true;
+
+      return bonded.some(accountId => !(accountId in chainNominations) || !(accountId in chainPrefs));
     });
   },
 );

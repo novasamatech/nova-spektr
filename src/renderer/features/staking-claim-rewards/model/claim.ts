@@ -1,24 +1,30 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { t } from 'i18next';
 import { readonly } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  type ValidationResult,
   createComplexTxStore,
+  createRouteSignerStore,
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
 } from '@/shared/transactions';
+import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { basketUtils } from '@/entities/basket';
+import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { transactionBuilder, transactionService as callDataService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -34,6 +40,7 @@ const { payoutsResource } = payouts;
 const claimRequested = createEvent<ClaimRequest[]>();
 const flowFinished = createEvent();
 const stepChanged = createEvent<Step>();
+const txSaved = createEvent();
 /** A claim that made it on chain. The dashboard reacts to this; no toast here. */
 const rewardsClaimed = createEvent<ClaimedRewards>();
 
@@ -72,6 +79,24 @@ sample({
 const $chain = $requests.map((requests) => requests.at(0)?.chain ?? null);
 const $asset = $requests.map((requests) => requests.at(0)?.asset ?? null);
 const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
+
+/**
+ * No connection → no transaction → no fee and nothing to sign. The same guard
+ * the old staking forms carry: a session opened on a disconnected chain would
+ * otherwise build calls against a stale or absent api. Gates the primary call
+ * below AND `$extraEntries` — the extras wrap and price themselves off their
+ * own entries, independently of the primary transaction existing, so gating the
+ * primary alone would not stop them. The draft path stays ungated on purpose —
+ * a draft is call data for somebody else to sign later.
+ */
+const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+  if (!chain) return false;
+
+  const status = statuses[chain.chainId];
+  if (!status) return false;
+
+  return networkUtils.isConnectedStatus(status);
+});
 
 /**
  * Every transaction the session will sign. One account with no more payouts
@@ -137,7 +162,9 @@ const buildPayoutTx = (plan: ClaimPlan, accountId: AccountId): Transaction =>
     payouts: toPayoutArgs(plan.payouts),
   });
 
-const $primaryCoreTx = $primaryPlan.map((plan) => (plan ? buildPayoutTx(plan, plan.account.accountId) : null));
+const $primaryCoreTx = combine($primaryPlan, $isChainConnected, (plan, isConnected) =>
+  plan && isConnected ? buildPayoutTx(plan, plan.account.accountId) : null,
+);
 
 /**
  * A regular account signs for itself and has no signing path at all
@@ -175,6 +202,7 @@ const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStor
   routeOverride: $pathRoute,
 });
 
+/** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
 const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
 /**
@@ -237,6 +265,7 @@ const $extraEntries = combine(
     proxies: proxyModel.$proxies,
     ownSignerAccountIds: graphModel.$ownSignerAccountIds,
     resolveName: graphModel.$nameResolver,
+    isConnected: $isChainConnected,
   },
   ({
     plans,
@@ -248,8 +277,13 @@ const $extraEntries = combine(
     proxies,
     ownSignerAccountIds,
     resolveName,
+    isConnected,
   }): ExtraEntry[] => {
-    if (nullable(chain) || plans.length < 2) return [];
+    // The connection term is not redundant with the primary's gate: extras
+    // wrap and price through their own effect pipeline, clocked off this very
+    // store — they would proceed against a stale api even with `$primaryCoreTx`
+    // already null.
+    if (nullable(chain) || !isConnected || plans.length < 2) return [];
 
     const routeCache = new Map<AccountId, AnyAccount[]>();
     if (primaryAccountId && primaryRoute.length > 0) {
@@ -296,10 +330,28 @@ type WrappedExtra = ExtraEntry & { tx: Transaction; signatory: AnyAccount };
 
 const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; entries: ExtraEntry[] }) => {
   const wrapped: WrappedExtra[] = [];
+  const dropped: TransactionValidationDryRunError[] = [];
 
   for (const entry of entries) {
     const signatory = entry.route.at(-1);
-    if (!signatory) continue;
+    if (!signatory) {
+      // A route with no terminal hop can be neither wrapped nor signed.
+      // Surfaced as a per-entry validation error instead of silently shrinking
+      // the set — a dropped entry used to leave `$preparing` waiting forever.
+      //
+      // The dry-run shape is used for its rendering, not its meaning: it is the
+      // only error `TransactionValidationError` renders verbatim under a title
+      // of the sender's choosing (a bare `{ message }` gets a "Dry run error:"
+      // prefix, which would be a lie here). `failureReason` is unused when
+      // `description` is present.
+      dropped.push({
+        dryRunError: true,
+        failureReason: 'no-route-signer',
+        title: t('staking.flow.noSignerTitle'),
+        description: t('staking.claimRewards.extraNoSignerError'),
+      });
+      continue;
+    }
 
     const tx = await transactionService.wrapLegacyTransaction(entry.coreTx, entry.route, api);
     // Same reason as in `createComplexTxStore`: the legacy transaction shape
@@ -309,10 +361,84 @@ const wrapExtraTxsFx = createEffect(async ({ api, entries }: { api: ApiPromise; 
     wrapped.push({ ...entry, tx, signatory });
   }
 
-  return wrapped;
+  return { wrapped, dropped };
 });
 
+/**
+ * Per-extra verdicts, one entry per plan beyond the first: the SAME validator
+ * the primary transaction goes through, plus the extra's own priced fee. An
+ * entry the wrapping step dropped, or whose validation failed outright, arrives
+ * here as an error with no fee. Sign stays blocked until this list covers every
+ * extra plan (see `$preparing`), and `$canSign` refuses any entry that is not
+ * both clean and priced.
+ */
+type ExtraValidationError = ValidationResult['errors'][number] | TransactionValidationDryRunError;
+
+type ExtraValidation = {
+  errors: ExtraValidationError[];
+  fee: BN | null;
+};
+
+const validateExtrasFx = createEffect(
+  async ({
+    api,
+    asset,
+    balances,
+    wrapped,
+    dropped,
+  }: {
+    api: ApiPromise;
+    asset: Asset;
+    balances: Record<BalanceId, Balance>;
+    wrapped: WrappedExtra[];
+    dropped: TransactionValidationDryRunError[];
+  }): Promise<ExtraValidation[]> => {
+    const validated: ExtraValidation[] = [];
+
+    for (const entry of wrapped) {
+      const { errors, balanceValidationResults } = await validator({
+        api,
+        asset,
+        balances,
+        route: entry.route,
+        transaction: entry.tx,
+      });
+
+      // The validator already asked the node to price this very transaction for
+      // its fee-affordability rule; `required` on the `fee` action is that
+      // quote, so reading it back avoids a second `paymentInfo` round trip.
+      const fee =
+        getActionRequiredAmount(balanceValidationResults, 'fee', entry.signatory.accountId).at(0)?.required ?? null;
+
+      // A clean verdict always carries the fee quote its affordability rule
+      // computed, so "no errors AND no priced fee" means the validation never
+      // actually ran to completion (the validator itself now fails closed on
+      // throws, so this is a belt-and-braces guard for any other path that
+      // yields a feeless clean verdict). Fail closed: an extra that could not
+      // be checked must block signing and say so, not pass by silence.
+      if (errors.length === 0 && nullable(fee)) {
+        validated.push({
+          errors: [
+            {
+              dryRunError: true,
+              failureReason: 'extra-validation-failed',
+              description: t('staking.claimRewards.extraValidationFailedError'),
+            },
+          ],
+          fee: null,
+        });
+        continue;
+      }
+
+      validated.push({ errors, fee });
+    }
+
+    return [...validated, ...dropped.map((error) => ({ errors: [error], fee: null }))];
+  },
+);
+
 const $extraWrapped = createStore<WrappedExtra[]>([]).reset(flowFinished, claimRequested);
+const $extraValidation = createStore<ExtraValidation[]>([]).reset(flowFinished, claimRequested);
 
 const extraWrappingRequested = sample({
   clock: [$extraEntries, $api],
@@ -326,45 +452,190 @@ sample({
 
 sample({
   clock: wrapExtraTxsFx.doneData,
+  fn: ({ wrapped }) => wrapped,
   target: $extraWrapped,
 });
 
-/** Everything the confirm is still waiting on before anything may be signed. */
+const extraValidationRequested = sample({
+  clock: wrapExtraTxsFx.doneData,
+  source: { api: $api, asset: $asset, balances: balanceModel.$balanceMap },
+  fn: ({ api, asset, balances }, { wrapped, dropped }) => ({ api, asset, balances, wrapped, dropped }),
+}).filterMap(({ api, asset, ...rest }) =>
+  nonNullable(api) && nonNullable(asset) ? { api, asset, ...rest } : undefined,
+);
+
+sample({
+  clock: extraValidationRequested,
+  target: validateExtrasFx,
+});
+
+sample({
+  clock: validateExtrasFx.doneData,
+  target: $extraValidation,
+});
+
+/** Extras' validation failures, flattened for the same alert the primary uses. */
+const $extraErrors = $extraValidation.map((entries) => entries.flatMap((entry) => entry.errors));
+
+/**
+ * Everything the confirm is still waiting on before anything may be signed.
+ *
+ * The completeness term counts `$extraValidation`, not `$extraWrapped`: every
+ * extra plan produces a validation entry — a verdict or a dropped-entry error —
+ * so an extra that cannot be wrapped still lets the confirm settle (with its
+ * error shown) instead of spinning forever.
+ */
 const $preparing = combine(
   {
     pendingFee: $pendingFee,
     pendingWrapping: $pendingWrapping,
     validating: $validating,
     wrappingExtra: wrapExtraTxsFx.pending,
+    validatingExtras: validateExtrasFx.pending,
     plans: $plans,
-    extraWrapped: $extraWrapped,
+    extraValidation: $extraValidation,
   },
-  ({ pendingFee, pendingWrapping, validating, wrappingExtra, plans, extraWrapped }) =>
+  ({ pendingFee, pendingWrapping, validating, wrappingExtra, validatingExtras, plans, extraValidation }) =>
     pendingFee ||
     pendingWrapping ||
     validating ||
     wrappingExtra ||
-    extraWrapped.length !== Math.max(plans.length - 1, 0),
+    validatingExtras ||
+    extraValidation.length !== Math.max(plans.length - 1, 0),
 );
 
 /**
- * The fee of one transaction, times the number of transactions.
+ * The primary transaction's quoted fee plus each extra's own quoted fee.
  *
- * The same approximation every multi-shard staking form makes. It is exact for
- * a chunked single-account claim (identical calls, identical route) and an
- * estimate when accounts route differently; the per-transaction figure it is
- * built from is the one the network actually quoted.
+ * Until every extra has been priced, the figure falls back to the old
+ * per-transaction × count approximation. That window is never signable: while
+ * quotes are pending `$preparing` blocks Sign, and an extra that never gets a
+ * quote (a dropped route, a validation that failed outright) carries an error
+ * and no fee — both of which `$canSign` refuses.
  */
-const $totalFee = combine($fee, $plans, (fee, plans) => (fee ? fee.mul(new BN(Math.max(plans.length, 1))) : fee));
+const $totalFee = combine(
+  { fee: $fee, plans: $plans, extraValidation: $extraValidation },
+  ({ fee, plans, extraValidation }) => {
+    if (nullable(fee)) return fee;
+
+    const extraFees = extraValidation.map((entry) => entry.fee).filter(nonNullable);
+    const allExtrasPriced =
+      extraValidation.length === Math.max(plans.length - 1, 0) && extraFees.length === extraValidation.length;
+
+    if (!allExtrasPriced) return fee.mul(new BN(Math.max(plans.length, 1)));
+
+    return extraFees.reduce((total, extraFee) => total.add(extraFee), fee);
+  },
+);
+
+// Created ahead of its own section below: the sign gate must stand down in
+// draft mode, where nobody local is expected to sign.
+const draftMode = createDraftModeBinding({ formInitiated: claimRequested, chainChanged: claimRequested });
+
+// A session that arrives already knowing nobody local pays it opens with draft
+// mode on. `signingMode` carries the *payer's* mode (payouts are permissionless,
+// so producers substitute a signable payer where they can) — `every` therefore
+// only holds when the whole session really has no one to sign.
+sample({
+  clock: claimRequested,
+  filter: (requests) => requests.length > 0 && requests.every((request) => request.signingMode === 'draft'),
+  fn: () => true,
+  target: draftMode.draftModeToggled,
+});
+
+const $routeSigner = createRouteSignerStore($route);
+
+/**
+ * No one on the resolved route can actually sign — the chosen payer is a
+ * watch-only account. Blocks the gate and surfaces an explicit message instead
+ * of a silently dead button.
+ */
+const $noRouteSigner = combine(
+  { isDraftMode: draftMode.$isDraftMode, initiator: $initiator, routeSigner: $routeSigner },
+  ({ isDraftMode, initiator, routeSigner }) => !isDraftMode && nonNullable(initiator) && nullable(routeSigner),
+);
 
 const $canSign = combine(
   {
     tx: $tx,
     valid: $isTxValid,
     preparing: $preparing,
+    noRouteSigner: $noRouteSigner,
+    extraValidation: $extraValidation,
   },
-  ({ tx, valid, preparing }) => nonNullable(tx) && valid && !preparing,
+  ({ tx, valid, preparing, noRouteSigner, extraValidation }) =>
+    nonNullable(tx) &&
+    valid &&
+    !preparing &&
+    !noRouteSigner &&
+    // Clean AND priced — an extra without a fee quote was never actually
+    // checked (dropped route, incomplete validation), and fail-closed
+    // means such an entry can never be signed past.
+    extraValidation.every((entry) => entry.errors.length === 0 && nonNullable(entry.fee)),
 );
+
+// ---------------------------------------------------------------------------
+// Basket
+//
+// The same "sign later" affordance every old staking flow carries. The basket
+// signs each stored core call directly by its initiator (no wrapping in the
+// basket context), so it is only offered when EVERY payer's wallet is one the
+// basket can sign with — never watch-only, multisig or proxied payers. Unlike a
+// draft (one call data), the basket takes a list natively, so a multi-plan
+// claim goes in whole: one entry per plan, each its own extrinsic later.
+// ---------------------------------------------------------------------------
+
+const $canUseBasket = combine(
+  {
+    isDraftMode: draftMode.$isDraftMode,
+    plans: $plans,
+    coreTx: $primaryCoreTx,
+    extras: $extraWrapped,
+  },
+  ({ isDraftMode, plans, coreTx, extras }) =>
+    !isDraftMode &&
+    plans.length > 0 &&
+    plans.every((plan) => basketUtils.isBasketAvailable(plan.wallet)) &&
+    nonNullable(coreTx) &&
+    // Every plan beyond the first must have made it through wrapping — a
+    // partial claim must never be stored as if it were the whole one.
+    extras.length === plans.length - 1,
+);
+
+const basketSaved = sample({
+  clock: txSaved,
+  source: {
+    canUseBasket: $canUseBasket,
+    coreTx: $primaryCoreTx,
+    route: $route,
+    extras: $extraWrapped,
+  },
+  filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+});
+
+sample({
+  clock: basketSaved,
+  fn: ({ coreTx, route, extras }) => {
+    const createdAt = Date.now();
+
+    return [
+      { initiatorAccountId: coreTx!.accountId, coreTx: coreTx!, route, createdAt },
+      ...extras.map((entry) => ({
+        initiatorAccountId: entry.coreTx.accountId,
+        coreTx: entry.coreTx,
+        route: entry.route,
+        createdAt,
+      })),
+    ];
+  },
+  target: basketOperations.addTransactions,
+});
+
+sample({
+  clock: basketSaved,
+  fn: () => Step.BASKET,
+  target: stepChanged,
+});
 
 const $confirmDraft = combine(
   {
@@ -424,8 +695,6 @@ sample({
 // ---------------------------------------------------------------------------
 // Draft mode
 // ---------------------------------------------------------------------------
-
-const draftMode = createDraftModeBinding({ formInitiated: claimRequested, chainChanged: claimRequested });
 
 wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished });
 
@@ -642,10 +911,13 @@ export const claimRewardsModel = {
   $totalFee,
   $pendingFee,
   $errors,
+  $extraErrors,
   $hasMultisigAccount,
   $multisigDeposit,
   $preparing,
+  $noRouteSigner,
   $canSign,
+  $canUseBasket,
 
   $canUseDraftMode,
   $isDraftMode: draftMode.$isDraftMode,
@@ -669,6 +941,7 @@ export const claimRewardsModel = {
   refreshPayouts: refreshPayoutsFx,
   flowFinished,
   stepChanged,
+  txSaved,
   signingPathChanged,
 
   draftModeToggled: draftMode.draftModeToggled,
@@ -683,4 +956,5 @@ export const claimRewardsUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

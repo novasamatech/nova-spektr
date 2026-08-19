@@ -42,9 +42,9 @@ flowchart TD
     V7 --> V8["Wallet + all reviewed accounts created"]
 ```
 
-| State                  | When it appears                                                  | What the user sees                                                                                    |
-| ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **Scan**               | Always, first step                                                 | Camera QR reader with a tutorial video alongside it                                                    |
+| State                  | When it appears                                                     | What the user sees                                                                                      |
+| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Scan**               | Always, first step                                                  | Camera QR reader with a tutorial video alongside it                                                     |
 | **Singleshard review** | Scanned payload has no wallet name and no derived keys              | A single account preview; wallet name pre-fills from an on-chain identity lookup if one resolves        |
 | **Vault review**       | Scanned payload carries a wallet name and/or a list of derived keys | A wallet-name field plus the list of keys grouped by chain, with Import/Constructor actions to add more |
 
@@ -53,8 +53,8 @@ signer's payload has no name or derived-key list, a Vault's does — so the app 
 alone rather than asking the user which device they have.
 
 **Why keys can be added two ways.** Import accepts a list of derivation paths a user already has (e.g. from a QR or
-pasted text); Constructor is for building paths interactively when the user doesn't already have them written down.
-Both feed the same review list before confirmation.
+pasted text); Constructor is for building paths interactively when the user doesn't already have them written down. Both
+feed the same review list before confirmation.
 
 ## Lifecycle
 
@@ -64,8 +64,8 @@ Both feed the same review list before confirmation.
    one is found.
 4. **Vault:** the user names the wallet, reviews the auto-derived "Main" keys (one per relay chain) plus anything added
    via Import/Constructor, then confirms on an address-preview modal.
-5. On confirmation, the wallet and its accounts are created, on-chain data is synced for the new accounts, and — for
-   the Vault flow — the new wallet is auto-selected as the active wallet.
+5. On confirmation, the wallet and its accounts are created, on-chain data is synced for the new accounts, and — for the
+   Vault flow — the new wallet is auto-selected as the active wallet.
 
 ## Related
 

@@ -822,6 +822,7 @@
           "title": "Est. APY",
           "value": "{apy}%",
           "unknown": "—",
+          "networkAvg": "network avg {rate}% · {days}d",
           "subline_one": "stake-weighted · {count} earning position",
           "subline_other": "stake-weighted · {count} earning positions",
           "detailTitle": "Estimated APY breakdown"
@@ -872,13 +873,17 @@
           "eraCount_other": "{count} eras",
           "validatorColumn": "Validator",
           "nominatorsColumn": "My nominators",
+          "accountsRail": "My accounts",
+          "myValidatorBadge": "My validator",
+          "selfNominator": "self",
+          "selfNominatorPlus_one": "self + {count} account",
+          "selfNominatorPlus_other": "self + {count} accounts",
           "earnedColumn": "Earned",
           "claim": "Claim",
           "claimAll": "Claim all",
-          "noSigner": "No account of this wallet can sign on {network}.",
+          "noSigner": "None of your wallets can sign on {network}.",
           "donutCaption": "Earned per validator over the period",
           "attributing": "Working out which validator earned what…",
-          "receivedInPeriod": "Received in period: {fiat}",
           "allNetworks": "All networks",
           "validatorCount_one": "{count} validator",
           "validatorCount_other": "{count} validators",
@@ -937,6 +942,7 @@
         "noValue": "—",
         "viewOnly": "view only",
         "localWallet": "Local wallet",
+        "addressBook": "Address book",
         "multisigChip": "{threshold}/{total}",
         "multisigHint": "Multisig — {threshold} of {total} signatures required",
         "draftHint_one": "{count} pending draft",
@@ -962,9 +968,17 @@
           "inactive": "Nominating, but nothing backs this stake in the current era.",
           "bonded": "Bonded without nominations, so it earns nothing. Pick validators to start earning.",
           "notElected": "None of the nominated validators was elected for the current era.",
-          "notExposed": "The nominated validators were elected, but this stake is not in their exposure."
+          "notExposed": "The nominated validators were elected, but this stake is not in their exposure.",
+          "validator": {
+            "active": "Elected for the current era — validating and earning.",
+            "waiting": "Registered as a validator, but not elected for the current era."
+          }
         },
         "validatorsValue": "{active} of {total}",
+        "nominatorsValue_one": "{count} nominator",
+        "nominatorsValue_other": "{count} nominators",
+        "validatorChip": "Validator",
+        "validatorHint": "This account is registered as a validator",
         "expiry": {
           "days": "{days}d left",
           "expiring": "expires now",
@@ -985,7 +999,8 @@
             "apy": "Est. APY",
             "share": "Share of chain",
             "unclaimed": "Unclaimed",
-            "validators": "Validators"
+            "validators": "Validators",
+            "nominators": "Nominators"
           },
           "unbonding": "Unbonding",
           "unbondingLeft": "{duration} left",
@@ -1002,9 +1017,20 @@
             "notWired": "This action is not connected to a transaction flow yet.",
             "nothingInPeriod": "No rewards attributed in this window.",
             "scanningPayouts": "Checking what is still unclaimed…",
-            "nothingToClaim": "Nothing to claim on this position."
+            "nothingToClaim": "Nothing to claim on this position.",
+            "noSigner": "None of your wallets can sign on {network}."
           },
           "watchOnlyNote": "Watch-only account — data only. Actions are unavailable by design, not disabled.",
+          "validator": {
+            "title": "Validator",
+            "commission": "Commission",
+            "selfStake": "Self stake",
+            "totalExposure": "Total stake",
+            "eraPoints": "Era points",
+            "blocked": "Blocked",
+            "blockedHint": "This validator does not accept new nominations",
+            "notElected": "Not elected for the current era — no active-era data yet."
+          },
           "nominations": {
             "title": "Nominations",
             "validator": "Validator",
@@ -3861,6 +3887,8 @@
       "maxButton": "Max",
       "networkLabel": "Network",
       "networkPlaceholder": "Select a network",
+      "overMaxDescription": "The account has {max} available to stake.",
+      "overMaxTitle": "Not enough available balance",
       "payoutAccountPlaceholder": "Payout account",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
@@ -3883,6 +3911,10 @@
       },
       "continueButton": "Continue",
       "maxButton": "Max",
+      "overMaxAddStakeDescription": "The account has {max} available to add to your stake.",
+      "overMaxAddStakeTitle": "Not enough available balance",
+      "overMaxUnbondDescription": "This position has {max} staked — an unbond cannot exceed it.",
+      "overMaxUnbondTitle": "More than the active stake",
       "remainingStaked": "remaining staked: {amount}",
       "stakedLabel": "Staked:",
       "title": {
@@ -3896,6 +3928,8 @@
       "unlockingLimitTitle": "No unbonding slots left"
     },
     "claimRewards": {
+      "extraNoSignerError": "One of the additional transactions has no account that can sign it. Change who pays for the claim, or claim those rewards separately.",
+      "extraValidationFailedError": "One of the additional transactions could not be checked. Close this window and try the claim again.",
       "hint": "Rewards go straight to the stash's transferable balance. Anyone can send this call — the rewards reach the nominators either way.",
       "hintBatched": "This claim is too large for one transaction, so it is split into {total} of them. You sign each in turn, and they are submitted together.",
       "labels": {
@@ -3922,6 +3956,12 @@
         "changeValidators": "Change validators",
         "redeem": "Redeem"
       }
+    },
+    "flow": {
+      "noSignerHint": "None of your wallets can sign for this account on this network. Add a wallet that controls it, or save the operation as a draft.",
+      "noSignerTitle": "No account to sign with",
+      "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
+      "nothingToRedeemTitle": "Nothing left to redeem"
     }
   },
   "time": {

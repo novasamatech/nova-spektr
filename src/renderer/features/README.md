@@ -31,7 +31,7 @@ notes.
 - `watch-only-wallet`
 - `watch-only-wallet-pairing`
 - [`account-presets`](../aggregates/account-presets/README.md) (aggregate)
-- `wallet-select` (aggregate)
+- [`wallet-select`](../aggregates/wallet-select/README.md) (aggregate)
 
 > See also: [`multisig-wallet`](#multisig), [`proxied-wallet`](#proxy) — wallet types managed in their own product
 > areas.
@@ -70,7 +70,7 @@ notes.
 
 - `staking-navigation` (no spec planned)
 - [`staking-amount-flow`](./staking-amount-flow/README.md)
-- `staking-basket`
+- [`staking-basket`](./staking-basket/README.md)
 - [`staking-claim-rewards`](./staking-claim-rewards/README.md)
 - [`staking-confirm-flow`](./staking-confirm-flow/README.md)
 - [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
@@ -178,12 +178,12 @@ notes.
 
 ## Dashboard
 
-- `dashboard-governance`
+- [`dashboard-governance`](./dashboard-governance/README.md)
 - `dashboard-navigation` (no spec planned)
 - [`dashboard-operations-queue`](./dashboard-operations-queue/README.md)
 - [`dashboard-portfolio-overview`](./dashboard-portfolio-overview/README.md)
-- `dashboard-price-charts`
-- `dashboard-staking`
+- [`dashboard-price-charts`](./dashboard-price-charts/README.md)
+- [`dashboard-staking`](./dashboard-staking/README.md)
 - [`dashboard-staking-kpi`](./dashboard-staking-kpi/README.md)
 - [`dashboard-staking-positions`](./dashboard-staking-positions/README.md)
 - [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)

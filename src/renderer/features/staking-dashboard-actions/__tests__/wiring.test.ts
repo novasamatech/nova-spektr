@@ -146,6 +146,11 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       total: '300',
       payouts: [payout(10), payout(11, '200')],
     } as unknown as UnclaimedPayouts,
+    // 7 is an address-book address: tracked and earning, but no local account.
+    [payoutsCacheKey(chainId(1), accountId(7), ACTIVE_ERA)]: {
+      total: '100',
+      payouts: [payout(12)],
+    } as unknown as UnclaimedPayouts,
   });
   const $amountFlowEnabled = createStore(true);
   const claimBlocked = createEvent<{ chainId: ChainId; chainName: string }[]>();
@@ -254,7 +259,15 @@ const positionPayload = (n: number, chainIndex: number): PositionActionPayload =
   asset: asset(),
   account: universalAccount(n),
   wallet: wallet(n),
-  signingMode: 'direct' as never,
+  signingMode: 'local',
+});
+
+/** An address-book position: tracked, earning, but no local account behind it. */
+const contactPositionPayload = (n: number, chainIndex: number): PositionActionPayload => ({
+  ...positionPayload(n, chainIndex),
+  account: null,
+  wallet: null,
+  signingMode: 'draft',
 });
 
 describe('staking dashboard actions wiring', () => {
@@ -277,6 +290,7 @@ describe('staking dashboard actions wiring', () => {
           account: expect.objectContaining({ accountId: accountId(1) }),
           wallet: expect.objectContaining({ id: 1 }),
           payouts: [payout(10)],
+          signingMode: 'local',
         },
       ]);
     });
@@ -424,6 +438,45 @@ describe('staking dashboard actions wiring', () => {
 
       expect(dispatched).toHaveLength(1);
       expect(dispatched[0]?.[0]?.payouts).toEqual([payout(10), payout(11, '200')]);
+      // The position's own account can sign, so it stays the payer.
+      expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(1));
+      expect(dispatched[0]?.[0]?.wallet.id).toBe(1);
+    });
+
+    it('claims a contact position with a signer of ours — modal parity', async () => {
+      // The drawer used to bail on `account: null`, making the chip a silent
+      // no-op for exactly the address-book positions the Rewards modal claims.
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const dispatched = collect(harness.events.claimDispatched, scope);
+
+      await allSettled(harness.events.positionClaimRequested, {
+        scope,
+        params: { ...contactPositionPayload(7, 1), amount: '100' },
+      });
+
+      expect(dispatched).toHaveLength(1);
+      expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(1));
+      expect(dispatched[0]?.[0]?.wallet.id).toBe(1);
+      expect(dispatched[0]?.[0]?.payouts).toEqual([payout(12)]);
+      // The payer's mode wins over the drawer's `draft`: the substituted payer
+      // can sign, so the claim flow must open ready to sign, not in draft mode.
+      expect(dispatched[0]?.[0]?.signingMode).toBe('local');
+    });
+
+    it('does not dispatch a position claim when nothing here can sign on the chain', async () => {
+      const harness: Harness = createHarness({
+        accounts: [universalAccount(1, SigningType.WATCH_ONLY), universalAccount(2, SigningType.WATCH_ONLY)],
+      });
+      const scope = await forkWithAccountAvailability();
+      const dispatched = collect(harness.events.claimDispatched, scope);
+
+      await allSettled(harness.events.positionClaimRequested, {
+        scope,
+        params: { ...contactPositionPayload(7, 1), amount: '100' },
+      });
+
+      expect(dispatched).toEqual([]);
     });
 
     it('does not dispatch a position claim with no payouts behind it', async () => {
@@ -465,6 +518,19 @@ describe('staking dashboard actions wiring', () => {
       expect(forwarded).toEqual([payload]);
     });
 
+    it('forwards the drawer signing mode with the payload', async () => {
+      // A contact position arrives as `draft`, and the flow reads that as
+      // "open with draft mode on" — dropping it here made the user rediscover
+      // the toggle the drawer had already decided on.
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.amountUnbondRequested, scope);
+
+      await allSettled(harness.events.positionUnbondRequested, { scope, params: contactPositionPayload(7, 1) });
+
+      expect(forwarded[0]?.signingMode).toBe('draft');
+    });
+
     it('resolves a KPI unbond request into a full amount-flow target', async () => {
       const harness: Harness = createHarness();
       const scope = await forkWithAccountAvailability();
@@ -481,7 +547,39 @@ describe('staking dashboard actions wiring', () => {
         account: expect.objectContaining({ accountId: accountId(1) }),
         wallet: expect.objectContaining({ id: 1 }),
         position: expect.objectContaining({ accountId: accountId(1) }),
+        signingMode: 'local',
       });
+    });
+
+    it('marks a KPI target draft when no local account backs the position', async () => {
+      // Only account 1 is ours; position 2 belongs to an address-book address.
+      const harness: Harness = createHarness({ accounts: [universalAccount(1)] });
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.amountUnbondRequested, scope);
+
+      await allSettled(harness.events.kpiUnbondRequested, {
+        scope,
+        params: { accountId: accountId(2), chainId: chainId(2) },
+      });
+
+      expect(forwarded).toHaveLength(1);
+      expect(forwarded[0]).toMatchObject({ account: null, signingMode: 'draft' });
+    });
+
+    it('marks a KPI target watch-only when the account holds no key', async () => {
+      const harness: Harness = createHarness({
+        accounts: [universalAccount(1, SigningType.WATCH_ONLY), universalAccount(2)],
+      });
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.amountUnbondRequested, scope);
+
+      await allSettled(harness.events.kpiUnbondRequested, {
+        scope,
+        params: { accountId: accountId(1), chainId: chainId(1) },
+      });
+
+      expect(forwarded).toHaveLength(1);
+      expect(forwarded[0]?.signingMode).toBe('watchOnly');
     });
 
     it('skips a KPI unbond request with no position behind it', async () => {
@@ -528,6 +626,7 @@ describe('staking dashboard actions wiring', () => {
         account: expect.objectContaining({ accountId: accountId(1) }),
         wallet: expect.objectContaining({ id: 1 }),
         position: expect.objectContaining({ accountId: accountId(1) }),
+        signingMode: 'local',
       });
     });
 

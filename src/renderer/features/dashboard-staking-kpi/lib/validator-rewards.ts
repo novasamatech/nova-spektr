@@ -26,6 +26,8 @@ export type ValidatorRewardRow = {
   precision: number;
   /** Our accounts standing behind it, in the order the positions came in. */
   nominators: AccountId[];
+  /** The validator is one of the selection's own accounts — our validator. */
+  isSelf: boolean;
   /** Planck the eras in the window credited to the selection. */
   accrued: string;
   /** Planck still unclaimed, deduped across our accounts. */
@@ -67,6 +69,8 @@ export function buildValidatorRewardRows({ claimRows, rewards, toFiat }: Params)
     chainMeta.set(row.chainId, { chainName: row.chainName, symbol: row.symbol, precision: row.precision });
   }
 
+  const ownAccounts = new Set<AccountId>(claimRows.map((row) => row.accountId));
+
   const ensureRow = (chainId: ChainId, validatorId: AccountId): ValidatorRewardRow | null => {
     const meta = chainMeta.get(chainId);
     if (!meta) return null;
@@ -82,6 +86,7 @@ export function buildValidatorRewardRows({ claimRows, rewards, toFiat }: Params)
         symbol: meta.symbol,
         precision: meta.precision,
         nominators: [],
+        isSelf: ownAccounts.has(validatorId),
         accrued: '0',
         unclaimed: '0',
         unclaimedFiat: '0',

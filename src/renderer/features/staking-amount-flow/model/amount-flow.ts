@@ -3,17 +3,31 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { ZERO_BALANCE, formatAmount, fromPrecision, nonNullable, reservableAmountBN } from '@/shared/lib/utils';
+import {
+  ZERO_BALANCE,
+  formatAmount,
+  fromPrecision,
+  nonNullable,
+  nullable,
+  reservableAmountBN,
+} from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
-import { createComplexTxStore, createTxValidationStore, getActionRequiredAmount } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createRouteSignerStore,
+  createTxValidationStore,
+  getActionRequiredAmount,
+} from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { era } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { basketUtils } from '@/entities/basket';
+import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
-import { createDraftModeBinding, wireDraftCloseRedirect } from '@/features/drafts';
+import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { bondExtraValidator, unstakeValidator } from '@/features/operations/OperationsValidation';
@@ -54,6 +68,7 @@ export const createAmountFlowModel = () => {
   const amountChanged = createEvent<string>();
   const maxAmountRequested = createEvent();
   const continueRequested = createEvent();
+  const txSaved = createEvent();
 
   sample({
     clock: unbondRequested,
@@ -98,6 +113,22 @@ export const createAmountFlowModel = () => {
 
   const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
 
+  /**
+   * No connection → no `$coreTx` → no fee and nothing to sign. The same guard
+   * the old staking forms carry: a flow opened on a disconnected chain would
+   * otherwise build a call against a stale or absent api. The draft path stays
+   * ungated on purpose — a draft is call data for somebody else to sign later,
+   * and building it needs no live connection.
+   */
+  const $isChainConnected = combine(networkModel.$connectionStatuses, $chain, (statuses, chain) => {
+    if (!chain) return false;
+
+    const status = statuses[chain.chainId];
+    if (!status) return false;
+
+    return networkUtils.isConnectedStatus(status);
+  });
+
   // --- amount --------------------------------------------------------------
 
   const $amount = createStore('')
@@ -115,7 +146,34 @@ export const createAmountFlowModel = () => {
     },
   );
 
-  const $reservable = $initiatorBalance.map((balance) => (balance ? reservableAmountBN(balance) : BN_ZERO));
+  // Created ahead of its own section below: in draft mode the available
+  // balance must read the path's source, not the initiator, so the binding has
+  // to exist before the balance derivations.
+  const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+
+  // Source balance for draft mode: fetched on-demand once the path is set so
+  // "Available"/Max reflect the eventual signer's balance, not the connected
+  // wallet's initiator (or zero for a contact position).
+  const $draftSourceBalance = wireDraftSourceBalance({
+    $draftPath: draftMode.$draftSigningPath,
+    $chain: $chain,
+    $isDraftMode: draftMode.$isDraftMode,
+    // The staking asset, explicitly — not the wire's native-asset default.
+    $asset: $asset,
+  });
+
+  const $reservable = combine(
+    {
+      isDraftMode: draftMode.$isDraftMode,
+      draftSourceBalance: $draftSourceBalance,
+      initiatorBalance: $initiatorBalance,
+    },
+    ({ isDraftMode, draftSourceBalance, initiatorBalance }) => {
+      if (isDraftMode) return draftSourceBalance ? reservableAmountBN(draftSourceBalance) : BN_ZERO;
+
+      return initiatorBalance ? reservableAmountBN(initiatorBalance) : BN_ZERO;
+    },
+  );
 
   // --- signing route -------------------------------------------------------
 
@@ -231,9 +289,10 @@ export const createAmountFlowModel = () => {
       initiator: $initiator,
       amount: $amount,
       withChill: $withChill,
+      isConnected: $isChainConnected,
     },
-    ({ mode, chain, asset, initiator, amount, withChill }) => {
-      if (!mode || !chain || !asset || !initiator || !amount) return null;
+    ({ mode, chain, asset, initiator, amount, withChill, isConnected }) => {
+      if (!mode || !chain || !asset || !initiator || !amount || !isConnected) return null;
 
       if (mode === 'addStake') {
         return transactionBuilder.buildBondExtra({ chain, asset, accountId: initiator.accountId, amount });
@@ -285,13 +344,21 @@ export const createAmountFlowModel = () => {
     routeOverride: $pathRoute,
   });
 
+  /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
 
-  const $available = combine($reservable, $fee, (reservable, fee) => {
-    const available = fee ? reservable.sub(fee) : reservable;
+  const $available = combine(
+    { isDraftMode: draftMode.$isDraftMode, reservable: $reservable, fee: $fee },
+    ({ isDraftMode, reservable, fee }) => {
+      // Draft mode: no fee to subtract — the eventual signer pays it at submit
+      // time, so Max is the draft source's reservable, whole.
+      if (isDraftMode) return reservable;
 
-    return available.isNeg() ? BN_ZERO : available;
-  });
+      const available = fee ? reservable.sub(fee) : reservable;
+
+      return available.isNeg() ? BN_ZERO : available;
+    },
+  );
 
   const $maxAmount = combine(
     { mode: $mode, activeStake: $activeStake, available: $available },
@@ -357,15 +424,38 @@ export const createAmountFlowModel = () => {
     ({ pendingFee, pendingWrapping, validating }) => pendingFee || pendingWrapping || validating,
   );
 
+  /**
+   * More than `Max` allows — the whole active stake when unbonding, everything
+   * spendable after the fee when adding to it. Both the field's red frame and
+   * the callout that explains it read this one store, so the frame can never
+   * appear without its words.
+   */
+  const $isOverMax = combine($amountPlanck, $maxAmount, (amount, maxAmount) => amount.gt(maxAmount));
+
   /** The amount alone — before anything the node has to say about it. */
   const $isAmountValid = combine(
-    { amount: $amountPlanck, maxAmount: $maxAmount, limitReached: $unlockingLimitReached },
-    ({ amount, maxAmount, limitReached }) => !amount.isZero() && !amount.gt(maxAmount) && !limitReached,
+    { amount: $amountPlanck, isOverMax: $isOverMax, limitReached: $unlockingLimitReached },
+    ({ amount, isOverMax, limitReached }) => !amount.isZero() && !isOverMax && !limitReached,
   );
 
   // --- draft mode ----------------------------------------------------------
+  //
+  // `draftMode` itself is created up in the balance section — the available
+  // balance branches on it.
 
-  const draftMode = createDraftModeBinding({ formInitiated: flowStarted, chainChanged: flowStarted });
+  // A request that arrives already knowing nobody local signs it (an
+  // address-book position) opens with draft mode on, instead of making the
+  // user discover the toggle. This runs after the binding's own
+  // `.reset(flowStarted)` on `$isDraftMode` regardless of registration order:
+  // the toggle routes through the extra `draftModeToggled` event hop, one
+  // graph level deeper than the reset's direct store link, and effector
+  // resolves same-tick conflicts by graph depth, not source order.
+  sample({
+    clock: flowStarted,
+    filter: (request) => request.signingMode === 'draft',
+    fn: () => true,
+    target: draftMode.draftModeToggled,
+  });
 
   /**
    * Draft-mode transaction, built from the path's own source rather than from
@@ -432,6 +522,18 @@ export const createAmountFlowModel = () => {
   // lands the flow is over and the modal closes.
   wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished: flowClosed });
 
+  const $routeSigner = createRouteSignerStore($route);
+
+  /**
+   * No one on the resolved route can actually sign: the position belongs to a
+   * contact (no initiator at all) or to a watch-only account. Blocks the gate
+   * and surfaces an explicit message instead of a silently dead button.
+   */
+  const $noRouteSigner = combine(
+    { isDraftMode: draftMode.$isDraftMode, request: $request, routeSigner: $routeSigner },
+    ({ isDraftMode, request, routeSigner }) => !isDraftMode && nonNullable(request) && nullable(routeSigner),
+  );
+
   /**
    * `Continue` gate.
    *
@@ -445,9 +547,10 @@ export const createAmountFlowModel = () => {
       txValid: $isTxValid,
       preparing: $preparing,
       tx: $tx,
+      noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, amountValid, txValid, preparing, tx }) =>
-      !isDraftMode && amountValid && txValid && !preparing && nonNullable(tx),
+    ({ isDraftMode, amountValid, txValid, preparing, tx, noRouteSigner }) =>
+      !isDraftMode && amountValid && txValid && !preparing && nonNullable(tx) && !noRouteSigner,
   );
 
   sample({
@@ -455,6 +558,46 @@ export const createAmountFlowModel = () => {
     source: $canContinue,
     filter: (canContinue) => canContinue,
     fn: () => Step.CONFIRM,
+    target: stepChanged,
+  });
+
+  // --- basket ---------------------------------------------------------------
+  //
+  // The same "sign later" affordance every old staking flow carries. The basket
+  // signs the stored core call directly by its initiator (no wrapping in the
+  // basket context), so it is only offered when the initiator's own wallet is
+  // one the basket can sign with — never for watch-only, multisig or proxied
+  // initiators. Draft mode is mutually exclusive by nature: a draft is
+  // "somebody else signs later", the basket is "this wallet signs later".
+
+  const $canUseBasket = combine(
+    { wallet: $wallet, isDraftMode: draftMode.$isDraftMode, coreTx: $coreTx },
+    ({ wallet, isDraftMode, coreTx }) =>
+      !isDraftMode && nonNullable(wallet) && basketUtils.isBasketAvailable(wallet) && nonNullable(coreTx),
+  );
+
+  const basketSaved = sample({
+    clock: txSaved,
+    source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
+    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: ({ coreTx, route }) => [
+      {
+        initiatorAccountId: coreTx!.accountId,
+        coreTx: coreTx!,
+        route,
+        createdAt: Date.now(),
+      },
+    ],
+    target: basketOperations.addTransactions,
+  });
+
+  sample({
+    clock: basketSaved,
+    fn: () => Step.BASKET,
     target: stepChanged,
   });
 
@@ -582,11 +725,13 @@ export const createAmountFlowModel = () => {
     $amount: readonly($amount),
     $amountPlanck,
     $activeStake,
+    $reservable,
     $available,
     $maxAmount,
     $remainingStake,
     $isFullUnbond,
     $isBelowMinimumBond,
+    $isOverMax,
     $unlockingLimitReached,
     $minimumBond,
     $bondingDuration,
@@ -604,7 +749,9 @@ export const createAmountFlowModel = () => {
     $hasMultisigAccount,
     $multisigDeposit,
     $preparing,
+    $noRouteSigner,
     $canContinue,
+    $canUseBasket,
     $confirms: confirmModel.$confirms,
 
     $isDraftMode: draftMode.$isDraftMode,
@@ -627,6 +774,7 @@ export const createAmountFlowModel = () => {
     amountChanged,
     maxAmountRequested,
     continueRequested,
+    txSaved,
     signingPathChanged,
     startSigning: confirmModel.startSigning,
 
@@ -653,4 +801,5 @@ export const amountFlowUtils = {
   isConfirmStep: (step: Step) => step === Step.CONFIRM,
   isSignStep: (step: Step) => step === Step.SIGN,
   isSubmitStep: (step: Step) => step === Step.SUBMIT,
+  isBasketStep: (step: Step) => step === Step.BASKET,
 };

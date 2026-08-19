@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -29,8 +29,13 @@ still surfaces as a token amount on the Vested chip).
 - The card is what drives balance subscriptions for the selection: wallet accounts directly, and contact addresses
   paired with every chain whose address scheme matches the key — so a substrate key is never queried on an EVM chain.
 
-The card sits in the dashboard widget slot at the default first position, but users can drag-reorder widgets in edit
-mode, so its position is a default rather than a guarantee.
+The card is a dashboard widget with a default place and a default size on the grid, and a minimum size below which the
+donut and the holdings list stop fitting. Users arrange and resize widgets themselves in edit mode, so both are defaults
+rather than guarantees.
+
+The donut does not animate. Every hover re-renders the ring, and an animated Recharts pie mounts and unmounts its
+animation wrapper on each of those renders — sweeping a pointer across the ring queues them faster than React can flush
+them. A 400ms flourish is not worth a chart that can crash under a mouse gesture.
 
 ## States / scenarios
 

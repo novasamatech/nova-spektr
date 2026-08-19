@@ -68,8 +68,10 @@ export const InitStep = () => {
           >
             <div className="flex flex-col gap-4">
               {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <NoSignerError />
               {!isDraftMode && <StakeFromField />}
               <AmountField />
+              <OverMaxError />
               <MinimumBondError />
               <DestinationField />
               <FeeRow />
@@ -192,13 +194,14 @@ const AmountField = () => {
   const amount = useUnit(newPositionFlowModel.$amount);
   const amountPlanck = useUnit(newPositionFlowModel.$amountPlanck);
   const available = useUnit(newPositionFlowModel.$available);
+  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
 
   if (!asset) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amountPlanck.gt(available)}
+        invalid={isOverMax}
         value={amount}
         balance={available}
         balancePlaceholder={t('staking.newPosition.availableLabel')}
@@ -213,6 +216,28 @@ const AmountField = () => {
       />
       <AssetFiatBalance asset={asset} amount={amountPlanck.toString()} className="text-footnote" />
     </div>
+  );
+};
+
+/**
+ * The words behind the field's red frame: the account simply does not have the
+ * amount. Names the figure the frame is silently comparing against.
+ */
+const OverMaxError = () => {
+  const { t } = useI18n();
+
+  const asset = useUnit(newPositionFlowModel.$asset);
+  const available = useUnit(newPositionFlowModel.$available);
+  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
+
+  if (!asset || !isOverMax) return null;
+
+  return (
+    <Alert active variant="error" title={t('staking.newPosition.overMaxTitle')}>
+      <FootnoteText className="text-text-secondary">
+        {t('staking.newPosition.overMaxDescription', { max: formatAsset(available, asset) })}
+      </FootnoteText>
+    </Alert>
   );
 };
 
@@ -235,6 +260,24 @@ const MinimumBondError = () => {
       <FootnoteText className="text-text-secondary">
         {t('staking.newPosition.belowMinimumDescription', { minimum: formatAsset(minimumBond, asset) })}
       </FootnoteText>
+    </Alert>
+  );
+};
+
+/**
+ * No one on the signing route can sign — the picked account is watch-only.
+ * `$noRouteSigner` is already false in draft mode.
+ */
+const NoSignerError = () => {
+  const { t } = useI18n();
+
+  const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
+
+  if (!noRouteSigner) return null;
+
+  return (
+    <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+      <FootnoteText className="text-text-secondary">{t('staking.flow.noSignerHint')}</FootnoteText>
     </Alert>
   );
 };

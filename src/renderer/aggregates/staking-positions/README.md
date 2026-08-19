@@ -1,6 +1,6 @@
 # Staking Positions
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-30
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-11
 
 ## Overview
 
@@ -8,10 +8,12 @@ The single source of truth for **what the dashboard's account selection has stak
 wallet's own accounts plus any address explicitly handed over for tracking. It answers three questions for the staking
 dashboard: which positions exist, what each of them is worth and earning, and whether the app is still finding out.
 
-A **position** is one bonded ledger of one account on one staking chain — its stake, what it nominates, which of those
-validators actually back it in the active era, what is unbonding, and what can be withdrawn right now. The aggregate
-assembles positions from the staking domain's on-chain reads and hands the dashboard finished rows plus the totals its
-KPI cards show.
+A **position** is one bonded ledger of one account on one staking chain — its stake, what is unbonding, what can be
+withdrawn right now, and one of two kinds. A **nominator** position carries what it nominates and which of those
+validators actually back it in the active era; a **validator** position carries the stash's own terms (commission,
+whether it accepts nominations) and its active-era standing (self stake, total stake, nominator count, era points). The
+aggregate assembles positions from the staking domain's on-chain reads and hands the dashboard finished rows plus the
+totals its KPI cards show.
 
 ## The multi-chain rule
 
@@ -51,11 +53,37 @@ is the normal case, not an edge one.
 Beyond the scheme, the chain still decides by simply having no ledger for the address. An address that is both a wallet
 account and a tracked id collapses into one entry per chain, so it is never subscribed twice.
 
-**The cost is bounded by the selection, never by the address book.** Every tracked id widens the ledger and nominations
-subscriptions of every staking chain (it is part of their keys, so changing the set retires the old key and opens the
-new one). The set is therefore exactly what the user has selected on the dashboard right now: the staking widget
-replaces it whenever the selection changes and releases it on unmount. Nothing ever subscribes for the whole contact
-list.
+**The cost is bounded by the selection, never by the address book.** Every tracked id widens the ledger, nominations and
+validator-prefs subscriptions of every staking chain (it is part of their keys, so changing the set retires the old key
+and opens the new one). The set is therefore exactly what the user has selected on the dashboard right now: the staking
+widget replaces it whenever the selection changes and releases it on unmount. Nothing ever subscribes for the whole
+contact list.
+
+## Nominator or validator
+
+Every account that can hold a ledger is also asked whether it registered as a validator, and **current intent wins**:
+live validator prefs on chain make the position a validator, nominations make it a nominator, a ledger with neither is
+merely bonded. The two never mix — a validator position lists no nominations, a nominator position carries no validator
+facts.
+
+The prefs question is answered by **existence, not by value**. Registering as a validator with 0% commission stores
+exactly the chain's default entry, so a plain value read cannot tell that validator from an account that never
+registered — the read has to see whether the entry exists at all, and only a present entry makes a validator. Getting
+this wrong in either direction mislabels real accounts: 0%-commission validators are common, and "everyone is a
+validator" is what a naive default-decoding read reports.
+
+One case overrides the intent rule: a validator that **chilled mid-era** has no prefs on chain anymore but is still in
+the era's validator set — still elected, still earning, its nominators still attached. Membership in that set upgrades
+an intent-less (non-nominating) stash to a validator for the rest of the era, and the era entry then supplies the
+commission the live prefs no longer can. Era facts are looked up by the ledger's **stash**, so a position tracked
+through a legacy controller account still resolves its validator standing.
+
+A validator's status ladder is shorter than a nominator's: `active` means elected into the era's validator set,
+`waiting` means registered but not elected, and `unknown` means that set has not been read yet — the same anti-flicker
+rule as the nominator ladder, a verdict is never shown before the data that proves it. `inactive` and `bonded` are
+unreachable — elected means exposed, and there is no validator equivalent of "elected but dropped out" — so a validator
+position never carries a status reason. The era-scoped facts (self stake, total stake, nominator count, era points) are
+`null` until the stash is elected and the era set has been read; consumers show "no data" rather than zeros.
 
 ## What it exposes
 
@@ -90,7 +118,8 @@ era, so they always add up to the unbonding part of that total.
 `$pending` is about the app's own progress, never about the answer. A chain resolves the moment its ledger map lands:
 the ledger subscription writes an entry for **every** requested account, empty ones included, so "this account stakes
 nothing here" is a real answer rather than an unfinished load. Once at least one account is bonded, the chain stays
-pending until its nominations arrive too — otherwise a nominating position would flash as merely _bonded_.
+pending until its nominations **and validator prefs** cover every bonded account — otherwise a nominating position would
+flash as merely _bonded_, and a validating one as a plain nominator.
 
 The exposures deliberately do not join that wait, and answer for themselves instead. They are keyed by the nominated
 validator set, so they cannot even be requested until the nominations land, and holding the whole table back for them
@@ -104,11 +133,12 @@ Two things deliberately do **not** hold the dashboard hostage: a chain whose con
 connection has errored. Both keep `$pending` false, because neither will ever produce data and a permanent spinner is
 worse than a chain that is simply missing from the table.
 
-**A subscription that fails still does hold it, and that is a known gap.** A connected chain whose ledger subscription
-cannot be set up looks identical to one that has not answered yet: the pooled resources carry no error state, only a
-cache entry that never arrives. `$pending` therefore cannot tell "failed" from "loading" and shows a skeleton forever.
-Closing that needs an error signal in `shared/query`, not a change here; until then, anything that can make a chain read
-throw is a permanent-skeleton bug, which is why the requests sent to a chain must be valid by construction.
+**A subscription that fails still does hold it, and that is a known gap.** A connected chain whose ledger — or
+nominations, or validator-prefs — subscription cannot be set up looks identical to one that has not answered yet: the
+pooled resources carry no error state, only a cache entry that never arrives. `$pending` therefore cannot tell "failed"
+from "loading" and shows a skeleton forever. Closing that needs an error signal in `shared/query`, not a change here;
+until then, anything that can make a chain read throw is a permanent-skeleton bug, which is why the requests sent to a
+chain must be valid by construction.
 
 ## Resource lifecycle
 
@@ -117,7 +147,7 @@ component never starts a subscription.
 
 ```mermaid
 flowchart TD
-    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + min bond + active era"]
+    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + validator prefs + min bond + active era"]
     B --> C["active era known"]
     C --> D["era exposures + era validators + era anchor"]
     B --> E["nominated validator union"]
@@ -127,8 +157,8 @@ flowchart TD
     F --> G
 ```
 
-- **(chain, accounts)** starts the ledger and nominations subscriptions, the minimum bond, and the active-era
-  subscription — only for chains that have a connected api and at least one eligible account.
+- **(chain, accounts)** starts the ledger, nominations and validator-prefs subscriptions, the minimum bond, and the
+  active-era subscription — only for chains that have a connected api and at least one eligible account.
 - **(chain, era)** starts the era's exposure overviews, the era validator set (needed to explain _why_ an idle position
   earns nothing) and the era anchor that turns unbonding eras into dates.
 - **(chain, era, nominated validators)** reads the exposure pages of exactly the validators the selection nominates —

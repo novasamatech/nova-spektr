@@ -14,12 +14,13 @@ export class StakingDashboardPageElements implements BasePageElements {
   stakingTabLabel = 'Staking';
 
   // --- KPI row -------------------------------------------------------------
-  // Each KpiCard is a role="button" carrying its title as aria-label, which is
-  // the only exact hook the row exposes.
+  // Each KpiCard is a role="button" whose aria-label starts with its title and
+  // may append the current value and benchmark (e.g. "Est. APY, 5.4%, network
+  // avg 2.9% · 30d") — locators anchor on the title prefix, not an exact match.
   kpiTitles: Record<StakingKpiCard, string> = {
     totalStaked: 'Total staked',
     apy: 'Est. APY',
-    nominations: 'Active nominations',
+    nominations: 'Nominated validators',
     rewards: 'Rewards',
   };
 
@@ -28,7 +29,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   redeemLinkLabel = 'Redeem →';
 
   apyBreakdownTitle = 'Estimated APY breakdown';
-  nominationsBreakdownTitle = 'Active nominations breakdown';
+  nominationsBreakdownTitle = 'Nomination spread';
   positionsModalTitle = 'Staking positions';
   /** Green chip of a fully matured unbonding chunk: `{amount} ready`. */
   readyChipPattern = /ready/;

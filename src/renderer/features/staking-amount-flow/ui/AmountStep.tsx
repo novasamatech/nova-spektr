@@ -70,7 +70,9 @@ export const AmountStep = () => {
           >
             <div className="flex flex-col gap-4">
               {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+              <NoSignerError />
               <AmountField />
+              <OverMaxError />
               <UnlockingLimitError />
               <MinimumBondWarning />
               <ConsequenceCallout />
@@ -99,10 +101,9 @@ const AmountField = () => {
   const amountPlanck = useUnit(amountFlowModel.$amountPlanck);
   const maxAmount = useUnit(amountFlowModel.$maxAmount);
   const remaining = useUnit(amountFlowModel.$remainingStake);
+  const isOverMax = useUnit(amountFlowModel.$isOverMax);
 
   if (!mode || !asset) return null;
-
-  const isOverMax = amountPlanck.gt(maxAmount);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -141,6 +142,39 @@ const AmountField = () => {
 };
 
 /**
+ * The words behind the field's red frame. What "too much" means depends on the
+ * mode — an unbond is capped by the active stake, adding to it by the balance
+ * that can actually leave the account — so the message names the figure instead
+ * of leaving the user to guess which limit the frame is about.
+ */
+const OverMaxError = () => {
+  const { t } = useI18n();
+
+  const mode = useUnit(amountFlowModel.$mode);
+  const asset = useUnit(amountFlowModel.$asset);
+  const maxAmount = useUnit(amountFlowModel.$maxAmount);
+  const isOverMax = useUnit(amountFlowModel.$isOverMax);
+
+  if (!mode || !asset || !isOverMax) return null;
+
+  const isUnbond = mode === 'unbond';
+
+  return (
+    <Alert
+      active
+      variant="error"
+      title={t(isUnbond ? 'staking.amountFlow.overMaxUnbondTitle' : 'staking.amountFlow.overMaxAddStakeTitle')}
+    >
+      <FootnoteText className="text-text-secondary">
+        {t(isUnbond ? 'staking.amountFlow.overMaxUnbondDescription' : 'staking.amountFlow.overMaxAddStakeDescription', {
+          max: formatAsset(maxAmount, asset),
+        })}
+      </FootnoteText>
+    </Alert>
+  );
+};
+
+/**
  * Amber, and deliberately non-blocking: leaving a stub behind is legal, merely
  * suboptimal, and the user may well know exactly what they are doing.
  */
@@ -162,6 +196,24 @@ const MinimumBondWarning = () => {
           minimum: formatAsset(minimumBond, asset),
         })}
       </FootnoteText>
+    </Alert>
+  );
+};
+
+/**
+ * No one on the signing route can sign — the position belongs to a contact or a
+ * watch-only account. `$noRouteSigner` is already false in draft mode.
+ */
+const NoSignerError = () => {
+  const { t } = useI18n();
+
+  const noRouteSigner = useUnit(amountFlowModel.$noRouteSigner);
+
+  if (!noRouteSigner) return null;
+
+  return (
+    <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+      <FootnoteText className="text-text-secondary">{t('staking.flow.noSignerHint')}</FootnoteText>
     </Alert>
   );
 };

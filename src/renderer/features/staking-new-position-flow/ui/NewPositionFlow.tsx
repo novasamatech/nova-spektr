@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Modal } from '@/shared/ui-kit';
+import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { newPositionFlowModel, newPositionFlowUtils } from '../model/new-position-flow';
@@ -28,8 +29,24 @@ export const NewPositionFlow = () => {
     !newPositionFlowUtils.isNoneStep(step),
     newPositionFlowModel.flowClosed,
   );
+  const [isBasketOpen, closeBasketModal] = useModalClose(
+    newPositionFlowUtils.isBasketStep(step),
+    newPositionFlowModel.flowClosed,
+  );
 
   if (newPositionFlowUtils.isNoneStep(step)) return null;
+
+  if (newPositionFlowUtils.isBasketStep(step)) {
+    return (
+      <OperationResult
+        isOpen={isBasketOpen}
+        variant="success"
+        title={t('operation.addedToBasket')}
+        autoCloseTimeout={2000}
+        onClose={closeBasketModal}
+      />
+    );
+  }
 
   if (newPositionFlowUtils.isValidatorsStep(step)) {
     // `isOpen` has to come from the same `useModalClose` the shell's own modal

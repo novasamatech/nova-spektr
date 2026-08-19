@@ -11,6 +11,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathInline } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -44,12 +45,19 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const totalFee = useUnit(claimRewardsModel.$totalFee);
   const pendingFee = useUnit(claimRewardsModel.$pendingFee);
   const errors = useUnit(claimRewardsModel.$errors);
+  const extraErrors = useUnit(claimRewardsModel.$extraErrors);
   const hasMultisigAccount = useUnit(claimRewardsModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(claimRewardsModel.$multisigDeposit);
   const preparing = useUnit(claimRewardsModel.$preparing);
+  const noRouteSigner = useUnit(claimRewardsModel.$noRouteSigner);
   const canSign = useUnit(claimRewardsModel.$canSign);
+  const canUseBasket = useUnit(claimRewardsModel.$canUseBasket);
 
   const balances = useUnit(balanceModel.$balanceMap);
+
+  // Primary + every extra plan's failures land in the same alert — a claim is
+  // only signable when every transaction of the session validates.
+  const allErrors = useMemo(() => [...errors, ...extraErrors], [errors, extraErrors]);
 
   const errorAccountIds = useMemo<ReadonlySet<AccountId>>(() => {
     const ids = new Set<AccountId>();
@@ -171,7 +179,16 @@ export const Confirmation = ({ onGoBack }: Props) => {
             </TransactionDetails>
           </Box>
 
-          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
+          {!isDraftMode && <TransactionValidationError errors={allErrors} wallets={wallets} />}
+
+          {/* `$noRouteSigner` is already false in draft mode. */}
+          {noRouteSigner && (
+            <Box padding={[2, 5]}>
+              <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+                <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+              </Alert>
+            </Box>
+          )}
 
           {/* Rewards on another network are a separate signing session — say so
               instead of quietly leaving them out of the total. */}
@@ -190,6 +207,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
               ? t('staking.claimRewards.hintBatched', { total: plans.length })
               : t('staking.claimRewards.hint')}
           </FootnoteText>
+
+          {!isDraftMode && (
+            <div className="px-5 pb-4">
+              <MultisigOperationDescriptionField />
+            </div>
+          )}
         </DraftFormBody>
       </ScrollArea>
 
@@ -204,12 +227,20 @@ export const Confirmation = ({ onGoBack }: Props) => {
             {t('operations.drafts.initiateButton')}
           </Button>
         ) : (
-          <SignButton
-            type={signatoryWallet?.type}
-            disabled={!canSign}
-            isLoading={preparing}
-            onClick={confirmModel.startSigning}
-          />
+          <div className="flex gap-4">
+            {canUseBasket && (
+              <Button pallet="secondary" onClick={() => claimRewardsModel.txSaved()}>
+                {t('operation.addToBasket')}
+              </Button>
+            )}
+            <SignButton
+              isDefault={canUseBasket}
+              type={signatoryWallet?.type}
+              disabled={!canSign}
+              isLoading={preparing}
+              onClick={confirmModel.startSigning}
+            />
+          </div>
         )}
       </Modal.Footer>
     </>

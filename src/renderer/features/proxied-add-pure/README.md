@@ -7,8 +7,8 @@
 Creates a **pure proxy** (a keyless account controlled entirely by proxies) on-chain for one of the user's wallets. The
 initiating account submits a `proxy.createPure` transaction and is automatically granted "Any" delegated authority over
 the new account. The feature is a self-contained modal flow — pick network, account, and signing path; confirm the
-deposits and fees; sign; submit — that ends by registering the new proxied wallet, handing the user off to their
-pending operations, or deferring execution via a draft or the basket.
+deposits and fees; sign; submit — that ends by registering the new proxied wallet, handing the user off to their pending
+operations, or deferring execution via a draft or the basket.
 
 When the initiator is a multisig, the result is a pure proxy controlled by that multisig — the same shape a flexible
 multisig uses. Flexible-multisig creation itself, however, runs its own dedicated flow in `multisig-wallet-create` and
@@ -21,8 +21,8 @@ does not reuse this feature.
   Proxied wallet only when it is held with **"Any"** proxy authority.
 - Only on networks that **support pure proxies** and where the wallet has an available account; the network list is
   filtered to those chains.
-- The initiator pays a **proxy deposit**, reserved from its own balance. When the initiator is a multisig, a
-  **multisig deposit** and the fee also apply, and those are checked against the signatory's balance.
+- The initiator pays a **proxy deposit**, reserved from its own balance. When the initiator is a multisig, a **multisig
+  deposit** and the fee also apply, and those are checked against the signatory's balance.
 
 ## States / scenarios
 
@@ -44,13 +44,13 @@ flowchart TD
     Q1 -- "yes" --> PENDING["Navigate to Operations page,<br/>focus the pending multisig operation"]
 ```
 
-| Step / state    | When it appears                                    | What the user sees                                                                             |
-| --------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Form (INIT)** | On open                                            | Network, account, and signing-path selectors; live fee and deposit summary (hidden in draft mode) |
-| **Confirmation**| After a valid form submit (non-draft)              | Proxy deposit, multisig deposit (if multisig), and fee; an **Add to basket** secondary action when the signatory's wallet supports the basket |
-| **Sign**        | After confirmation                                 | The signing screen for the chosen signatory                                                    |
-| **Submit**      | After signing                                      | A generic "submitted successfully" result that auto-closes after 2s                            |
-| **Basket**      | "Add to basket" pressed on Confirmation            | An "added to basket" success toast that auto-closes                                            |
+| Step / state     | When it appears                         | What the user sees                                                                                                                            |
+| ---------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Form (INIT)**  | On open                                 | Network, account, and signing-path selectors; live fee and deposit summary (hidden in draft mode)                                             |
+| **Confirmation** | After a valid form submit (non-draft)   | Proxy deposit, multisig deposit (if multisig), and fee; an **Add to basket** secondary action when the signatory's wallet supports the basket |
+| **Sign**         | After confirmation                      | The signing screen for the chosen signatory                                                                                                   |
+| **Submit**       | After signing                           | A generic "submitted successfully" result that auto-closes after 2s                                                                           |
+| **Basket**       | "Add to basket" pressed on Confirmation | An "added to basket" success toast that auto-closes                                                                                           |
 
 ## Lifecycle
 

@@ -2,11 +2,12 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, DetailRow, FootnoteText, Separator } from '@/shared/ui';
+import { Alert, Button, DetailRow, FootnoteText, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -43,7 +44,9 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const hasMultisigAccount = useUnit(amountFlowModel.$hasMultisigAccount);
   const multisigDeposit = useUnit(amountFlowModel.$multisigDeposit);
   const preparing = useUnit(amountFlowModel.$preparing);
+  const noRouteSigner = useUnit(amountFlowModel.$noRouteSigner);
   const canSign = useUnit(amountFlowModel.$canContinue);
+  const canUseBasket = useUnit(amountFlowModel.$canUseBasket);
 
   if (!mode || !chain || !asset || !initiator) return null;
 
@@ -106,11 +109,23 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
         <TransactionValidationError errors={errors} wallets={wallets} />
 
+        {noRouteSigner && (
+          <Box padding={[2, 5]}>
+            <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
+              <Alert.Item withDot={false}>{t('staking.flow.noSignerHint')}</Alert.Item>
+            </Alert>
+          </Box>
+        )}
+
         {withChill && (
           <FootnoteText className="px-5 pt-3 text-text-tertiary">
             {t('staking.amountFlow.confirm.chillHint')}
           </FootnoteText>
         )}
+
+        <div className="px-5 pb-4">
+          <MultisigOperationDescriptionField />
+        </div>
       </ScrollArea>
 
       <Modal.Footer align="between">
@@ -119,12 +134,20 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          type={signatoryWallet?.type}
-          disabled={!canSign}
-          isLoading={preparing}
-          onClick={amountFlowModel.startSigning}
-        />
+        <div className="flex gap-4">
+          {canUseBasket && (
+            <Button pallet="secondary" onClick={() => amountFlowModel.txSaved()}>
+              {t('operation.addToBasket')}
+            </Button>
+          )}
+          <SignButton
+            isDefault={canUseBasket}
+            type={signatoryWallet?.type}
+            disabled={!canSign}
+            isLoading={preparing}
+            onClick={amountFlowModel.startSigning}
+          />
+        </div>
       </Modal.Footer>
     </>
   );

@@ -83,6 +83,7 @@ function createInput(overrides: Partial<DerivePositionInput> = {}): DerivePositi
     chainId,
     stake: createStake(),
     nomination: null,
+    validatorPrefs: null,
     exposures: {},
     validators: null,
     activeEra: ACTIVE_ERA,
@@ -309,6 +310,124 @@ describe('positionsService', () => {
       expect(active.statusReason).toBeNull();
       expect(waiting.statusReason).toBeNull();
       expect(bonded.statusReason).toBeNull();
+    });
+  });
+
+  describe('validator positions', () => {
+    const prefs = { commission: 5, blocked: false };
+
+    test('should derive an elected validator as active with full era data', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          validatorPrefs: prefs,
+          validators: createValidatorMap([createValidator(stash)]),
+        }),
+      );
+
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('active');
+      expect(position.statusReason).toBeNull();
+      expect(position.validator).toEqual({
+        commission: 5,
+        blocked: false,
+        ownStake: '100',
+        totalExposure: '1000',
+        nominatorCount: 10,
+        eraPoints: 100,
+      });
+    });
+
+    test('should derive a registered but not elected validator as waiting without era data', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          validatorPrefs: prefs,
+          validators: createValidatorMap([createValidator(validatorA)]),
+        }),
+      );
+
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('waiting');
+      expect(position.validator).toEqual({
+        commission: 5,
+        blocked: false,
+        ownStake: null,
+        totalExposure: null,
+        nominatorCount: null,
+        eraPoints: null,
+      });
+    });
+
+    test('should keep a registered validator unknown while the era set is unread', () => {
+      const position = positionsService.derivePosition(createInput({ validatorPrefs: prefs, validators: null }));
+
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('unknown');
+    });
+
+    test('should treat an elected stash without prefs or nominations as a still-active validator', () => {
+      // A validator that chilled mid-era: the prefs entry is gone, but the stash
+      // is still in the era set and still earning — not "bonded doing nothing".
+      const position = positionsService.derivePosition(
+        createInput({ nomination: null, validators: createValidatorMap([createValidator(stash)]) }),
+      );
+
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('active');
+      expect(position.validator?.commission).toEqual(5);
+    });
+
+    test('should split the unbonding chunks of a validator position at the active era boundary', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          validatorPrefs: prefs,
+          stake: createStake({
+            unlocking: createUnlocking([
+              ['400', ACTIVE_ERA + 2],
+              ['100', ACTIVE_ERA - 3],
+              ['250', ACTIVE_ERA],
+              ['300', ACTIVE_ERA + 1],
+            ]),
+          }),
+        }),
+      );
+
+      expect(position.kind).toEqual('validator');
+      expect(position.redeemable).toEqual('350');
+      expect(position.totalUnbonding).toEqual('700');
+      expect(position.unbonding.map(chunk => chunk.value)).toEqual(['300', '400']);
+    });
+
+    test('should match the era set against the stash, not the queried account', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          accountId: controller,
+          stake: createStake({ accountId: controller, stash }),
+          validators: createValidatorMap([createValidator(stash)]),
+        }),
+      );
+
+      expect(position.accountId).toEqual(controller);
+      expect(position.kind).toEqual('validator');
+      expect(position.status).toEqual('active');
+    });
+
+    test('should prefer a nomination intent over era-set membership', () => {
+      const position = positionsService.derivePosition(
+        createInput({
+          nomination: createNomination([validatorA]),
+          validators: createValidatorMap([createValidator(stash), createValidator(validatorA)]),
+        }),
+      );
+
+      expect(position.kind).toEqual('nominator');
+      expect(position.validator).toBeNull();
+    });
+
+    test('should mark nominator positions as such', () => {
+      const position = positionsService.derivePosition(createInput({ nomination: createNomination([validatorA]) }));
+
+      expect(position.kind).toEqual('nominator');
+      expect(position.validator).toBeNull();
     });
   });
 

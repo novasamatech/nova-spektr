@@ -19,13 +19,13 @@ flag as the pairing flow.
 
 ## States / scenarios
 
-| Situation                                          | Behaviour                                                                                                          |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Wallet has exactly one account (legacy Parity Signer) | Wallet-switcher icon is keyed to that single account's address                                                     |
-| Wallet has multiple derived accounts (modern Vault)   | Wallet-switcher icon is keyed to the wallet's root account instead of any one derived key                          |
-| Account is Ethereum-based                            | Icon theme is `ethereum`                                                                                           |
-| Single-account, non-Ethereum                          | Icon theme is `polkadot`                                                                                           |
-| Multi-account, non-Ethereum                           | Icon theme is `jdenticon`                                                                                          |
+| Situation                                             | Behaviour                                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Wallet has exactly one account (legacy Parity Signer) | Wallet-switcher icon is keyed to that single account's address                                                               |
+| Wallet has multiple derived accounts (modern Vault)   | Wallet-switcher icon is keyed to the wallet's root account instead of any one derived key                                    |
+| Account is Ethereum-based                             | Icon theme is `ethereum`                                                                                                     |
+| Single-account, non-Ethereum                          | Icon theme is `polkadot`                                                                                                     |
+| Multi-account, non-Ethereum                           | Icon theme is `jdenticon`                                                                                                    |
 | Any Vault account                                     | Can sign, can batch-sign multiple transactions in one scan, and is available on any chain matching its own or a parent chain |
 
 Wallets are listed in the wallet-switcher's "Polkadot Vault" group, searchable by wallet name or any of its addresses,
@@ -37,8 +37,8 @@ time the way an online signer might be.
 
 ## Lifecycle
 
-A wallet enters this feature's scope the moment [`polkadot-vault-wallet-pairing`](../polkadot-vault-wallet-pairing/README.md)
-creates it. From then on:
+A wallet enters this feature's scope the moment
+[`polkadot-vault-wallet-pairing`](../polkadot-vault-wallet-pairing/README.md) creates it. From then on:
 
 1. It appears in the wallet switcher, grouped with other Polkadot Vault wallets.
 2. Its accounts become eligible to sign and to appear in balance/chain views per the availability rules above.
@@ -50,5 +50,5 @@ creates it. From then on:
 
 - [`polkadot-vault-wallet-pairing`](../polkadot-vault-wallet-pairing/README.md) — the onboarding flow that creates the
   wallet in the first place.
-- `wallet-details` — the existing-wallet settings screen that calls back into this feature's draft-building service
-  when adding keys after initial creation.
+- `wallet-details` — the existing-wallet settings screen that calls back into this feature's draft-building service when
+  adding keys after initial creation.

@@ -1,6 +1,6 @@
 # Validator Selection
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-04
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -48,7 +48,9 @@ nominates today" and never "this is what you were about to change it to".
 
 | State           | When it appears                                      | What the user sees                                                        |
 | --------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
-| Loading         | The elected set of the network has not arrived       | Table skeleton                                                            |
+| Loading         | The elected set of the network has not arrived       | Table skeleton, "Loading validators…" in place of the count               |
+| Load failed     | The request gave up and nothing was ever fetched     | "Couldn't load the validators" + Retry, instead of skeletons              |
+| Stale           | A refresh failed but an earlier set is on screen     | The old rows, "Couldn't update the validator set" + Retry in the toolbar  |
 | Browsing        | The set has arrived                                  | Sorted table, meta line ("600 active validators · era 1,712")             |
 | Preselected     | Opened from change-nominations                       | The account's current nominations already checked                         |
 | Narrowed        | A filter, a toggle or a search query is active       | Fewer rows; "Showing 10 of 600"; a dot on the filter button               |
@@ -56,6 +58,29 @@ nominates today" and never "this is what you were about to change it to".
 | At the limit    | As many validators picked as the chain allows        | Further rows cannot be added; already-picked ones can still be removed    |
 | Detail open     | A row is opened                                      | Its numbers, led by the score; the breakdown sits in that row's tooltip   |
 | Ready to submit | At least one validator picked, and the mode can sign | CTA enabled; "8 of 12 selected shown · est. set APY 15.9%"                |
+
+### When the network does not answer
+
+Skeletons promise data. Once a request has given up, they are a lie the screen keeps telling — so a failed load replaces
+them with a named failure and a **Retry**, and the toolbar stops reporting a count it does not have. This is the state a
+flaky RPC used to leave the picker in indefinitely, with no way to tell "still coming" from "never coming".
+
+Two failures, told apart because they call for different things:
+
+- **Nothing was ever fetched** — the table says so and offers the retry, because there is nothing else to look at.
+- **A refresh failed over an earlier set** — the rows stay. They are still the best answer available, but the toolbar
+  replaces the count and era with "Couldn't update the validator set", since the era stamped on those rows has moved on.
+  Silently showing a stale era as current is the one thing worse than saying the refresh failed.
+
+Retrying re-issues the request for the chain and era the screen is scoped to, and the failure retires by itself if the
+set arrives another way.
+
+### Six hundred rows, opened instantly
+
+The elected set runs to hundreds of validators, each row carrying an identicon and a checkbox. Mounting them all is
+enough to block the main thread for over a second — long enough that the modal appears to hang on open. The table
+therefore renders only the rows in view, which is why every row is a fixed height: uniform rows are what make that
+possible, and nothing in a cell is allowed to grow past it.
 
 ### What the row badges mean
 
@@ -155,9 +180,16 @@ all in the table, which is where the badge is first read.
 
 ### Search matches what is on screen
 
-The query runs over the strings the row actually renders — the resolved identity name (`Operator A/node-2` for a
-sub-identity) and the address in this chain's format. The stored hex account id is never on screen and is never matched:
-a result the user cannot visibly explain is worse than no result.
+The query runs over the strings the row actually renders — the resolved name and the address in this chain's format. The
+stored hex account id is never on screen and is never matched: a result the user cannot visibly explain is worse than no
+result.
+
+**A validator's name is resolved the same way every other address in the app is**: a custom account name, then the local
+address book, then the external one, then the on-chain identity, and a short address when nothing knows it. The list
+used to read identities only, so a validator the user had just named in their own address book still appeared here as a
+bare address — and nowhere else in the app did. The one thing the general resolver cannot say is the sub-identity
+suffix, so it is appended when the identity is what won: `Operator A/node-2` is what tells two nodes of one operator
+apart, and a name the user wrote down themselves is a deliberate override of exactly that.
 
 Results keep the table's current order rather than being re-ranked by how well they matched. The user chose that sort;
 typing into the search box is a narrowing, not a re-sort.

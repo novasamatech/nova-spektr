@@ -1,3 +1,5 @@
+import { getErasInDays } from '@/domains/staking';
+
 /** Windows the rewards drill-down can be looked at through. */
 export const REWARD_PERIODS = ['7d', '30d', 'all'] as const;
 
@@ -42,5 +44,5 @@ export function erasInPeriod(period: RewardPeriod, eraDurationMs: number | null,
   const days = periodDays(period);
   if (days === null || !eraDurationMs || eraDurationMs <= 0) return historyDepth;
 
-  return Math.min(historyDepth, Math.max(1, Math.ceil((days * DAY_MS) / eraDurationMs)));
+  return Math.min(historyDepth, getErasInDays(days, eraDurationMs));
 }

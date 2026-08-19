@@ -232,6 +232,7 @@ describe('Staking Subscription Pool - Integration', () => {
       ledger: 1,
       nominators: 1,
       minNominatorBond: 1,
+      validatorPrefs: 1,
     });
 
     await env.executeEventVoid(stakingPositions.reset);
@@ -242,6 +243,7 @@ describe('Staking Subscription Pool - Integration', () => {
       ledger: 0,
       nominators: 0,
       minNominatorBond: 0,
+      validatorPrefs: 0,
     });
 
     // Already released — the afterEach reset must stay a no-op.

@@ -1,10 +1,11 @@
 import { useI18n } from '@/shared/i18n';
 import { type LabelVariant, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { type PositionStatus, type PositionStatusReason } from '@/domains/staking';
+import { type PositionKind, type PositionStatus, type PositionStatusReason } from '@/domains/staking';
 
 type Props = {
   status: PositionStatus;
   statusReason: PositionStatusReason;
+  kind?: PositionKind;
 };
 
 const VARIANT: Record<Exclude<PositionStatus, 'unknown'>, LabelVariant> = {
@@ -28,16 +29,19 @@ const VARIANT: Record<Exclude<PositionStatus, 'unknown'>, LabelVariant> = {
  * nobody has checked. The cell shimmers alongside the KPI cards above it, which
  * are waiting on the same data.
  */
-export const PositionStatusPill = ({ status, statusReason }: Props) => {
+export const PositionStatusPill = ({ status, statusReason, kind = 'nominator' }: Props) => {
   const { t } = useI18n();
 
   if (status === 'unknown') {
     return <Skeleton width="62px" height="22px" />;
   }
 
-  const hint = statusReason
-    ? t(`dashboard.staking.positions.statusHint.${statusReason}`)
-    : t(`dashboard.staking.positions.statusHint.${status}`);
+  const hint =
+    kind === 'validator'
+      ? t(`dashboard.staking.positions.statusHint.validator.${status}`)
+      : statusReason
+        ? t(`dashboard.staking.positions.statusHint.${statusReason}`)
+        : t(`dashboard.staking.positions.statusHint.${status}`);
 
   return (
     <Tooltip>

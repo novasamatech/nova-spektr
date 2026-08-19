@@ -2,12 +2,14 @@ import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { type TxConfirmInfo } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { type UnclaimedPayout } from '@/domains/staking';
+import { type SigningMode } from '@/features/validator-selection';
 
 export const enum Step {
   NONE,
   CONFIRM,
   SIGN,
   SUBMIT,
+  BASKET,
 }
 
 /**
@@ -23,6 +25,13 @@ export type ClaimRequest = {
   account: AnyAccount;
   wallet: Wallet;
   payouts: UnclaimedPayout[];
+  /**
+   * How the caller expects the claim to be signed — the **payer's** mode, not
+   * the nominator's. Payouts are permissionless, so a producer that resolved a
+   * signable payer sends `local` even for an address-book nominator; `draft`
+   * means the whole session has no signable payer.
+   */
+  signingMode: SigningMode;
 };
 
 /**

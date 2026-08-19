@@ -1,6 +1,6 @@
 # Staking Dashboard Actions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -10,9 +10,10 @@ draft saved from one of them.
 The dashboard's two staking widgets — [`dashboard-staking-kpi`](../dashboard-staking-kpi/README.md) and
 [`dashboard-staking-positions`](../dashboard-staking-positions/README.md) — deliberately **only emit**. They build no
 transaction, hold no chain, and know nothing about the flows. The flows —
-[`staking-claim-rewards`](../staking-claim-rewards/README.md), [`staking-amount-flow`](../staking-amount-flow/README.md)
-and [`staking-confirm-flow`](../staking-confirm-flow/README.md) — deliberately **only consume**, and know nothing about
-the dashboard. This feature is the one module that knows both, and it exists so that neither side has to.
+[`staking-claim-rewards`](../staking-claim-rewards/README.md),
+[`staking-amount-flow`](../staking-amount-flow/README.md), [`staking-confirm-flow`](../staking-confirm-flow/README.md)
+and [`staking-new-position-flow`](../staking-new-position-flow/README.md) — deliberately **only consume**, and know
+nothing about the dashboard. This feature is the one module that knows both, and it exists so that neither side has to.
 
 It owns three jobs:
 
@@ -20,8 +21,7 @@ It owns three jobs:
    chain, an asset or a wallet. A claim flow needs all of them. The gap is closed here, from `networkModel.$chains`, the
    chain's staking asset, `accounts` and `walletModel`.
 2. **Routing.** Forwarding what is already complete (the position drawer's payloads are a structural superset of what
-   the amount flow takes), splitting what the flow cannot take in one piece (a multi-chain claim), and sending
-   `Start staking` to the page that owns bonding.
+   the amount flow takes), and splitting what the flow cannot take in one piece (a multi-chain claim).
 3. **Gating.** Announcing, per action, which buttons now have a destination. A button whose event nobody consumes stays
    disabled with a tooltip rather than firing into the void.
 
@@ -41,32 +41,37 @@ It owns three jobs:
 | Add stake (position drawer)              | `addStakeRequested`          | `stakingAmountFlow.addStakeRequested`          |
 | Redeem (KPI drill-down)                  | `redeemRequested`            | `stakingConfirmFlow.redeemRequested`           |
 | Change validators (position drawer)      | `nominationsChangeRequested` | `stakingConfirmFlow.changeValidatorsRequested` |
-| + New position / Start staking           | `startStakingRequested`      | Navigation to the Staking page                 |
+| + New position / Start staking           | `startStakingRequested`      | `newPositionFlow.newPositionRequested`         |
 
-Every dashboard staking action now has a destination. The Staking page's own forms (`staking-withdraw`,
-`staking-nominate`) stay where they are: both render into Staking-page slots, so firing their models from the dashboard
-would run a flow whose UI is not mounted. The dashboard signs through the two dashboard-owned flows instead.
+Every dashboard staking action now has a destination, and none of them leaves the dashboard — `Start staking` was the
+last one that navigated away, and it now opens the new-position flow in place. The Staking page's own forms
+(`staking-withdraw`, `staking-nominate`) stay where they are: both render into Staking-page slots, so firing their
+models from the dashboard would run a flow whose UI is not mounted. The dashboard signs through the dashboard-owned
+flows instead.
 
-The chips for the four flow-backed actions still follow the `staking` flag, so a build with the flag off renders them
-disabled with the "not connected yet" tooltip rather than opening a modal that is not mounted.
+The chips for the flow-backed actions — `+ New position` now among them — still follow the `staking` flag, so a build
+with the flag off renders them disabled with the "not connected yet" tooltip rather than opening a modal that is not
+mounted.
 
 ## States / scenarios
 
-| Scenario                                  | What happens                                                                             |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
-| KPI claim, one chain                      | One claim session with every resolved account of that chain                              |
-| KPI claim, several chains                 | One session per chain, run in sequence: the first opens now, the rest queue              |
-| Queued chain after a landed claim         | Closing the successful session opens the next chain's                                    |
-| Queued chain after a cancelled session    | The queue is dropped — cancelling means cancelling                                       |
-| An address with no local account          | Skipped; the rest of the selection still goes through                                    |
-| A selection where nothing resolves        | Nothing is dispatched at all — no empty confirm                                          |
-| Position claim with no payouts in cache   | Not dispatched; an empty batch would fail on chain                                       |
-| KPI unbond with no position behind it     | Skipped — there is no active stake to cap the amount against                             |
-| KPI redeem with no position behind it     | Skipped — there is no ledger to withdraw from                                            |
-| KPI redeem with nothing unlocked          | Skipped — the call would move nothing and still cost a fee                               |
-| Picked validator set submitted            | Forwarded unchanged; the payload the picker produced is the payload the confirm opens on |
-| Draft saved from any of the staking flows | Bottom-left toast, auto-dismissing, with a `View drafts →` link to the Operations page   |
-| Signed submission                         | No draft toast — the flows' own submit confirmation stands                               |
+| Scenario                                  | What happens                                                                                                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| KPI claim, one chain                      | One claim session with every resolved account of that chain                                                                                       |
+| KPI claim, several chains                 | One session per chain, run in sequence: the first opens now, the rest queue                                                                       |
+| Queued chain after a landed claim         | Closing the successful session opens the next chain's                                                                                             |
+| Queued chain after a cancelled session    | The queue is dropped — cancelling means cancelling                                                                                                |
+| An address with no local account          | A payer of ours on that chain is substituted — the payout is permissionless                                                                       |
+| A chain no account of ours can sign on    | Dropped from that chain alone if the rest of the selection still resolves; `claimBlocked` fires only when the whole selection resolves to nothing |
+| A selection where nothing resolves        | Nothing is dispatched at all — no empty confirm                                                                                                   |
+| Position claim on a contact position      | Same payer resolution as a KPI claim — the drawer's Claim chip serves contact positions                                                           |
+| Position claim with no payouts in cache   | Not dispatched; an empty batch would fail on chain                                                                                                |
+| KPI unbond with no position behind it     | Skipped — there is no active stake to cap the amount against                                                                                      |
+| KPI redeem with no position behind it     | Skipped — there is no ledger to withdraw from                                                                                                     |
+| KPI redeem with nothing unlocked          | Skipped — the call would move nothing and still cost a fee                                                                                        |
+| Picked validator set submitted            | Forwarded unchanged; the payload the picker produced is the payload the confirm opens on                                                          |
+| Draft saved from any of the staking flows | Bottom-left toast, auto-dismissing, with a `View drafts →` link to the Operations page                                                            |
+| Signed submission                         | No draft toast — the flows' own submit confirmation stands                                                                                        |
 
 ### Multi-chain claims
 
@@ -129,9 +134,19 @@ The resolver now answers with `{ requests, skipped }`, and a selection that reso
 the row through `claimBlocked`. The row also prevents the case up front: a Claim button on a network this installation
 holds no signing key for is disabled and says so.
 
-**The payer is resolved, not assumed.** A payout is permissionless, so the nominator is only the first candidate: when
-it is an address-book position, any account of ours that can sign on that chain is used instead. See the claim flow's
-own spec for the reasoning.
+**The payer is resolved, not assumed.** A payout is permissionless, so the nominator is only the first candidate: the
+position's own account pays when it can sign, and otherwise any account of ours that can sign on that chain is used
+instead. See the claim flow's own spec for the reasoning. This holds for the position drawer's Claim chip as well as for
+the KPI selection — the chip used to bail on a position without a local account, a silent no-op for exactly the
+address-book positions the Rewards modal claims fine. A position claim is skipped only when the chain has no signer of
+ours at all (the drawer disables the chip up front and says so) or when the payout cache holds nothing for it.
+
+**The signing mode travels with the request.** Every target this feature dispatches carries a `signingMode`, so a flow
+opened for an address-book position starts in draft mode instead of making the user discover the toggle. The drawer's
+payloads keep the mode the drawer computed; a KPI-resolved target derives it here (no local account → `draft`, an
+account that holds no key → `watchOnly`, otherwise `local`). Claims are the exception: the payer's mode wins — the
+drawer may say `draft` for a contact position, but the substituted payer can sign, so the claim request goes out
+`local`.
 
 ## Related
 

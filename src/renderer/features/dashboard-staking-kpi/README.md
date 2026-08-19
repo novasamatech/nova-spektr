@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
 
 ## Overview
 
@@ -70,6 +70,19 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
   answers "what is the stake that _is_ earning earning", so an idle ledger must not halve it. A chain whose APY is
   unknown is skipped rather than counted as zero, for the same reason. With nothing weighable the card shows a grey em
   dash instead of a confident `0.0%`.
+
+  A footer line — `network avg 14.2% · 30d` — gives the number something to be judged against. Unlike the headline,
+  which falls back to the NPoS inflation curve when a chain reports no era reward, the benchmark is **realized-only**:
+  the mean of what the chain's last ~30 days of completed eras actually paid, net of the current median commission, and
+  unmeasurable is left `null` rather than guessed at from the curve — a benchmark nobody can verify against a real
+  payout is worse than no benchmark. It is blended the same way as the headline, by the same fiat weights, and shown
+  only once it is complete: not loading, a headline to sit beside, a benchmark that resolved, full coverage of the
+  earning stake, and a contributing chain set exactly equal to the headline's — the two readings fail independently (the
+  headline still has a curve fallback, the benchmark does not), and a benchmark covering more or fewer chains than the
+  figure beside it is a false comparison in either direction. A benchmark that could not measure a chain holding part of
+  the stake would describe a different portfolio than the headline next to it, so it stays hidden rather than being
+  presented as "the" network average.
+
 - **Nominated validators** — how many distinct validators the selection nominates, counted **per chain**: the same key
   elected on Polkadot and on Kusama is two validators, because it is two nomination sets and two rewards. The subline
   carries how many of them the era actually backs, which is what the card used to lead with. The headline moved because
@@ -80,13 +93,15 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
 
 ### Filters on the rewards drill-down
 
-Three, and they compose: **network**, **nominator** and **period**.
+Three, and they compose: **network**, **account** and **period**.
 
 - **Network** appears only when the selection stakes on more than one — a filter with a single option is furniture.
   Built from the rows themselves, never a hard-coded list of chains.
-- **Nominator** is the rail under the donut rather than a separate control: the same list answers "which of my accounts
-  is behind this" and "show me only that one". It is built from the network-scoped data but **not** from the
-  nominator-scoped data, so the filter never hides its own alternatives, and clicking the active entry clears it.
+- **Account** is the rail under the donut rather than a separate control — headed "My accounts", because the selection's
+  accounts can stand behind a validator as nominators _or be the validator_: an account that runs one carries a
+  Validator chip on its rail entry, exactly the chip the positions table uses. The same list answers "which of my
+  accounts is behind this" and "show me only that one". It is built from the network-scoped data but **not** from the
+  account-scoped data, so the filter never hides its own alternatives, and clicking the active entry clears it.
 - Both narrow the table, the donut, the totals **and** the export together. An export that silently ignored the filters
   on screen would be the worst of the three.
 
@@ -141,9 +156,15 @@ per combination. Only the **period** changes a request, because it changes which
 
 ### The period tabs
 
-`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the "received in period" line, and the CSV
-export. They deliberately do **not** filter the validator table or the claim: a payout expires by **era**, not by date,
-and hiding part of what is still claimable behind a date filter hides money.
+`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the earned attribution window (the donut
+and the Earned column), and the CSV export. They deliberately do **not** filter the claim: a payout expires by **era**,
+not by date, and hiding part of what is still claimable behind a date filter hides money.
+
+There is deliberately **no "received in period" figure** next to the tabs. Received (actual payouts, on the indexer's
+timestamps) and earned (the eras' arithmetic) are different facts on different clocks — old eras claimed inside the
+window inflate one, unclaimed eras of the window inflate the other — and showing both side by side read as a
+discrepancy, not as two answers. The earned total in the donut is the number the screen stands behind; what was actually
+paid and when remains available, line by line, through the CSV export.
 
 They also bound the earned attribution. Replaying an era costs an indexer page walk whose rows carry the validator's
 whole nominator list — measured at ~10 KB a row, so a full 84-era history for a wallet backing ten operators is several
@@ -165,7 +186,10 @@ chain's own era duration.
 
 - **Est. APY** opens the donut breakdown: one segment per position, hover-linked in both directions — the donut centre
   swaps to the hovered row, and hovering a row dims the other segments. A single position renders as a full ring rather
-  than disappearing.
+  than disappearing. Each row carries its own network average, under the row's APY, with **its exact window** —
+  `network avg 15.2% · 21d` on a Kusama row next to `· 30d` on a Polkadot one, because the two chains' history depths
+  genuinely differ. The row deliberately ignores the card footer's coverage gate: a single chain's average is complete
+  by definition, so a benchmark that could not cover every chain still degrades into detail here, never into nothing.
 - **Nominated validators** opens the nomination spread — where the selection's stake actually went, as opposed to where
   it was pointed. The table lists **every nomination of every account**, grouped by account (largest position first) and
   labelled with what the era did with it:
@@ -193,17 +217,33 @@ chain's own era duration.
   same validator — and the runtime rejects the second as already claimed. One row per (chain, validator) keeps them
   together, sums what each of our accounts is owed, and submits the call once.
 
-  Each row carries the validator, **which of our accounts nominate it**, what it **earned** over the selected window,
-  what is still **unclaimed**, and its own **Claim** button. The footer claims everything at once. Nothing is selected
-  first: with the validator as the unit there is no per-row choice worth making, and "claim all" is what the user
-  actually wants nine times out of ten. A validator only watch-only accounts stand behind keeps its row and loses its
-  button — its absence would read as a bug.
+  Each row carries the validator, **which of our accounts stand behind it**, what it **earned** over the selected
+  window, what is still **unclaimed**, and its own **Claim** button. Every column except Actions is **sortable**; the
+  default keeps unclaimed first (largest outstanding on top — the actionable column leads). Amount columns sort by
+  **fiat**, since planck amounts of different networks are not comparable; the validator column sorts by the
+  **displayed** name (resolved identity, address until it resolves). Sorting reorders only the table — the donut, totals
+  and export keep the claim order. The footer claims everything at once. Nothing is selected first: with the validator
+  as the unit there is no per-row choice worth making, and "claim all" is what the user actually wants nine times out of
+  ten. A validator only watch-only accounts stand behind keeps its row and loses its button — its absence would read as
+  a bug.
+
+  **A validator we run is our row too.** When the row's validator is one of the selection's own accounts it wears a "My
+  validator" badge next to the name, and the backing column reads **"self"** — or **"self + N accounts"** when other
+  accounts of ours nominate it. The chain lists the validator's own stake among its backers, so the count deliberately
+  excludes the validator itself: "2 accounts" for a validator plus one nominator would claim a backer the validator gave
+  itself. The tooltip still lists every backing account, self included. Claiming needed no change: a self payout is the
+  same permissionless `payout_stakers` call, so those rows were always claimable.
 
   **Earned and unclaimed are different facts and are never mixed.** Unclaimed is what the chain still owes, read from
   the payout scan. Earned is the era's own arithmetic — exposure, reward points, commission — replayed over the window,
   because the reward indexer records an amount and an address and **never the validator behind it**. It is therefore
   accrued, not received: an era pays out when someone submits its payout call, which may be days later. The donut is
   sized by earned, so it stays meaningful for a wallet that has already claimed everything.
+
+  The replay attributes **own validators** as well as nominations. An exposure row keeps the validator's self-stake in
+  its own field rather than in the nominator list, so the validator's line is added to the shares explicitly — earning
+  the era formula's validator payout, its own-stake share plus commission. Before that, an account running a validator
+  read a flat zero in Earned while its Unclaimed kept growing: the two columns disagreed about the same money.
 
 - **Total staked** opens the positions drill-down: the same donut over staked value, a table of Account / Staked /
   Unbonding / actions with a chip per unlocking chunk (amber with a countdown while locked, green once ready), and
@@ -260,9 +300,12 @@ there everything is local: click a card or a footer link to open its drill-down,
 CSV. The only outbound step is a claim/redeem/unbond request handed to a staking flow, which takes over from the modal.
 
 Nothing here starts a chain subscription on mount — ledgers, nominations, eras and exposures are driven by the positions
-aggregate. The cards do drive three of their own reads (network APY, the 30-day reward window, and the unclaimed payout
-scan per stash), each through the shared ref-counted pools so a second card asking for the same data joins the request
-in flight instead of duplicating it.
+aggregate. The cards do drive four of their own reads (network APY, the network average benchmark, the 30-day reward
+window, and the unclaimed payout scan per stash), each through the shared ref-counted pools so a second card asking for
+the same data joins the request in flight instead of duplicating it. The benchmark is one more era-keyed read per chain
+(`networkAvgRateResource`: `erasValidatorPrefs` for the current median commission, plus `erasValidatorReward` and
+`erasTotalStakeMulti` batched over the trailing window) — cached like the network APY read it sits beside, so a rollover
+is the only thing that ever triggers a refetch.
 
 ## Related
 

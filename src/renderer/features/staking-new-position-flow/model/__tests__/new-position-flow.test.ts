@@ -2,7 +2,16 @@ import { BN } from '@polkadot/util';
 import { type EventCallable, type Store, allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Asset, type Chain, type ChainId, type Wallet, CryptoType, SigningType } from '@/shared/core';
+import {
+  type Asset,
+  type Chain,
+  type ChainId,
+  type Wallet,
+  ConnectionStatus,
+  CryptoType,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Step } from '../../types';
@@ -23,12 +32,14 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
 
   return {
     ...actual,
-    createComplexTxStore: ({ transaction }: { transaction: Store<unknown> }) => {
+    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
       const $tx = createStore<unknown>(null);
       sample({ clock: transaction, target: $tx });
 
       return {
-        $route: createStore<unknown[]>([]),
+        // The self-route a plain account gets from the real store — keeps the
+        // route-signer guard honest without the BFS over the account graph.
+        $route: initiator.map((account) => (account ? [account] : [])),
         $tx,
         $feeTx: createStore<unknown>(null),
         $pendingWrapping: createStore(false),
@@ -36,6 +47,10 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
         $pendingFee: createStore(false),
       };
     },
+    // The real one asks the DI permission registry, which is empty in a unit
+    // fork — every account would read as unsignable. The permission check has
+    // its own tests; here the terminal hop simply signs.
+    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
     createTxValidationStore: () => ({
       $errors: createStore<unknown[]>([]),
       $balanceValidationResults: createStore<unknown[]>([]),
@@ -112,6 +127,9 @@ vi.mock('@/features/validator-selection', async () => {
 });
 
 const { newPositionFlowModel } = await import('../new-position-flow');
+const { networkModel } = await import('@/entities/network');
+const { walletModel } = await import('@/entities/wallet');
+const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 
 /**
@@ -167,12 +185,24 @@ const ACCOUNT = {
 
 const validator = (index: number) => ({ accountId: accountId(index), address: `address-${index}` });
 
+/** The wallet behind `ACCOUNT` (`walletId: 1`) — the basket can sign for it. */
+const VAULT_WALLET: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+/** Signs interactively — the basket cannot sign for it later. */
+const WALLET_CONNECT_WALLET: Wallet = { id: 1, name: 'WalletConnect', type: WalletType.WALLET_CONNECT, accounts: [] };
+
 const $chains = () => mocks.chains as Store<unknown[]>;
 const $minBond = () => mocks.minBond as Store<Record<string, string>>;
 
-/** The two things the flow reads about a network. */
+/**
+ * What the flow reads about a network — chains, the minimum bond, and a live
+ * connection (`$coreTx` refuses to build on a disconnected chain).
+ */
 const seeded = (minBondPlanck = dot(1)) =>
-  new Map().set($chains(), [CHAIN]).set($minBond(), { [CHAIN_ID]: minBondPlanck });
+  new Map()
+    .set($chains(), [CHAIN])
+    .set($minBond(), { [CHAIN_ID]: minBondPlanck })
+    .set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.CONNECTED });
 
 /** Walks the form far enough that `Continue` is allowed. */
 async function fillForm(scope: ReturnType<typeof fork>, amount = '100') {
@@ -311,5 +341,84 @@ describe('staking-new-position-flow · the call', () => {
     await fillForm(scope);
 
     expect(scope.getState(newPositionFlowModel.$coreTx)).toBeNull();
+  });
+});
+
+describe('staking-new-position-flow · basket gate', () => {
+  /** Walks to the confirm with a built call, the state the basket stores from. */
+  async function walkToConfirm(scope: ReturnType<typeof fork>) {
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+  }
+
+  it('stores the built call and moves to the BASKET step for a vault wallet', async () => {
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    const stored: unknown[] = [];
+    createWatch({ unit: basketOperations.addTransactions, scope, fn: (drafts) => stored.push(...drafts) });
+
+    await walkToConfirm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(true);
+
+    await allSettled(newPositionFlowModel.txSaved, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.BASKET);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ initiatorAccountId: ALICE });
+  });
+
+  it('refuses a wallet the basket cannot sign with', async () => {
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [WALLET_CONNECT_WALLET]) });
+    const stored: unknown[] = [];
+    createWatch({ unit: basketOperations.addTransactions, scope, fn: (drafts) => stored.push(...drafts) });
+
+    await walkToConfirm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
+
+    await allSettled(newPositionFlowModel.txSaved, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(stored).toHaveLength(0);
+  });
+
+  it('refuses while there is no call to store', async () => {
+    // The form alone builds nothing — `$coreTx` waits for the validators.
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    await fillForm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$coreTx)).toBeNull();
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
+  });
+
+  it('refuses in draft mode', async () => {
+    // Toggled after the call is built, so the draft term is the one deciding.
+    const scope = fork({ values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]) });
+    await walkToConfirm(scope);
+    await allSettled(newPositionFlowModel.toggleDraftMode, { scope, params: true });
+
+    expect(scope.getState(newPositionFlowModel.$coreTx)).not.toBeNull();
+    expect(scope.getState(newPositionFlowModel.$canUseBasket)).toBe(false);
+  });
+});
+
+describe('staking-new-position-flow · sign gate', () => {
+  it('allows signing once the call is built and validated', async () => {
+    const scope = fork({ values: seeded() });
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(true);
+  });
+
+  it('refuses to sign while there is no transaction', async () => {
+    // Validation may read `true` (nothing to check yet) — the gate must still
+    // hold on the missing call itself.
+    const scope = fork({ values: seeded() });
+    await fillForm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
   });
 });

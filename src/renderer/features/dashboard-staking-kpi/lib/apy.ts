@@ -1,7 +1,7 @@
 import { default as BigNumber } from 'bignumber.js';
 
 import { type ChainId } from '@/shared/core';
-import { type StakingPosition } from '@/domains/staking';
+import { type NetworkAvgRate, type StakingPosition } from '@/domains/staking';
 
 /**
  * One chain's contribution to the blended APY: the network APY it pays and the
@@ -66,4 +66,110 @@ export function computeWeightedApy(entries: ApyWeight[]): number | null {
   if (!totalWeight.gt(0)) return null;
 
   return weighted.div(totalWeight).toNumber();
+}
+
+/**
+ * `NetworkAvgRate.ratePercent` travels as a string; the single parse rule for
+ * every consumer — a malformed value must read as unknown, never render
+ * "NaN%".
+ */
+export function parseRatePercent(ratePercent: string): number | null {
+  const rate = Number(ratePercent);
+
+  return Number.isFinite(rate) ? rate : null;
+}
+
+/** One chain's contribution to the blended network benchmark. */
+export type NetworkAvgWeight = {
+  chainId: ChainId;
+  /** The chain's trailing-window rate, `null` when it has not reported one. */
+  rate: Pick<NetworkAvgRate, 'ratePercent' | 'days'> | null;
+  /** Fiat value of the earning stake on that chain. */
+  weight: string;
+};
+
+/**
+ * Blended benchmark. `coverage` is the share (0..1) of the positive weight that
+ * the contributing chains actually cover — the consumer must not present the
+ * blend as "the network average" when a chain holding most of the stake could
+ * not be measured (e.g. a transient RPC failure on Polkadot AH would otherwise
+ * leave a Kusama-only "network avg 15%" beside a mostly-Polkadot headline).
+ */
+export type NetworkAvgBlend = {
+  rate: number;
+  days: number;
+  coverage: number;
+};
+
+/**
+ * Minimum share of the earning stake's weight the benchmark must cover to be
+ * presented as "the network average". Full coverage: with only 2-3 staking
+ * chains, a benchmark that could not measure one of them describes a different
+ * portfolio than the headline next to it.
+ */
+export const NETWORK_AVG_MIN_COVERAGE = 1;
+
+/**
+ * The benchmark and the headline must describe the same chain set to be
+ * comparable — the two readings fail independently (the headline still has the
+ * NPoS-curve fallback, the benchmark deliberately does not), and a benchmark
+ * covering more or fewer chains than the figure beside it is a false comparison
+ * in either direction.
+ */
+export function sameContributingChains(apyEntries: ApyWeight[], rateEntries: NetworkAvgWeight[]): boolean {
+  const hasWeight = (weight: string) => new BigNumber(weight || '0').gt(0);
+
+  const apyChains = new Set(
+    apyEntries
+      .filter((entry) => entry.apy !== null && Number.isFinite(entry.apy) && hasWeight(entry.weight))
+      .map((entry) => entry.chainId),
+  );
+  const rateChains = new Set(
+    rateEntries
+      .filter(
+        (entry) => entry.rate !== null && parseRatePercent(entry.rate.ratePercent) !== null && hasWeight(entry.weight),
+      )
+      .map((entry) => entry.chainId),
+  );
+
+  return apyChains.size === rateChains.size && [...apyChains].every((chainId) => rateChains.has(chainId));
+}
+
+/**
+ * Stake-weighted blend of the per-chain network average rates — the same
+ * skip-not-zero weighting as `computeWeightedApy`, carrying the window length
+ * along: the label shows the longest window among the contributing chains — the
+ * blend legitimately includes that much history for at least one component, and
+ * the per-chain breakdown shows each chain's exact window; "shortest" would
+ * understate every other component. A real tradeoff, revisit if it confuses.
+ */
+export function blendNetworkAvgRate(entries: NetworkAvgWeight[]): NetworkAvgBlend | null {
+  let weighted = new BigNumber(0);
+  let totalWeight = new BigNumber(0);
+  let totalPositiveWeight = new BigNumber(0);
+  let days = 0;
+
+  for (const entry of entries) {
+    const weight = new BigNumber(entry.weight || '0');
+    if (weight.gt(0)) totalPositiveWeight = totalPositiveWeight.plus(weight);
+
+    if (entry.rate === null) continue;
+
+    const rate = parseRatePercent(entry.rate.ratePercent);
+    if (rate === null) continue;
+
+    if (!weight.gt(0)) continue;
+
+    weighted = weighted.plus(weight.times(rate));
+    totalWeight = totalWeight.plus(weight);
+    days = Math.max(days, entry.rate.days);
+  }
+
+  if (!totalWeight.gt(0)) return null;
+
+  return {
+    rate: weighted.div(totalWeight).toNumber(),
+    days,
+    coverage: totalWeight.div(totalPositiveWeight).toNumber(),
+  };
 }

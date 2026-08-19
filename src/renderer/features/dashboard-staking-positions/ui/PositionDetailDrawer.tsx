@@ -9,6 +9,7 @@ import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
 import { Drawer, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
+import { useChainHasSigner } from '../hooks/useChainHasSigner';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
 import { type PositionRow, getCountdownParts, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
@@ -16,6 +17,7 @@ import { type PositionAction, positionActions } from '../model/position-actions'
 
 import { NominationsTable } from './NominationsTable';
 import { PositionStatusPill } from './PositionStatusPill';
+import { ValidatorStatsSection } from './ValidatorStatsSection';
 import { toSigningMode } from './signing-mode';
 
 type Props = {
@@ -42,7 +44,13 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const { t, formatDate } = useI18n();
   const wiredActions = useUnit(positionActions.$wiredActions);
   const unclaimed = useUnclaimedRewards(row?.chain ?? null, row?.accountId ?? null);
-  const { rows: nominationRows, counts } = useNominationRows(row?.position ?? null);
+  // Independent of the position's own account on purpose: a payout is
+  // permissionless, so a contact position stays claimable as long as ANY
+  // account of ours can sign on the chain — the same rule the Rewards modal
+  // gates its Claim button by.
+  const chainHasSigner = useChainHasSigner(row?.chain ?? null);
+  const isValidatorPosition = row?.position.kind === 'validator';
+  const { rows: nominationRows, counts } = useNominationRows(isValidatorPosition ? null : (row?.position ?? null));
 
   // Which chip is waiting for its flow to open. The handoff itself is instant,
   // but the screen it opens can take a moment to mount — the chip owes the user
@@ -55,6 +63,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
 
   const isOpen = row !== null;
   const watchOnly = row?.accessMode === 'watchOnly';
+  // The badge states a fact about provenance, and `wallet` is that fact: an
+  // address-book contact (or a contact multisig) has no local wallet behind it,
+  // and wearing "Local wallet" there is a lie. A local wallet that merely
+  // cannot sign (watch-only, a multisig without a local signatory) is still a
+  // local wallet — signability is the pencil glyph's business, not this badge's.
+  const isContact = row !== null && row.wallet === null;
   // While the payout scan is in flight `unclaimed.total` is a placeholder `'0'`,
   // not an answer. Reading it as one made the drawer open with "Nothing to claim
   // on this position" over a position that turned out to have rewards.
@@ -89,6 +103,16 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
         signingMode: toSigningMode(row.accessMode),
       }
     : null;
+
+  // "No signer" wins over "nothing to claim": a chain nobody here can sign on
+  // stays blocked no matter what the scan finds. Below that, a scan still in
+  // flight leaves the chip enabled — it asserts nothing about payouts it has
+  // not checked yet; only a finished scan that found nothing disables it.
+  const claimBlockedHint = !chainHasSigner
+    ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row?.chain.name ?? '' })
+    : hasUnclaimed || unclaimedPending
+      ? undefined
+      : t('dashboard.staking.positions.detail.actions.nothingToClaim');
 
   // Two frames, not one: the first paints the spinner, the second runs once it
   // is actually on screen — only then mount the flow. Dispatching straight from
@@ -165,8 +189,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                   variant="short"
                   iconSize={32}
                 />
-                <Label variant={watchOnly ? 'gray' : 'green'}>
-                  {watchOnly ? t('dashboard.staking.positions.viewOnly') : t('dashboard.staking.positions.localWallet')}
+                <Label variant={watchOnly || isContact ? 'gray' : 'green'}>
+                  {watchOnly
+                    ? t('dashboard.staking.positions.viewOnly')
+                    : isContact
+                      ? t('dashboard.staking.positions.addressBook')
+                      : t('dashboard.staking.positions.localWallet')}
                 </Label>
               </div>
 
@@ -188,16 +216,19 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
               </StatCell>
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.status')}>
-                <PositionStatusPill status={row.position.status} statusReason={row.position.statusReason} />
+                <PositionStatusPill
+                  status={row.position.status}
+                  statusReason={row.position.statusReason}
+                  kind={row.position.kind}
+                />
               </StatCell>
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.apy')}>
                 {row.apy === null ? (
                   <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
                 ) : (
-                  <FootnoteText className="text-text-positive">
-                    {t('dashboard.stakingOverview.apy', { apy: row.apy.toFixed(1) })}
-                  </FootnoteText>
+                  // The stat label already says APY — a bare percent, same as the table cell.
+                  <FootnoteText className="text-text-positive">{`${row.apy.toFixed(1)}%`}</FootnoteText>
                 )}
               </StatCell>
 
@@ -234,12 +265,24 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 )}
               </StatCell>
 
-              <StatCell label={t('dashboard.staking.positions.detail.stats.validators')}>
+              <StatCell
+                label={
+                  isValidatorPosition
+                    ? t('dashboard.staking.positions.detail.stats.nominators')
+                    : t('dashboard.staking.positions.detail.stats.validators')
+                }
+              >
                 <FootnoteText className="text-text-secondary">
-                  {t('dashboard.staking.positions.validatorsValue', {
-                    active: row.activeValidatorCount,
-                    total: row.nominationCount,
-                  })}
+                  {isValidatorPosition
+                    ? row.position.validator?.nominatorCount == null
+                      ? t('dashboard.staking.positions.noValue')
+                      : t('dashboard.staking.positions.nominatorsValue', {
+                          count: row.position.validator.nominatorCount,
+                        })
+                    : t('dashboard.staking.positions.validatorsValue', {
+                        active: row.activeValidatorCount,
+                        total: row.nominationCount,
+                      })}
                 </FootnoteText>
               </StatCell>
             </div>
@@ -282,12 +325,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                     : t('dashboard.staking.positions.detail.actions.claimEmpty'),
                   () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
                   true,
-                  // No "nothing to claim" while the scan is still running: the
-                  // chip stays disabled, but the app does not assert something
-                  // it has not checked yet.
-                  hasUnclaimed || unclaimedPending
-                    ? undefined
-                    : t('dashboard.staking.positions.detail.actions.nothingToClaim'),
+                  claimBlockedHint,
                 )}
 
                 {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>
@@ -303,22 +341,36 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                  * turns the chosen set into a `nominate` transaction, so opening
                  * it would end on a submit that goes nowhere.
                  */}
-                {renderAction(
-                  'changeValidators',
-                  t('dashboard.staking.positions.detail.actions.changeValidators'),
-                  () =>
-                    openWithLoader('changeValidators', () =>
-                      positionActions.events.changeValidatorsRequested(actionPayload),
-                    ),
-                )}
+                {isValidatorPosition
+                  ? null
+                  : renderAction(
+                      'changeValidators',
+                      t('dashboard.staking.positions.detail.actions.changeValidators'),
+                      () =>
+                        openWithLoader('changeValidators', () =>
+                          positionActions.events.changeValidatorsRequested(actionPayload),
+                        ),
+                    )}
               </div>
             )}
 
-            {/* --- nominations --- */}
-            <div className="flex flex-col gap-y-2">
-              <BodyText>{t('dashboard.staking.positions.detail.nominations.title')}</BodyText>
-              <NominationsTable rows={nominationRows} counts={counts} chain={row.chain} asset={row.asset} />
-            </div>
+            {/* --- nominations / validator stats --- */}
+            {isValidatorPosition && row.position.validator ? (
+              <div className="flex flex-col gap-y-2">
+                <BodyText>{t('dashboard.staking.positions.detail.validator.title')}</BodyText>
+                {row.position.status === 'waiting' ? (
+                  <FootnoteText className="text-text-tertiary">
+                    {t('dashboard.staking.positions.detail.validator.notElected')}
+                  </FootnoteText>
+                ) : null}
+                <ValidatorStatsSection validator={row.position.validator} asset={row.asset} />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-y-2">
+                <BodyText>{t('dashboard.staking.positions.detail.nominations.title')}</BodyText>
+                <NominationsTable rows={nominationRows} counts={counts} chain={row.chain} asset={row.asset} />
+              </div>
+            )}
           </div>
         ) : null}
       </Drawer.Content>

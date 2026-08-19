@@ -13,6 +13,7 @@ export const enum Step {
   CONFIRM,
   SIGN,
   SUBMIT,
+  BASKET,
 }
 
 /**

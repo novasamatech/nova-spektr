@@ -6,6 +6,7 @@ import {
   type Chain,
   type ChainId,
   type Wallet,
+  ConnectionStatus,
   CryptoType,
   SigningType,
   TransactionType,
@@ -34,12 +35,14 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
   // they get back from this factory, and a derived store would refuse.
   return {
     ...actual,
-    createComplexTxStore: ({ transaction }: { transaction: Store<unknown> }) => {
+    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
       const $tx = createStore<unknown>(null);
       sample({ clock: transaction, target: $tx });
 
       return {
-        $route: createStore<unknown[]>([]),
+        // The self-route a plain account gets from the real store — keeps the
+        // route-signer guard honest without the BFS over the account graph.
+        $route: initiator.map((account) => (account ? [account] : [])),
         $tx,
         $feeTx: createStore<unknown>(null),
         $pendingWrapping: createStore(false),
@@ -47,6 +50,10 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
         $pendingFee: createStore(false),
       };
     },
+    // The real one asks the DI permission registry, which is empty in a unit
+    // fork — every account would read as unsignable. The permission check has
+    // its own tests; here the terminal hop simply signs.
+    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
     createTxValidationStore: () => ({
       $errors: createStore<unknown[]>([]),
       $balanceValidationResults: createStore<unknown[]>([]),
@@ -86,6 +93,7 @@ vi.mock('@/entities/transaction', async (importOriginal) => {
 });
 
 const { amountFlowModel } = await import('../amount-flow');
+const { networkModel } = await import('@/entities/network');
 const { createDraftModel } = await import('@/features/drafts');
 const { signModel } = await import('@/features/operations/OperationSign');
 
@@ -130,6 +138,8 @@ const position = (active: string, unbondingChunks = 0): StakingPosition => ({
   stake: { accountId: ALICE, chainId: CHAIN_ID, controller: ALICE, stash: ALICE, active, total: active, unlocking: [] },
   status: 'active',
   statusReason: null,
+  kind: 'nominator',
+  validator: null,
   nominations: [],
   activeValidators: [],
   unbonding: Array.from({ length: unbondingChunks }, (_, index) => ({
@@ -149,11 +159,15 @@ const target = (active = dot(1000), unbondingChunks = 0) => ({
   asset: ASSET,
   account: ACCOUNT,
   wallet: null,
+  signingMode: 'local' as const,
 });
 
 const $minNominatorBond = () => $minNominatorBondMock.current as ReturnType<typeof createStore<Record<string, string>>>;
 
-const withMinBond = (planck: string) => new Map().set($minNominatorBond(), { [CHAIN_ID]: planck });
+/** `$coreTx` is gated on the chain being connected — most tests want it open. */
+const connected = () => new Map().set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.CONNECTED });
+
+const withMinBond = (planck: string) => connected().set($minNominatorBond(), { [CHAIN_ID]: planck });
 
 // --- tests -------------------------------------------------------------------
 
@@ -189,7 +203,7 @@ describe('staking-amount-flow · entry', () => {
 
 describe('staking-amount-flow · continue', () => {
   it('reaches CONFIRM once an amount is entered', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
     await allSettled(amountFlowModel.amountChanged, { scope, params: '100' });
     await allSettled(amountFlowModel.continueRequested, { scope });
@@ -206,7 +220,7 @@ describe('staking-amount-flow · continue', () => {
   });
 
   it('refuses an amount larger than the stake', async () => {
-    const scope = fork();
+    const scope = fork({ values: connected() });
     await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
     await allSettled(amountFlowModel.amountChanged, { scope, params: '2000' });
     await allSettled(amountFlowModel.continueRequested, { scope });
@@ -306,6 +320,34 @@ describe('staking-amount-flow · built call', () => {
     expect(tx?.args['maxAdditional']).toBe(dot(900));
     expect(scope.getState(amountFlowModel.$withChill)).toBe(false);
     expect(scope.getState(amountFlowModel.$isBelowMinimumBond)).toBe(false);
+  });
+});
+
+describe('staking-amount-flow · chain connection', () => {
+  it('builds no call while the chain is disconnected', async () => {
+    // No seeded statuses at all reads the same as DISCONNECTED — both must
+    // refuse to build against a stale or absent api.
+    const scope = fork({
+      values: new Map().set(networkModel.$connectionStatuses, { [CHAIN_ID]: ConnectionStatus.DISCONNECTED }),
+    });
+    await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
+    await allSettled(amountFlowModel.amountChanged, { scope, params: '100' });
+
+    expect(scope.getState(amountFlowModel.$coreTx)).toBeNull();
+    expect(scope.getState(amountFlowModel.$canContinue)).toBe(false);
+  });
+
+  it('the draft call ignores the connection — nobody here signs it', async () => {
+    const scope = fork();
+    await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
+    await allSettled(amountFlowModel.toggleDraftMode, { scope, params: true });
+    await allSettled(amountFlowModel.amountChanged, { scope, params: '100' });
+    await allSettled(amountFlowModel.draftPathCommitted, {
+      scope,
+      params: [{ kind: 'signer' as const, accountId: ALICE }],
+    });
+
+    expect(scope.getState(amountFlowModel.$draftCoreTx)).not.toBeNull();
   });
 });
 

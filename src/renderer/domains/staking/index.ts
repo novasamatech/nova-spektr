@@ -6,6 +6,7 @@ export type { EraAnchor } from './era/service';
 export type { EraProgress } from './era/resource';
 export { era } from './era/store';
 export { eraService } from './era/service';
+export { getErasInDays } from './era/duration';
 export { useActiveEra, useEraProgress } from './era/hooks';
 
 export { staking } from './staking/store';
@@ -24,7 +25,8 @@ export { exposurePagesCacheKey } from './exposures/resource';
 export { exposureService } from './exposures/service';
 export { useExposurePages, useExposures } from './exposures/hooks';
 
-export type { ApyResourceParams } from './apy/resource';
+export type { ApyResourceParams, NetworkAvgRateParams } from './apy/resource';
+export type { NetworkAvgRate } from './apy/service';
 export { apy } from './apy/store';
 export { apyService } from './apy/service';
 export { useNetworkApy } from './apy/hooks';
@@ -41,6 +43,11 @@ export { nominations } from './nominations/store';
 export { nominationsService } from './nominations/service';
 export { useMinNominatorBond, useNominations, usePayee } from './nominations/hooks';
 
+export type { ValidatorPrefs, ValidatorPrefsMap } from './validator-prefs/types';
+export type { ValidatorPrefsResourceParams } from './validator-prefs/resource';
+export { validatorPrefs } from './validator-prefs/store';
+export { validatorPrefsService } from './validator-prefs/service';
+
 export type { IdentityParentMap, RecommendationCriteria, ScoreBreakdown } from './recommendations/types';
 export {
   DEFAULT_RECOMMENDATION_CRITERIA,
@@ -53,8 +60,10 @@ export { recommendationsService } from './recommendations/service';
 export type {
   DerivePositionInput,
   NominationStatus,
+  PositionKind,
   PositionStatus,
   PositionStatusReason,
+  PositionValidatorInfo,
   StakingPosition,
   UnbondingChunk,
 } from './positions/types';

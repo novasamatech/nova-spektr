@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
 
 ## Overview
 
@@ -41,21 +41,41 @@ feature is its sibling for the actions that need no amount.
 
 ## States / scenarios
 
-| State                | When it appears                                          | What the user sees                                                         |
-| -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Confirm — validators | The picker submitted a set                               | Account, network, signing route, `New validators: N` (opens the list), fee |
-| Confirm — redeem     | A redeem is requested for a position with unlocked funds | The amount and its fiat value, account, network, signing route, fee        |
-| Multisig             | A multisig sits on the route                             | The multisig deposit row alongside the fee                                 |
-| Unpayable            | The signer cannot cover the fee or reserve the deposit   | The error explains which, and **Sign is blocked**                          |
-| Empty set            | The picked set came back empty                           | No call is built and Sign stays disabled                                   |
-| Nothing to redeem    | The position has no unlocked chunk                       | Sign stays disabled — the call would move nothing and still cost a fee     |
-| Draft mode           | The draft toggle is on                                   | An address-book signing-path picker and `Save as draft` instead of Sign    |
-| Sign / Submit        | Sign pressed                                             | The shared signing and submission screens                                  |
+| State                | When it appears                                          | What the user sees                                                           |
+| -------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Confirm — validators | The picker submitted a set                               | Account, network, signing route, `New validators: N` (opens the list), fee   |
+| Confirm — redeem     | A redeem is requested for a position with unlocked funds | The amount and its fiat value, account, network, signing route, fee          |
+| Multisig             | A multisig sits on the route                             | The multisig deposit row alongside the fee                                   |
+| Unpayable            | The signer cannot cover the fee or reserve the deposit   | The error explains which, and **Sign is blocked**                            |
+| No signer            | Nobody on the resolved route can sign (normal mode)      | A red "No account to sign with" alert; Sign is blocked                       |
+| Empty set            | The picked set came back empty                           | No call is built and Sign stays disabled                                     |
+| Nothing to redeem    | The **live** ledger has no unlocked chunk                | Sign stays disabled; if the confirm opened on a figure, a red alert says why |
+| Draft mode           | The draft toggle is on                                   | An address-book signing-path picker and `Save as draft` instead of Sign      |
+| Sign / Submit        | Sign pressed                                             | The shared signing and submission screens                                    |
 
 **The confirm opens on the click, not on the node.** Everything it leads with is in hand the moment the button is
 pressed. The wrapped transaction, the fee, the validation and — for a redeem — the slashing-span read each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
 re-runs them in place.
+
+**The snapshot is for display; the redeem sign gate is live.** The figure the confirm leads with stays what it was on
+the click — a chunk unlocking mid-signature must not change it. But eras keep advancing under an open confirm, so the
+gate reads the **live** redeemable for the position from the
+[`staking-positions`](../../aggregates/staking-positions/README.md) aggregate. A live figure that merely differs from
+the snapshot is still signable — `withdraw_unbonded` takes no amount and withdraws whatever is unlocked — while a live
+zero blocks Sign and the draft save alike and raises the **"Nothing left to redeem"** alert instead of a silently dead
+button. While the aggregate has not answered yet, Sign holds without the alert (the old withdraw form's era-loading
+hold); a position gone from the settled aggregate reads as zero, not as a load to keep waiting on.
+
+**No one to sign with blocks, and says why.** The resolved route is checked for an actual signer at its end. When there
+is none — the position belongs to a contact or to a watch-only account — a red **"No account to sign with"** alert names
+the two ways forward: add a wallet that controls the account, or save the operation as a draft for whoever can sign.
+This replaces a silently dead Sign button. The guard stands down in draft mode, where nobody local is expected to sign.
+
+**A multisig route adds the shared description field** — the note the initiator attaches for the other signatories,
+published to the shared address book once the operation is included. Whether the field, an error or nothing shows is
+decided by the [multisig-operation-description](../../aggregates/multisig-operation-description/README.md) aggregate; a
+plain route, and draft mode, show nothing.
 
 ### `num_slashing_spans`
 
@@ -91,6 +111,7 @@ flowchart TD
     P["Dashboard: validator picker submits"] --> C["Confirm"]
     R["Dashboard: Redeem on a position"] --> C
     C -->|Sign| S["Sign"] --> SUB["Submit"] --> DONE["Extrinsic lands"]
+    C -->|Add to basket| B["Basket entry stored"]
     C -->|draft mode → Save| DR["Draft created"]
 ```
 
@@ -104,12 +125,31 @@ The confirm carries the app-wide draft toggle. In draft mode the user picks the 
 sign for an account it has no key for), the fee and balance checks step aside — the eventual signer pays — and the
 primary button creates a **draft** instead of signing.
 
+A request whose `signingMode` is `draft` — an address-book position, where the caller already knows nobody local signs —
+**opens with the toggle already on**: the user should not have to discover it. The toggle stays a toggle; switching it
+off returns to normal mode, where the no-route-signer guard takes over.
+
 **Signing and draft creation never share a button.** While the toggle is on, the signing branch is closed outright:
 `Sign` is replaced, and pressing it would go nowhere. A created draft closes the flow. This mirrors every other
 operation form in the app.
 
 The draft's call is built from the draft path's **source account**, which is the account whose ledger the call will act
 on — the same rule the amount flow follows.
+
+## Add to basket
+
+The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
+the built call is stored in the basket for this wallet to sign later, a success toast confirms it and the flow closes.
+
+The basket signs the stored core call directly by its initiator — no multisig/proxy wrapping happens in the basket
+context — so the button only appears when the initiator's own wallet is one the basket can sign with (Polkadot Vault or
+a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect initiators never see it, and draft mode
+hides it — a draft is "somebody else signs later", the basket is "this wallet signs later". A redeem whose **live**
+ledger has nothing left to withdraw cannot be basketed either: a stored no-op would still cost its signer a fee later,
+so the same something-to-do rule that blocks Sign blocks the basket.
+
+As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
+transaction before it is signed, so a check that fails at this moment must not block storing the call for later.
 
 ## Related
 
@@ -121,7 +161,7 @@ on — the same rule the amount flow follows.
 - [`dashboard-staking-kpi`](../dashboard-staking-kpi/README.md) — the Total-staked drill-down the redeem request comes
   from.
 - [`staking-positions`](../../aggregates/staking-positions/README.md) — owns the positions and the redeemable figures
-  this flow leads with; opening the modal starts no new request.
+  this flow leads with, and the live redeemable the redeem sign gate reads; opening the modal starts no new request.
 - `features/validator-selection` — picks the set; it never builds a transaction.
 - `features/drafts` — the draft-mode toggle, path picker and creation modal.
 - `signing-path`, `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the shared signing

@@ -31,6 +31,8 @@ export function makePosition({
     chainId,
     status,
     statusReason,
+    kind: 'nominator',
+    validator: null,
     nominations,
     activeValidators,
     unbonding,

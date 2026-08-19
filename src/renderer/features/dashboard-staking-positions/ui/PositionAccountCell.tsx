@@ -31,6 +31,19 @@ export const PositionAccountCell = ({ row }: Props) => {
         <ChainIcon chain={chain} size={13} />
       </div>
 
+      {row.position.kind === 'validator' ? (
+        <Tooltip>
+          <Tooltip.Trigger>
+            <div className={CHIP_CLASS}>
+              <CaptionText className="text-text-secondary">
+                {t('dashboard.staking.positions.validatorChip')}
+              </CaptionText>
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('dashboard.staking.positions.validatorHint')}</Tooltip.Content>
+        </Tooltip>
+      ) : null}
+
       {multisig ? (
         <Tooltip>
           <Tooltip.Trigger>

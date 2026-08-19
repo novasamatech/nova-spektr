@@ -14,17 +14,17 @@ search resolves them the same way before matching. Typing a name you can see alw
 
 ## What a query matches
 
-| The user types          | Matches against                                                                          |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| A submitter's name      | The resolved name shown in the Submitter column, and the wallet name displayed over it   |
+| The user types          | Matches against                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A submitter's name      | The resolved name shown in the Submitter column, and the wallet name displayed over it                                                                                               |
 | **An initiator's name** | The resolved name of the account assigned to submit a draft / who submitted an operation — and, when that account is a local wallet, the wallet name the details panel shows over it |
-| An address              | Any account the row shows, formatted with the prefix that row displays it with           |
-| A note                  | A draft's description                                                                    |
-| A call hash             | An operation's call hash                                                                 |
+| An address              | Any account the row shows, formatted with the prefix that row displays it with                                                                                                       |
+| A note                  | A draft's description                                                                                                                                                                |
+| A call hash             | An operation's call hash                                                                                                                                                             |
 
-A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft
-that is **every hop of its signing path** (which is exactly what the details panel lists — so a nested multisig's root
-hop is searchable even though no flat field stores it); for an operation, the submitter and the initiator.
+A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft that
+is **every hop of its signing path** (which is exactly what the details panel lists — so a nested multisig's root hop is
+searchable even though no flat field stores it); for an operation, the submitter and the initiator.
 
 **Known gap — an operation's description is displayed but not searchable.** Descriptions come from the address book and
 are fetched only for operations that already passed the filter, so feeding them into the filter would be circular
@@ -32,21 +32,21 @@ are fetched only for operations that already passed the filter, so feeding them 
 and do search it. Closing this means fetching descriptions for the unfiltered list first.
 
 Names rank above descriptions, which rank above addresses and call hashes — a user typing a few letters usually means a
-name, while addresses and hashes are pasted whole. Ranking only decides *whether* a row matches: both lists keep their
+name, while addresses and hashes are pasted whole. Ranking only decides _whether_ a row matches: both lists keep their
 own order (operations by the active sort, drafts newest first), because reordering them by match strength would destroy
 the meaning of that order.
 
 ### Searching the initiator
 
 The **initiator** here is the account that **signs** the outermost multisig call — the signing path's last node, the one
-the UI labels "Initiator" and the person a co-signer is waiting on. (The drafts feature also calls the path's *first*
+the UI labels "Initiator" and the person a co-signer is waiting on. (The drafts feature also calls the path's _first_
 node the initiator in its submit flow; that is a different account. See the drafts spec.) Users could previously only
 discover it by opening a draft's Submit dialog, which made "which drafts are waiting on Adam?" an unanswerable question.
 Searching a name now answers it.
 
 The two row types store it differently, and it is worth knowing they are not the same kind of fact:
 
-- **A draft** carries the initiator its author *assigned* when drawing the signing path — a plan. Drafts created before
+- **A draft** carries the initiator its author _assigned_ when drawing the signing path — a plan. Drafts created before
   the field existed fall back to the signing path's final signer; a draft with neither simply never matches an initiator
   query.
 - **An operation** carries the depositor — the account that actually signed and reserved the deposit — a fact.
@@ -56,9 +56,9 @@ naming the originally assigned account. The two values are matched by the same q
 interchangeable anywhere else (permission checks read the depositor directly).
 
 When an operation's depositor belongs to a **local wallet**, both the collapsed **Initiator** column and the expanded
-details panel render that wallet's name in place of the resolved account name, so the initiator's wallet name is searched
-too — the same rule the submitter already follows. All three (both rendered rows and the search meta) resolve the name
-through `resolveWalletName`/`useWalletName`, so what the user sees matches what the query matches.
+details panel render that wallet's name in place of the resolved account name, so the initiator's wallet name is
+searched too — the same rule the submitter already follows. All three (both rendered rows and the search meta) resolve
+the name through `resolveWalletName`/`useWalletName`, so what the user sees matches what the query matches.
 
 ### Addresses are matched as displayed
 

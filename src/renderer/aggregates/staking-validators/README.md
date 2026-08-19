@@ -1,6 +1,6 @@
 # Staking Validators
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-27
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-19
 
 ## Overview
 
@@ -33,15 +33,32 @@ saved criteria and the identity join the rules need.
 
 | State                | When it appears                                         | What the user sees                                           |
 | -------------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
-| Loading              | The elected set of the selected network has not arrived | `pending` — the list renders its skeleton                    |
+| No data yet          | The elected set of the selected network has not arrived | `pending` — the list renders its skeleton                    |
+| Fetching             | A request for this network's set is in flight           | `loading` — the skeleton is honest about being a wait        |
+| Failed               | The last request for this network and era gave up       | `failed` — the consumer can say so and offer a retry         |
 | Ready                | The elected set has arrived                             | The validators, the recommendation and the filled-slot count |
 | Empty era            | The set arrived but holds no validators                 | No recommendation, zero filled slots — not a loading state   |
 | Recommendation empty | Impossible while any validator is nominable             | See "Strict criteria never produce an empty list" below      |
 | Score unavailable    | The asked-for validator is not in the elected set       | No breakdown — the "Why recommended" card stays hidden       |
 
-Switching networks moves straight from Ready back to Loading (or straight to Ready when that network was visited
+Switching networks moves straight from Ready back to No data yet (or straight to Ready when that network was visited
 before), and every store re-scopes together — there is no window where the recommendation belongs to one network and the
 validator list to another.
+
+### "No data" and "gave up" are different answers
+
+`pending` alone cannot tell a request that is still working from one that has already failed, and on a flaky RPC the two
+look identical — skeletons forever — which is exactly when the user most needs to know the difference. So the aggregate
+reports both: whether a request is **in flight** for the scoped network, and whether the last one for that network and
+era **failed**, with a **retry** that re-issues it.
+
+The failure is remembered against the network and era it belongs to, not cleared by scoping elsewhere: coming back to a
+chain whose set failed shows the failure again rather than pretending the data is on its way. It retires by itself when
+a set for that chain lands anyway — another consumer retried, or the era moved on — so the aggregate never asks the user
+to retry something that has already succeeded.
+
+A failure does not discard whatever was fetched before. A chain that has an older set keeps showing it; the consumer's
+job is to say the set on screen may be stale, not to blank it.
 
 ### Strict criteria never produce an empty list
 

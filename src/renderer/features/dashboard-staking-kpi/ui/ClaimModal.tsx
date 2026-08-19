@@ -4,11 +4,12 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { buildCsv, downloadCsv } from '@/shared/lib/csv';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
 import { getColorByIndex } from '@/shared/ui/chart-constants';
-import { type Column, EmptyMessage, Label, Modal, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { type Column, type TableSort, EmptyMessage, Label, Modal, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { $accountNameCache, createAccountNameCacheKey } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -17,11 +18,12 @@ import { useRawRewardPayouts } from '../hooks/useRawRewardPayouts';
 import { useSignableChains } from '../hooks/useSignableChains';
 import { useStakingChainAssets } from '../hooks/useStakingChainAssets';
 import { useValidatorRewards } from '../hooks/useValidatorRewards';
-import { formatAssetAmountExact, sumFiat, sumPlanck } from '../lib/amounts';
+import { formatAssetAmountExact, sumFiat } from '../lib/amounts';
 import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
 import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
 import { type RewardPeriod, DEFAULT_REWARD_PERIOD, periodStart } from '../lib/reward-period';
+import { DEFAULT_REWARD_SORT, isRewardSortColumn, sortRewardRows } from '../lib/reward-sorting';
 import { type ClaimRow } from '../lib/types';
 import {
   type ValidatorRewardRow,
@@ -88,6 +90,7 @@ export const ClaimModal = memo(
   ({ rows, positions, currency, eras, eraDurations, historyDepths, walletByAccount, onClose }: Props) => {
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
+    const accountNameCache = useUnit($accountNameCache);
     const enabledActions = useUnit(dashboardStakingKpiActions.$enabledActions);
     const claimEnabled = enabledActions.includes('claim');
     const claimRequested = useUnit(dashboardStakingKpiActions.claimRequested);
@@ -98,6 +101,7 @@ export const ClaimModal = memo(
     const [period, setPeriod] = useState<RewardPeriod>(DEFAULT_REWARD_PERIOD);
     const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
     const [nominatorFilter, setNominatorFilter] = useState<AccountId | null>(null);
+    const [tableSort, setTableSort] = useState<TableSort>(DEFAULT_REWARD_SORT);
     const [hovered, setHovered] = useState<{ id: string; from: 'donut' | 'row' } | null>(null);
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
@@ -174,6 +178,13 @@ export const ClaimModal = memo(
       [scopedClaimRows, scopedRewards, toFiat],
     );
 
+    /** Accounts of ours that are themselves validators — flags the rail entry. */
+    const validatorAccounts = useMemo(
+      () =>
+        new Set(positions.filter((position) => position.kind === 'validator').map((position) => position.accountId)),
+      [positions],
+    );
+
     /**
      * Every account of ours the network filter leaves in scope, with what it
      * earned — the rail under the donut, and the filter itself.
@@ -232,6 +243,37 @@ export const ClaimModal = memo(
 
       return withFiat;
     }, [validatorRows, eras, eraDurations, historyDepths, toFiat]);
+
+    /**
+     * The validator name each row **displays**, keyed by row key — read from
+     * the cache the table's own `NamedAccount` cells fill, so sorting by name
+     * always agrees with what is on screen and re-sorts as identities land.
+     * Until a name resolves the cell shows the SS58 address; so does the sort.
+     */
+    const validatorNames = useMemo(() => {
+      const names: Record<string, string> = {};
+      for (const row of displayRows) {
+        const chain = chains[row.chainId];
+        const cached = accountNameCache[createAccountNameCacheKey({ accountId: row.validatorId, chain })];
+        names[row.key] = cached ?? toAddress(row.validatorId, { prefix: chain?.addressPrefix });
+      }
+
+      return names;
+    }, [displayRows, accountNameCache, chains]);
+
+    /**
+     * The table's own view of `displayRows` — the only consumer of the header
+     * sort. The donut slices, totals, claimable set, hover lookup and CSV all
+     * keep reading `displayRows`, so sorting the table never reshuffles or
+     * recolors the chart.
+     */
+    const tableRows = useMemo(
+      () =>
+        isRewardSortColumn(tableSort.column)
+          ? sortRewardRows(displayRows, tableSort.column, tableSort.direction, validatorNames)
+          : displayRows,
+      [displayRows, tableSort, validatorNames],
+    );
 
     const slices = useMemo(
       () =>
@@ -316,15 +358,6 @@ export const ClaimModal = memo(
       [rawPayouts, windowStart, chainFilter, nominatorFilter],
     );
 
-    const receivedByAsset = useMemo(() => {
-      const byChain = new Map<ChainId, string[]>();
-      for (const payout of windowedPayouts) {
-        byChain.set(payout.chainId, [...(byChain.get(payout.chainId) ?? []), payout.amount]);
-      }
-
-      return sumFiat([...byChain.entries()].map(([chainId, amounts]) => toFiat(chainId, sumPlanck(amounts))));
-    }, [windowedPayouts, toFiat]);
-
     /**
      * Exports the indexer's own payout rows, scoped to the period on screen.
      *
@@ -386,6 +419,7 @@ export const ClaimModal = memo(
         {
           key: 'validatorId',
           title: columnTitles.validatorId,
+          sortable: true,
           width: rewardColumnWidth('validatorId'),
           render: (_, item) => (
             <div
@@ -408,43 +442,63 @@ export const ClaimModal = memo(
                 />
                 <HelpText className="text-text-tertiary">{item.chainName}</HelpText>
               </div>
+              {item.isSelf ? (
+                <div className="shrink-0">
+                  <Label variant="gray">{t('dashboard.staking.kpi.rewards.myValidatorBadge')}</Label>
+                </div>
+              ) : null}
             </div>
           ),
         },
         {
           key: 'nominators',
           title: columnTitles.nominators,
+          sortable: true,
           width: rewardColumnWidth('nominators'),
-          render: (_, item) => (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <div className="w-fit">
-                  <Label variant="gray">
-                    {t('dashboard.staking.kpi.nominations.nominatorsValue', { count: item.nominators.length })}
-                  </Label>
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <div className="flex max-w-64 flex-col gap-1">
-                  {item.nominators.map((accountId) => (
-                    <NamedAccount
-                      key={accountId}
-                      accountId={accountId}
-                      chain={chains[item.chainId]}
-                      wallet={walletByAccount[accountId]}
-                      variant="short"
-                      iconSize={16}
-                      hideExplorers
-                    />
-                  ))}
-                </div>
-              </Tooltip.Content>
-            </Tooltip>
-          ),
+          render: (_, item) => {
+            // A validator's own row lists itself among its `nominators` (the
+            // chain does not distinguish self-stake from backing); counting it
+            // as a backer would claim credit the validator gave itself.
+            const backerCount = item.isSelf
+              ? item.nominators.filter((accountId) => accountId !== item.validatorId).length
+              : item.nominators.length;
+
+            return (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div className="w-fit">
+                    <Label variant="gray">
+                      {item.isSelf
+                        ? backerCount === 0
+                          ? t('dashboard.staking.kpi.rewards.selfNominator')
+                          : t('dashboard.staking.kpi.rewards.selfNominatorPlus', { count: backerCount })
+                        : t('dashboard.staking.kpi.nominations.nominatorsValue', { count: item.nominators.length })}
+                    </Label>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <div className="flex max-w-64 flex-col gap-1">
+                    {item.nominators.map((accountId) => (
+                      <NamedAccount
+                        key={accountId}
+                        accountId={accountId}
+                        chain={chains[item.chainId]}
+                        wallet={walletByAccount[accountId]}
+                        variant="short"
+                        iconSize={16}
+                        hideExplorers
+                      />
+                    ))}
+                  </div>
+                </Tooltip.Content>
+              </Tooltip>
+            );
+          },
         },
         {
           key: 'accrued',
           title: columnTitles.accrued,
+          sortable: true,
           width: rewardColumnWidth('accrued'),
           render: (_, item) =>
             // A row exists as soon as something is unclaimed on it, but what it
@@ -469,6 +523,7 @@ export const ClaimModal = memo(
         {
           key: 'unclaimed',
           title: columnTitles.unclaimed,
+          sortable: true,
           width: rewardColumnWidth('unclaimed'),
           render: (_, item) =>
             unclaimedPending.has(item.chainId) ? (
@@ -535,8 +590,10 @@ export const ClaimModal = memo(
 
     const loading = pendingChains.length > 0;
 
+    // Same footprint as the validator-selection modal: the two screens are both
+    // "work through a validator list" surfaces and should feel alike.
     return (
-      <Modal isOpen size="xl" height="lg" onToggle={(open) => !open && onClose()}>
+      <Modal isOpen size="3xl" height="full" onToggle={(open) => !open && onClose()}>
         <Modal.Title close>{t('dashboard.staking.kpi.rewards.detailTitle')}</Modal.Title>
         <Modal.Content disableScroll>
           {rows.length === 0 ? (
@@ -548,12 +605,11 @@ export const ClaimModal = memo(
             </div>
           ) : (
             <div className="flex h-full min-h-0 flex-col gap-3 px-5 pt-2 pb-4">
-              <div className="flex items-center justify-between gap-4">
-                <FootnoteText className="text-text-tertiary">
-                  {t('dashboard.staking.kpi.rewards.receivedInPeriod', {
-                    fiat: formatFiat(receivedByAsset, currency),
-                  })}
-                </FootnoteText>
+              {/* No "received in period" figure next to the tabs: the donut
+                already totals what the window EARNED, and a second, always
+                slightly different number (actual payouts land on their own
+                clock) read as a discrepancy rather than a different fact. */}
+              <div className="flex items-center justify-end gap-4">
                 <PeriodTabs value={period} onChange={setPeriod} />
               </div>
 
@@ -613,7 +669,7 @@ export const ClaimModal = memo(
                       the space under a 180px ring is exactly one list wide. */}
                     <div className="mt-2 flex w-full shrink-0 flex-col gap-1 border-t border-divider pt-2">
                       <HelpText className="text-text-tertiary uppercase">
-                        {t('dashboard.staking.kpi.rewards.nominatorsColumn')}
+                        {t('dashboard.staking.kpi.rewards.accountsRail')}
                       </HelpText>
                       {nominators.map((nominator) => {
                         const active = nominatorFilter === nominator.accountId;
@@ -645,6 +701,13 @@ export const ClaimModal = memo(
                                 hideExplorers
                               />
                             </div>
+                            {validatorAccounts.has(nominator.accountId) ? (
+                              <div className="flex h-4.5 shrink-0 items-center rounded-full bg-input-background-disabled px-1.5">
+                                <CaptionText className="text-text-secondary">
+                                  {t('dashboard.staking.positions.validatorChip')}
+                                </CaptionText>
+                              </div>
+                            ) : null}
                             {pendingChainSet.has(nominator.chainId) ? (
                               <Skeleton width="56px" height="12px" />
                             ) : (
@@ -668,7 +731,18 @@ export const ClaimModal = memo(
                         </FootnoteText>
                       )
                     ) : (
-                      <Table columns={columns} data={displayRows} getRowKey={(item) => item.key} stickyHeader />
+                      <Table
+                        columns={columns}
+                        data={tableRows}
+                        sort={tableSort}
+                        // A third click reports `null` — treat it as back to default,
+                        // never as "whatever order the rows happen to be in".
+                        getRowKey={(item) => item.key}
+                        stickyHeader
+                        onSortChange={(sort) =>
+                          setTableSort(sort && isRewardSortColumn(sort.column) ? sort : DEFAULT_REWARD_SORT)
+                        }
+                      />
                     )}
                   </div>
                 </div>
