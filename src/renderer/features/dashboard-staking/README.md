@@ -32,17 +32,18 @@ They ship no UI. When that debt is settled they go.
 
 ## States / scenarios
 
-| State      | When it appears                                    | What the user sees                                                    |
-| ---------- | -------------------------------------------------- | --------------------------------------------------------------------- |
-| Hidden     | `dashboard` flag off, or fiat display off          | No card                                                               |
-| Loading    | Ledgers or APYs still resolving, nothing known yet | Title, three shimmering bars                                          |
-| No staking | Resolved, and none of the selected accounts stakes | "No active staking positions"                                         |
-| Populated  | At least one selected account has a bonded ledger  | Average APY · staking accounts · total staked                         |
-| Partial    | Ledgers known, prices or APY still arriving        | The figures already known, a shimmer in place of the ones that aren't |
+| State        | When it appears                                    | What the user sees                                                    |
+| ------------ | -------------------------------------------------- | --------------------------------------------------------------------- |
+| Hidden       | `dashboard` flag off, or fiat display off          | No card                                                               |
+| No selection | The dashboard account picker is empty              | Title + "No accounts selected"                                        |
+| Loading      | Ledgers or APYs still resolving, nothing known yet | Title, three shimmering bars                                          |
+| No staking   | Resolved, and none of the selected accounts stakes | "No active staking positions"                                         |
+| Populated    | At least one selected account has a bonded ledger  | Average APY · staking accounts · total staked                         |
+| Partial      | Ledgers known, prices or APY still arriving        | The figures already known, a shimmer in place of the ones that aren't |
 
-An empty account selection lands in **No staking** rather than in the "No accounts selected" prompt the larger widgets
-show. On a three-figure card that is close enough to the truth to be worth the space it saves, and the tab's other
-widgets carry the explicit prompt where it matters.
+An empty selection and an empty result are kept apart, as they are on every other widget of the tab: with nothing
+selected there is no selection whose positions could be missing, and answering that with "No active staking positions"
+would let two widgets side by side describe the same empty state as if one of them had found something.
 
 ## What the three figures mean
 

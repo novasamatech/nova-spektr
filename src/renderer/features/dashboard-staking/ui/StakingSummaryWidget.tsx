@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText } from '@/shared/ui';
+import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useStakingOverview } from '../hooks/useStakingOverview';
@@ -40,6 +40,21 @@ export const StakingSummaryWidget = ({ accountIds }: Props) => {
   }, [stakingDataByChain]);
 
   if (!fiatFlag) return null;
+
+  // The same prompt every other widget on the tab shows. "No active staking
+  // positions" would be an answer to a question nobody asked yet: with nothing
+  // selected there is no selection to have positions.
+  if (accountIds.length === 0) {
+    return (
+      <DashboardWidget>
+        <FootnoteText className="text-text-tertiary">{t('dashboard.stakingSummary.title')}</FootnoteText>
+        <div className="flex flex-col items-center gap-y-1 py-6">
+          <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
+          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
+        </div>
+      </DashboardWidget>
+    );
+  }
 
   const hasStaking = chains.length > 0;
 
