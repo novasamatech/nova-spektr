@@ -4,7 +4,7 @@ import { persist } from 'effector-storage/local';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
-import { type Rect, resolveCollisions } from '../lib/layout-engine';
+import { type Rect, GRID_COLUMNS, clampRect, resolveCollisions } from '../lib/layout-engine';
 
 const tabChanged = createEvent<string>();
 const editModeToggled = createEvent();
@@ -23,19 +23,29 @@ persist({ store: $widgetLayout, key: 'dashboard-widget-layout-v1', sync: true })
 
 $widgetLayout
   .on(layoutSet, (state, { tab, layout }) => ({ ...state, [tab]: layout }))
+  // Both reducers clamp to the grid's own bounds before storing. The callers
+  // already clamp against each widget's declared min/max — which only they know
+  // — but the store is the layout's public API and must not be able to persist
+  // a rect that hangs off the grid.
   .on(widgetMoved, (state, { tab, key, x, y }) => {
     const tabLayout = state[tab];
     if (!tabLayout?.[key]) return state;
-    const moved = { ...tabLayout, [key]: { ...tabLayout[key]!, x, y } };
+    const moved = { ...tabLayout, [key]: clampRect({ ...tabLayout[key]!, x, y }) };
 
     return { ...state, [tab]: resolveCollisions(moved, key) };
   })
   .on(widgetResized, (state, { tab, key, w, h }) => {
-    const tabLayout = state[tab];
-    if (!tabLayout?.[key]) return state;
-    const resized = { ...tabLayout, [key]: { ...tabLayout[key]!, w, h } };
+    const current = state[tab]?.[key];
+    if (!current) return state;
+    // A resize caps the width at the right edge rather than sliding the widget
+    // left to make room: the user grabbed a corner, not the widget.
+    const rect = {
+      ...current,
+      w: Math.max(1, Math.min(w, GRID_COLUMNS - current.x)),
+      h: Math.max(1, h),
+    };
 
-    return { ...state, [tab]: resolveCollisions(resized, key) };
+    return { ...state, [tab]: resolveCollisions({ ...state[tab], [key]: rect }, key) };
   })
   .on(layoutReset, (state, { tab }) => ({ ...state, [tab]: {} }));
 

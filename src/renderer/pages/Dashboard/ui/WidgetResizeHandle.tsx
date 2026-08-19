@@ -1,14 +1,22 @@
 import { type PointerEvent, useRef } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { GRID_COLUMNS, ROW_HEIGHT_PX } from '../lib/layout-engine';
+import { getGridMetrics } from '../lib/grid-metrics';
+import { GRID_COLUMNS } from '../lib/layout-engine';
 
 import { useWidgetSortable } from './WidgetSortableContext';
 
 export const WidgetResizeHandle = () => {
   const { t } = useI18n();
   const ctx = useWidgetSortable();
-  const start = useRef<{ px: number; py: number; w: number; h: number; colWidth: number } | null>(null);
+  const start = useRef<{
+    px: number;
+    py: number;
+    w: number;
+    h: number;
+    colStride: number;
+    rowStride: number;
+  } | null>(null);
 
   if (!ctx) return null;
 
@@ -17,17 +25,23 @@ export const WidgetResizeHandle = () => {
     e.stopPropagation();
     const cell = (e.currentTarget.closest('[data-widget-cell]') ?? e.currentTarget.parentElement) as HTMLElement | null;
     const grid = cell?.parentElement;
-    const colWidth = grid ? grid.clientWidth / GRID_COLUMNS : 1;
-    start.current = { px: e.clientX, py: e.clientY, w: ctx.rect.w, h: ctx.rect.h, colWidth };
+    // A drag of one column's worth of pixels must grow the widget by exactly
+    // one column, and a column step is a column *plus its gap*.
+    const { colStride, rowStride } = grid ? getGridMetrics(grid) : { colStride: 1, rowStride: 1 };
+    start.current = { px: e.clientX, py: e.clientY, w: ctx.rect.w, h: ctx.rect.h, colStride, rowStride };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!start.current) return;
-    const { px, py, w, h, colWidth } = start.current;
-    const dW = Math.round((e.clientX - px) / colWidth);
-    const dH = Math.round((e.clientY - py) / ROW_HEIGHT_PX);
-    const nextW = Math.max(ctx.minSize.w, Math.min(GRID_COLUMNS, ctx.maxSize.w, w + dW));
+    const { px, py, w, h, colStride, rowStride } = start.current;
+    const dW = Math.round((e.clientX - px) / colStride);
+    const dH = Math.round((e.clientY - py) / rowStride);
+    // A widget cannot grow past the right edge of the grid, and the preview has
+    // to say so while the pointer is still moving — clamping only on commit
+    // showed a width the drop then silently took back.
+    const availableW = GRID_COLUMNS - ctx.rect.x;
+    const nextW = Math.max(ctx.minSize.w, Math.min(availableW, ctx.maxSize.w, w + dW));
     const nextH = Math.max(ctx.minSize.h, Math.min(ctx.maxSize.h, h + dH));
     ctx.resizePreview({ w: nextW, h: nextH });
   };

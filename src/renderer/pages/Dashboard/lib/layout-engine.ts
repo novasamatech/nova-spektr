@@ -60,22 +60,51 @@ function bottomOf(layout: Record<string, Rect>): number {
   return bottom;
 }
 
+/**
+ * A stored rect brought back inside the rules that hold today.
+ *
+ * Storage is the one input nothing validates on the way in: it survives across
+ * releases, so it can hold a width from before a widget declared a cap, a
+ * height from before it declared a floor, or an `x` that made sense when the
+ * widget was narrower. Every other path into the layout (drag, resize) clamps
+ * at the source; this is where a layout written by an older build is brought
+ * into line before anything renders it.
+ *
+ * Width is settled before `x`, because how far right a widget may start depends
+ * on how wide it ends up being.
+ *
+ * The order of the bounds is the order of authority: the cap first, then the
+ * floor — a widget declaring a minimum larger than its maximum is a mistake,
+ * and rendering it below the size its content needs is the worse half of it —
+ * and the grid's own width last, because that one is physical.
+ */
+export function clampRect(rect: Rect, min?: Size, max?: Size): Rect {
+  const w = Math.min(GRID_COLUMNS, Math.max(Math.min(rect.w, max?.w ?? GRID_COLUMNS), min?.w ?? 1));
+  const h = Math.max(Math.min(rect.h, max?.h ?? Number.MAX_SAFE_INTEGER), min?.h ?? 1);
+
+  return {
+    w,
+    h,
+    x: Math.max(0, Math.min(rect.x, GRID_COLUMNS - w)),
+    y: Math.max(0, rect.y),
+  };
+}
+
 export function syncLayout(
   stored: Record<string, Rect>,
   orderedKeys: string[],
   sizes: Record<string, Size>,
   maxSizes?: Record<string, Size>,
+  minSizes?: Record<string, Size>,
 ): Record<string, Rect> {
   // Keep known rects in the given order; this also drops stale keys not in
-  // orderedKeys. Stored rects are clamped to the widget's max size — a layout
-  // saved before a widget declared (or shrank) its cap must not keep it larger
-  // than the cap allows.
+  // orderedKeys. Stored rects are clamped back into the widget's declared
+  // bounds and the grid's own width — see `clampRect`.
   const result: Record<string, Rect> = {};
   for (const key of orderedKeys) {
     const rect = stored[key];
     if (!rect) continue;
-    const max = maxSizes?.[key];
-    result[key] = max ? { ...rect, w: Math.min(rect.w, max.w), h: Math.min(rect.h, max.h) } : rect;
+    result[key] = clampRect(rect, minSizes?.[key], maxSizes?.[key]);
   }
 
   // Place missing widgets in order, flowing left-to-right then wrapping rows
@@ -85,7 +114,7 @@ export function syncLayout(
   let rowMaxH = 0;
   for (const key of orderedKeys) {
     if (result[key]) continue;
-    const size = sizes[key] ?? { w: 2, h: 3 };
+    const size = clampRect({ x: 0, y: 0, ...(sizes[key] ?? { w: 2, h: 3 }) }, minSizes?.[key], maxSizes?.[key]);
     if (cursorX + size.w > GRID_COLUMNS) {
       cursorY += rowMaxH;
       cursorX = 0;

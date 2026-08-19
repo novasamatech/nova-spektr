@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useEffect, useMemo, useRef } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
+import { getGridMetrics, toGridContentPoint } from '../lib/grid-metrics';
 import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
 import { dashboardModel } from '../model/dashboard-model';
@@ -14,7 +15,6 @@ const EMPTY_PROPS: Record<string, unknown> = {};
 const FALLBACK_DEFAULT: Size = { w: 2, h: 3 };
 const FALLBACK_MIN: Size = { w: 1, h: 2 };
 const FALLBACK_MAX: Size = { w: GRID_COLUMNS, h: Number.MAX_SAFE_INTEGER };
-const GAP_PX = 16; // matches the grid's gap-4
 
 const layoutsEqual = (a: Record<string, Rect>, b: Record<string, Rect>): boolean => {
   const ak = Object.keys(a);
@@ -88,8 +88,8 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   const stored = widgetLayout[tab];
 
   const effective = useMemo(
-    () => syncLayout(stored ?? {}, orderedKeys, sizes.defaults, sizes.maxes),
-    [stored, orderedKeys, sizes.defaults, sizes.maxes],
+    () => syncLayout(stored ?? {}, orderedKeys, sizes.defaults, sizes.maxes, sizes.mins),
+    [stored, orderedKeys, sizes.defaults, sizes.maxes, sizes.mins],
   );
 
   useEffect(() => {
@@ -115,15 +115,11 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
     const pointer = event.operation.position?.current;
     if (!moved || !grid || !pointer) return;
 
-    const gridRect = grid.getBoundingClientRect();
-    const colWidth = gridRect.width / GRID_COLUMNS;
-    const rowStride = ROW_HEIGHT_PX + GAP_PX;
+    const { colStride, rowStride } = getGridMetrics(grid);
+    const content = toGridContentPoint(grid, pointer);
 
-    const rawX = Math.floor((pointer.x - gridRect.left) / colWidth);
-    const rawY = Math.floor((pointer.y - gridRect.top) / rowStride);
-
-    const x = Math.max(0, Math.min(rawX, GRID_COLUMNS - moved.w));
-    const y = Math.max(0, rawY);
+    const x = Math.max(0, Math.min(Math.floor(content.x / colStride), GRID_COLUMNS - moved.w));
+    const y = Math.max(0, Math.floor(content.y / rowStride));
 
     if (x === moved.x && y === moved.y) return;
     widgetMoved({ tab, key: activeId, x, y });

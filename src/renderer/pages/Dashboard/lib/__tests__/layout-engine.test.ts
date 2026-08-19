@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Rect, compactVertical, resolveCollisions, syncLayout } from '../layout-engine';
+import { type Rect, clampRect, compactVertical, resolveCollisions, syncLayout } from '../layout-engine';
 
 describe('compactVertical', () => {
   it('floats widgets up to remove vertical gaps', () => {
@@ -83,6 +83,47 @@ describe('syncLayout', () => {
     expect(result.a).toEqual({ x: 0, y: 0, w: 2, h: 2 });
     // b floats up under the clamped a
     expect(result.b).toEqual({ x: 0, y: 2, w: 2, h: 2 });
+  });
+});
+
+describe('clampRect', () => {
+  it('caps the width at the grid width and pulls x back inside it', () => {
+    expect(clampRect({ x: 3, y: 0, w: 3, h: 2 })).toEqual({ x: 1, y: 0, w: 3, h: 2 });
+  });
+
+  it('raises a stored rect to the widget minimum', () => {
+    expect(clampRect({ x: 0, y: 0, w: 1, h: 1 }, { w: 2, h: 3 })).toEqual({ x: 0, y: 0, w: 2, h: 3 });
+  });
+
+  it('lets the minimum win over a smaller maximum rather than inventing a zero', () => {
+    expect(clampRect({ x: 0, y: 0, w: 4, h: 4 }, { w: 2, h: 2 }, { w: 1, h: 1 })).toEqual({
+      x: 0,
+      y: 0,
+      w: 2,
+      h: 2,
+    });
+  });
+
+  it('never returns a negative origin', () => {
+    expect(clampRect({ x: -2, y: -5, w: 2, h: 2 })).toEqual({ x: 0, y: 0, w: 2, h: 2 });
+  });
+});
+
+describe('syncLayout bounds', () => {
+  it('pulls a stored rect that hangs off the right edge back onto the grid', () => {
+    const stored: Record<string, Rect> = { a: { x: 3, y: 0, w: 3, h: 2 } };
+
+    const result = syncLayout(stored, ['a'], { a: { w: 3, h: 2 } });
+
+    expect(result.a).toEqual({ x: 1, y: 0, w: 3, h: 2 });
+  });
+
+  it('grows a stored rect saved below a min size the widget declared later', () => {
+    const stored: Record<string, Rect> = { a: { x: 0, y: 0, w: 1, h: 1 } };
+
+    const result = syncLayout(stored, ['a'], { a: { w: 2, h: 2 } }, undefined, { a: { w: 2, h: 2 } });
+
+    expect(result.a).toEqual({ x: 0, y: 0, w: 2, h: 2 });
   });
 });
 
