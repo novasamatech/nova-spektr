@@ -207,9 +207,8 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 {row.apy === null ? (
                   <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
                 ) : (
-                  <FootnoteText className="text-text-positive">
-                    {t('dashboard.stakingOverview.apy', { apy: row.apy.toFixed(1) })}
-                  </FootnoteText>
+                  // The stat label already says APY — a bare percent, same as the table cell.
+                  <FootnoteText className="text-text-positive">{`${row.apy.toFixed(1)}%`}</FootnoteText>
                 )}
               </StatCell>
 

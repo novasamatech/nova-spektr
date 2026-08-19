@@ -62,9 +62,9 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
         row.apy === null ? (
           <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
         ) : (
-          <FootnoteText className="text-text-positive">
-            {t('dashboard.stakingOverview.apy', { apy: row.apy.toFixed(1) })}
-          </FootnoteText>
+          // The column header already says APY — a bare percent keeps the cell
+          // on one line (same format as the nominations table).
+          <FootnoteText className="text-text-positive">{`${row.apy.toFixed(1)}%`}</FootnoteText>
         ),
 
       activeValidatorCount: (row) => (
