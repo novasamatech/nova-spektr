@@ -32,7 +32,8 @@ import { OperationLog } from './OperationLog';
 
 // One segmented control: identical pill geometry for both tabs, the selected
 // one carries the grey tab background, the other is tertiary with a hover tint.
-const TAB_CLASS = 'flex h-[26px] items-center gap-1.5 rounded-lg px-2.5 transition-colors';
+const TAB_CLASS =
+  'flex h-[26px] items-center gap-1.5 rounded-lg px-2.5 transition-colors focus-visible:outline-2 focus-visible:outline-icon-accent';
 const TAB_ACTIVE_CLASS = 'bg-tab-background text-text-primary';
 const TAB_INACTIVE_CLASS = 'text-text-tertiary hover:bg-action-background-hover';
 
@@ -119,25 +120,27 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center gap-2">
-        <div role="tablist" aria-label={t('operation.signatoriesTitle')} className="flex items-center gap-1.5">
+        <div role="group" aria-label={t('operation.signatoriesTitle')} className="flex items-center gap-1.5">
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === 'signatories'}
+            aria-pressed={activeTab === 'signatories'}
             className={cnTw(TAB_CLASS, activeTab === 'signatories' ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS)}
             onClick={() => setActiveTab('signatories')}
           >
-            <FootnoteText className="font-semibold text-inherit">{t('operation.signatoriesTitle')}</FootnoteText>
+            <FootnoteText as="span" className="font-semibold text-inherit">
+              {t('operation.signatoriesTitle')}
+            </FootnoteText>
           </button>
 
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === 'log'}
+            aria-pressed={activeTab === 'log'}
             className={cnTw(TAB_CLASS, activeTab === 'log' ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS)}
             onClick={() => setActiveTab('log')}
           >
-            <FootnoteText className="font-semibold text-inherit">{t('operation.logButton')}</FootnoteText>
+            <FootnoteText as="span" className="font-semibold text-inherit">
+              {t('operation.logButton')}
+            </FootnoteText>
             <CountChip count={operation.events.length} />
           </button>
         </div>

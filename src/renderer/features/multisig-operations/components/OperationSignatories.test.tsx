@@ -3,20 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type MultisigAccount, type Wallet } from '@/shared/core';
+import { type MultisigAccount } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 
 import { OperationSignatories } from './OperationSignatories';
 
 const stores = vi.hoisted(() => ({
-  walletsStore: Symbol('wallets'),
   accountsStore: Symbol('accounts'),
 }));
 
 vi.mock('effector-react', () => ({
   useUnit: (store: symbol) => {
-    if (store === stores.walletsStore) return testWallets;
     if (store === stores.accountsStore) return testAccounts;
     return undefined;
   },
@@ -41,14 +39,14 @@ vi.mock('@/shared/i18n', () => ({
 vi.mock('@/shared/lib/utils', () => ({
   cnTw: (...classNames: unknown[]) => classNames.filter(Boolean).join(' '),
   nonNullable: <T,>(value: T | null | undefined): value is T => value !== null && value !== undefined,
-  toAddress: (accountId: AccountId) => accountId,
 }));
 
 vi.mock('@/shared/ui', () => ({
   CountChip: ({ count }: { count: number }) => <span>{count}</span>,
-  FootnoteText: ({ children }: { children: ReactNode }) => <h4>{children}</h4>,
+  FootnoteText: ({ children, as: Component = 'h4' }: { children: ReactNode; as?: keyof HTMLElementTagNameMap }) => (
+    <Component>{children}</Component>
+  ),
   IconButton: () => <button type="button" />,
-  SmallTitleText: ({ children }: { children: ReactNode }) => <h3>{children}</h3>,
 }));
 
 vi.mock('@/shared/ui-kit', () => ({
@@ -63,17 +61,12 @@ vi.mock('@/shared/ui-kit', () => ({
   }),
 }));
 
-vi.mock('@/shared/ui-entities', () => ({
-  Address: ({ title, address }: { title?: string; address: string }) => <span>{title ?? address}</span>,
-}));
-
 vi.mock('@/domains/network', () => ({
   accounts: { $list: stores.accountsStore },
   isContactMultisigAccount: () => false,
   multisigOperationService: {
     getApprovals: () => [],
   },
-  useAccountName: ({ accountId }: { accountId: AccountId }) => accountId,
 }));
 
 vi.mock('@/entities/network', () => ({
@@ -94,13 +87,12 @@ vi.mock('@/entities/wallet', () => ({
   accountUtils: {
     isFlexibleMultisigAccount: () => false,
   },
-  walletModel: { $wallets: stores.walletsStore },
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
   NamedAccount: ({ title, accountId, wallet }: { title?: string; accountId: AccountId; wallet?: unknown }) => (
     <span data-title={title} data-wallet={wallet ? 'yes' : undefined}>
-      {accountId}
+      {title ?? accountId}
     </span>
   ),
 }));
@@ -113,25 +105,8 @@ vi.mock('./NotifySignersButton', () => ({ NotifySignersButton: () => null }));
 
 const ownedSignatoryId = '0x01' as AccountId;
 const contactSignatoryId = '0x02' as AccountId;
-const signerWalletId = 1;
 
-const testWallets = [
-  {
-    id: signerWalletId,
-    name: 'Signer Wallet',
-    accounts: [],
-    type: 'polkadot_vault',
-  },
-] as unknown as Wallet[];
-
-const testAccounts = [
-  {
-    id: 'owned-signatory',
-    name: 'Alice Signer',
-    walletId: signerWalletId,
-    accountId: ownedSignatoryId,
-  },
-] as unknown as AnyAccount[];
+const testAccounts: AnyAccount[] = [];
 
 const operation = {
   id: 'operation-id',
@@ -158,19 +133,19 @@ describe('OperationSignatories', () => {
     expect(screen.queryByText('Alice Signer')).not.toBeInTheDocument();
   });
 
-  it('styles both tabs as one segmented control', async () => {
+  it('exposes the tab pair as an accessible group with pressed state', async () => {
     const user = userEvent.setup();
     render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
 
-    const [signatoriesTab, logTab] = screen.getAllByRole('tab');
-    expect(signatoriesTab).toHaveAttribute('aria-selected', 'true');
-    expect(signatoriesTab?.className).toContain('bg-tab-background');
-    expect(logTab?.className).not.toContain('bg-tab-background');
+    const [signatoriesTab, logTab] = screen.getAllByRole('button', { name: /Signatories|Log/ });
+    expect(signatoriesTab).toHaveAttribute('aria-pressed', 'true');
+    expect(logTab).toHaveAttribute('aria-pressed', 'false');
 
     if (!logTab) throw new Error('log tab missing');
     await user.click(logTab);
-    expect(screen.getAllByRole('tab')[1]?.className).toContain('bg-tab-background');
-    expect(screen.getAllByRole('tab')[0]?.className).not.toContain('bg-tab-background');
+
+    expect(signatoriesTab).toHaveAttribute('aria-pressed', 'false');
+    expect(logTab).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('renders a flat signatory list without group headers', () => {
