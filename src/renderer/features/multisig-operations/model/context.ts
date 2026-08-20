@@ -34,6 +34,7 @@ import {
   buildOperationSearchRow,
   filterOperation,
   getWalletSearchEntries,
+  hasNarrowingFilter,
 } from '../lib/operations-filter';
 import { type StatusFilterValue, getOperationSection } from '../lib/operations-sections';
 import { type OperationsSort, type SortKey, getNextSortState, sortOperations } from '../lib/operations-sort';
@@ -392,9 +393,9 @@ const $sectionedOperations = combine(
     const buckets = bucketOperations(operations, {
       hiddenIds,
       isScopeMerged,
-      // Pending tab keeps its In-progress heading unless the Status filter explicitly excludes it.
-      alwaysShowInProgress:
-        tab === 'pending' && !isScopeMerged && (filter.status.length === 0 || filter.status.includes('in_progress')),
+      // The Pending tab keeps its In-progress group even when empty — but only when nothing
+      // narrows the list; a filter or search that matches nothing shows the filtered empty state instead.
+      alwaysShowInProgress: tab === 'pending' && !isScopeMerged && !hasNarrowingFilter(filter),
     });
 
     return buckets.map(({ section, items }) => ({

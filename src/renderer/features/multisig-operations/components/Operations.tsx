@@ -115,9 +115,10 @@ export const Operations = () => {
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
-  // Keep scrollMargin in sync with the container's offset from the scroll root.
-  // DraftsSection and the table header above the list have variable height; without this the
-  // virtualizer computes scroll offsets relative to the wrong origin and items disappear on scroll.
+  // Keep scrollMargin in sync with the container's offset from the scroll root. Everything above
+  // the list — the first group's heading, the sticky column header, DraftsSection — has variable
+  // height; without this the virtualizer computes scroll offsets relative to the wrong origin and
+  // items disappear on scroll. Runs on every render, so it covers whatever Operations re-renders.
   useLayoutEffect(() => {
     const el = listContainerRef.current;
     if (!el) return;
@@ -125,10 +126,10 @@ export const Operations = () => {
     setScrollMargin(prev => (prev === newMargin ? prev : newMargin));
   });
 
-  // DraftsSection mutates its own height from local state (collapse toggle,
-  // expandable draft rows) without re-rendering Operations, so the effect above
-  // never fires for it — observe the content above the list to keep
-  // scrollMargin following those changes.
+  // The heading and the column header are siblings above the list and only change with a render.
+  // The drafts block is the exception: it mutates its own height from local state (collapse toggle,
+  // expandable draft rows) without re-rendering Operations, so the effect above never fires for it —
+  // observe that block to keep scrollMargin following those changes.
   useLayoutEffect(() => {
     const above = aboveListRef.current;
     if (!above) return;
@@ -197,17 +198,20 @@ export const Operations = () => {
             style={showTable ? { minWidth: getOperationsMinWidth(widths, { showInitiator }) } : undefined}
           >
             <ScrollArea viewportRef={scrollRef}>
-              <div ref={aboveListRef}>
-                {showTable && headingAboveList && (
-                  <SectionHeading
-                    labelKey={headingAboveList.labelKey}
-                    count={headingAboveList.count}
-                    collapsed={!!collapsedSections[headingAboveList.key]}
-                    onToggle={() => operationsContextModel.toggleSection(headingAboveList.key)}
-                  />
-                )}
-                {showTable && <OperationsTableHeader />}
+              {/* The heading and the sticky column header are siblings of the list, not wrapped
+                  together with it: a sticky box is bounded by its parent, so nesting the header in
+                  a block that ends above the list would un-pin it as soon as that block scrolls out. */}
+              {showTable && headingAboveList && (
+                <SectionHeading
+                  labelKey={headingAboveList.labelKey}
+                  count={headingAboveList.count}
+                  collapsed={!!collapsedSections[headingAboveList.key]}
+                  onToggle={() => operationsContextModel.toggleSection(headingAboveList.key)}
+                />
+              )}
+              {showTable && <OperationsTableHeader />}
 
+              <div ref={aboveListRef}>
                 {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
 
                 {(isDeferredLoading || isDeepLinkLoading) && (

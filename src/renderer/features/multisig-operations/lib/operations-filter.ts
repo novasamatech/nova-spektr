@@ -142,6 +142,24 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
   return true;
 };
 
+/**
+ * Whether the filter narrows the list in any way: a search query, a
+ * network/type/proxy-type selection, a date range, or a status selection other
+ * than `in_progress`. Selecting only `in_progress` matches the default view, so
+ * it narrows nothing.
+ */
+export const hasNarrowingFilter = (filters: OperationsFilterCriteria): boolean => {
+  return (
+    filters.searchQuery.trim().length > 0 ||
+    filters.network.length > 0 ||
+    filters.type.length > 0 ||
+    filters.proxyType.length > 0 ||
+    nonNullable(filters.dateRange?.from) ||
+    nonNullable(filters.dateRange?.to) ||
+    filters.status.some(status => status !== 'in_progress')
+  );
+};
+
 type WalletSearchSources = {
   accounts: AnyAccount[];
   contacts: Contact[];

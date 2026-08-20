@@ -16,10 +16,12 @@ import { type OperationSearchRow, type SearchResolvers, searchOperationRows } fr
 
 import {
   type OperationsFilterContext,
+  type OperationsFilterCriteria,
   buildOperationSearchRow,
   filterOperation,
   getFilterableTxType,
   getWalletSearchEntries,
+  hasNarrowingFilter,
   matchesDateRange,
   matchesNetwork,
   matchesProxyType,
@@ -643,6 +645,45 @@ describe('operations-filter', () => {
       });
 
       expect(entries).toEqual([{ id: 1, name: 'multisig wallet' }]);
+    });
+  });
+
+  describe('hasNarrowingFilter', () => {
+    const emptyFilter: OperationsFilterCriteria = {
+      network: [],
+      type: [],
+      proxyType: [],
+      status: [],
+      dateRange: undefined,
+      searchQuery: '',
+    };
+
+    test('empty filter narrows nothing', () => {
+      expect(hasNarrowingFilter(emptyFilter)).toBe(false);
+    });
+
+    test('blank search query narrows nothing', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, searchQuery: '   ' })).toBe(false);
+    });
+
+    test('search query narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, searchQuery: 'alice' })).toBe(true);
+    });
+
+    test('in_progress status alone narrows nothing', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['in_progress'] })).toBe(false);
+    });
+
+    test('any other status narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['completed'] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['in_progress', 'completed'] })).toBe(true);
+    });
+
+    test('network, type, proxy type and date range narrow the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, network: [MOCK_CHAIN_ID] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, type: [TransactionType.TRANSFER] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, proxyType: ['Any'] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, dateRange: { from: new Date('2024-01-01') } })).toBe(true);
     });
   });
 });
