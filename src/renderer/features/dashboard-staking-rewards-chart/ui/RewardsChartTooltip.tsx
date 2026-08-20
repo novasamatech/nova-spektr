@@ -40,14 +40,25 @@ export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletBy
   })();
 
   return (
+    // Bounded by the plot (the parent caps the height), so the card is a column
+    // where only the account list gives way — the title and the total, which
+    // carry the count and the sum, always stay readable.
     <div
-      className="pointer-events-none rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
+      data-testid="rewards-tooltip"
+      className="pointer-events-none flex min-h-0 flex-col rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
       style={{ width: TOOLTIP_WIDTH }}
     >
-      <HelpText className="text-text-tertiary">{title}</HelpText>
+      <div className="flex shrink-0 items-baseline justify-between gap-2">
+        <HelpText className="text-text-tertiary">{title}</HelpText>
+        {bucket.accounts.length > 1 ? (
+          <HelpText className="text-text-tertiary">
+            {t('dashboard.staking.rewardsChart.tooltip.accountCount', { count: bucket.accounts.length })}
+          </HelpText>
+        ) : null}
+      </div>
 
       {bucket.accounts.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-1.5">
+        <div className="mt-2 flex min-h-0 flex-col gap-1.5 overflow-hidden">
           {bucket.accounts.map((entry) => {
             const accountId = toAccountId(entry.accountId);
 
@@ -76,7 +87,7 @@ export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletBy
         </FootnoteText>
       )}
 
-      <div className="mt-2 flex items-center gap-2 border-t border-token-container-border pt-2">
+      <div className="mt-2 flex shrink-0 items-center gap-2 border-t border-token-container-border pt-2">
         <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
         <FootnoteText className="flex-1 text-text-secondary">
           {t('dashboard.staking.rewardsChart.tooltip.total')}

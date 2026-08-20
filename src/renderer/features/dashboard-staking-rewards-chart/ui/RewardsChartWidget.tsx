@@ -89,10 +89,11 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
 
   return (
     <DashboardWidget scroll={false}>
-      {/* The card never scrolls: the plot is sized from the cell, so it absorbs
-          whatever height is left over and shrinks with the widget instead. */}
+      {/* The card never scrolls: the plot absorbs whatever height is left. */}
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-4">
+        {/* Wraps: nothing scrolls here, and the two switches need ~450px
+            side by side against ~320px in the narrowest widget. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="flex items-center gap-3">
             <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>
             <SegmentedControl
@@ -135,8 +136,7 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
         </div>
 
         <div ref={containerRef} className="relative mt-3 min-h-0 flex-1">
-          {/* The plot is absolutely positioned: the container's height comes
-              from the flex line, which is not a definite height, so an in-flow
+          {/* Absolute: the flex line is not a definite height, so an in-flow
               percentage-sized chart would resolve to 0. */}
           <div className="absolute inset-0">
             {pending ? (
@@ -159,8 +159,13 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
             )}
           </div>
 
+          {/* Capped at the plot: the widget clips rather than scrolls, so a
+              taller card would lose its total line off the bottom. */}
           {hoveredBucket ? (
-            <div className="absolute top-1 z-10" style={{ left: tooltipLeft }}>
+            <div
+              className="pointer-events-none absolute top-1 z-10 flex max-h-[calc(100%-0.5rem)] flex-col"
+              style={{ left: tooltipLeft }}
+            >
               <RewardsChartTooltip
                 bucket={hoveredBucket}
                 chain={chain}

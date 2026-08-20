@@ -933,7 +933,9 @@
           "dayWithEra": "{date} · era {era}",
           "week": "Week of {date}",
           "total": "Total",
-          "noRewards": "No rewards in this period"
+          "noRewards": "No rewards in this period",
+          "accountCount_one": "{count} account",
+          "accountCount_other": "{count} accounts"
         }
       },
       "positions": {

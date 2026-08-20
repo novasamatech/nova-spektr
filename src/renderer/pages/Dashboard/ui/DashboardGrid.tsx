@@ -130,8 +130,8 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
-      {/* x is clipped, never scrolled: the columns are fractions of this box, so
-          anything wider than it is a rounding artefact — see DashboardWidget */}
+      {/* x is clipped, never scrolled: columns are fractions of this box, so
+          anything wider is a rounding artefact — see DashboardWidget */}
       <div
         ref={gridRef}
         className="grid h-full w-full gap-4 overflow-x-hidden overflow-y-auto p-3"

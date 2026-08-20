@@ -17,5 +17,7 @@ dashboardStakingRewardsChartFeature.inject(dashboardStakingSlot, {
   order: 20,
   render: RewardsChartWidget,
   defaultSize: { w: 4, h: 5 },
+  // Nothing scrolls here, so this is also the plot's floor: three rows leave it
+  // ~150px, two columns fit the header.
   minSize: { w: 2, h: 3 },
 });

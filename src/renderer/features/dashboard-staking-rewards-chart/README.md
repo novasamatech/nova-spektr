@@ -39,6 +39,14 @@ The loading shimmer, the empty message and the plot all occupy the same box, so 
 range or asset — never moves anything below the card. That box is whatever height the widget's cell leaves over: the
 card never scrolls, the plot stretches into the space instead, and resizing the widget resizes the plot.
 
+Because nothing scrolls, everything has to fit the cell at every size the widget allows:
+
+- The header **wraps** rather than overflows — narrow the widget and the range switch drops onto its own line instead of
+  sliding out of reach.
+- The hover card is **bounded by the plot**. It lists every contributing account, largest first, and states how many
+  there are ("12 accounts") next to the bucket title — so a list the card had to cut short is never mistaken for the
+  whole of it. The title and the Total line never give way; the account rows do.
+
 ### Ranges and bucketing
 
 The range chips do not change what is fetched, only how it is cut: one year of raw payout records is fetched once per

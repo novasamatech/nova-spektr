@@ -11,10 +11,9 @@ type Props = {
   className?: string;
   card?: boolean;
   /**
-   * Whether content taller than the cell scrolls inside the widget. Widgets
-   * whose content is sized from the cell rather than from the content itself —
-   * a chart filling the box — pass `false`: for them a scrollbar can never be
-   * the right answer, and offering one is actively harmful, see below.
+   * Whether content taller than the cell scrolls. Widgets sized from the cell
+   * (a chart filling its box) pass `false` and must fit at every size they
+   * allow: what does not fit is clipped, with nothing to scroll to.
    */
   scroll?: boolean;
 };
@@ -22,13 +21,10 @@ type Props = {
 const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow';
 
 /**
- * Vertical only, on purpose. `overflow-y: auto` alone leaves the x axis at
- * `visible`, which CSS then computes to `auto` — so a child a fraction of a
- * pixel too wide (Recharts rounds its width up) earns a horizontal scrollbar.
- * That scrollbar takes height from the box, which pushes `min-h-full` content
- * past the remaining height, which raises the vertical scrollbar, which takes
- * width, which changes what the chart rounds to — and the pair blinks in and
- * out for as long as the widget is on screen.
+ * Vertical only, on purpose: `overflow-y: auto` alone computes the x axis to
+ * `auto`, and then a child a fraction of a pixel too wide (Recharts rounds its
+ * width up) raises a horizontal scrollbar, which steals height, which raises
+ * the vertical one, which steals width — the pair then blinks forever.
  */
 const SCROLL_CLASS = 'overflow-x-hidden overflow-y-auto';
 
