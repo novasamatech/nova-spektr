@@ -4,8 +4,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { CountChip, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT, getOperationsMinWidth } from '@/shared/ui/operations-table-layout';
+import { FootnoteText, Loader } from '@/shared/ui';
+import {
+  EMPTY_SECTION_HEIGHT,
+  ROW_GAP,
+  ROW_HEIGHT,
+  SECTION_HEADER_HEIGHT,
+  getOperationsMinWidth,
+} from '@/shared/ui/operations-table-layout';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
@@ -16,7 +22,7 @@ import {
   useIsResizingColumns,
   useOperationColumnWidths,
 } from '@/aggregates/operations-table-layout';
-import { DraftsSection } from '@/features/drafts';
+import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
 import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sections';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
@@ -25,6 +31,7 @@ import { ChainSyncStatus } from './ChainSyncStatus';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsTableHeader } from './OperationsTableHeader';
+import { SectionHeading } from './SectionHeading';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
@@ -33,9 +40,8 @@ import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
 type FlatItem =
   | { type: 'section'; section: OperationSection; count: number }
+  | { type: 'empty'; section: OperationSection }
   | { type: 'operation'; item: OperationWithAccount };
-
-const isSectionItem = (item: FlatItem): item is FlatItem & { type: 'section' } => item.type === 'section';
 
 export const Operations = () => {
   const { t } = useI18n();
@@ -74,19 +80,35 @@ export const Operations = () => {
   const matchesStatusFilter = filter.status.length === 0 || filter.status.includes('drafts');
   const showDrafts = tab === 'pending' && hasEverConnected && matchesStatusFilter;
 
+  const draftsState = useDraftsSectionState(filter);
+  const showDraftsGroup = showDrafts && draftsState.isAvailable;
+  // The first visible group's heading is drawn above the sticky column header
+  // (Page → Section → Table); the virtual list starts with that group's rows.
+  const firstSection = sectionedOps[0]?.section ?? null;
+  const headingAboveList = showDraftsGroup
+    ? { key: 'drafts' as const, labelKey: 'operations.drafts.title', count: draftsState.count }
+    : firstSection
+      ? { key: firstSection, labelKey: SECTION_LABEL_KEYS[firstSection], count: sectionedOps[0]?.items.length }
+      : null;
+  const showTable = deferredOps.length > 0 || showDraftsGroup || sectionedOps.length > 0;
+
   const flatItems = useMemo(() => {
     const items: FlatItem[] = [];
-    for (const { section, items: sectionItems } of sectionedOps) {
-      items.push({ type: 'section', section, count: sectionItems.length });
+    for (const [index, { section, items: sectionItems }] of sectionedOps.entries()) {
+      // The first group's heading is rendered above the sticky column header.
+      const headingIsAbove = !showDraftsGroup && index === 0;
+      if (!headingIsAbove) items.push({ type: 'section', section, count: sectionItems.length });
       if (collapsedSections[section]) continue;
 
-      for (const item of sectionItems) {
-        items.push({ type: 'operation', item });
+      if (sectionItems.length === 0) {
+        items.push({ type: 'empty', section });
+        continue;
       }
+      for (const item of sectionItems) items.push({ type: 'operation', item });
     }
 
     return items;
-  }, [sectionedOps, collapsedSections]);
+  }, [sectionedOps, collapsedSections, showDraftsGroup]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const aboveListRef = useRef<HTMLDivElement>(null);
@@ -124,14 +146,22 @@ export const Operations = () => {
   const virtualizer = useVirtualizer({
     count: flatItems.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => (flatItems[index]?.type === 'section' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT + ROW_GAP),
+    estimateSize: index => {
+      const type = flatItems[index]?.type;
+      if (type === 'section') return SECTION_HEADER_HEIGHT;
+      if (type === 'empty') return EMPTY_SECTION_HEIGHT;
+
+      return ROW_HEIGHT + ROW_GAP;
+    },
     overscan: 15,
     scrollMargin,
     getItemKey: index => {
       const item = flatItems[index];
       if (!item) return `unknown-${index}`;
+      if (item.type === 'section') return `section-${item.section}`;
+      if (item.type === 'empty') return `empty-${item.section}`;
 
-      return isSectionItem(item) ? `section-${item.section}` : item.item.operation.id;
+      return item.item.operation.id;
     },
   });
 
@@ -164,17 +194,21 @@ export const Operations = () => {
           <div
             className={cnTw('group/list h-full', isResizing && 'select-none')}
             data-resizing={isResizing || undefined}
-            style={
-              deferredOps.length > 0 || showDrafts
-                ? { minWidth: getOperationsMinWidth(widths, { showInitiator }) }
-                : undefined
-            }
+            style={showTable ? { minWidth: getOperationsMinWidth(widths, { showInitiator }) } : undefined}
           >
             <ScrollArea viewportRef={scrollRef}>
               <div ref={aboveListRef}>
-                {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}
+                {showTable && headingAboveList && (
+                  <SectionHeading
+                    labelKey={headingAboveList.labelKey}
+                    count={headingAboveList.count}
+                    collapsed={!!collapsedSections[headingAboveList.key]}
+                    onToggle={() => operationsContextModel.toggleSection(headingAboveList.key)}
+                  />
+                )}
+                {showTable && <OperationsTableHeader />}
 
-                {showDrafts && <DraftsSection scope={filter} />}
+                {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
 
                 {(isDeferredLoading || isDeepLinkLoading) && (
                   <div className="mt-4 flex w-full items-center justify-center gap-x-3">
@@ -184,13 +218,13 @@ export const Operations = () => {
                 )}
               </div>
 
-              {!isDeferredLoading && deferredOps.length === 0 && (
+              {!isDeferredLoading && deferredOps.length === 0 && sectionedOps.length === 0 && (
                 <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
                   <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
                 </Box>
               )}
 
-              {deferredOps.length > 0 && (
+              {sectionedOps.length > 0 && (
                 <div
                   ref={listContainerRef}
                   style={{
@@ -216,29 +250,19 @@ export const Operations = () => {
                           transform: `translateY(${virtualRow.start - scrollMargin}px)`,
                         }}
                       >
-                        {isSectionItem(item) ? (
-                          <button
-                            type="button"
-                            aria-expanded={!collapsedSections[item.section]}
-                            className={cnTw(
-                              'flex items-center gap-2 rounded-sm px-2 pt-4 pb-1.5',
-                              'focus-visible:outline-2 focus-visible:outline-icon-accent',
-                            )}
-                            onClick={() => operationsContextModel.toggleSection(item.section)}
-                          >
-                            <Icon
-                              name="shelfDown"
-                              size={15}
-                              className={cnTw(
-                                'text-icon-default transition-transform',
-                                collapsedSections[item.section] ? 'rotate-0' : 'rotate-180',
-                              )}
-                            />
-                            <FootnoteText className="font-semibold text-text-primary">
-                              {t(SECTION_LABEL_KEYS[item.section])}
+                        {item.type === 'section' ? (
+                          <SectionHeading
+                            labelKey={SECTION_LABEL_KEYS[item.section]}
+                            count={item.count}
+                            collapsed={!!collapsedSections[item.section]}
+                            onToggle={() => operationsContextModel.toggleSection(item.section)}
+                          />
+                        ) : item.type === 'empty' ? (
+                          <div className="mb-1.5 flex h-[60px] items-center justify-center rounded-lg border border-dashed border-shade-12">
+                            <FootnoteText className="text-text-tertiary">
+                              {t('operations.sections.inProgressEmpty')}
                             </FootnoteText>
-                            <CountChip count={item.count} />
-                          </button>
+                          </div>
                         ) : (
                           <div className="pb-1.5">
                             <AsyncItem fallback={<div className="h-[68px] rounded bg-block-background-default" />}>

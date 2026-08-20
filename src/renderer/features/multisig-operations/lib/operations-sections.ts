@@ -39,7 +39,7 @@ export const isStatusFilterValue = (value: string): value is StatusFilterValue =
   return STATUS_FILTER_ORDER.some(status => status === value);
 };
 
-export const getOperationSection = (operation: MultisigOperation): OperationSection => {
+export const getOperationSection = (operation: Pick<MultisigOperation, 'status'>): OperationSection => {
   if (operation.status === 'pending') return 'in_progress';
   if (operation.status === 'executed') return 'completed';
 

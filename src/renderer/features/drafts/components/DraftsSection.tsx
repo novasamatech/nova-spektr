@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
-import { Button, CountChip, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { type Draft, PERMISSIONS, draftsResource, draftsService } from '@/domains/backend';
@@ -31,9 +31,14 @@ import { DraftSummary } from './DraftSummary';
 type Props = {
   /** Narrows drafts to the Operations view's active non-status filters. */
   scope?: DraftListScope;
+  /**
+   * The heading lives in the Operations view (above the sticky column header);
+   * it owns the collapse state.
+   */
+  isCollapsed: boolean;
 };
 
-export const DraftsSection = ({ scope }: Props) => {
+export const DraftsSection = ({ scope, isCollapsed }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
@@ -50,7 +55,6 @@ export const DraftsSection = ({ scope }: Props) => {
 
   const { drafts: visibleDrafts } = useVisibleDrafts(scope);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const sortedDrafts = useMemo(
     () => [...visibleDrafts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
@@ -204,23 +208,6 @@ export const DraftsSection = ({ scope }: Props) => {
     <div>
       <AddressBookHealthOverlay isHealthy={isHealthy}>
         <div aria-hidden={!isHealthy} inert={!isHealthy || undefined}>
-          <button
-            type="button"
-            aria-expanded={!isCollapsed}
-            className={cnTw(
-              'flex items-center gap-2 rounded-sm px-2 pt-4 pb-1.5',
-              'focus-visible:outline-2 focus-visible:outline-icon-accent',
-            )}
-            onClick={() => setIsCollapsed((collapsed) => !collapsed)}
-          >
-            <Icon
-              name="shelfDown"
-              size={15}
-              className={cnTw('text-icon-default transition-transform', isCollapsed ? 'rotate-0' : 'rotate-180')}
-            />
-            <FootnoteText className="font-semibold text-text-primary">{t('operations.drafts.title')}</FootnoteText>
-            {isHealthy && visibleDrafts.length > 0 && <CountChip count={visibleDrafts.length} />}
-          </button>
           {!isCollapsed && (
             <div className="flex flex-col gap-y-1.5">
               {isHealthy &&

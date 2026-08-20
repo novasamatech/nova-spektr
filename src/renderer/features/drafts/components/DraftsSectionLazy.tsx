@@ -7,8 +7,10 @@ import { type DraftListScope } from '../lib/draft-scope';
 // `@/features/drafts`, which form-models import for `createDraftModeBinding`.
 const DraftsSectionLazy = lazy(() => import('./DraftsSection').then((m) => ({ default: m.DraftsSection })));
 
-export const DraftsSection = ({ scope }: { scope?: DraftListScope }) => (
+type Props = { scope?: DraftListScope; isCollapsed: boolean };
+
+export const DraftsSection = ({ scope, isCollapsed }: Props) => (
   <Suspense fallback={null}>
-    <DraftsSectionLazy scope={scope} />
+    <DraftsSectionLazy scope={scope} isCollapsed={isCollapsed} />
   </Suspense>
 );

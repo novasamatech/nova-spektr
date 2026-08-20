@@ -28,18 +28,14 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bucketOperations } from '../lib/bucket-operations';
 import {
   type WalletSearchEntry,
   buildOperationSearchRow,
   filterOperation,
   getWalletSearchEntries,
 } from '../lib/operations-filter';
-import {
-  type OperationSection,
-  type StatusFilterValue,
-  SECTION_ORDER,
-  getOperationSection,
-} from '../lib/operations-sections';
+import { type StatusFilterValue, getOperationSection } from '../lib/operations-sections';
 import { type OperationsSort, type SortKey, getNextSortState, sortOperations } from '../lib/operations-sort';
 import { type OperationWithAccount } from '../lib/types';
 
@@ -369,8 +365,9 @@ const $visibleOperationsCount = $filteredOperations.map(operations => operations
 const sortToggled = createEvent<SortKey>();
 const $sort = createStore<OperationsSort>(null).on(sortToggled, getNextSortState);
 
-const toggleSection = createEvent<OperationSection>();
-const $collapsedSections = createStore<Partial<Record<OperationSection, boolean>>>({}).on(
+// The drafts group shares this state, hence `StatusFilterValue` rather than `OperationSection`.
+const toggleSection = createEvent<StatusFilterValue>();
+const $collapsedSections = createStore<Partial<Record<StatusFilterValue, boolean>>>({}).on(
   toggleSection,
   (state, section) => ({ ...state, [section]: !state[section] }),
 );
@@ -386,31 +383,24 @@ const $sectionedOperations = combine(
     identities: identity.$list,
     hiddenIds: $hiddenOperationIds,
     isScopeMerged: $isScopeMerged,
+    tab: $tab,
+    filter: $filter,
   },
-  ({ operations, sort, chains, wallets, allAccounts, contacts, identities, hiddenIds, isScopeMerged }) => {
-    const buckets = new Map<OperationSection, OperationWithAccount[]>();
-    for (const item of operations) {
-      // In the merged scope hidden ops (surfaced via the Status filter) get their
-      // own trailing section; on the Hidden tab they keep their status sections.
-      const isHidden = isScopeMerged && hiddenIds.includes(item.operation.id);
-      const section = isHidden ? 'hidden' : getOperationSection(item.operation);
-      const list = buckets.get(section) ?? [];
-      list.push(item);
-      buckets.set(section, list);
-    }
+  ({ operations, sort, chains, wallets, allAccounts, contacts, identities, hiddenIds, isScopeMerged, tab, filter }) => {
+    // In the merged scope hidden ops (surfaced via the Status filter) get their
+    // own trailing section; on the Hidden tab they keep their status sections.
+    const buckets = bucketOperations(operations, {
+      hiddenIds,
+      isScopeMerged,
+      // Pending tab keeps its In-progress heading unless the Status filter explicitly excludes it.
+      alwaysShowInProgress:
+        tab === 'pending' && !isScopeMerged && (filter.status.length === 0 || filter.status.includes('in_progress')),
+    });
 
-    const sections: { section: OperationSection; items: OperationWithAccount[] }[] = [];
-    for (const section of SECTION_ORDER) {
-      const items = buckets.get(section);
-      if (!items) continue;
-
-      sections.push({
-        section,
-        items: sortOperations(items, sort, { chains, wallets, accounts: allAccounts, contacts, identities }),
-      });
-    }
-
-    return sections;
+    return buckets.map(({ section, items }) => ({
+      section,
+      items: sortOperations(items, sort, { chains, wallets, accounts: allAccounts, contacts, identities }),
+    }));
   },
 );
 

@@ -3117,6 +3117,7 @@
       "completed": "Completed",
       "hidden": "Hidden",
       "inProgress": "In progress",
+      "inProgressEmpty": "No operations awaiting signatures",
       "rejected": "Rejected"
     },
     "shareOperationTooltip": "Share transaction link with signatories",

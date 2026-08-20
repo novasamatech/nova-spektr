@@ -18,6 +18,7 @@ export { type DraftListScope, filterDraftsByScope } from './lib/draft-scope';
 export { draftDeepLinkModel } from './model/draft-deep-link';
 export { DraftIcon } from './components/DraftIcon';
 export { useVisibleDrafts } from './lib/useVisibleDrafts';
+export { useDraftsSectionState } from './lib/useDraftsSectionState';
 export { useSubmitDraft } from './lib/useSubmitDraft';
 export { useDraftOperationTitle } from './lib/useDraftOperationTitle';
 export { useDraftTransactionAmount } from './lib/useDraftTransactionAmount';
