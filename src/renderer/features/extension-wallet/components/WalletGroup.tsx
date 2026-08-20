@@ -62,7 +62,7 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
           <VirtualList
             items={filteredWallets}
             estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
-            gap={4}
+            gap={1}
             getItemKey={(wallet) => wallet.id}
           >
             {(wallet) => {

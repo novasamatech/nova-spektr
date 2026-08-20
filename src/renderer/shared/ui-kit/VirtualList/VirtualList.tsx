@@ -3,6 +3,7 @@ import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { useScrollAreaViewport } from '../ScrollArea/context';
+import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type Props<T> = {
   items: T[];
@@ -15,9 +16,11 @@ type Props<T> = {
   /** Rows kept mounted beyond each edge of the viewport. */
   overscan?: number;
   /**
-   * Space between rows, px. Applied as padding on each row wrapper rather than
-   * as a flex `gap`, so that it is part of what gets measured and the spacers
-   * stay in step with the rows they replace.
+   * Space between rows, in grid units — same scale as `Box`'s `gap`.
+   *
+   * Applied as padding on each row wrapper rather than as a flex `gap`, so that
+   * it is part of what gets measured and the spacers stay in step with the rows
+   * they replace.
    */
   gap?: number;
   /** Stable row key. Falls back to the row index. */
@@ -47,6 +50,7 @@ export const VirtualList = <T,>({
   className,
   children,
 }: Props<T>) => {
+  const gapPx = gap ? gridSpaceConverter(gap) : 0;
   const viewportRef = useScrollAreaViewport();
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
@@ -91,10 +95,16 @@ export const VirtualList = <T,>({
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,
-    estimateSize: () => estimateSize + gap,
+    estimateSize: () => estimateSize + gapPx,
     overscan,
     scrollMargin,
-    getItemKey: getItemKey ? index => getItemKey(items[index] as T, index) : undefined,
+    getItemKey: getItemKey
+      ? index => {
+          const item = items[index];
+
+          return item === undefined ? index : getItemKey(item, index);
+        }
+      : undefined,
   });
 
   if (!scrollElement) {
@@ -104,7 +114,7 @@ export const VirtualList = <T,>({
       return (
         <div ref={listRef} className={className}>
           {items.map((item, index) => (
-            <div key={getItemKey?.(item, index) ?? index} style={gap ? { paddingBottom: gap } : undefined}>
+            <div key={getItemKey?.(item, index) ?? index} style={gapPx ? { paddingBottom: gapPx } : undefined}>
               {children(item, index)}
             </div>
           ))}
@@ -121,7 +131,7 @@ export const VirtualList = <T,>({
     // exists to avoid.
     return (
       <div ref={listRef} className={cnTw('w-full', className)}>
-        <div aria-hidden style={{ height: items.length * (estimateSize + gap) }} />
+        <div aria-hidden style={{ height: items.length * (estimateSize + gapPx) }} />
       </div>
     );
   }
@@ -145,7 +155,7 @@ export const VirtualList = <T,>({
             key={virtualItem.key}
             data-index={virtualItem.index}
             ref={virtualizer.measureElement}
-            style={gap ? { paddingBottom: gap } : undefined}
+            style={gapPx ? { paddingBottom: gapPx } : undefined}
           >
             {children(item, virtualItem.index)}
           </div>

@@ -16,14 +16,6 @@ import { type IdenticonIconTheme, Identicon } from '../Identicon/Identicon';
  */
 export const WALLET_MANAGEMENT_ROW_HEIGHT = 46;
 
-/**
- * Presentational row. `wallet.name` is rendered as-is — the caller resolves it
- * (`useWalletsNames` over the whole list) before passing the wallet in.
- *
- * Resolving per row instead would put one `walletsNameResource` subscription
- * behind every row, and a list of a few hundred wallets then spends most of the
- * open on redundant resource traffic rather than on rendering.
- */
 type Props = {
   wallet: Wallet;
   active: boolean;
@@ -37,6 +29,14 @@ type Props = {
   label?: string | null;
 };
 
+/**
+ * Presentational row. `wallet.name` is rendered as-is — the caller resolves it
+ * (`useWalletsNames` over the whole list) before passing the wallet in.
+ *
+ * Resolving per row instead would put one `walletsNameResource` subscription
+ * behind every row, and a list of a few hundred wallets then spends most of the
+ * open on redundant resource traffic rather than on rendering.
+ */
 export const WalletManagement = memo(
   ({
     wallet,
