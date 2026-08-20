@@ -27,7 +27,7 @@ import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sec
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
-import { ChainSyncStatus } from './ChainSyncStatus';
+import { useChainSyncToast } from './ChainSyncToast';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsTableHeader } from './OperationsTableHeader';
@@ -45,6 +45,8 @@ type FlatItem =
 
 export const Operations = () => {
   const { t } = useI18n();
+
+  useChainSyncToast();
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
@@ -217,7 +219,6 @@ export const Operations = () => {
                 {(isDeferredLoading || isDeepLinkLoading) && (
                   <div className="mt-4 flex w-full items-center justify-center gap-x-3">
                     <Loader color="primary" size={25} />
-                    <ChainSyncStatus />
                   </div>
                 )}
               </div>
