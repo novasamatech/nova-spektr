@@ -51,6 +51,7 @@ const callDataChanged = createEvent<string>();
 const inputModeChanged = createEvent<'paste' | 'build'>();
 const chainSelected = createEvent<Chain | null>();
 const descriptionChanged = createEvent<string>();
+const riskAcknowledgedToggled = createEvent<boolean>();
 
 const advance = (s: Step) => STEPS_ORDER[Math.min(STEPS_ORDER.indexOf(s) + 1, STEPS_ORDER.length - 1)] ?? s;
 const revert = (s: Step) => STEPS_ORDER[Math.max(STEPS_ORDER.indexOf(s) - 1, 0)] ?? s;
@@ -83,6 +84,13 @@ const $selectedChain = createStore<Chain | null>(null)
 const $description = createStore<string>('')
   .on(descriptionChanged, (_, d) => d)
   .reset(modalClosed);
+
+// Unknown-recipient acknowledgement for the confirm step. Anything that can
+// change the recipient — new call data, another chain, a new flow — clears it
+// so a tick never silently carries over to a different address.
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([createDraftRequested, modalClosed, callDataChanged, chainSelected]);
 
 sample({
   clock: createDraftRequested,
@@ -183,12 +191,14 @@ export const createDraftModel = {
   inputModeChanged,
   chainSelected,
   descriptionChanged,
+  riskAcknowledgedToggled,
   $isOpen,
   $activeStep,
   $callData,
   $inputMode,
   $selectedChain,
   $description,
+  $isRiskAcknowledged,
   $callDataErrorKey,
   $isDescriptionTooLong,
   $isDirty,

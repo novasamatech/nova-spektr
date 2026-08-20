@@ -292,3 +292,49 @@ describe('createDraftModel · seed jump-ahead', () => {
     expect(scope.getState(createDraftModel.$activeStep)).toBe('call-data');
   });
 });
+
+describe('createDraftModel · unknown recipient acknowledgement', () => {
+  it('starts unacknowledged and follows the toggle', async () => {
+    const scope = forkWithChains([chainA]);
+    await open(scope);
+
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(true);
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: false });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+  });
+
+  it('resets when the call data changes (the recipient may have changed)', async () => {
+    const scope = forkWithChains([chainA]);
+    await open(scope);
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+
+    await allSettled(createDraftModel.callDataChanged, { scope, params: VALID_CALL_DATA });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+  });
+
+  it('resets when the chain changes', async () => {
+    const scope = forkWithChains([chainA, chainB]);
+    await open(scope);
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+
+    await allSettled(createDraftModel.chainSelected, { scope, params: chainB });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+  });
+
+  it('resets when the modal closes and when a new flow opens', async () => {
+    const scope = forkWithChains([chainA]);
+    await open(scope);
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+
+    await allSettled(createDraftModel.modalClosed, { scope });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    await open(scope, { chainId: CHAIN_A, callData: VALID_CALL_DATA, path: COMPLETE_PATH });
+    expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+  });
+});
