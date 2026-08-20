@@ -34,7 +34,7 @@ export const OperationFullInfo = memo(({ operation, account, amount, deepLink }:
 
   return (
     <div className="grid grid-cols-3">
-      <OperationDetails operation={operation} account={account} amount={amount}>
+      <OperationDetails operation={operation} amount={amount}>
         <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
       </OperationDetails>
 

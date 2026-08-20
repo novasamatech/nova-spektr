@@ -1,14 +1,11 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { formatPalletCall } from '../lib/format-pallet-call';
@@ -18,13 +15,10 @@ import { OperationDescription } from './OperationDescription';
 
 type Props = PropsWithChildren<{
   operation: MultisigOperation;
-  account: MultisigAccount | FlexibleMultisigAccount;
   amount?: OperationAmountValue;
 }>;
 
-const ACCOUNT_ROW_CLASS = 'text-text-secondary';
-
-export const OperationDetails = ({ operation, account, amount, children }: Props) => {
+export const OperationDetails = ({ operation, amount, children }: Props) => {
   const { t, formatDate } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -34,15 +28,9 @@ export const OperationDetails = ({ operation, account, amount, children }: Props
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
   const date = new Date(operation.timestamp || initEvent?.timestamp || Date.now());
 
-  // Flexible multisig: `account` is the proxied (pure) account, the backing multisig
-  // is `multisigAccountId`. Regular multisig: `account` IS the multisig and a proxied
-  // operation carries the source in `operation.proxiedAccountId`.
-  const multisigAccountId = accountUtils.isFlexibleMultisigAccount(account)
-    ? account.multisigAccountId
-    : account.accountId;
-  const sourceAccountId = accountUtils.isFlexibleMultisigAccount(account)
-    ? account.accountId
-    : operation.proxiedAccountId;
+  // Both ids are recorded on the operation at ingest; a Source exists only when the call really is proxied.
+  const multisigAccountId = operation.multisigAccountId;
+  const sourceAccountId = operation.proxiedAccountId;
 
   // Proxy wrappers are unwrapped so the chip names the call a signer is actually
   // authorising; the raw section/method fallback covers undecoded operations.
@@ -58,20 +46,16 @@ export const OperationDetails = ({ operation, account, amount, children }: Props
           <span>{formatDate(date, 'PPp')}</span>
         </DetailRow>
 
-        {nonNullable(chain) && (
-          <DetailRow label={t('operation.details.depositor')} className={ACCOUNT_ROW_CLASS}>
-            <NamedAccount accountId={operation.depositor} chain={chain} variant="short" />
-          </DetailRow>
-        )}
+        <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
+          <NamedAccount accountId={operation.depositor} chain={chain} variant="short" />
+        </DetailRow>
 
-        {nonNullable(chain) && (
-          <DetailRow label={t('operation.details.multisig')} className={ACCOUNT_ROW_CLASS}>
-            <NamedAccount accountId={multisigAccountId} chain={chain} variant="short" />
-          </DetailRow>
-        )}
+        <DetailRow label={t('operation.details.multisig')} className="text-text-secondary">
+          <NamedAccount accountId={multisigAccountId} chain={chain} variant="short" />
+        </DetailRow>
 
-        {nonNullable(chain) && sourceAccountId && (
-          <DetailRow label={t('operation.details.source')} className={ACCOUNT_ROW_CLASS}>
+        {sourceAccountId && (
+          <DetailRow label={t('operation.details.source')} className="text-text-secondary">
             <NamedAccount accountId={sourceAccountId} chain={chain} variant="short" />
           </DetailRow>
         )}
@@ -82,7 +66,7 @@ export const OperationDetails = ({ operation, account, amount, children }: Props
           <DetailRow label={t('operation.details.operationType')}>
             <FootnoteText
               as="span"
-              className="truncate rounded-md bg-tab-background px-2 py-0.5 font-mono text-text-primary"
+              className="min-w-0 truncate rounded-md bg-tab-background px-2 py-0.5 font-mono text-text-primary"
             >
               {palletCall}
             </FootnoteText>

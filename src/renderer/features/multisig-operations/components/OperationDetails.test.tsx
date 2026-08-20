@@ -2,17 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation } from '@/domains/network';
 
 import { OperationDetails } from './OperationDetails';
 
 const stores = vi.hoisted(() => ({ chainsStore: Symbol('chains') }));
+const chainsFixture = vi.hoisted(() => ({ current: { '0x00': { chainId: '0x00', addressPrefix: 0 } } as unknown }));
 
 vi.mock('effector-react', () => ({
-  useUnit: (store: symbol) =>
-    store === stores.chainsStore ? { '0x00': { chainId: '0x00', addressPrefix: 0 } } : undefined,
+  useUnit: (store: symbol) => (store === stores.chainsStore ? chainsFixture.current : undefined),
 }));
 
 vi.mock('@/shared/i18n', () => ({
@@ -41,14 +41,12 @@ vi.mock('@/entities/network', () => ({
   networkModel: { $chains: stores.chainsStore },
 }));
 
+// The real `@/entities/transaction` barrel drags in QR/camera UI modules that
+// don't survive jsdom, so this stub reimplements `findCoreTransaction`'s
+// proxy-unwrap behaviour faithfully instead of importing the real module.
 vi.mock('@/entities/transaction', () => ({
-  findCoreTransaction: (tx: { section: string; method: string } | null) => tx,
-}));
-
-vi.mock('@/entities/wallet', () => ({
-  accountUtils: {
-    isFlexibleMultisigAccount: (account: { multisigAccountId?: string }) => Boolean(account.multisigAccountId),
-  },
+  findCoreTransaction: (tx: { type?: string; section: string; method: string; args?: unknown } | null) =>
+    tx?.type === 'proxy' ? (tx.args as { transaction: unknown }).transaction : tx,
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
@@ -81,16 +79,9 @@ const baseOperation = {
   method: 'transferKeepAlive',
 } as unknown as MultisigOperation;
 
-const multisigAccount = { accountId: multisigId, signatories: [] } as unknown as MultisigAccount;
-const flexibleAccount = {
-  accountId: proxiedId,
-  multisigAccountId: multisigId,
-  signatories: [],
-} as unknown as FlexibleMultisigAccount;
-
 describe('OperationDetails', () => {
   it('renders the depositor as an account without a wallet name override', () => {
-    render(<OperationDetails operation={baseOperation} account={multisigAccount} />);
+    render(<OperationDetails operation={baseOperation} />);
 
     const row = screen.getByTestId('row-operation.details.depositor');
     expect(row).toHaveTextContent(depositor);
@@ -100,7 +91,7 @@ describe('OperationDetails', () => {
 
   it('renders Date & Time first, then Depositor, Multisig, slot content, Operation type', () => {
     render(
-      <OperationDetails operation={baseOperation} account={multisigAccount}>
+      <OperationDetails operation={baseOperation}>
         <div data-testid="row-slot">recipient</div>
       </OperationDetails>,
     );
@@ -117,44 +108,59 @@ describe('OperationDetails', () => {
     expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent('Balances · TransferKeepAlive');
   });
 
-  it('shows the Source row only for proxied operations', () => {
-    const { rerender } = render(<OperationDetails operation={baseOperation} account={multisigAccount} />);
+  it('omits the Source row for a non-proxied operation', () => {
+    render(<OperationDetails operation={baseOperation} />);
     expect(screen.queryByTestId('row-operation.details.source')).toBeNull();
-
-    rerender(
-      <OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} account={multisigAccount} />,
-    );
-    expect(screen.getByTestId('row-operation.details.source')).toHaveTextContent(proxiedId);
   });
 
-  it('for a flexible multisig the Multisig row is the backing multisig and Source is the proxied account', () => {
-    render(<OperationDetails operation={baseOperation} account={flexibleAccount} />);
+  it('shows the Multisig row from multisigAccountId and the Source row from proxiedAccountId', () => {
+    render(<OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} />);
 
     expect(screen.getByTestId('row-operation.details.multisig')).toHaveTextContent(multisigId);
     expect(screen.getByTestId('row-operation.details.source')).toHaveTextContent(proxiedId);
   });
 
   it('renders the Amount row only when an amount is provided', () => {
-    const { rerender } = render(<OperationDetails operation={baseOperation} account={multisigAccount} />);
+    const { rerender } = render(<OperationDetails operation={baseOperation} />);
     expect(screen.queryByTestId('row-operation.details.amount')).toBeNull();
 
     rerender(
-      <OperationDetails
-        operation={baseOperation}
-        account={multisigAccount}
-        amount={{ value: '320', asset: { symbol: 'DOT' } as never }}
-      />,
+      <OperationDetails operation={baseOperation} amount={{ value: '320', asset: { symbol: 'DOT' } as never }} />,
     );
     expect(screen.getByTestId('row-operation.details.amount')).toHaveTextContent('320');
   });
 
   it('omits the Operation type row when the call is unknown', () => {
-    render(
-      <OperationDetails
-        operation={{ ...baseOperation, transaction: null, section: null, method: null }}
-        account={multisigAccount}
-      />,
-    );
+    render(<OperationDetails operation={{ ...baseOperation, transaction: null, section: null, method: null }} />);
     expect(screen.queryByTestId('row-operation.details.operationType')).toBeNull();
+  });
+
+  it('unwraps a proxy transaction so the chip names the inner call', () => {
+    const proxyOperation = {
+      ...baseOperation,
+      section: 'proxy',
+      method: 'proxy',
+      transaction: {
+        type: TransactionType.PROXY,
+        section: 'proxy',
+        method: 'proxy',
+        args: { transaction: { section: 'balances', method: 'transferKeepAlive' } },
+      },
+    } as unknown as MultisigOperation;
+
+    render(<OperationDetails operation={proxyOperation} />);
+
+    expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent('Balances · TransferKeepAlive');
+  });
+
+  it('renders Depositor and Multisig rows even when the chain is unknown', () => {
+    chainsFixture.current = {};
+    try {
+      render(<OperationDetails operation={baseOperation} />);
+      expect(screen.getByTestId('row-operation.details.depositor')).toHaveTextContent(depositor);
+      expect(screen.getByTestId('row-operation.details.multisig')).toHaveTextContent(multisigId);
+    } finally {
+      chainsFixture.current = { '0x00': { chainId: '0x00', addressPrefix: 0 } };
+    }
   });
 });
