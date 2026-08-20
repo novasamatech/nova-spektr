@@ -1,6 +1,6 @@
 # Operations Queue
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -22,20 +22,20 @@ Operations page, not here.
   permission. Without that, drafts are absent entirely and the card shows multisig signatures only — a local-only wallet
   still gets a useful queue.
 - The card is a dashboard widget with a default place and a default size on the grid, and a minimum size below which it
-  stops being readable. Users arrange and resize widgets themselves in edit mode, so both are defaults rather than
-  guarantees.
+  stops being readable. Users arrange and resize widgets themselves in edit mode — and may hide the card outright,
+  bringing it back from the header's **"Add widget"** menu — so both are defaults rather than guarantees.
 
 ## States / scenarios
 
-| State           | When it appears                                       | What the user sees                                      |
-| --------------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| Hidden          | `operationsQueueWidget` flag off                      | No card at all                                          |
-| No selection    | No accounts selected                                  | Title + "Select accounts above" prompt                  |
-| Loading         | Drafts available but not yet fetched                  | Title only; neither subsection nor the empty state      |
-| Empty           | Loaded, and both subsections are empty                | Title + "Nothing awaiting your action"                  |
-| Drafts only     | Scoped drafts exist, nothing awaits signature         | Drafts subsection (accent count badge)                  |
-| Signatures only | Ops await the user, no drafts (or drafts unavailable) | Awaiting-signature subsection (negative count badge)    |
-| Both            | Both sets non-empty                                   | Drafts first, then Awaiting signature; the list scrolls |
+| State           | When it appears                                              | What the user sees                                      |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
+| Hidden          | `operationsQueueWidget` flag off, or the user hid the widget | No card at all                                          |
+| No selection    | No accounts selected                                         | Title + "Select accounts above" prompt                  |
+| Loading         | Drafts available but not yet fetched                         | Title only; neither subsection nor the empty state      |
+| Empty           | Loaded, and both subsections are empty                       | Title + "Nothing awaiting your action"                  |
+| Drafts only     | Scoped drafts exist, nothing awaits signature                | Drafts subsection (accent count badge)                  |
+| Signatures only | Ops await the user, no drafts (or drafts unavailable)        | Awaiting-signature subsection (negative count badge)    |
+| Both            | Both sets non-empty                                          | Drafts first, then Awaiting signature; the list scrolls |
 
 Each subsection carries a count badge, and both are omitted rather than shown at zero — an empty subsection header would
 read as a state to resolve when there is nothing to do.

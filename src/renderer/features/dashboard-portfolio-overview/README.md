@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -36,6 +36,9 @@ rather than guarantees.
 The donut does not animate. Every hover re-renders the ring, and an animated Recharts pie mounts and unmounts its
 animation wrapper on each of those renders — sweeping a pointer across the ring queues them faster than React can flush
 them. A 400ms flourish is not worth a chart that can crash under a mouse gesture.
+
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md).
 
 ## States / scenarios
 

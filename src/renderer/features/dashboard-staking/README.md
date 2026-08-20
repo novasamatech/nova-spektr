@@ -1,6 +1,6 @@
 # Dashboard Staking Summary
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -29,17 +29,19 @@ They ship no UI. When that debt is settled they go.
   other chain is not counted here.
 - A chain contributes only when its staking asset has a price feed. Without one there is no fiat value to add, and the
   card has no token-amount fallback to fall back on.
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md).
 
 ## States / scenarios
 
-| State        | When it appears                                    | What the user sees                                                    |
-| ------------ | -------------------------------------------------- | --------------------------------------------------------------------- |
-| Hidden       | `dashboard` flag off, or fiat display off          | No card                                                               |
-| No selection | The dashboard account picker is empty              | Title + "No accounts selected"                                        |
-| Loading      | Ledgers or APYs still resolving, nothing known yet | Title, three shimmering bars                                          |
-| No staking   | Resolved, and none of the selected accounts stakes | "No active staking positions"                                         |
-| Populated    | At least one selected account has a bonded ledger  | Average APY · staking accounts · total staked                         |
-| Partial      | Ledgers known, prices or APY still arriving        | The figures already known, a shimmer in place of the ones that aren't |
+| State        | When it appears                                                       | What the user sees                                                    |
+| ------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Hidden       | `dashboard` flag off, or fiat display off, or the user hid the widget | No card                                                               |
+| No selection | The dashboard account picker is empty                                 | Title + "No accounts selected"                                        |
+| Loading      | Ledgers or APYs still resolving, nothing known yet                    | Title, three shimmering bars                                          |
+| No staking   | Resolved, and none of the selected accounts stakes                    | "No active staking positions"                                         |
+| Populated    | At least one selected account has a bonded ledger                     | Average APY · staking accounts · total staked                         |
+| Partial      | Ledgers known, prices or APY still arriving                           | The figures already known, a shimmer in place of the ones that aren't |
 
 An empty selection and an empty result are kept apart, as they are on every other widget of the tab: with nothing
 selected there is no selection whose positions could be missing, and answering that with "No active staking positions"

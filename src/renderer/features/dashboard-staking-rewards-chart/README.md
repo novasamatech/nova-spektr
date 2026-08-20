@@ -1,6 +1,6 @@
 # Staking Rewards Chart
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -24,6 +24,9 @@ recent payout is visible as a day rather than being averaged into a month.
   relay chain's, so rewards earned before staking migrated to Asset Hub are still counted.
 - Fiat is secondary: with the global "show fiat" toggle off, the card keeps working and simply prints token amounts with
   no converted value.
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md). It is listed there as **"Rewards chart"** rather
+  than by its card title "Rewards", so the restore menu cannot confuse it with the rewards KPI card.
 
 ## States / scenarios
 
