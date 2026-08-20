@@ -20,15 +20,19 @@ Actions) that stays pinned across every group below — page → section → tab
 Initiator are resizable**: drag the boundary in the header (double-click autofits; 180–440 / 120–300 / 140–440 / 140–440
 px), Description absorbs the slack, widths persist per user (see the
 [`operations-table-layout`](../../aggregates/operations-table-layout/README.md) aggregate), and widening past the window
-falls back to horizontal scroll. Column boundaries appear as hairlines in the header, and inside a row on hover or while
-resizing. The **Initiator** column is hidden on narrower windows (shown at ≥1536px) and only counts toward the list's
-minimum width while visible. The **Signed** caption sits over the "X of Y signed" pills on the Pending tab and reads
-**Status** on History and in the merged scope; **Actions** is hidden on History, which has no row actions. The
-**Description** header label is shown only once the external address book has been connected (descriptions are
-address-book data) — the same gate that reveals the drafts group; until then the column area stays blank. **In
-progress** is always present on the Pending tab while no filter or search narrows the list — an empty group shows a
-dashed "No operations awaiting signatures" placeholder instead of disappearing; with a narrowing filter that matches
-nothing, the usual filtered empty state shows instead.
+falls back to horizontal scroll. Handles are keyboard-operable (←/→ by 8px, Shift for 32px, Home = minimum, End =
+autofit). Column boundaries appear as hairlines in the header, and inside a row on hover or while resizing. The
+**Initiator** column is hidden on narrower windows (shown at ≥1536px) and only counts toward the list's minimum width
+while visible. The **Signed** caption sits over the "X of Y signed" pills on the Pending tab and reads **Status** on
+History and in the merged scope; **Actions** is hidden on History, which has no row actions. The **Description** header
+label is shown only once the external address book has been connected (descriptions are address-book data) — the same
+gate that reveals the drafts group; until then the column area stays blank. **In progress** is always present on the
+Pending tab — and in the merged "All operations" scope, which replaces the tabs — while no filter or search narrows the
+list — an empty group shows a dashed "No operations awaiting signatures" placeholder instead of disappearing; with a
+narrowing filter that matches nothing, the usual filtered empty state shows instead.
+
+Network sync progress is a persistent bottom-right toast (_Syncing networks… n/total_, hover for the per-chain list)
+that dismisses itself once every expected chain has reported; it never occupies the list.
 
 ## Who can use it / when it applies
 
