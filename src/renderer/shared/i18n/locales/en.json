@@ -3127,14 +3127,22 @@
       "syncing": "Syncing networks... {synced}/{total}"
     },
     "table": {
+      "actions": "Actions",
       "operation": "Operation",
       "value": "Value",
       "submitter": "Submitter",
       "initiator": "Initiator",
       "description": "Description",
+      "resizeHint": "Drag to resize · double-click to autofit",
+      "resizeInitiator": "Resize Initiator column",
+      "resizeOperation": "Resize Operation column",
+      "resizeSubmitter": "Resize Submitter column",
+      "resizeValue": "Resize Value column",
+      "signed": "Signed",
       "sortByType": "Sort by operation type",
       "sortByValue": "Sort by value (amount, vote stake, etc.)",
-      "sortBySubmitter": "Sort by submitter"
+      "sortBySubmitter": "Sort by submitter",
+      "status": "Status"
     },
     "tabs": {
       "all": "All operations",
