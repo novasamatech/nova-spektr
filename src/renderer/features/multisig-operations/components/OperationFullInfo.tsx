@@ -5,6 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { type MultisigOperation } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
+import { type OperationAmountValue } from './Operation';
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';
@@ -12,6 +13,8 @@ import { OperationSignatories } from './OperationSignatories';
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
+  /** Amount shown in the row's Value cell, repeated in the Details column. */
+  amount?: OperationAmountValue;
   /**
    * Shareable deep link to this operation, surfaced by the Signatories header's
    * Share action.
@@ -26,12 +29,12 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = memo(({ operation, account, deepLink }: Props) => {
+export const OperationFullInfo = memo(({ operation, account, amount, deepLink }: Props) => {
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
     <div className="grid grid-cols-3">
-      <OperationDetails operation={operation}>
+      <OperationDetails operation={operation} account={account} amount={amount}>
         <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
       </OperationDetails>
 

@@ -53,12 +53,14 @@ type Props = {
   wallets: Wallet[];
 };
 
+export type OperationAmountValue = {
+  value: BN | string;
+  asset: Asset | AssetByChains;
+};
+
 export type OperationTitle = {
   title?: string;
-  amount?: {
-    value: BN | string;
-    asset: Asset | AssetByChains;
-  };
+  amount?: OperationAmountValue;
   sourceChainId?: ChainId;
   destinationChainId?: ChainId; // For XCM transactions
 };
@@ -245,7 +247,12 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         </Accordion.Button>
         <Accordion.Content>
           <div className="border-t border-divider">
-            <OperationFullInfo operation={operation} account={multisigAccount} deepLink={deepLink} />
+            <OperationFullInfo
+              operation={operation}
+              account={multisigAccount}
+              amount={titleData.amount}
+              deepLink={deepLink}
+            />
           </div>
         </Accordion.Content>
       </Accordion>
