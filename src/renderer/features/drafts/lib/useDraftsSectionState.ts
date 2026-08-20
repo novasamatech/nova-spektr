@@ -1,10 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { PERMISSIONS } from '@/domains/backend';
-import { authModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
 
 import { type DraftListScope } from './draft-scope';
+import { useCanReadDrafts } from './useCanReadDrafts';
 import { useVisibleDrafts } from './useVisibleDrafts';
 
 /**
@@ -13,12 +12,9 @@ import { useVisibleDrafts } from './useVisibleDrafts';
  * many rows it holds (count shown only while the address book is healthy).
  */
 export const useDraftsSectionState = (scope?: DraftListScope) => {
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const authState = useUnit(authModel.$authState);
   const isHealthy = useUnit(backendContactsModel.$isHealthy);
+  const canRead = useCanReadDrafts();
   const { drafts } = useVisibleDrafts(scope);
-
-  const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
 
   return {
     isAvailable: !(isHealthy && !canRead),

@@ -7,17 +7,18 @@ import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { ConfirmModal, Field, Modal, TextArea, Tooltip, useNotification } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
-import { type Draft, PERMISSIONS, draftsResource, draftsService } from '@/domains/backend';
+import { type Draft, draftsResource, draftsService } from '@/domains/backend';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { resolveDraftProxyAccount } from '../lib/draft-account-resolution';
 import { type DraftListScope } from '../lib/draft-scope';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { useCanReadDrafts } from '../lib/useCanReadDrafts';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
 import { useVisibleDrafts } from '../lib/useVisibleDrafts';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
@@ -42,12 +43,10 @@ export const DraftsSection = ({ scope, isCollapsed }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const authState = useUnit(authModel.$authState);
   const isHealthy = useUnit(backendContactsModel.$isHealthy);
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
-  const canRead = isAuthenticated && (authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ) ?? false);
+  const canRead = useCanReadDrafts();
   const canWrite = useCanCreateDraft();
   // Deleting a draft is write-gated: the backend dropped the dedicated
   // `operation-draft:delete` permission (DELETE endpoint checks `:write`).
