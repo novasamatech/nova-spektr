@@ -7,8 +7,7 @@ import { OperationsTableHeader } from './OperationsTableHeader';
 
 if (typeof window.PointerEvent === 'undefined') {
   // jsdom has no PointerEvent; MouseEvent carries clientX which is all the handle reads.
-
-  (window as any).PointerEvent = MouseEvent;
+  Object.defineProperty(window, 'PointerEvent', { value: MouseEvent, configurable: true });
 }
 
 const testState = vi.hoisted(() => ({
@@ -113,6 +112,26 @@ describe('OperationsTableHeader', () => {
 
     fireEvent.click(handle);
     expect(testState.sortToggled).not.toHaveBeenCalled();
+  });
+
+  it('resizes from the keyboard', () => {
+    render(<OperationsTableHeader />);
+    const handle = screen.getByLabelText('operations.table.resizeSubmitter');
+
+    expect(handle).toHaveAttribute('tabindex', '0');
+    expect(handle).toHaveAttribute('aria-valuenow', '180');
+
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(testState.columnResized).toHaveBeenLastCalledWith({ column: 'submitter', width: 188 });
+
+    fireEvent.keyDown(handle, { key: 'ArrowLeft', shiftKey: true });
+    expect(testState.columnResized).toHaveBeenLastCalledWith({ column: 'submitter', width: 148 });
+
+    fireEvent.keyDown(handle, { key: 'Home' });
+    expect(testState.columnResized).toHaveBeenLastCalledWith({ column: 'submitter', width: 140 });
+
+    fireEvent.keyDown(handle, { key: 'End' });
+    expect(testState.columnAutofit).toHaveBeenCalledWith('submitter');
   });
 
   it('double-click autofits the column', () => {

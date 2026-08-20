@@ -11,14 +11,12 @@ import {
 
 const columnResized = createEvent<{ column: ResizableColumn; width: number }>();
 const columnAutofit = createEvent<ResizableColumn>();
-const widthsReset = createEvent();
 const resizeStarted = createEvent<ResizableColumn>();
 const resizeEnded = createEvent();
 
 const $columnWidths = createStore<ColumnWidths>(COLUMN_DEFAULT_WIDTHS)
   .on(columnResized, (widths, { column, width }) => ({ ...widths, [column]: clampColumnWidth(column, width) }))
-  .on(columnAutofit, (widths, column) => ({ ...widths, [column]: COLUMN_FIT_WIDTHS[column] }))
-  .reset(widthsReset);
+  .on(columnAutofit, (widths, column) => ({ ...widths, [column]: COLUMN_FIT_WIDTHS[column] }));
 
 // Rows light up their column hairlines while a header handle is being dragged.
 const $resizingColumn = createStore<ResizableColumn | null>(null)
@@ -64,7 +62,6 @@ export const operationsTableLayoutModel = {
   $resizingColumn,
   columnResized,
   columnAutofit,
-  widthsReset,
   resizeStarted,
   resizeEnded,
 };

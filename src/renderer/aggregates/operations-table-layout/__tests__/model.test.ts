@@ -30,13 +30,6 @@ describe('operationsTableLayoutModel', () => {
     await allSettled(operationsTableLayoutModel.resizeEnded, { scope });
     expect(scope.getState(operationsTableLayoutModel.$resizingColumn)).toBeNull();
   });
-
-  it('reset restores the defaults', async () => {
-    const scope = fork();
-    await allSettled(operationsTableLayoutModel.columnResized, { scope, params: { column: 'operation', width: 300 } });
-    await allSettled(operationsTableLayoutModel.widthsReset, { scope });
-    expect(scope.getState(operationsTableLayoutModel.$columnWidths)).toEqual(COLUMN_DEFAULT_WIDTHS);
-  });
 });
 
 describe('sanitizeColumnWidths', () => {

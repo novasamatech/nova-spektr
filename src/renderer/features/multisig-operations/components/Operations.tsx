@@ -193,7 +193,7 @@ export const Operations = () => {
       )}
 
       {hasMultisigAccounts && (
-        <div className="h-full overflow-x-auto overflow-y-hidden">
+        <div className="h-full overflow-x-auto overflow-y-hidden" data-operations-scroller>
           <div
             className={cnTw('group/list h-full', isResizing && 'select-none')}
             data-resizing={isResizing || undefined}
