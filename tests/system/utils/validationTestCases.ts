@@ -1,3 +1,9 @@
+// NOTE: `amountValidation` and `permissionsValidation` used to run on
+// "Novasama Testnet - Governance", whose RPC is gone (521) and which is being
+// dropped from the chain config. They now point at Westend Asset Hub, but the
+// on-chain fixtures they rely on — the funded autotest account and the
+// "Any by Autotest-1" / "NonTransfer by Autotest-1" proxies — still have to be
+// re-provisioned there before these @live cases can pass.
 export const validationConstants = {
   feesValidation: {
     chainName: 'Polkadot Relay',
@@ -14,7 +20,7 @@ export const validationConstants = {
     validationAmount: '0.00001',
   },
   amountValidation: {
-    chainName: 'Novasama Testnet - Governance',
+    chainName: 'Westend Asset Hub (TESTNET)',
     assetId: 0,
     validationAmount: '1000',
     amount: '1',
@@ -29,7 +35,7 @@ export const validationConstants = {
   permissionsValidation: {
     any_proxy_name: 'Any by Autotest-1',
     non_transfer_proxy_name: 'NonTransfer by Autotest-1',
-    chainName: 'Novasama Testnet - Governance',
+    chainName: 'Westend Asset Hub (TESTNET)',
     assetId: 0,
     amount: '1',
     validationAmount: '1000',
