@@ -93,19 +93,22 @@ export const CreateDraftModal = () => {
   const specVersion = api?.runtimeVersion.specVersion.toNumber() ?? null;
 
   const multisigHopAccountId = useMemo(() => deriveMultisigAccountId(path), [path]);
+  // Decode origin = the draft's source: the multisig hop, or the path root for
+  // proxy-only paths. It only labels the sender; the decoded call is the same.
+  const decodeOriginAccountId = multisigHopAccountId ?? path[0]?.accountId ?? null;
 
   const decodedTransaction = useMemo<DecodedTransaction | null>(() => {
-    if (!deferredCallData || !isHex(deferredCallData) || !api || !selectedChain || !multisigHopAccountId) {
+    if (!deferredCallData || !isHex(deferredCallData) || !api || !selectedChain || !decodeOriginAccountId) {
       return null;
     }
     try {
       const nativeAssetId = getNativeAssetId(selectedChain.assets);
 
-      return decodeCallData(api, multisigHopAccountId as never, deferredCallData as CallData, nativeAssetId);
+      return decodeCallData(api, decodeOriginAccountId as never, deferredCallData as CallData, nativeAssetId);
     } catch {
       return null;
     }
-  }, [deferredCallData, api, selectedChain, multisigHopAccountId]);
+  }, [deferredCallData, api, selectedChain, decodeOriginAccountId]);
 
   const decodedCallData = useMemo(
     () => tryDecodeCallData(deferredCallData, api, selectedChain),

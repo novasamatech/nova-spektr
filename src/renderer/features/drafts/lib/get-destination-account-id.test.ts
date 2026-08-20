@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
@@ -8,6 +8,7 @@ import { type Draft } from '@/domains/backend';
 import type * as TransactionEntity from '@/entities/transaction';
 import { decodeCallData } from '@/entities/transaction';
 
+import { tryDecodeCallData } from './decode-call-data';
 import { getDestinationAccountId, getDraftDestinationAccountId } from './get-destination-account-id';
 
 vi.mock('@/entities/transaction', async (importOriginal) => ({
@@ -15,7 +16,12 @@ vi.mock('@/entities/transaction', async (importOriginal) => ({
   decodeCallData: vi.fn(),
 }));
 
+vi.mock('./decode-call-data', () => ({
+  tryDecodeCallData: vi.fn(),
+}));
+
 const multisigId = `0x${'11'.repeat(32)}` as AccountId;
+const proxiedId = `0x${'22'.repeat(32)}` as AccountId;
 const chain = {
   chainId: `0x${'aa'.repeat(32)}` as ChainId,
   addressPrefix: 0,
@@ -61,14 +67,21 @@ describe('getDestinationAccountId', () => {
 });
 
 describe('getDraftDestinationAccountId', () => {
-  it('returns null without decoding when any input is missing', () => {
-    vi.mocked(decodeCallData).mockClear();
+  beforeEach(() => {
+    vi.mocked(decodeCallData).mockReset();
+    vi.mocked(tryDecodeCallData).mockReset();
+    // Strict round-trip passes by default; individual cases override it.
+    vi.mocked(tryDecodeCallData).mockReturnValue({});
+  });
 
+  it('returns null without decoding when any input is missing', () => {
     expect(getDraftDestinationAccountId(null, api, chain)).toBeNull();
     expect(getDraftDestinationAccountId(draft, null, chain)).toBeNull();
     expect(getDraftDestinationAccountId(draft, api, null)).toBeNull();
     expect(getDraftDestinationAccountId({ ...draft, callData: null }, api, chain)).toBeNull();
-    expect(getDraftDestinationAccountId({ ...draft, multisigAccountId: null }, api, chain)).toBeNull();
+    expect(
+      getDraftDestinationAccountId({ ...draft, multisigAccountId: null, proxyAccountId: null }, api, chain),
+    ).toBeNull();
     expect(decodeCallData).not.toHaveBeenCalled();
   });
 
@@ -77,6 +90,23 @@ describe('getDraftDestinationAccountId', () => {
 
     expect(getDraftDestinationAccountId(draft, api, chain)).toBe(TEST_ACCOUNTS[0]);
     expect(decodeCallData).toHaveBeenCalledWith(api, multisigId, draft.callData, '0');
+  });
+
+  it('uses the proxied account as decode origin for proxy-only drafts', () => {
+    vi.mocked(decodeCallData).mockReturnValue(transferTx);
+
+    const proxyOnly = { ...draft, multisigAccountId: null, proxyAccountId: proxiedId };
+
+    expect(getDraftDestinationAccountId(proxyOnly, api, chain)).toBe(TEST_ACCOUNTS[0]);
+    expect(decodeCallData).toHaveBeenCalledWith(api, proxiedId, draft.callData, '0');
+  });
+
+  it('returns null without decoding when the call data fails the strict round-trip check', () => {
+    vi.mocked(tryDecodeCallData).mockReturnValue(null);
+    vi.mocked(decodeCallData).mockReturnValue(transferTx);
+
+    expect(getDraftDestinationAccountId(draft, api, chain)).toBeNull();
+    expect(decodeCallData).not.toHaveBeenCalled();
   });
 
   it('returns null when decoding throws', () => {

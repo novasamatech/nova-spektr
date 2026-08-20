@@ -164,8 +164,9 @@ to a transfer (or XCM transfer) have a recipient; every other draft is unaffecte
   and relies on this step instead.
 - **Submit → Confirm.** The same box (with the multisig-signing copy — submitting is the first approval) appears above
   the Sign button; **Sign** is disabled until ticked. The acknowledgement resets on every flow start and finish.
-- **Recipient row.** The submit confirm always shows the decoded recipient as a **Recipient** row in the details — the
-  warning never points at an address the user can't see.
+- **Recipient row.** Whenever the call data decodes to a transfer, the submit confirm shows its recipient as a
+  **Recipient** row in the details — the warning never points at an address the user can't see. Proxy-only drafts (a
+  proxied source with no multisig hop) are covered the same way as multisig ones.
 
 ## States / scenarios
 

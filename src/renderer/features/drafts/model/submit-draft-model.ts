@@ -151,6 +151,9 @@ const submitCallDataFx = createEffect(({ id, callData, baseUrl }: { id: string; 
   draftsService.updateDraft(baseUrl, id, { callData }),
 );
 
+// Late-filled call data replaces the draft, and with it the recipient.
+$isRiskAcknowledged.reset(submitCallDataFx.doneData);
+
 sample({
   clock: callDataConfirmRequested,
   source: {
