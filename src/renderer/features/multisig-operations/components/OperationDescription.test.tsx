@@ -170,7 +170,6 @@ describe('OperationDescription', () => {
     renderDescription();
 
     expect(screen.getByText(/Line one/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Show full' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument();
   });
 
@@ -195,6 +194,25 @@ describe('OperationDescription', () => {
 
     expect(screen.getByText('Already described')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the cut when the tail is one long token', () => {
+    testState.description = `Note: ${'x'.repeat(700)}`;
+
+    renderDescription();
+
+    expect(screen.getByText(/^Note: x{100,}…$/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
+  });
+
+  it('hides Edit but keeps Show more for a long description when editing is not allowed', () => {
+    testState.description = 'x'.repeat(700);
+    testState.values.set(testState.stores.contacts, []);
+
+    renderDescription();
+
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
   });
 
   it('patches an existing description and updates the shared description cache', async () => {

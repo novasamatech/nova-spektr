@@ -20,8 +20,18 @@ type Props = {
 /** Past this length the text is cut at a word boundary behind "Show more". */
 const DESCRIPTION_COLLAPSE_LENGTH = 620;
 
-const collapseDescription = (description: string) =>
-  `${description.slice(0, DESCRIPTION_COLLAPSE_LENGTH).replace(/\s+\S*$/, '')}…`;
+/**
+ * Keep the word-boundary trim only when it preserves most of the budget (a long
+ * hash/URL at the cut would otherwise blank the text).
+ */
+const COLLAPSE_TRIM_FLOOR = DESCRIPTION_COLLAPSE_LENGTH * 0.8;
+
+const collapseDescription = (description: string) => {
+  const raw = description.slice(0, DESCRIPTION_COLLAPSE_LENGTH);
+  const trimmed = raw.replace(/\s+\S*$/, '');
+
+  return `${trimmed.length > COLLAPSE_TRIM_FLOOR ? trimmed : raw}…`;
+};
 
 type BlockProps = {
   action?: ReactNode;
@@ -35,13 +45,11 @@ const DescriptionBlock = ({ action, children }: BlockProps) => {
   return (
     <div className="mt-0.5 flex flex-col gap-y-1.5 border-t border-divider pt-3">
       <div className="flex items-center gap-x-2">
-        <FootnoteText as="dt" className="text-text-tertiary">
-          {t('operation.descriptionLabel')}
-        </FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('operation.descriptionLabel')}</FootnoteText>
         <span className="flex-1" />
         {action}
       </div>
-      <dd className="flex min-w-0 flex-col items-start gap-y-1">{children}</dd>
+      <div className="flex min-w-0 flex-col items-start gap-y-1">{children}</div>
     </div>
   );
 };
@@ -74,7 +82,13 @@ export const OperationDescription = ({ operation, chain }: Props) => {
       >
         <FootnoteText className="break-words whitespace-pre-wrap text-text-primary">{shown}</FootnoteText>
         {isLong && (
-          <Button size="sm" variant="text" className="p-0" onClick={() => setIsExpanded(expanded => !expanded)}>
+          <Button
+            size="sm"
+            variant="text"
+            className="p-0"
+            aria-expanded={isExpanded}
+            onClick={() => setIsExpanded(expanded => !expanded)}
+          >
             {isExpanded ? t('operation.showLessButton') : t('operation.showMoreButton')}
           </Button>
         )}
