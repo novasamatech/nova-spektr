@@ -1,6 +1,6 @@
 # Polkadot Vault Wallet
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-07
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 >
 > **Draft — pending author review.** Written from reading the code; needs sign-off from the feature owner before it is
 > treated as the source of product truth.

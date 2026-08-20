@@ -3,8 +3,8 @@ import { memo, useMemo } from 'react';
 
 import { type Wallet, type WalletType } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
-import { WalletIcon } from '@/shared/ui-entities';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon } from '@/shared/ui-entities';
+import { Accordion, Box, VirtualList } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
@@ -51,10 +51,15 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         <span className="text-text-tertiary">{wallets.length}</span>
       </Accordion.Trigger>
       <Accordion.Content>
-        <Box gap={1} padding={[1, 0, 0]}>
-          {filteredWallets.map(wallet => (
-            <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
-          ))}
+        <Box padding={[1, 0, 0]}>
+          <VirtualList
+            items={filteredWallets}
+            estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
+            gap={1}
+            getItemKey={wallet => wallet.id}
+          >
+            {wallet => <WalletRow wallet={wallet} onSelect={onSelect} />}
+          </VirtualList>
         </Box>
       </Accordion.Content>
     </Accordion>

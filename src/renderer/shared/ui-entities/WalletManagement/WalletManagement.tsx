@@ -6,9 +6,15 @@ import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
-import { useWalletName } from '@/domains/network';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
 import { type IdenticonIconTheme, Identicon } from '../Identicon/Identicon';
+
+/**
+ * Height of a row with both its lines, px. Only an estimate for virtualized
+ * lists — a row without a description renders shorter, and real heights are
+ * measured once mounted.
+ */
+export const WALLET_MANAGEMENT_ROW_HEIGHT = 46;
 
 type Props = {
   wallet: Wallet;
@@ -23,6 +29,14 @@ type Props = {
   label?: string | null;
 };
 
+/**
+ * Presentational row. `wallet.name` is rendered as-is — the caller resolves it
+ * (`useWalletsNames` over the whole list) before passing the wallet in.
+ *
+ * Resolving per row instead would put one `walletsNameResource` subscription
+ * behind every row, and a list of a few hundred wallets then spends most of the
+ * open on redundant resource traffic rather than on rendering.
+ */
 export const WalletManagement = memo(
   ({
     wallet,
@@ -37,8 +51,6 @@ export const WalletManagement = memo(
     label,
     checkBox,
   }: PropsWithChildren<Props>) => {
-    const walletName = useWalletName(wallet);
-
     return (
       <div
         className={cnTw(
@@ -76,7 +88,7 @@ export const WalletManagement = memo(
                   { 'text-text-primary': active },
                 )}
               >
-                {walletName}
+                {wallet.name}
               </BodyText>
               {
                 <div className="flex shrink-0 items-center gap-x-1">

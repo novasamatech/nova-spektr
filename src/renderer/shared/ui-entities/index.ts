@@ -9,7 +9,7 @@ export { BlockTime } from './BlockTime/BlockTime';
 export { AssetBalance } from './AssetBalance/AssetBalance';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
 export { AccountExplorers } from './AccountExplorers/AccountExplorers';
-export { WalletManagement } from './WalletManagement/WalletManagement';
+export { WALLET_MANAGEMENT_ROW_HEIGHT, WalletManagement } from './WalletManagement/WalletManagement';
 export { RootExplorers } from './RootExplorer/RootExplorers';
 export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';

@@ -5,8 +5,8 @@ import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon, WalletManagement } from '@/shared/ui-entities';
+import { Accordion, Box, VirtualList } from '@/shared/ui-kit';
 import { useWalletsNames } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
@@ -47,23 +47,29 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
         <span className="text-text-tertiary">{wallets.length}</span>
       </Accordion.Trigger>
       <Accordion.Content>
-        <Box gap={1} padding={[1, 0, 0]}>
-          {filteredWallets.map(wallet => {
-            const accountId = wallet.accounts[0]?.accountId;
+        <Box padding={[1, 0, 0]}>
+          <VirtualList
+            items={filteredWallets}
+            estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
+            gap={1}
+            getItemKey={wallet => wallet.id}
+          >
+            {wallet => {
+              const accountId = wallet.accounts[0]?.accountId;
 
-            return (
-              <WalletManagement
-                key={wallet.id}
-                active={selectedWallet === wallet}
-                wallet={wallet}
-                accountId={accountId ?? null}
-                description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
-                onClick={() => onSelect(wallet)}
-              >
-                <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletManagement>
-            );
-          })}
+              return (
+                <WalletManagement
+                  active={selectedWallet?.id === wallet.id}
+                  wallet={wallet}
+                  accountId={accountId ?? null}
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                  onClick={() => onSelect(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
+              );
+            }}
+          </VirtualList>
         </Box>
       </Accordion.Content>
     </Accordion>

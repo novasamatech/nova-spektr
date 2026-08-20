@@ -9,11 +9,14 @@ import {
   type UIEventHandler,
   memo,
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
+
+import { ScrollAreaViewportContext } from './context';
 
 type NativeProps = Pick<ComponentProps<'div'>, 'onScroll'>;
 
@@ -27,6 +30,19 @@ type Props = PropsWithChildren<
 export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll, viewportRef }: Props) => {
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
+
+  // Kept internally so the viewport can be published to descendants
+  // (`VirtualList`) whether or not the caller asked for a ref of its own.
+  const internalViewportRef = useRef<HTMLDivElement>(null);
+  const setViewport = useCallback(
+    (node: HTMLDivElement | null) => {
+      internalViewportRef.current = node;
+      if (viewportRef) {
+        viewportRef.current = node;
+      }
+    },
+    [viewportRef],
+  );
 
   const handlerScroll = useCallback<UIEventHandler<HTMLDivElement>>(e => {
     const target = e.currentTarget;
@@ -47,12 +63,12 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll, 
   return (
     <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
       <RadixScrollArea.Viewport
-        ref={viewportRef}
+        ref={setViewport}
         className="scrollArea h-full w-full contain-strict"
         style={style as CSSProperties}
         onScroll={handlerScroll}
       >
-        {children}
+        <ScrollAreaViewportContext.Provider value={internalViewportRef}>{children}</ScrollAreaViewportContext.Provider>
       </RadixScrollArea.Viewport>
       <RadixScrollArea.Scrollbar
         className={cnTw(

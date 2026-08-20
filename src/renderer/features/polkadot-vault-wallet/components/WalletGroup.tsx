@@ -4,8 +4,8 @@ import { memo, useMemo } from 'react';
 import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
-import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon, WalletManagement } from '@/shared/ui-entities';
+import { Accordion, Box, VirtualList } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
@@ -55,31 +55,37 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         <span className="text-text-tertiary">{wallets.length}</span>
       </Accordion.Trigger>
       <Accordion.Content>
-        <Box gap={1} padding={[1, 0, 0]}>
-          {filteredWallets.map(wallet => {
-            if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
+        <Box padding={[1, 0, 0]}>
+          <VirtualList
+            items={filteredWallets}
+            estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
+            gap={1}
+            getItemKey={wallet => wallet.id}
+          >
+            {wallet => {
+              if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
 
-            const isSingleAccount = wallet.accounts.length === 1;
-            const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-            if (nullable(accountId)) return null;
+              const isSingleAccount = wallet.accounts.length === 1;
+              const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+              if (nullable(accountId)) return null;
 
-            const isEthereum = isEthereumAccountId(accountId);
-            const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+              const isEthereum = isEthereumAccountId(accountId);
+              const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
-            return (
-              <WalletManagement
-                key={wallet.id}
-                active={selectedWalletId === wallet.id}
-                wallet={wallet}
-                accountId={accountId}
-                theme={theme}
-                description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
-                onClick={() => onSelect(wallet)}
-              >
-                <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletManagement>
-            );
-          })}
+              return (
+                <WalletManagement
+                  active={selectedWalletId === wallet.id}
+                  wallet={wallet}
+                  accountId={accountId}
+                  theme={theme}
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                  onClick={() => onSelect(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
+              );
+            }}
+          </VirtualList>
         </Box>
       </Accordion.Content>
     </Accordion>

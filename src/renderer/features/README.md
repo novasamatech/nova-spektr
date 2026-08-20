@@ -20,15 +20,15 @@ notes.
 - `wallet-pairing`
 - `wallet-rename`
 - `wallet-select`
-- `hidden-wallets`
-- `hide-unnamed-wallets`
-- `extension-wallet`
+- [`hidden-wallets`](./hidden-wallets/README.md)
+- [`hide-unnamed-wallets`](./hide-unnamed-wallets/README.md)
+- [`extension-wallet`](./extension-wallet/README.md)
 - `ledger-wallet-pairing`
 - [`polkadot-vault-wallet`](./polkadot-vault-wallet/README.md)
 - [`polkadot-vault-wallet-pairing`](./polkadot-vault-wallet-pairing/README.md)
-- `wallet-connect-wallet`
+- [`wallet-connect-wallet`](./wallet-connect-wallet/README.md)
 - `wallet-connect-wallet-pairing`
-- `watch-only-wallet`
+- [`watch-only-wallet`](./watch-only-wallet/README.md)
 - `watch-only-wallet-pairing`
 - [`account-presets`](../aggregates/account-presets/README.md) (aggregate)
 - [`wallet-select`](../aggregates/wallet-select/README.md) (aggregate)
@@ -39,7 +39,7 @@ notes.
 ## Multisig
 
 - [`multisig-operations`](./multisig-operations/README.md)
-- `multisig-wallet`
+- [`multisig-wallet`](./multisig-wallet/README.md)
 - [`multisig-wallet-create`](./multisig-wallet-create/README.md)
 - [`flexible-change-signatories`](./flexible-change-signatories/README.md)
 - [`flexible-operation-details`](./flexible-operation-details/README.md)
@@ -62,7 +62,7 @@ notes.
 - `proxy-remove`
 - [`proxy-verify`](./proxy-verify/README.md)
 - [`proxied-add-pure`](./proxied-add-pure/README.md)
-- `proxied-wallet`
+- [`proxied-wallet`](./proxied-wallet/README.md)
 
 > See also: [`account-sync`](#wallets--onboarding) — discovers proxied wallets on-chain.
 
