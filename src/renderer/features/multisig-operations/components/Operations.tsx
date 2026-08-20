@@ -23,8 +23,9 @@ import {
   useOperationColumnWidths,
 } from '@/aggregates/operations-table-layout';
 import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
-import { type OperationSection, SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS } from '../lib/operations-sections';
-import { type OperationWithAccount, operationsContextModel } from '../model/context';
+import { buildFlatItems } from '../lib/build-flat-items';
+import { SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS } from '../lib/operations-sections';
+import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
 import { useChainSyncToast } from './ChainSyncToast';
@@ -37,11 +38,6 @@ import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
-
-type FlatItem =
-  | { type: 'section'; section: OperationSection; count: number }
-  | { type: 'empty'; section: OperationSection }
-  | { type: 'operation'; item: OperationWithAccount };
 
 export const Operations = () => {
   const { t } = useI18n();
@@ -94,23 +90,12 @@ export const Operations = () => {
       : null;
   const showTable = deferredOps.length > 0 || showDraftsGroup || sectionedOps.length > 0;
 
-  const flatItems = useMemo(() => {
-    const items: FlatItem[] = [];
-    for (const [index, { section, items: sectionItems }] of sectionedOps.entries()) {
-      // The first group's heading is rendered above the sticky column header.
-      const headingIsAbove = !showDraftsGroup && index === 0;
-      if (!headingIsAbove) items.push({ type: 'section', section, count: sectionItems.length });
-      if (collapsedSections[section]) continue;
-
-      if (sectionItems.length === 0) {
-        items.push({ type: 'empty', section });
-        continue;
-      }
-      for (const item of sectionItems) items.push({ type: 'operation', item });
-    }
-
-    return items;
-  }, [sectionedOps, collapsedSections, showDraftsGroup]);
+  // The first group's heading is rendered above the sticky column header, unless
+  // the drafts group owns that slot.
+  const flatItems = useMemo(
+    () => buildFlatItems(sectionedOps, collapsedSections, { firstHeadingAbove: !showDraftsGroup }),
+    [sectionedOps, collapsedSections, showDraftsGroup],
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const aboveListRef = useRef<HTMLDivElement>(null);
