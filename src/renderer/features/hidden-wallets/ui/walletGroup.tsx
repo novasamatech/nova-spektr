@@ -5,8 +5,9 @@ import { useMemo } from 'react';
 import { type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
-import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
+import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon, WalletManagement } from '@/shared/ui-entities';
+import { Accordion, Box, Checkbox, VirtualList } from '@/shared/ui-kit';
+import { useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -43,6 +44,10 @@ export const WalletGroup = (props: Props) => {
   const chains = useUnit(networkModel.$chains);
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
+
+  // Names are resolved for the whole group at once — WalletManagement renders
+  // wallet.name as given.
+  const resolvedWallets = useWalletsNames(wallets);
 
   // Optimized Set for O(1) selection lookups
   const selectedWalletSet = useMemo(() => new Set(selectedWalletIds), [selectedWalletIds]);
@@ -88,41 +93,47 @@ export const WalletGroup = (props: Props) => {
         </div>
       </Accordion.Trigger>
       <Accordion.Content>
-        <Box gap={1} padding={[1, 0, 0]}>
-          {wallets.map((wallet) => {
-            const accountId = wallet.accounts.at(0)?.accountId;
-            const isSelected = selectedWalletSet.has(wallet.id);
+        <Box padding={[1, 0, 0]}>
+          <VirtualList
+            items={resolvedWallets}
+            estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
+            gap={4}
+            getItemKey={(wallet) => wallet.id}
+          >
+            {(wallet) => {
+              const accountId = wallet.accounts.at(0)?.accountId;
+              const isSelected = selectedWalletSet.has(wallet.id);
 
-            let chain: Chain | null = null;
-            let label: string | null = null;
+              let chain: Chain | null = null;
+              let label: string | null = null;
 
-            // TODO incorrect connection between features, this data should be inserted other way, by slot on smth
-            if (walletUtils.isFlexibleMultisig(wallet)) {
-              const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
-              chain = chainId ? chains[chainId]! : null;
-              label = t('wallets.flexibleMultisigFlexLabel');
-            }
+              // TODO incorrect connection between features, this data should be inserted other way, by slot on smth
+              if (walletUtils.isFlexibleMultisig(wallet)) {
+                const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
+                chain = chainId ? chains[chainId]! : null;
+                label = t('wallets.flexibleMultisigFlexLabel');
+              }
 
-            return (
-              <WalletManagement
-                key={wallet.id}
-                active={selectedWalletId === wallet.id}
-                wallet={wallet}
-                accountId={accountId ?? null}
-                checkBox={
-                  <Checkbox
-                    checked={isSelected}
-                    onChange={() => handleWalletClick(wallet)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                }
-                description={<FiatBalance amount={balances[wallet.id]!.toString()} />}
-                chain={chain}
-                label={label}
-                onClick={() => handleWalletClick(wallet)}
-              />
-            );
-          })}
+              return (
+                <WalletManagement
+                  active={selectedWalletId === wallet.id}
+                  wallet={wallet}
+                  accountId={accountId ?? null}
+                  checkBox={
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={() => handleWalletClick(wallet)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  }
+                  description={<FiatBalance amount={balances[wallet.id]!.toString()} />}
+                  chain={chain}
+                  label={label}
+                  onClick={() => handleWalletClick(wallet)}
+                />
+              );
+            }}
+          </VirtualList>
         </Box>
       </Accordion.Content>
     </Accordion>

@@ -5,8 +5,8 @@ import { type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon, WalletManagement } from '@/shared/ui-entities';
+import { Accordion, Box, VirtualList } from '@/shared/ui-kit';
 import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -61,40 +61,46 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         </div>
       </Accordion.Trigger>
       <Accordion.Content>
-        <Box gap={1} padding={[1, 0, 0]}>
-          {filteredWallets.map(wallet => {
-            const accountId = wallet.accounts.at(0)?.accountId;
+        <Box padding={[1, 0, 0]}>
+          <VirtualList
+            items={filteredWallets}
+            estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
+            gap={4}
+            getItemKey={wallet => wallet.id}
+          >
+            {wallet => {
+              const accountId = wallet.accounts.at(0)?.accountId;
 
-            let chain: Chain | null = null;
-            let label: string | null = null;
+              let chain: Chain | null = null;
+              let label: string | null = null;
 
-            if (walletUtils.isFlexibleMultisig(wallet)) {
-              const flexAccount = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount);
-              chain = flexAccount?.chainId ? (chains[flexAccount.chainId] ?? null) : null;
+              if (walletUtils.isFlexibleMultisig(wallet)) {
+                const flexAccount = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount);
+                chain = flexAccount?.chainId ? (chains[flexAccount.chainId] ?? null) : null;
 
-              const flexLabel = t('wallets.flexibleMultisigFlexLabel');
-              if (flexAccount && flexAccount.proxyType !== 'Any') {
-                label = `${flexLabel} · ${flexAccount.proxyType}`;
-              } else {
-                label = flexLabel;
+                const flexLabel = t('wallets.flexibleMultisigFlexLabel');
+                if (flexAccount && flexAccount.proxyType !== 'Any') {
+                  label = `${flexLabel} · ${flexAccount.proxyType}`;
+                } else {
+                  label = flexLabel;
+                }
               }
-            }
 
-            return (
-              <WalletManagement
-                key={wallet.id}
-                active={selectedWalletId === wallet.id}
-                wallet={wallet}
-                accountId={accountId ?? null}
-                description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
-                chain={chain}
-                label={label}
-                onClick={() => handleWalletClick(wallet)}
-              >
-                <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletManagement>
-            );
-          })}
+              return (
+                <WalletManagement
+                  active={selectedWalletId === wallet.id}
+                  wallet={wallet}
+                  accountId={accountId ?? null}
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                  chain={chain}
+                  label={label}
+                  onClick={() => handleWalletClick(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
+              );
+            }}
+          </VirtualList>
         </Box>
       </Accordion.Content>
     </Accordion>

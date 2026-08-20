@@ -7,6 +7,7 @@ export { EmptyMessage } from './EmptyMessage/EmptyMessage';
 export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';
+export { VirtualList } from './VirtualList/VirtualList';
 export { Accordion } from './Accordion/Accordion';
 export { AsyncItem } from './AsyncItem/AsyncItem';
 export { CardStack } from './CardStack/CardStack';

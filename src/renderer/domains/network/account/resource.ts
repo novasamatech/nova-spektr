@@ -282,15 +282,14 @@ sample({
   target: $walletNameParams,
 });
 
+// Keeps already-resolved names fresh when a *source* of resolution changes.
+// The resources' own pushes are deliberately not clocks here: a push already
+// carries the name resolved from these very sources and writes it to the cache
+// itself, so re-resolving on push is pure duplicate work — and quadratic, since
+// every push re-resolves every tracked param (mounting N rows that each hold a
+// name hook then costs N pushes × N params).
 sample({
-  clock: [
-    $contacts,
-    identity.$list,
-    accounts.$list,
-    networkModel.$chains,
-    accountNameResource.push,
-    accountsNameResource.push,
-  ],
+  clock: [$contacts, identity.$list, accounts.$list, networkModel.$chains],
   source: {
     accountParams: $accountNameParams,
     cache: $accountNameCache,
@@ -322,7 +321,7 @@ sample({
 });
 
 sample({
-  clock: [$contacts, identity.$list, accounts.$list, networkModel.$chains, walletsNameResource.push],
+  clock: [$contacts, identity.$list, accounts.$list, networkModel.$chains],
   source: {
     walletParams: $walletNameParams,
     cache: $walletNameCache,
