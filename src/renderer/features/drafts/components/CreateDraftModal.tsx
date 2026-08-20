@@ -14,6 +14,7 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import {
   type PathNextOption,
@@ -51,6 +52,8 @@ export const CreateDraftModal = () => {
   const isDirty = useUnit(createDraftModel.$isDirty);
   const canContinue = useUnit(createDraftModel.$canContinue);
   const canSkip = useUnit(createDraftModel.$canSkip);
+  const isRiskAcknowledged = useUnit(createDraftModel.$isRiskAcknowledged);
+  const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
 
   const path = useUnit(pathModel.$path);
   const resolveName = useUnit(graphModel.$nameResolver);
@@ -124,6 +127,8 @@ export const CreateDraftModal = () => {
 
   const coreTx = findCoreTransaction(decodedTransaction);
   const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
+  const recipientWarning = resolveRecipientWarning(destinationAccountId);
+  const isRecipientRiskAccepted = recipientWarning === 'none' || isRiskAcknowledged;
   const txAsset = useTransactionAsset(coreTx, selectedChain?.chainId ?? ('0x00' as ChainId));
 
   const externalTitle = useTransformer(operationTitleTransformer, {
@@ -179,7 +184,7 @@ export const CreateDraftModal = () => {
   };
 
   const handleCreateDraft = async () => {
-    if (!backendUrl || !selectedChain) return;
+    if (!backendUrl || !selectedChain || !isRecipientRiskAccepted) return;
 
     const validation = isValidPath(path);
     if (!validation.ok) {
@@ -281,9 +286,12 @@ export const CreateDraftModal = () => {
                 titleData={titleData}
                 operationIcon={operationIcon ?? null}
                 destinationAccountId={destinationAccountId}
+                recipientWarning={recipientWarning}
+                riskAcknowledged={isRiskAcknowledged}
                 description={description}
                 multisigName={multisigName}
                 multisigAccountId={multisigHopAccountId as AccountId | undefined}
+                onRiskAcknowledgedChange={createDraftModel.riskAcknowledgedToggled}
                 onDescriptionChanged={createDraftModel.descriptionChanged}
               />
             )}
@@ -312,7 +320,7 @@ export const CreateDraftModal = () => {
               </Tooltip>
             )}
             <Button
-              disabled={!canAdvanceCallData}
+              disabled={!canAdvanceCallData || (activeStep === 'confirm' && !isRecipientRiskAccepted)}
               isLoading={isSubmitting}
               onClick={activeStep === 'confirm' ? handleCreateDraft : () => createDraftModel.stepAdvanced()}
             >
