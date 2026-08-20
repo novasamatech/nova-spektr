@@ -157,11 +157,17 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         <Accordion.Button buttonClass="px-4 text-left">
           <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             {proxyEdit ? (
-              <div className={operationColumns.leftBlock} style={getColumnStyle(getLeftBlockWidth(widths))}>
+              <div
+                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
+                style={getColumnStyle(getLeftBlockWidth(widths))}
+              >
                 <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
               </div>
             ) : verifyProxy ? (
-              <div className={operationColumns.leftBlock} style={getColumnStyle(getLeftBlockWidth(widths))}>
+              <div
+                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
+                style={getColumnStyle(getLeftBlockWidth(widths))}
+              >
                 <VerifyProxyOperationCard
                   info={verifyProxy}
                   chain={chains[operation.chainId]}
@@ -170,7 +176,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               </div>
             ) : (
               <div
-                className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
+                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
                 style={getColumnStyle(getLeftBlockWidth(widths))}
               >
                 <OperationIcon operation={operation} account={multisigAccount} />

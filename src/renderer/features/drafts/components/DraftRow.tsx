@@ -168,7 +168,7 @@ export const DraftRow = ({
         <Accordion.Button buttonClass="px-4 text-left">
           <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             <div
-              className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
+              className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
               style={getColumnStyle(getLeftBlockWidth(widths))}
             >
               <DraftIcon />
