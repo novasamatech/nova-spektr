@@ -28,6 +28,7 @@ import {
   matchesStatus,
   matchesTab,
   matchesTxType,
+  shouldAlwaysShowInProgress,
 } from './operations-filter';
 
 const MOCK_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
@@ -684,6 +685,63 @@ describe('operations-filter', () => {
       expect(hasNarrowingFilter({ ...emptyFilter, type: [TransactionType.TRANSFER] })).toBe(true);
       expect(hasNarrowingFilter({ ...emptyFilter, proxyType: ['Any'] })).toBe(true);
       expect(hasNarrowingFilter({ ...emptyFilter, dateRange: { from: new Date('2024-01-01') } })).toBe(true);
+    });
+  });
+
+  describe('shouldAlwaysShowInProgress', () => {
+    const emptyFilter: OperationsFilterCriteria = {
+      network: [],
+      type: [],
+      proxyType: [],
+      status: [],
+      dateRange: undefined,
+      searchQuery: '',
+    };
+
+    test('kept on the pending tab with no filter', () => {
+      expect(shouldAlwaysShowInProgress({ tab: 'pending', isScopeMerged: false, filter: emptyFilter })).toBe(true);
+    });
+
+    test('kept in the merged scope when only in_progress is selected', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, status: ['in_progress'] },
+        }),
+      ).toBe(true);
+    });
+
+    test('dropped when another status narrows the list', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, status: ['completed'] },
+        }),
+      ).toBe(false);
+    });
+
+    test('dropped for a network filter or a search query', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, network: [MOCK_CHAIN_ID] },
+        }),
+      ).toBe(false);
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: false,
+          filter: { ...emptyFilter, searchQuery: 'alice' },
+        }),
+      ).toBe(false);
+    });
+
+    test('dropped on the history and hidden tabs outside the merged scope', () => {
+      expect(shouldAlwaysShowInProgress({ tab: 'history', isScopeMerged: false, filter: emptyFilter })).toBe(false);
+      expect(shouldAlwaysShowInProgress({ tab: 'hidden', isScopeMerged: false, filter: emptyFilter })).toBe(false);
     });
   });
 });

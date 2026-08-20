@@ -160,6 +160,25 @@ export const hasNarrowingFilter = (filters: OperationsFilterCriteria): boolean =
   );
 };
 
+/**
+ * Whether the In-progress group stays in the list even with no rows in it. The
+ * merged "All operations" scope replaces the tabs, so it counts as the pending
+ * view here; `hasNarrowingFilter` alone decides whether the list is narrowed —
+ * a filter or search that matches nothing shows the filtered empty state
+ * instead of an empty group.
+ */
+export const shouldAlwaysShowInProgress = ({
+  tab,
+  isScopeMerged,
+  filter,
+}: {
+  tab: OperationsFilterTab;
+  isScopeMerged: boolean;
+  filter: OperationsFilterCriteria;
+}): boolean => {
+  return (tab === 'pending' || isScopeMerged) && !hasNarrowingFilter(filter);
+};
+
 type WalletSearchSources = {
   accounts: AnyAccount[];
   contacts: Contact[];
