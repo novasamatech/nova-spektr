@@ -14,12 +14,21 @@ is, who has already signed, and whether it is their turn. This view is where tha
 approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, attaching
 a shared description, and (when the address book is connected) nudging the signatories who still need to act.
 
-The list is a **table**: a sticky column header (Operation / Value / Submitter / Initiator / Description) with sortable
-columns sits above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The
-**Initiator** column is hidden on narrower windows (shown at ≥1536px) so the extra column never forces horizontal
-scroll. The **Description** header label is shown only once the external address book has been connected (descriptions
-are address-book data) — the same gate that reveals the drafts section; until then the column area stays blank. Saved
-**drafts** awaiting submission appear as the first collapsible section under the same table header on the Pending tab.
+The list is a **table**. Above it sits the heading of the first visible group (Drafts when the drafts group is shown,
+otherwise In progress), then a sticky column header (Operation / Value / Submitter / Initiator / Description / Signed /
+Actions) that stays pinned across every group below — page → section → table. **Operation, Value, Submitter and
+Initiator are resizable**: drag the boundary in the header (double-click autofits; 180–440 / 120–300 / 140–440 / 140–440
+px), Description absorbs the slack, widths persist per user (see the
+[`operations-table-layout`](../../aggregates/operations-table-layout/README.md) aggregate), and widening past the window
+falls back to horizontal scroll. Column boundaries appear as hairlines in the header, and inside a row on hover or while
+resizing. The **Initiator** column is hidden on narrower windows (shown at ≥1536px) and only counts toward the list's
+minimum width while visible. The **Signed** caption sits over the "X of Y signed" pills on the Pending tab and reads
+**Status** on History and in the merged scope; **Actions** is hidden on History, which has no row actions. The
+**Description** header label is shown only once the external address book has been connected (descriptions are
+address-book data) — the same gate that reveals the drafts group; until then the column area stays blank. **In
+progress** is always present on the Pending tab while no filter or search narrows the list — an empty group shows a
+dashed "No operations awaiting signatures" placeholder instead of disappearing; with a narrowing filter that matches
+nothing, the usual filtered empty state shows instead.
 
 ## Who can use it / when it applies
 
@@ -111,7 +120,8 @@ the final approval.
 
 ## The operation row and its panels
 
-A collapsed row is a fixed-height card whose cells line up with the sticky table header:
+A collapsed row is a fixed-height card whose cells line up with the sticky table header, showing hairline column
+boundaries on hover and while a column is being resized:
 
 - **Operation** — the recognised title with its icon, and the network name underneath (two chain chips for XCM). Special
   shapes (edit-flexible, verify-proxy) render their bespoke card across the Operation and Value cells instead.
@@ -122,7 +132,8 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
 - **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
   operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
   operation's description.
-- **Status** — a bordered pill: **"X of Y signed"** while pending, **Executed** or **Rejected** once resolved.
+- **Status** — under the _Signed_ / _Status_ caption, a bordered pill: **"X of Y signed"** while pending, **Executed**
+  or **Rejected** once resolved.
 - **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
   external multisig). An operation [awaiting its final status](#awaiting-the-final-status) shows an **Updating status**
   loader here instead.
@@ -379,14 +390,17 @@ the scope — it narrows the current tab. Clearing the filters restores the tabs
 
 ### Sections, sorting, and navigation
 
-Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** — each with
-a collapsible header showing its count (so the Pending tab has one section, History has up to two, and the merged scope
-can additionally show a trailing **Hidden** section when the Status filter selects it). Collapsing a section is
-remembered while the page is open; a deep link into a collapsed section expands it so the target can be focused. The
-list is virtualised for long histories.
+Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** (plus a
+trailing **Hidden** section in the merged scope, when the Status filter selects it) — each with a collapsible heading
+showing its count (so the Pending tab has one section, History has up to two). **The first visible group's heading is
+rendered above the sticky column header** and toggles that group; every other group's heading sits inline in the list,
+above its rows. **Drafts**, when shown, is that first group — its heading (label, count) is drawn by this view and its
+collapse state lives here too, not in the `drafts` feature. Collapsing a group is remembered while the page is open; a
+deep link into a collapsed group expands it so the target can be focused. The list is virtualised for long histories.
 
 The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
-ascending → descending → off:
+ascending → descending → off. Sorting and resizing are independent: the resize handle swallows its click so dragging
+never toggles a sort.
 
 - **Operation** — by the recognised operation type (its internal type identifier, so like operations group together; the
   order does not exactly match the displayed titles).
@@ -436,13 +450,15 @@ A **Clear** control appears once any filter is active.
 ### Drafts section
 
 On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render as the first
-collapsible section of the table — under the shared column header, above the status sections — styled and column-aligned
-like operation rows, newest first. The section obeys the **Status filter** (visible with no status selected, or when
-**Drafts** is selected). A draft row shows the would-be operation (title, network and creation date, amount, submitter),
-an Edit action, and its primary control (submit or the step it is blocked on); like an operation row it **expands** into
-a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once a draft is submitted, it
-leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow itself (creation, review,
-submission, the row's panels) belongs to the `drafts` feature — this view only hosts its section.
+group of the table — its heading sits above the sticky column header, styled and column-aligned like operation rows,
+newest first. This view draws the Drafts heading (label and count) and owns its collapse state; the `drafts` feature's
+own section renders only the rows and the New-draft control below it. The group obeys the **Status filter** (visible
+with no status selected, or when **Drafts** is selected). A draft row shows the would-be operation (title, network and
+creation date, amount, submitter), an Edit action, and its primary control (submit or the step it is blocked on); like
+an operation row it **expands** into a details panel; drafts can be shared, edited, and deleted subject to backend
+permissions. Once a draft is submitted, it leaves the group and its resulting operation row is badged **FROM DRAFT**.
+The drafts flow itself (creation, review, submission, the row's panels) belongs to the `drafts` feature — this view only
+hosts its group.
 
 ## Lifecycle
 
