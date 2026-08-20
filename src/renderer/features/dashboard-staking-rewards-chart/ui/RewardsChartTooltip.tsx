@@ -6,7 +6,7 @@ import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
-import { TOOLTIP_MAX_ACCOUNTS, TOOLTIP_WIDTH } from '../lib/constants';
+import { TOOLTIP_WIDTH } from '../lib/constants';
 import { type DateFormatter, formatBucketDate } from '../lib/labels';
 import { type RewardBucket } from '../lib/types';
 
@@ -17,11 +17,25 @@ type Props = {
   color: string;
   /** `null` when no era can be named honestly for this bucket. */
   era: number | null;
+  /**
+   * How many account rows this card has room for — derived from the plot it is
+   * bounded by, so what it lists is what it can actually show.
+   */
+  maxAccounts: number;
   walletByAccountId: Map<AccountId, Wallet>;
   formatDate: DateFormatter;
 };
 
-export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletByAccountId, formatDate }: Props) => {
+export const RewardsChartTooltip = ({
+  bucket,
+  chain,
+  asset,
+  color,
+  era,
+  maxAccounts,
+  walletByAccountId,
+  formatDate,
+}: Props) => {
   const { t } = useI18n();
 
   const date = formatBucketDate(bucket, formatDate);
@@ -40,7 +54,7 @@ export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletBy
   })();
 
   // Largest first, so the rows that survive the cut are the ones that matter.
-  const shown = bucket.accounts.slice(0, TOOLTIP_MAX_ACCOUNTS);
+  const shown = bucket.accounts.slice(0, maxAccounts);
   const hidden = bucket.accounts.length - shown.length;
 
   return (

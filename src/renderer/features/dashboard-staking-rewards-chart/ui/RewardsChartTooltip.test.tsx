@@ -42,7 +42,7 @@ const bucketOf = (accountCount: number): RewardBucket => ({
   })),
 });
 
-const renderTooltip = (accountCount: number) =>
+const renderTooltip = (accountCount: number, maxAccounts = 6) =>
   render(
     <RewardsChartTooltip
       bucket={bucketOf(accountCount)}
@@ -50,6 +50,7 @@ const renderTooltip = (accountCount: number) =>
       asset={asset}
       color="#e6007a"
       era={null}
+      maxAccounts={maxAccounts}
       walletByAccountId={new Map()}
       formatDate={defaultDateFormatter}
     />,
@@ -68,6 +69,13 @@ describe('RewardsChartTooltip', () => {
 
     expect(screen.getAllByTestId('account')).toHaveLength(6);
     expect(screen.getByText(/moreAccounts.*"count":4/)).toBeInTheDocument();
+  });
+
+  it('lists as many rows as the card was given room for', () => {
+    renderTooltip(10, 2);
+
+    expect(screen.getAllByTestId('account')).toHaveLength(2);
+    expect(screen.getByText(/moreAccounts.*"count":8/)).toBeInTheDocument();
   });
 
   it('keeps the total line outside the part that gives way', () => {

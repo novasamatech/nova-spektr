@@ -43,9 +43,10 @@ Because nothing scrolls, everything has to fit the cell at every size the widget
 
 - The header **wraps** rather than overflows — narrow the widget and the range switch drops onto its own line instead of
   sliding out of reach.
-- The hover card is **bounded by the plot**. It lists the six largest contributing accounts and names the rest ("and 4
-  more") rather than dropping them silently; if even that does not fit, the account rows give way while the bucket title
-  and the Total line stay readable.
+- The hover card is **bounded by the plot**, and lists as many contributing accounts as that height has room for —
+  largest first, so a taller widget shows more of them and a widget at its minimum still shows the biggest. Whatever is
+  left over is named ("and 4 more"), never dropped silently, and its rewards still count towards the Total. The bucket
+  title and the Total line never give way; the account rows do.
 
 ### Ranges and bucketing
 

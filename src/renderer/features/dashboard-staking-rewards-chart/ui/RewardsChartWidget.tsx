@@ -16,6 +16,7 @@ import { useWalletByAccountId } from '../hooks/useWalletByAccountId';
 import { DEFAULT_RANGE, RANGE_KEYS } from '../lib/buckets';
 import { TOOLTIP_WIDTH } from '../lib/constants';
 import { resolveBucketEra } from '../lib/era';
+import { resolveVisibleAccountRows } from '../lib/tooltip';
 import { type RangeKey } from '../lib/types';
 
 import { RewardsBarChart } from './RewardsBarChart';
@@ -40,14 +41,22 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
 
   const [range, setRange] = useState<RangeKey>(DEFAULT_RANGE);
   const [pickedChainId, setPickedChainId] = useState<ChainId | null>(null);
-  // The plot width is captured with the hover rather than observed: it is only
-  // ever needed to clamp the card that the same event opens.
-  const [hover, setHover] = useState<{ index: number; x: number; width: number } | null>(null);
+  // The plot box is captured with the hover rather than observed: it is only
+  // ever needed to place and size the card that the same event opens.
+  const [hover, setHover] = useState<{ index: number; x: number; width: number; height: number } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleHoverChange = useCallback((next: { index: number; x: number } | null) => {
-    setHover(next ? { ...next, width: containerRef.current?.clientWidth ?? 0 } : null);
+    setHover(
+      next
+        ? {
+            ...next,
+            width: containerRef.current?.clientWidth ?? 0,
+            height: containerRef.current?.clientHeight ?? 0,
+          }
+        : null,
+    );
   }, []);
 
   // Until the user picks, open on the network they actually stake on — a chart
@@ -177,6 +186,7 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
                 asset={selected.asset}
                 color={selected.color}
                 era={resolveBucketEra(hoveredBucket, eraAnchor)}
+                maxAccounts={resolveVisibleAccountRows(hover?.height ?? 0)}
                 walletByAccountId={walletByAccountId}
                 formatDate={formatDate}
               />
