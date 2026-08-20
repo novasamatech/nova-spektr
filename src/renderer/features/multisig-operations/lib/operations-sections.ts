@@ -12,6 +12,14 @@ export const SECTION_LABEL_KEYS: Record<OperationSection, string> = {
 };
 
 /**
+ * Copy for a section rendered with no rows. Only the always-present in-progress
+ * group can reach that state today; other sections are omitted when empty.
+ */
+export const SECTION_EMPTY_LABEL_KEYS: Partial<Record<OperationSection, string>> = {
+  in_progress: 'operations.sections.inProgressEmpty',
+};
+
+/**
  * Values selectable in the Status filter. Extends operation sections with
  * `drafts` — not an operation status, but the drafts section obeys the same
  * filter: it is visible only when no status is selected or `drafts` is.

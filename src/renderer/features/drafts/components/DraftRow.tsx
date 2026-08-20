@@ -234,7 +234,7 @@ export const DraftRow = ({
               )}
             </div>
 
-            <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'h-full')}>
+            <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}>
               <DraftDescription description={draft.description} />
             </div>
 

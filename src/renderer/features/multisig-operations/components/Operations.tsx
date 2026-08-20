@@ -23,7 +23,7 @@ import {
   useOperationColumnWidths,
 } from '@/aggregates/operations-table-layout';
 import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
-import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sections';
+import { type OperationSection, SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS } from '../lib/operations-sections';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -265,7 +265,7 @@ export const Operations = () => {
                         ) : item.type === 'empty' ? (
                           <div className="mb-1.5 flex h-[60px] items-center justify-center rounded-lg border border-dashed border-shade-12">
                             <FootnoteText className="text-text-tertiary">
-                              {t('operations.sections.inProgressEmpty')}
+                              {t(SECTION_EMPTY_LABEL_KEYS[item.section] ?? 'operations.sections.inProgressEmpty')}
                             </FootnoteText>
                           </div>
                         ) : (
