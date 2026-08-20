@@ -13,7 +13,7 @@ and the sticky column header so all three grids stay aligned.
 - Initiator only renders at ≥1536px; `useIsInitiatorColumnVisible` mirrors that breakpoint so the list's computed min
   width includes the column exactly when CSS shows it.
 - Widths persist per user in local storage (`operations-table-column-widths`) and sync across windows; a stored value
-  from an older build that lacks a column falls back to that column's default.
+  from an older build or a hand-edited one is merged over the defaults and clamped to each column's range.
 - `$resizingColumn` is set for the duration of a drag so every row can show its column hairlines, not just the hovered
   one.
 
