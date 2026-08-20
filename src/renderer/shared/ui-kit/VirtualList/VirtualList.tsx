@@ -98,15 +98,30 @@ export const VirtualList = <T,>({
   });
 
   if (!scrollElement) {
-    // No enclosing ScrollArea (or it has not attached yet) — render everything
-    // rather than render nothing.
+    // Outside a `ScrollArea` there is no viewport to virtualize against, so
+    // render the whole list — that is the documented fallback.
+    if (!viewportRef) {
+      return (
+        <div ref={listRef} className={className}>
+          {items.map((item, index) => (
+            <div key={getItemKey?.(item, index) ?? index} style={gap ? { paddingBottom: gap } : undefined}>
+              {children(item, index)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Inside a `ScrollArea`, but this is the first render of the commit that
+    // creates the viewport, so its ref is not attached yet. Render only the
+    // full-height placeholder: the layout effect above resolves the viewport
+    // and re-renders with real rows before the browser paints, so nothing
+    // blank is ever shown — while rendering the rows here would mount the
+    // entire list once just to throw it away, which is the cost this component
+    // exists to avoid.
     return (
-      <div ref={listRef} className={className}>
-        {items.map((item, index) => (
-          <div key={getItemKey?.(item, index) ?? index} style={gap ? { paddingBottom: gap } : undefined}>
-            {children(item, index)}
-          </div>
-        ))}
+      <div ref={listRef} className={cnTw('w-full', className)}>
+        <div aria-hidden style={{ height: items.length * (estimateSize + gap) }} />
       </div>
     );
   }

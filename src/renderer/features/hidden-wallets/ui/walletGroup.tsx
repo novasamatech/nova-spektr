@@ -7,7 +7,6 @@ import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { WALLET_MANAGEMENT_ROW_HEIGHT, WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox, VirtualList } from '@/shared/ui-kit';
-import { useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -44,10 +43,6 @@ export const WalletGroup = (props: Props) => {
   const chains = useUnit(networkModel.$chains);
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
-
-  // Names are resolved for the whole group at once — WalletManagement renders
-  // wallet.name as given.
-  const resolvedWallets = useWalletsNames(wallets);
 
   // Optimized Set for O(1) selection lookups
   const selectedWalletSet = useMemo(() => new Set(selectedWalletIds), [selectedWalletIds]);
@@ -95,7 +90,7 @@ export const WalletGroup = (props: Props) => {
       <Accordion.Content>
         <Box padding={[1, 0, 0]}>
           <VirtualList
-            items={resolvedWallets}
+            items={wallets}
             estimateSize={WALLET_MANAGEMENT_ROW_HEIGHT}
             gap={4}
             getItemKey={(wallet) => wallet.id}
