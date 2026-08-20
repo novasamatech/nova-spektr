@@ -6,7 +6,7 @@ import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
-import { TOOLTIP_WIDTH } from '../lib/constants';
+import { TOOLTIP_MAX_ACCOUNTS, TOOLTIP_WIDTH } from '../lib/constants';
 import { type DateFormatter, formatBucketDate } from '../lib/labels';
 import { type RewardBucket } from '../lib/types';
 
@@ -39,16 +39,25 @@ export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletBy
     }
   })();
 
+  // Largest first, so the rows that survive the cut are the ones that matter.
+  const shown = bucket.accounts.slice(0, TOOLTIP_MAX_ACCOUNTS);
+  const hidden = bucket.accounts.length - shown.length;
+
   return (
+    // The card cannot scroll (it is inert to the pointer) and the widget that
+    // holds it does not scroll either, so it is bounded by the plot — its
+    // parent caps the height — and laid out as a column: the account list is
+    // the part that gives, while the title and the total, the two lines that
+    // must always be readable, do not.
     <div
-      className="pointer-events-none rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
+      className="pointer-events-none flex min-h-0 flex-col rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
       style={{ width: TOOLTIP_WIDTH }}
     >
-      <HelpText className="text-text-tertiary">{title}</HelpText>
+      <HelpText className="shrink-0 text-text-tertiary">{title}</HelpText>
 
       {bucket.accounts.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-1.5">
-          {bucket.accounts.map((entry) => {
+        <div className="mt-2 flex min-h-0 flex-col gap-1.5 overflow-hidden">
+          {shown.map((entry) => {
             const accountId = toAccountId(entry.accountId);
 
             return (
@@ -76,7 +85,13 @@ export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletBy
         </FootnoteText>
       )}
 
-      <div className="mt-2 flex items-center gap-2 border-t border-token-container-border pt-2">
+      {hidden > 0 ? (
+        <HelpText className="mt-1.5 shrink-0 text-text-tertiary">
+          {t('dashboard.staking.rewardsChart.tooltip.moreAccounts', { count: hidden })}
+        </HelpText>
+      ) : null}
+
+      <div className="mt-2 flex shrink-0 items-center gap-2 border-t border-token-container-border pt-2">
         <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
         <FootnoteText className="flex-1 text-text-secondary">
           {t('dashboard.staking.rewardsChart.tooltip.total')}

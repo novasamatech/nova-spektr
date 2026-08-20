@@ -14,7 +14,9 @@ type Props = {
    * Whether content taller than the cell scrolls inside the widget. Widgets
    * whose content is sized from the cell rather than from the content itself —
    * a chart filling the box — pass `false`: for them a scrollbar can never be
-   * the right answer, and offering one is actively harmful, see below.
+   * the right answer, and offering one is actively harmful (`SCROLL_CLASS`).
+   * Such a widget must keep its content inside the cell at every size it
+   * allows: what does not fit is clipped, with nothing to scroll to.
    */
   scroll?: boolean;
 };

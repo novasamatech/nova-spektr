@@ -92,7 +92,11 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
       {/* The card never scrolls: the plot is sized from the cell, so it absorbs
           whatever height is left over and shrinks with the widget instead. */}
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-4">
+        {/* Wraps rather than overflows: the card does not scroll, so a header
+            too wide for a narrow widget would put the range switch out of
+            reach. The two switches need ~450px side by side; the widget may be
+            two columns of a 1024px window, which is ~320. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <div className="flex items-center gap-3">
             <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>
             <SegmentedControl
@@ -159,8 +163,14 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
             )}
           </div>
 
+          {/* The wrapper caps the card at the plot it belongs to, minus its own
+              inset: the widget clips rather than scrolls, so a card taller than
+              the plot would lose its total line off the bottom of the widget. */}
           {hoveredBucket ? (
-            <div className="absolute top-1 z-10" style={{ left: tooltipLeft }}>
+            <div
+              className="pointer-events-none absolute top-1 z-10 flex max-h-[calc(100%-0.5rem)] flex-col"
+              style={{ left: tooltipLeft }}
+            >
               <RewardsChartTooltip
                 bucket={hoveredBucket}
                 chain={chain}
