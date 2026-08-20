@@ -55,32 +55,35 @@ export const DashboardWidget = memo(({ children, className, card = true, scroll 
         className,
       )}
     >
+      {/* Both controls sit in one cluster on the same corner: the buttons overhang
+          the card by more than half the grid gap, so a control on the opposite
+          corner would collide with the neighbouring widget's cluster. */}
       {ctx?.editMode && (
-        <button
-          ref={ctx.handleRef}
-          type="button"
-          className="absolute -top-2.5 -left-2.5 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow active:cursor-grabbing"
-          aria-label={t('dashboard.dragWidget')}
-        >
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-            <circle cx="5" cy="3" r="1.5" />
-            <circle cx="11" cy="3" r="1.5" />
-            <circle cx="5" cy="8" r="1.5" />
-            <circle cx="11" cy="8" r="1.5" />
-            <circle cx="5" cy="13" r="1.5" />
-            <circle cx="11" cy="13" r="1.5" />
-          </svg>
-        </button>
-      )}
-      {ctx?.editMode && (
-        <button
-          type="button"
-          className="absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow hover:bg-primary-button-background-hover focus-visible:ring-2 focus-visible:ring-white/60"
-          aria-label={t('dashboard.hideWidget')}
-          onClick={ctx.hide}
-        >
-          <Icon name="eyeSlashed" size={12} />
-        </button>
+        <div className="absolute -top-2.5 -left-2.5 z-10 flex items-center gap-1">
+          <button
+            ref={ctx.handleRef}
+            type="button"
+            className="flex h-6 w-6 cursor-grab items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow active:cursor-grabbing"
+            aria-label={t('dashboard.dragWidget')}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="3" r="1.5" />
+              <circle cx="11" cy="3" r="1.5" />
+              <circle cx="5" cy="8" r="1.5" />
+              <circle cx="11" cy="8" r="1.5" />
+              <circle cx="5" cy="13" r="1.5" />
+              <circle cx="11" cy="13" r="1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow hover:bg-primary-button-background-hover focus-visible:ring-2 focus-visible:ring-white/60"
+            aria-label={t('dashboard.hideWidget')}
+            onClick={ctx.hide}
+          >
+            <Icon name="eyeSlashed" size={12} className="text-white" />
+          </button>
+        </div>
       )}
       <div className={cnTw('min-h-0 flex-1', scroll ? SCROLL_CLASS : 'overflow-hidden')}>{children}</div>
       {ctx?.editMode && rect && <WidgetResizeHandle />}
