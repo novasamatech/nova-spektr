@@ -17,25 +17,11 @@ type Props = {
   color: string;
   /** `null` when no era can be named honestly for this bucket. */
   era: number | null;
-  /**
-   * How many account rows this card has room for — derived from the plot it is
-   * bounded by, so what it lists is what it can actually show.
-   */
-  maxAccounts: number;
   walletByAccountId: Map<AccountId, Wallet>;
   formatDate: DateFormatter;
 };
 
-export const RewardsChartTooltip = ({
-  bucket,
-  chain,
-  asset,
-  color,
-  era,
-  maxAccounts,
-  walletByAccountId,
-  formatDate,
-}: Props) => {
+export const RewardsChartTooltip = ({ bucket, chain, asset, color, era, walletByAccountId, formatDate }: Props) => {
   const { t } = useI18n();
 
   const date = formatBucketDate(bucket, formatDate);
@@ -53,26 +39,27 @@ export const RewardsChartTooltip = ({
     }
   })();
 
-  // Largest first, so the rows that survive the cut are the ones that matter.
-  const shown = bucket.accounts.slice(0, maxAccounts);
-  const hidden = bucket.accounts.length - shown.length;
-
   return (
-    // The card cannot scroll (it is inert to the pointer) and the widget that
-    // holds it does not scroll either, so it is bounded by the plot — its
-    // parent caps the height — and laid out as a column: the account list is
-    // the part that gives, while the title and the total, the two lines that
-    // must always be readable, do not.
+    // Bounded by the plot (the parent caps the height), so the card is a column
+    // where only the account list gives way — the title and the total, which
+    // carry the count and the sum, always stay readable.
     <div
       data-testid="rewards-tooltip"
       className="pointer-events-none flex min-h-0 flex-col rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
       style={{ width: TOOLTIP_WIDTH }}
     >
-      <HelpText className="shrink-0 text-text-tertiary">{title}</HelpText>
+      <div className="flex shrink-0 items-baseline justify-between gap-2">
+        <HelpText className="text-text-tertiary">{title}</HelpText>
+        {bucket.accounts.length > 1 ? (
+          <HelpText className="text-text-tertiary">
+            {t('dashboard.staking.rewardsChart.tooltip.accountCount', { count: bucket.accounts.length })}
+          </HelpText>
+        ) : null}
+      </div>
 
       {bucket.accounts.length > 0 ? (
         <div className="mt-2 flex min-h-0 flex-col gap-1.5 overflow-hidden">
-          {shown.map((entry) => {
+          {bucket.accounts.map((entry) => {
             const accountId = toAccountId(entry.accountId);
 
             return (
@@ -99,12 +86,6 @@ export const RewardsChartTooltip = ({
           {t('dashboard.staking.rewardsChart.tooltip.noRewards')}
         </FootnoteText>
       )}
-
-      {hidden > 0 ? (
-        <HelpText className="mt-1.5 shrink-0 text-text-tertiary">
-          {t('dashboard.staking.rewardsChart.tooltip.moreAccounts', { count: hidden })}
-        </HelpText>
-      ) : null}
 
       <div className="mt-2 flex shrink-0 items-center gap-2 border-t border-token-container-border pt-2">
         <span className="h-2 w-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} />

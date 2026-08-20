@@ -42,7 +42,7 @@ const bucketOf = (accountCount: number): RewardBucket => ({
   })),
 });
 
-const renderTooltip = (accountCount: number, maxAccounts = 6) =>
+const renderTooltip = (accountCount: number) =>
   render(
     <RewardsChartTooltip
       bucket={bucketOf(accountCount)}
@@ -50,32 +50,28 @@ const renderTooltip = (accountCount: number, maxAccounts = 6) =>
       asset={asset}
       color="#e6007a"
       era={null}
-      maxAccounts={maxAccounts}
       walletByAccountId={new Map()}
       formatDate={defaultDateFormatter}
     />,
   );
 
 describe('RewardsChartTooltip', () => {
-  it('lists every account while they fit the card', () => {
-    renderTooltip(4);
-
-    expect(screen.getAllByTestId('account')).toHaveLength(4);
-    expect(screen.queryByText(/moreAccounts/)).not.toBeInTheDocument();
-  });
-
-  it('names the remainder instead of dropping it silently', () => {
+  it('lists every contributing account', () => {
     renderTooltip(10);
 
-    expect(screen.getAllByTestId('account')).toHaveLength(6);
-    expect(screen.getByText(/moreAccounts.*"count":4/)).toBeInTheDocument();
+    expect(screen.getAllByTestId('account')).toHaveLength(10);
   });
 
-  it('lists as many rows as the card was given room for', () => {
-    renderTooltip(10, 2);
+  it('says how many accounts there are, so a cut list is never a surprise', () => {
+    renderTooltip(10);
 
-    expect(screen.getAllByTestId('account')).toHaveLength(2);
-    expect(screen.getByText(/moreAccounts.*"count":8/)).toBeInTheDocument();
+    expect(screen.getByText(/accountCount.*"count":10/)).toBeInTheDocument();
+  });
+
+  it('does not count a single account', () => {
+    renderTooltip(1);
+
+    expect(screen.queryByText(/accountCount/)).not.toBeInTheDocument();
   });
 
   it('keeps the total line outside the part that gives way', () => {

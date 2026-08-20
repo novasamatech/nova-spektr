@@ -11,12 +11,8 @@ vi.mock('./WidgetSortableContext', () => ({
   useWidgetSortable: () => null,
 }));
 
-/**
- * The overflow rules are load-bearing, not cosmetic: a widget that scrolls on
- * the x axis lets a child a fraction of a pixel too wide raise a horizontal
- * scrollbar, which steals height, which raises the vertical one, which steals
- * width — and the pair blinks for as long as the widget is on screen.
- */
+// The overflow rules are load-bearing: scrolling on the x axis is what lets the
+// scrollbar pair blink (see SCROLL_CLASS).
 describe('DashboardWidget', () => {
   const body = () => screen.getByTestId('content').parentElement;
 

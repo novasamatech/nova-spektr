@@ -934,8 +934,8 @@
           "week": "Week of {date}",
           "total": "Total",
           "noRewards": "No rewards in this period",
-          "moreAccounts_one": "and {count} more account",
-          "moreAccounts_other": "and {count} more accounts"
+          "accountCount_one": "{count} account",
+          "accountCount_other": "{count} accounts"
         }
       },
       "positions": {
