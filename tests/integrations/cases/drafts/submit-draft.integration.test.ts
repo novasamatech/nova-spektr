@@ -21,7 +21,7 @@ import { type AnyAccount, type Extrinsic, accounts, transactionService } from '@
 import { contactModel } from '@/entities/contact';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { findRouteMultisigAccountId } from '@/aggregates/multisig-operation-description/lib/findRouteMultisigAccountId';
 import { getDraftSubmitGate } from '@/features/drafts/lib/submit-draft-availability';
@@ -653,6 +653,64 @@ describe('Submit Draft — submit & edit flows', () => {
       await allSettled(submitDraftModel.callDataConfirmRequested, { scope: env.scope });
       expect(updateSpy).not.toHaveBeenCalled();
       expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CALL_DATA);
+    });
+  });
+
+  describe('unknown recipient acknowledgement', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Unknown recipient gate',
+      });
+    });
+
+    const directPath: PathNode[] = [
+      { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+      { kind: 'signer', accountId: SIGNER_ID },
+    ];
+
+    const startFlow = (draft: Draft) =>
+      allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigDirect, chain: polkadotChain },
+      });
+
+    it('follows the toggle and resets on flow start and flow finish', async () => {
+      seamSpies();
+      env = await buildEnv([multisigDirect, signerAccount], (b) => b.withApi(polkadotChainId, fakeApi));
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(true);
+
+      await allSettled(submitDraftModel.flowFinished, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+    });
+
+    it('carries no warning while the call data yields no destination', async () => {
+      seamSpies();
+      // The api double has no `tx`, so decoding throws → destination null → nothing
+      // to warn about, even with the address book connected and healthy.
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+
+      expect(env.getState(submitDraftModel.$destinationAccountId)).toBeNull();
+      expect(env.getState(submitDraftModel.$recipientWarning)).toBe('none');
     });
   });
 });

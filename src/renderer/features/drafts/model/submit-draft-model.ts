@@ -39,11 +39,13 @@ import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { createPathRouteStore } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
@@ -103,6 +105,25 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
     callData: draft.callData as CallData,
   };
 });
+
+// --- Unknown recipient gate ---
+
+const $destinationAccountId = combine({ draft: $draft, api: $api, chain: $chain }, ({ draft, api, chain }) =>
+  getDraftDestinationAccountId(draft, api, chain),
+);
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveWarning,
+  $destinationAccountId,
+  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+);
+
+const riskAcknowledgedToggled = createEvent<boolean>();
+
+// A fresh flow never inherits a previous acknowledgement.
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([flowStarted, flowFinished]);
 
 // --- Late call-data entry (drafts created with the call-data step skipped) ---
 
@@ -833,6 +854,9 @@ export const submitDraftModel = {
   $pendingCallDataDecoded,
   $pendingCallDataError,
   $canConfirmCallData,
+  $destinationAccountId,
+  $recipientWarning,
+  $isRiskAcknowledged,
   $savingCallData: submitCallDataFx.pending,
 
   flowStarted,
@@ -840,6 +864,7 @@ export const submitDraftModel = {
   signatoryChanged: $signatory,
   callDataChanged,
   callDataConfirmRequested,
+  riskAcknowledgedToggled,
 
   confirmModel,
 
