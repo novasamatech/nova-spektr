@@ -2,7 +2,7 @@ import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { dashboardStakingSlot } from '@/pages/Dashboard';
+import { dashboardStakingSlot, defineWidget } from '@/pages/Dashboard';
 
 import { PositionsWidget } from './ui/PositionsWidget';
 
@@ -26,9 +26,13 @@ export const dashboardStakingPositionsFeature = createFeature({
 
 // Orders on this tab are spaced by ten: the KPI cards occupy 0–3, and a widget
 // that later splits into several needs room to keep them together.
-dashboardStakingPositionsFeature.inject(dashboardStakingSlot, {
-  order: 10,
-  render: PositionsWidget,
-  defaultSize: { w: 4, h: 5 },
-  minSize: { w: 2, h: 3 },
-});
+dashboardStakingPositionsFeature.inject(
+  dashboardStakingSlot,
+  defineWidget({
+    order: 10,
+    label: 'dashboard.staking.positions.title',
+    render: PositionsWidget,
+    defaultSize: { w: 4, h: 5 },
+    minSize: { w: 2, h: 3 },
+  }),
+);

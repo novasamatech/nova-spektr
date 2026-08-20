@@ -1,6 +1,6 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -27,6 +27,8 @@ from.
   prompt rather than an empty chart.
 - Reads **Polkadot Asset Hub and Kusama Asset Hub** — the two chains the app runs governance on.
 - Everything is derived from live on-chain voting, track locks and referendum state; nothing here is stored.
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md).
 
 ## States / scenarios
 

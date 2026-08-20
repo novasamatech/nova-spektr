@@ -14,6 +14,9 @@ const widgetMoved = createEvent<{ tab: string; key: string; x: number; y: number
 const widgetResized = createEvent<{ tab: string; key: string; w: number; h: number }>();
 const layoutReset = createEvent<{ tab: string }>();
 
+const widgetHidden = createEvent<{ tab: string; key: string }>();
+const widgetRestored = createEvent<{ tab: string; key: string }>();
+
 const $activeTab = createStore('overview');
 const $editMode = createStore(false);
 $editMode.on(editModeToggled, (state) => !state);
@@ -48,6 +51,28 @@ $widgetLayout
     return { ...state, [tab]: resolveCollisions({ ...state[tab], [key]: rect }, key) };
   })
   .on(layoutReset, (state, { tab }) => ({ ...state, [tab]: {} }));
+
+const $hiddenWidgets = createStore<Record<string, string[]>>({});
+persist({ store: $hiddenWidgets, key: 'dashboard-hidden-widgets-v1', sync: true });
+
+$hiddenWidgets
+  .on(widgetHidden, (state, { tab, key }) => {
+    const hidden = state[tab] ?? [];
+    if (hidden.includes(key)) return state;
+
+    return { ...state, [tab]: [...hidden, key] };
+  })
+  .on(widgetRestored, (state, { tab, key }) => {
+    const hidden = state[tab];
+    if (!hidden?.includes(key)) return state;
+
+    return { ...state, [tab]: hidden.filter((k) => k !== key) };
+  })
+  .on(layoutReset, (state, { tab }) => {
+    if (!state[tab]?.length) return state;
+
+    return { ...state, [tab]: [] };
+  });
 
 $activeTab.on(tabChanged, (_, tab) => tab);
 
@@ -94,11 +119,14 @@ export const dashboardModel = {
   $selectedContactAccountIds,
   $activeTab,
   $widgetLayout,
+  $hiddenWidgets,
   $editMode,
   tabChanged,
   layoutSet,
   widgetMoved,
   widgetResized,
   layoutReset,
+  widgetHidden,
+  widgetRestored,
   editModeToggled,
 };

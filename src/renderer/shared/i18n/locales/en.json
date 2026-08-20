@@ -497,6 +497,10 @@
     "title": "Dashboard",
     "resetLayout": "Reset layout",
     "dragWidget": "Drag to reorder",
+    "hideWidget": "Hide widget",
+    "addWidget": "Add widget",
+    "allWidgetsHidden": "All widgets on this tab are hidden. Use the + button in the header to bring them back.",
+    "allWidgetsHiddenView": "All widgets on this tab are hidden. Enter edit mode to bring them back.",
     "resizeWidget": "Resize widget",
     "tabs": {
       "overview": "Overview",
@@ -911,6 +915,7 @@
       },
       "rewardsChart": {
         "title": "Rewards",
+        "widgetName": "Rewards chart",
         "assetSwitch": "Rewards asset",
         "rangeSwitch": "Rewards period",
         "range": {

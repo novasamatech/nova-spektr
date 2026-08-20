@@ -1,6 +1,6 @@
 # Price Tracker
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -18,18 +18,20 @@ therefore the user's own: it is not derived from what they hold, and holding not
 - Independent of the dashboard's account picker: prices do not depend on whose accounts are selected.
 - The choosable tokens are every asset across all configured chains that has a price feed, deduplicated by feed and
   sorted by symbol — so one token appears once even when it lives on several chains.
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md).
 
 ## States / scenarios
 
-| State           | When it appears                      | What the user sees                                   |
-| --------------- | ------------------------------------ | ---------------------------------------------------- |
-| Hidden          | `dashboard` flag off, or fiat off    | No card                                              |
-| Empty list      | The user untracked every token       | "No tokens tracked. Click + to add tokens."          |
-| Loading         | Prices not fetched yet               | Tiles in place, price and change shimmering          |
-| Populated       | Prices available                     | Price and 24h change per tile, coloured by direction |
-| Price missing   | The feed has no entry for that token | That one tile stays blank; the others are unaffected |
-| Chart open      | A tile is clicked                    | History modal for that token                         |
-| Token selection | The settings icon is clicked         | A searchable checklist of every priced asset         |
+| State           | When it appears                                               | What the user sees                                   |
+| --------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| Hidden          | `dashboard` flag off, or fiat off, or the user hid the widget | No card                                              |
+| Empty list      | The user untracked every token                                | "No tokens tracked. Click + to add tokens."          |
+| Loading         | Prices not fetched yet                                        | Tiles in place, price and change shimmering          |
+| Populated       | Prices available                                              | Price and 24h change per tile, coloured by direction |
+| Price missing   | The feed has no entry for that token                          | That one tile stays blank; the others are unaffected |
+| Chart open      | A tile is clicked                                             | History modal for that token                         |
+| Token selection | The settings icon is clicked                                  | A searchable checklist of every priced asset         |
 
 ## The watch list
 

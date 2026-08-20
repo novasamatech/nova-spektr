@@ -1,21 +1,35 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useRef } from 'react';
+import { type FunctionComponent, useMemo, useRef } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
+import { type SlotProps } from '@/shared/di/createSlot';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Header, IconButton, SmallTitleText } from '@/shared/ui';
 import { Tabs } from '@/shared/ui-kit';
 import { type Size } from '../lib/layout-engine';
 import { dashboardModel } from '../model/dashboard-model';
 
+import { AddWidgetMenu } from './AddWidgetMenu';
 import { DashboardGrid } from './DashboardGrid';
 
-export type WidgetGridMeta = { defaultSize: Size; minSize: Size; maxSize: Size };
+export type WidgetGridMeta = { label: string; defaultSize: Size; minSize: Size; maxSize?: Size };
 
 type WidgetSlotProps = {
   accountIds: string[];
   allEntries: { accountId: string; name: string; address: string }[];
 };
+
+/**
+ * Types a grid widget's injection meta at the call site.
+ *
+ * A slot accepts its meta as `Partial`, so a widget injected without a `label`
+ * would type-check and then show its raw DI key in the "Add widget" list.
+ * Passing the object through here restores the check the slot type cannot
+ * make.
+ */
+export const defineWidget = <P extends SlotProps>(
+  widget: WidgetGridMeta & { order: number; render: FunctionComponent<P> },
+) => widget;
 
 export const dashboardPresetSwitcherSlot = createSlot({ name: 'dashboardPresetSwitcher' });
 
@@ -27,6 +41,12 @@ export const dashboardGovernanceSlot = createSlot<WidgetSlotProps, WidgetGridMet
 
 // const TABS = ['overview', 'staking', 'governance', 'alerts'] as const;
 const TABS = ['overview', 'staking', 'governance'] as const;
+
+const TAB_SLOTS: Record<string, typeof dashboardWidgetsSlot> = {
+  overview: dashboardWidgetsSlot,
+  staking: dashboardStakingSlot,
+  governance: dashboardGovernanceSlot,
+};
 
 const EmptyState = ({ t }: { t: (key: string) => string }) => (
   <div className="flex h-full w-full flex-col items-center justify-center">
@@ -48,6 +68,8 @@ export const Dashboard = () => {
   visitedTabs.current.add(activeTab);
   const editMode = useUnit(dashboardModel.$editMode);
   const editModeToggled = useUnit(dashboardModel.editModeToggled);
+
+  const activeSlot = TAB_SLOTS[activeTab];
 
   const accountIdsKey = useMemo(() => {
     const selectedIdSet = new Set(selectedIds);
@@ -75,11 +97,14 @@ export const Dashboard = () => {
           <div className="flex items-center gap-x-2 rounded-xl bg-white p-2">
             <IconButton className={editMode ? 'text-icon-accent' : ''} name="edit" onClick={editModeToggled} />
             {editMode && (
-              <IconButton
-                name="refresh"
-                aria-label={t('dashboard.resetLayout')}
-                onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
-              />
+              <>
+                {activeSlot && <AddWidgetMenu slot={activeSlot} tab={activeTab} />}
+                <IconButton
+                  name="refresh"
+                  ariaLabel={t('dashboard.resetLayout')}
+                  onClick={() => dashboardModel.layoutReset({ tab: activeTab })}
+                />
+              </>
             )}
             <Slot id={dashboardPresetSwitcherSlot} />
           </div>

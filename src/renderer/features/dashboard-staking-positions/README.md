@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -24,8 +24,8 @@ never grows past what the user is looking at.
 
 ## Who can use it / when it applies
 
-Visible whenever the `dashboard` feature flag is on and the wallet has at least one account. What the user may _do_ with
-a row depends on how the account can be signed for:
+Visible whenever the `dashboard` feature flag is on, the wallet has at least one account, and the user has not hidden
+the widget. What the user may _do_ with a row depends on how the account can be signed for:
 
 | Access mode | When                                                                                                                                  | What the row and drawer show                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |

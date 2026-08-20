@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -29,6 +29,8 @@ either fiat (`$29.6M`) or a list (`5.38M DOT + 60K KSM`). Anything else would in
   a fact nobody established.
 - Fiat figures need a price feed for the chain's staking asset. A chain without one still contributes its **token**
   amount to the sub-lines and drill-down rows; only its fiat share is zero. It is never silently dropped.
+- Like every widget on the grid it can be **hidden** in edit mode and brought back from the header's **"Add widget"**
+  menu — see the [Dashboard spec](../../pages/Dashboard/README.md).
 
 ## States / scenarios
 

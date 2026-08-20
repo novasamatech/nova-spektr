@@ -2,6 +2,7 @@ import { type ReactNode, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { Icon } from '@/shared/ui';
 
 import { WidgetResizeHandle } from './WidgetResizeHandle';
 import { useWidgetSortable } from './WidgetSortableContext';
@@ -27,6 +28,12 @@ const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4
  * the vertical one, which steals width — the pair then blinks forever.
  */
 const SCROLL_CLASS = 'overflow-x-hidden overflow-y-auto';
+
+// The focus ring is white rather than the global `*:focus-visible` outline:
+// that outline is `--focus-container-border`, the button's own indigo at 40%
+// opacity, which is invisible on an indigo pill.
+const CHROME_BUTTON_CLASS =
+  'flex h-6 w-6 items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow focus-visible:ring-2 focus-visible:ring-white/60';
 
 export const DashboardWidget = memo(({ children, className, card = true, scroll = true }: Props) => {
   const { t } = useI18n();
@@ -54,22 +61,37 @@ export const DashboardWidget = memo(({ children, className, card = true, scroll 
         className,
       )}
     >
+      {/* Both controls sit in one cluster on the same corner: the buttons overhang
+          the card by more than half the grid gap, so a control on the opposite
+          corner would collide with the neighbouring widget's cluster. */}
       {ctx?.editMode && (
-        <button
-          ref={ctx.handleRef}
-          type="button"
-          className="absolute -top-2.5 -left-2.5 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded-full bg-primary-button-background-default text-white shadow-card-shadow active:cursor-grabbing"
-          aria-label={t('dashboard.dragWidget')}
-        >
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-            <circle cx="5" cy="3" r="1.5" />
-            <circle cx="11" cy="3" r="1.5" />
-            <circle cx="5" cy="8" r="1.5" />
-            <circle cx="11" cy="8" r="1.5" />
-            <circle cx="5" cy="13" r="1.5" />
-            <circle cx="11" cy="13" r="1.5" />
-          </svg>
-        </button>
+        // Hide is destructive and has no undo, so it keeps its distance from the
+        // handle the user grabs; the handle stays on the corner as the frequent one.
+        <div className="absolute -top-2.5 -left-2.5 z-10 flex items-center gap-2">
+          <button
+            ref={ctx.handleRef}
+            type="button"
+            className={cnTw(CHROME_BUTTON_CLASS, 'cursor-grab active:cursor-grabbing')}
+            aria-label={t('dashboard.dragWidget')}
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="3" r="1.5" />
+              <circle cx="11" cy="3" r="1.5" />
+              <circle cx="5" cy="8" r="1.5" />
+              <circle cx="11" cy="8" r="1.5" />
+              <circle cx="5" cy="13" r="1.5" />
+              <circle cx="11" cy="13" r="1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className={cnTw(CHROME_BUTTON_CLASS, 'cursor-pointer hover:bg-primary-button-background-hover')}
+            aria-label={t('dashboard.hideWidget')}
+            onClick={ctx.hide}
+          >
+            <Icon name="eyeSlashed" size={12} className="text-white" />
+          </button>
+        </div>
       )}
       <div className={cnTw('min-h-0 flex-1', scroll ? SCROLL_CLASS : 'overflow-hidden')}>{children}</div>
       {ctx?.editMode && rect && <WidgetResizeHandle />}

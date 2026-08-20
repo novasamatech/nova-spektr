@@ -3,9 +3,11 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, type ComponentType, memo, useEffect, useMemo, useRef } from 'react';
 
 import { type SlotIdentifier, type SlotProps } from '@/shared/di/createSlot';
+import { useI18n } from '@/shared/i18n';
 import { getGridMetrics, toGridContentPoint } from '../lib/grid-metrics';
 import { type Rect, type Size, GRID_COLUMNS, ROW_HEIGHT_PX, syncLayout } from '../lib/layout-engine';
 import { readLegacyOrder } from '../lib/legacy-order';
+import { partitionWidgets } from '../lib/widget-visibility';
 import { dashboardModel } from '../model/dashboard-model';
 
 import { type WidgetGridMeta } from './Dashboard';
@@ -37,26 +39,20 @@ type Props<P extends SlotProps> = {
 };
 
 const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }: Props<P>) => {
+  const { t } = useI18n();
   const handlers = useUnit(slot.$handlers);
   const widgetLayout = useUnit(dashboardModel.$widgetLayout);
   const layoutSet = useUnit(dashboardModel.layoutSet);
   const widgetMoved = useUnit(dashboardModel.widgetMoved);
   const widgetResized = useUnit(dashboardModel.widgetResized);
+  const hiddenWidgets = useUnit(dashboardModel.$hiddenWidgets);
+  const widgetHidden = useUnit(dashboardModel.widgetHidden);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const available = useMemo(
-    () =>
-      handlers
-        .filter((h) => {
-          try {
-            return h.available() && h.key != null;
-          } catch {
-            return false;
-          }
-        })
-        .sort((a, b) => (a.body.order ?? 0) - (b.body.order ?? 0)),
-    [handlers],
+  const { visible: available, hidden } = useMemo(
+    () => partitionWidgets(handlers, hiddenWidgets[tab] ?? []),
+    [handlers, hiddenWidgets, tab],
   );
 
   const sizes = useMemo(() => {
@@ -64,16 +60,16 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
     const mins: Record<string, Size> = {};
     const maxes: Record<string, Size> = {};
     for (const h of available) {
-      map[h.key!] = h.body.defaultSize ?? FALLBACK_DEFAULT;
-      mins[h.key!] = h.body.minSize ?? FALLBACK_MIN;
-      maxes[h.key!] = h.body.maxSize ?? FALLBACK_MAX;
+      map[h.key] = h.body.defaultSize ?? FALLBACK_DEFAULT;
+      mins[h.key] = h.body.minSize ?? FALLBACK_MIN;
+      maxes[h.key] = h.body.maxSize ?? FALLBACK_MAX;
     }
 
     return { defaults: map, mins, maxes };
   }, [available]);
 
   const orderedKeys = useMemo(() => {
-    const keys = available.map((h) => h.key!);
+    const keys = available.map((h) => h.key);
     // A stored layout (including the empty `{}` left by a reset) means seed new
     // widgets by body.order. Only on genuine first load (no stored tab) do we
     // migrate from the legacy widget order.
@@ -126,7 +122,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
   };
 
   const componentProps = (props ?? EMPTY_PROPS) satisfies Record<string, unknown>;
-  const handlersByKey = useMemo(() => new Map(available.map((h) => [h.key!, h])), [available]);
+  const handlersByKey = useMemo(() => new Map(available.map((h) => [h.key, h])), [available]);
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
@@ -140,6 +136,13 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
           gridAutoRows: `${ROW_HEIGHT_PX}px`,
         }}
       >
+        {renderKeys.length === 0 && hidden.length > 0 && (
+          // Spans rows rather than padding itself: the hint is a grid item and
+          // the grid's auto rows are only ROW_HEIGHT_PX tall.
+          <div className="col-span-full row-span-3 flex items-center justify-center text-footnote text-text-tertiary">
+            {editMode ? t('dashboard.allWidgetsHidden') : t('dashboard.allWidgetsHiddenView')}
+          </div>
+        )}
         {renderKeys.map((key, index) => {
           const handler = handlersByKey.get(key);
           const rect = effective[key];
@@ -164,6 +167,7 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
                 const h = Math.max(min.h, Math.min(next.h, max.h));
                 widgetResized({ tab, key, w, h });
               }}
+              onHide={() => widgetHidden({ tab, key })}
             >
               <Component {...componentProps} />
             </WidgetSortableProvider>
