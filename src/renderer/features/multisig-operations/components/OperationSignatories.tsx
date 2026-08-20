@@ -2,21 +2,17 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useMemo, useState } from 'react';
 
 import {
-  type Chain,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxyType,
   type Signatory,
-  type Wallet,
   ProxyTypes,
   TransactionType,
 } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { CountChip, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { CountChip, FootnoteText, IconButton } from '@/shared/ui';
 import { Copy, Tooltip } from '@/shared/ui-kit';
 import {
   type AnyAccount,
@@ -24,38 +20,21 @@ import {
   accounts,
   isContactMultisigAccount,
   multisigOperationService,
-  useAccountName,
 } from '@/domains/network';
 import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 
 import { NotifySignersButton } from './NotifySignersButton';
 import { OperationLog } from './OperationLog';
 
-type SignatoryAddressProps = {
-  accountId: AccountId;
-  chain: Chain | null;
-};
-
-const SignatoryAddress = ({ accountId, chain }: SignatoryAddressProps) => {
-  const name = useAccountName({ accountId, chain });
-
-  return (
-    <Address
-      title={name}
-      address={toAddress(accountId, { prefix: chain?.addressPrefix })}
-      variant="short"
-      canCopy
-      showIcon
-      // Matches the wallet-resolved branch's NamedAccount iconSize so both row
-      // kinds start their text at the same offset.
-      iconSize={20}
-    />
-  );
-};
+// One segmented control: identical pill geometry for both tabs, the selected
+// one carries the grey tab background, the other is tertiary with a hover tint.
+const TAB_CLASS = 'flex h-[26px] items-center gap-1.5 rounded-lg px-2.5 transition-colors';
+const TAB_ACTIVE_CLASS = 'bg-tab-background text-text-primary';
+const TAB_INACTIVE_CLASS = 'text-text-tertiary hover:bg-action-background-hover';
 
 const getOperationProxyType = (operation: MultisigOperation): ProxyType | null => {
   if (operation.transaction?.type !== TransactionType.PROXY) return null;
@@ -70,8 +49,6 @@ export const operationOverviewSlot = createSlot<{
   exclusive?: boolean;
 }>();
 
-type WalletSignatory = Signatory & { account: AnyAccount; wallet: Wallet };
-
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
@@ -84,7 +61,6 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
   const { t } = useI18n();
   const chain = useChain(operation.chainId);
 
-  const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('signatories');
@@ -109,20 +85,6 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
 
     return [...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...account.signatories])];
   }, [account.signatories.length, approvals.length, cancellation.length]);
-
-  const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryAccounts = accountsList.filter(account => account.accountId === signatory.accountId);
-    const signatoryWallet = wallets.find(w => signatoryAccounts.some(account => account.walletId === w.id));
-    const signatoryAccount = signatoryAccounts.find(account => account.walletId === signatoryWallet?.id);
-
-    if (signatoryAccount && signatoryWallet) {
-      acc.push({ ...signatory, account: signatoryAccount, wallet: signatoryWallet });
-    }
-
-    return acc;
-  }, []);
-
-  const walletSignatoriesMap = new Map(walletSignatories.map(signatory => [signatory.accountId, signatory]));
 
   // Contact-backed external multisigs aren't part of the user's account
   // graph, so the "Open overview" structure view has nothing meaningful to
@@ -157,35 +119,25 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
   return (
     <div className="flex flex-col border-r border-divider p-4">
       <div className="mb-4 flex items-center gap-2">
-        <div role="tablist" aria-label={t('operation.signatoriesTitle')} className="flex items-center gap-2">
+        <div role="tablist" aria-label={t('operation.signatoriesTitle')} className="flex items-center gap-1.5">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'signatories'}
-            className={cnTw(
-              'rounded-md px-2 py-1 transition-colors',
-              activeTab !== 'signatories' && 'hover:bg-action-background-hover',
-            )}
+            className={cnTw(TAB_CLASS, activeTab === 'signatories' ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS)}
             onClick={() => setActiveTab('signatories')}
           >
-            <SmallTitleText className={cnTw(activeTab !== 'signatories' && 'text-text-tertiary')}>
-              {t('operation.signatoriesTitle')}
-            </SmallTitleText>
+            <FootnoteText className="font-semibold text-inherit">{t('operation.signatoriesTitle')}</FootnoteText>
           </button>
 
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'log'}
-            className={cnTw(
-              'flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors',
-              activeTab === 'log' ? 'bg-tab-background' : 'hover:bg-action-background-hover',
-            )}
+            className={cnTw(TAB_CLASS, activeTab === 'log' ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS)}
             onClick={() => setActiveTab('log')}
           >
-            <FootnoteText className={cnTw(activeTab !== 'log' && 'text-text-tertiary')}>
-              {t('operation.logButton')}
-            </FootnoteText>
+            <FootnoteText className="font-semibold text-inherit">{t('operation.logButton')}</FootnoteText>
             <CountChip count={operation.events.length} />
           </button>
         </div>
@@ -230,29 +182,17 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
 
       {activeTab === 'signatories' ? (
         <ul className="flex flex-col gap-y-2">
-          {signatoriesList.map(signatory => {
-            const walletSignatory = walletSignatoriesMap.get(signatory.accountId);
-
-            return (
-              <SignatoryCard
-                key={signatory.accountId}
-                status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
-              >
-                {walletSignatory ? (
-                  <NamedAccount
-                    accountId={walletSignatory.account.accountId}
-                    chain={chain ?? undefined}
-                    title={walletSignatory.account.name}
-                    wallet={walletSignatory.wallet}
-                    variant="short"
-                    iconSize={20}
-                  />
-                ) : (
-                  <SignatoryAddress accountId={signatory.accountId} chain={chain} />
-                )}
-              </SignatoryCard>
-            );
-          })}
+          {signatoriesList.map(signatory => (
+            <SignatoryCard
+              key={signatory.accountId}
+              status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
+            >
+              {/* No `wallet` / `title`: the resolver must reach the account's contact or
+                  identity name — passing the wallet would short-circuit to the keyset
+                  name, passing `account.name` would show a Vault derivation path. */}
+              <NamedAccount accountId={signatory.accountId} chain={chain ?? undefined} variant="short" iconSize={20} />
+            </SignatoryCard>
+          ))}
         </ul>
       ) : (
         <OperationLog operation={operation} chain={chain} />

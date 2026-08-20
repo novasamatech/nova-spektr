@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -97,7 +98,11 @@ vi.mock('@/entities/wallet', () => ({
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
-  NamedAccount: ({ title, accountId }: { title?: string; accountId: AccountId }) => <span>{title ?? accountId}</span>,
+  NamedAccount: ({ title, accountId, wallet }: { title?: string; accountId: AccountId; wallet?: unknown }) => (
+    <span data-title={title} data-wallet={wallet ? 'yes' : undefined}>
+      {accountId}
+    </span>
+  ),
 }));
 
 vi.mock('./OperationLog', () => ({
@@ -143,11 +148,29 @@ const multisigAccount = {
 } as unknown as MultisigAccount;
 
 describe('OperationSignatories', () => {
-  it('renders owned signatories as accounts instead of wallets', () => {
+  it('resolves every signatory through NamedAccount without wallet or raw-name overrides', () => {
     render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
 
-    expect(screen.getByText('Alice Signer')).toBeInTheDocument();
+    const owned = screen.getByText(ownedSignatoryId);
+    expect(owned).not.toHaveAttribute('data-title');
+    expect(owned).not.toHaveAttribute('data-wallet');
     expect(screen.queryByText('Signer Wallet')).not.toBeInTheDocument();
+    expect(screen.queryByText('Alice Signer')).not.toBeInTheDocument();
+  });
+
+  it('styles both tabs as one segmented control', async () => {
+    const user = userEvent.setup();
+    render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
+
+    const [signatoriesTab, logTab] = screen.getAllByRole('tab');
+    expect(signatoriesTab).toHaveAttribute('aria-selected', 'true');
+    expect(signatoriesTab?.className).toContain('bg-tab-background');
+    expect(logTab?.className).not.toContain('bg-tab-background');
+
+    if (!logTab) throw new Error('log tab missing');
+    await user.click(logTab);
+    expect(screen.getAllByRole('tab')[1]?.className).toContain('bg-tab-background');
+    expect(screen.getAllByRole('tab')[0]?.className).not.toContain('bg-tab-background');
   });
 
   it('renders a flat signatory list without group headers', () => {
@@ -155,7 +178,7 @@ describe('OperationSignatories', () => {
 
     expect(screen.queryByText('Your accounts')).not.toBeInTheDocument();
     expect(screen.queryByText('Contacts')).not.toBeInTheDocument();
-    expect(screen.getByText('Alice Signer')).toBeInTheDocument();
+    expect(screen.getByText(ownedSignatoryId)).toBeInTheDocument();
     expect(screen.getByText(contactSignatoryId)).toBeInTheDocument();
   });
 
