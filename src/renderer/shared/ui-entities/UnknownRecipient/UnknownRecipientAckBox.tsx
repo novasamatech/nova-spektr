@@ -6,10 +6,11 @@ import { Checkbox } from '@/shared/ui-kit';
 type Props = {
   warning: RecipientWarning;
   /**
-   * Picks the copy set: transfer form vs multisig signing. Ignored while the
-   * warning is `unverifiable` — both contexts share the reconnect copy then.
+   * Picks the copy set: transfer form, multisig signing, or draft creation.
+   * Ignored while the warning is `unverifiable` — every context shares the
+   * reconnect copy then.
    */
-  context: 'transfer' | 'multisigSign';
+  context: 'transfer' | 'multisigSign' | 'draftCreate';
   checked: boolean;
   onToggle: (checked: boolean) => void;
 };

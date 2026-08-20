@@ -3420,6 +3420,11 @@
       "body": "Your signature moves this transfer closer to execution. Confirm you have verified the recipient before approving.",
       "ackLabel": "I have verified the recipient address and approve this transfer"
     },
+    "draftCreate": {
+      "title": "Recipient is not in your address book",
+      "body": "Co-signers will rely on this draft. Confirm you have verified the recipient address before saving it.",
+      "ackLabel": "I have verified the recipient address and want to save this draft"
+    },
     "unverifiable": {
       "title": "Recipient can't be verified",
       "body": "The address book is disconnected, so recipients can't be checked. Reconnect to verify, or confirm the address manually.",
