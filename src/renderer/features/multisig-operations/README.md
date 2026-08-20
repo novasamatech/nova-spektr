@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -142,9 +142,16 @@ other operation.
 There is no share button on the row — sharing lives in the expanded Signatories panel header. Expanding a row reveals
 three panels:
 
-- **Details** — depositor, timestamp, the recognised transaction's specifics, and the shared **operation description**
-  (preview with a "show full" expansion and an Edit action when editing is allowed). Special shapes render their bespoke
-  details here.
+- **Details** — a signer's verification sheet, account-first. Rows in fixed order: **Date & Time**; **Depositor** — the
+  individual signatory account that reserved the multisig deposit, resolved like any account (custom name → contact →
+  identity → account name → short address), never its wallet/keyset name; **Multisig** — the multisig account itself
+  (for a flexible multisig, the backing multisig); **Source** — only for proxied operations, the proxied account the
+  call executes from (for a flexible multisig, its pure proxy); then the recognised transaction's specifics (Recipient,
+  networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
+  (verification data, not a title; omitted when the call is unknown); **Amount** when the row's Value cell shows one;
+  and the shared **operation description** as full wrapped text under a hairline (descriptions past 620 characters
+  collapse behind _Show more_), with an Edit action when editing is allowed. Special shapes render their bespoke details
+  here.
 - **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
   remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
@@ -169,7 +176,8 @@ On a resolved operation without a description the cell is simply empty.
 ### Signatories and the log
 
 The Signatories panel header carries two tabs — **Signatories** and **Log** (with a badge counting the operation's
-events) — plus header actions:
+events) — styled as one segmented control (the selected tab sits on the grey tab background, the other is tertiary text)
+— plus header actions:
 
 - **Notify remaining signers** — on a pending operation with the address-book backend connected and the multisig known
   to the external address book, a button that nudges the still-pending signatories (see
@@ -179,9 +187,10 @@ events) — plus header actions:
 - **Share** — copies the operation's deep link (with a confirmation toast).
 
 **Signatory list.** A single flat list of all signatories, ordered so the story reads top-to-bottom: a signatory who
-**rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory
-resolves to its wallet or contact name where known (falling back to a short, copyable address) and carries a status chip
-— **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
+**rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory is
+resolved as an _account_ — custom name → local/backend contact → identity → stored account name → short, copyable
+address — never as its wallet, so a Vault-derived key shows its address-book name rather than its derivation path. Each
+carries a status chip — **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
 
 **The Log.** The Log tab shows a chronological activity feed of the operation's on-chain lifecycle inline, grouped by
 day (oldest first). It distinguishes three event kinds:
@@ -261,11 +270,11 @@ action, and a re-sync badge).
 
 ### Description states
 
-An **existing** description is always shown — inline in the row's Description cell, and in the Details panel (preview
-with a "show full" expansion); only the ability to **add or edit** it depends on the state below. Adding and editing
-happen in a shared description editor modal, reachable from both the row cell and the Details panel. The **empty**
-description area is shown, or not, per this rule (in this view the operation is always a multisig and never a draft
-submission):
+An **existing** description is always shown — inline in the row's Description cell, and in the Details panel (full
+wrapped text, collapsed behind _Show more_ past 620 characters); only the ability to **add or edit** it depends on the
+state below. Adding and editing happen in a shared description editor modal, reachable from both the row cell and the
+Details panel. The **empty** description area is shown, or not, per this rule (in this view the operation is always a
+multisig and never a draft submission):
 
 ```mermaid
 flowchart TD
