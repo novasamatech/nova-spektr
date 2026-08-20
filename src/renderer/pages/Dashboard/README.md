@@ -29,7 +29,9 @@ A widget occupies a rectangle `{ x, y, w, h }` in grid units:
 
 - `x` / `w` — column (0–3) and column span (1–4); `x + w` never exceeds 4.
 - `y` / `h` — row and row span; each row is a fixed height. Content taller than the assigned height **scrolls inside**
-  the widget.
+  the widget — vertically only, never sideways. A widget whose content is sized from the cell rather than from the
+  content itself (a chart filling its box) opts out of scrolling entirely and stretches into whatever height it is
+  given.
 
 Layout is stored per tab, per widget. Drag and resize update the moved/resized widget, then **collisions are resolved**
 (overlapped widgets are pushed down) and the whole tab is **vertically compacted**.

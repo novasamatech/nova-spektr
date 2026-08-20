@@ -130,9 +130,11 @@ const DashboardGridInner = <P extends SlotProps>({ slot, tab, props, editMode }:
 
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
+      {/* x is clipped, never scrolled: the columns are fractions of this box, so
+          anything wider than it is a rounding artefact — see DashboardWidget */}
       <div
         ref={gridRef}
-        className="grid h-full w-full gap-4 overflow-y-auto p-3"
+        className="grid h-full w-full gap-4 overflow-x-hidden overflow-y-auto p-3"
         style={{
           gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`,
           gridAutoRows: `${ROW_HEIGHT_PX}px`,

@@ -35,8 +35,9 @@ recent payout is visible as a day rather than being averaged into a month.
 | Bar hover | Pointer over a bar                            | A floating card: bucket title, per-account rows, a Total footer with fiat |
 | Fiat off  | Global "show fiat" toggle is off              | The same card without the "≈ …" part of the total line                    |
 
-The loading shimmer, the empty message and the plot all occupy the same fixed box, so data arriving — or the user
-switching range or asset — never moves anything below the card.
+The loading shimmer, the empty message and the plot all occupy the same box, so data arriving — or the user switching
+range or asset — never moves anything below the card. That box is whatever height the widget's cell leaves over: the
+card never scrolls, the plot stretches into the space instead, and resizing the widget resizes the plot.
 
 ### Ranges and bucketing
 

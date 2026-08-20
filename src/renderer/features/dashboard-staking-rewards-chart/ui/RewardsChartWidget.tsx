@@ -14,7 +14,7 @@ import { useRewardsChart } from '../hooks/useRewardsChart';
 import { useRewardsEraAnchor } from '../hooks/useRewardsEraAnchor';
 import { useWalletByAccountId } from '../hooks/useWalletByAccountId';
 import { DEFAULT_RANGE, RANGE_KEYS } from '../lib/buckets';
-import { CHART_HEIGHT, TOOLTIP_WIDTH } from '../lib/constants';
+import { TOOLTIP_WIDTH } from '../lib/constants';
 import { resolveBucketEra } from '../lib/era';
 import { type RangeKey } from '../lib/types';
 
@@ -88,10 +88,10 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
   const tooltipLeft = hover ? clamp(hover.x - TOOLTIP_WIDTH / 2, 0, Math.max(hover.width - TOOLTIP_WIDTH, 0)) : 0;
 
   return (
-    <DashboardWidget>
-      {/* min-h-full lets the plot area absorb extra cell height while keeping
-          the outer scroll when the cell is shorter than the content */}
-      <div className="flex min-h-full flex-col">
+    <DashboardWidget scroll={false}>
+      {/* The card never scrolls: the plot is sized from the cell, so it absorbs
+          whatever height is left over and shrinks with the widget instead. */}
+      <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <FootnoteText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.title')}</FootnoteText>
@@ -134,10 +134,10 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
           )}
         </div>
 
-        <div ref={containerRef} className="relative mt-3 min-h-0 flex-1" style={{ minHeight: CHART_HEIGHT }}>
+        <div ref={containerRef} className="relative mt-3 min-h-0 flex-1">
           {/* The plot is absolutely positioned: the container's height comes
-              from flex + min-height, which is not a definite height, so an
-              in-flow percentage-sized chart would resolve to 0. */}
+              from the flex line, which is not a definite height, so an in-flow
+              percentage-sized chart would resolve to 0. */}
           <div className="absolute inset-0">
             {pending ? (
               <Skeleton width="100%" height="100%" />
