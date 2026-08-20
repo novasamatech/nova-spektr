@@ -17,7 +17,12 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
-import { operationColumns } from '@/shared/ui/operations-table-layout';
+import {
+  ROW_SEPARATOR_CLASS,
+  getColumnStyle,
+  getLeftBlockWidth,
+  operationColumns,
+} from '@/shared/ui/operations-table-layout';
 import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
@@ -31,6 +36,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { useOperationColumnWidths } from '@/aggregates/operations-table-layout';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -90,6 +96,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const { t } = useI18n();
   const description = useOperationDescription(operation.id);
   const isDraftLinked = useIsDraftLinkedOperation(operation.id);
+  const widths = useOperationColumnWidths();
 
   const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
   const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
@@ -150,11 +157,11 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         <Accordion.Button buttonClass="px-4 text-left">
           <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             {proxyEdit ? (
-              <div className={operationColumns.leftBlock}>
+              <div className={operationColumns.leftBlock} style={getColumnStyle(getLeftBlockWidth(widths))}>
                 <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
               </div>
             ) : verifyProxy ? (
-              <div className={operationColumns.leftBlock}>
+              <div className={operationColumns.leftBlock} style={getColumnStyle(getLeftBlockWidth(widths))}>
                 <VerifyProxyOperationCard
                   info={verifyProxy}
                   chain={chains[operation.chainId]}
@@ -162,7 +169,10 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 />
               </div>
             ) : (
-              <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+              <div
+                className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
+                style={getColumnStyle(getLeftBlockWidth(widths))}
+              >
                 <OperationIcon operation={operation} account={multisigAccount} />
 
                 <div
@@ -177,17 +187,21 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                     ))}
                 </div>
 
-                {titleData.amount && (
-                  <OperationAmount
-                    value={titleData.amount.value}
-                    asset={titleData.amount.asset}
-                    className={operationColumns.value}
-                  />
-                )}
+                <div
+                  className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                  style={getColumnStyle(widths.value)}
+                >
+                  {titleData.amount && (
+                    <OperationAmount value={titleData.amount.value} asset={titleData.amount.asset} />
+                  )}
+                </div>
               </div>
             )}
 
-            <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
+            <div
+              className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+              style={getColumnStyle(widths.submitter)}
+            >
               {accountAddress && (
                 <NamedAccount
                   accountId={multisigAccount.accountId}
@@ -200,7 +214,10 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               )}
             </div>
 
-            <div className={cnTw(operationColumns.initiator, 'items-center')}>
+            <div
+              className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'h-full items-center')}
+              style={getColumnStyle(widths.initiator)}
+            >
               <NamedAccount
                 accountId={operation.depositor}
                 chain={chains[operation.chainId]}
@@ -210,7 +227,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               />
             </div>
 
-            <div className={cnTw(operationColumns.description, 'flex items-center gap-x-2')}>
+            <div
+              className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center gap-x-2')}
+            >
               {isDraftLinked && (
                 <Tooltip open={description ? undefined : false}>
                   <Tooltip.Trigger>
@@ -229,11 +248,15 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
             </div>
 
-            <div className={cnTw(operationColumns.status, 'flex justify-center')}>
+            <div
+              className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-center')}
+            >
               <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
             </div>
 
-            <div className={cnTw(operationColumns.actions, 'flex justify-end')}>
+            <div
+              className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-end')}
+            >
               <OperationActions operation={operation} account={multisigAccount} className="w-full" />
             </div>
           </div>

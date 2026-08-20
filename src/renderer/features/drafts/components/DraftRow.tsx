@@ -5,7 +5,12 @@ import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Accordion, Button, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
-import { operationColumns } from '@/shared/ui/operations-table-layout';
+import {
+  ROW_SEPARATOR_CLASS,
+  getColumnStyle,
+  getLeftBlockWidth,
+  operationColumns,
+} from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
@@ -14,6 +19,7 @@ import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
+import { useOperationColumnWidths } from '@/aggregates/operations-table-layout';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -80,6 +86,7 @@ export const DraftRow = ({
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const backendContacts = useUnit(contactModel.$backendContacts);
+  const widths = useOperationColumnWidths();
 
   const chain = chains[draft.chainId as ChainId];
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
@@ -159,8 +166,11 @@ export const DraftRow = ({
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}
         <Accordion.Button buttonClass="px-4 text-left">
-          <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
-            <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+          <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
+            <div
+              className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
+              style={getColumnStyle(getLeftBlockWidth(widths))}
+            >
               <DraftIcon />
 
               <div
@@ -181,12 +191,18 @@ export const DraftRow = ({
                 </div>
               </div>
 
-              {amount && (
-                <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />
-              )}
+              <div
+                className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.value)}
+              >
+                {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
+              </div>
             </div>
 
-            <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
+            <div
+              className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+              style={getColumnStyle(widths.submitter)}
+            >
               {displayAccountId && (
                 <NamedAccount
                   accountId={displayAccountId}
@@ -199,7 +215,10 @@ export const DraftRow = ({
               )}
             </div>
 
-            <div className={cnTw(operationColumns.initiator, 'items-center')}>
+            <div
+              className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'h-full items-center')}
+              style={getColumnStyle(widths.initiator)}
+            >
               {initiatorAccountId ? (
                 <NamedAccount
                   accountId={initiatorAccountId}
@@ -215,13 +234,16 @@ export const DraftRow = ({
               )}
             </div>
 
-            <div className={operationColumns.description}>
+            <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'h-full')}>
               <DraftDescription description={draft.description} />
             </div>
 
-            <div className={operationColumns.status} />
+            <div className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')} />
 
-            <div className={cnTw(operationColumns.actions, 'flex items-center')} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="min-w-0 flex-1">
                 {isSubmitted ? (
                   <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">

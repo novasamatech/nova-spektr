@@ -5,12 +5,17 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { CountChip, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { OPERATIONS_MIN_WIDTH, ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from '@/shared/ui/operations-table-layout';
+import { ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT, getOperationsMinWidth } from '@/shared/ui/operations-table-layout';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
+import {
+  useIsInitiatorColumnVisible,
+  useIsResizingColumns,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { DraftsSection } from '@/features/drafts';
 import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sections';
 import { type OperationWithAccount, operationsContextModel } from '../model/context';
@@ -50,6 +55,9 @@ export const Operations = () => {
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
   const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
+  const widths = useOperationColumnWidths();
+  const isResizing = useIsResizingColumns();
+  const showInitiator = useIsInitiatorColumnVisible();
 
   const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
 
@@ -153,7 +161,15 @@ export const Operations = () => {
 
       {hasMultisigAccounts && (
         <div className="h-full overflow-x-auto overflow-y-hidden">
-          <div className={cnTw('h-full', (deferredOps.length > 0 || showDrafts) && OPERATIONS_MIN_WIDTH)}>
+          <div
+            className={cnTw('group/list h-full', isResizing && 'select-none')}
+            data-resizing={isResizing || undefined}
+            style={
+              deferredOps.length > 0 || showDrafts
+                ? { minWidth: getOperationsMinWidth(widths, { showInitiator }) }
+                : undefined
+            }
+          >
             <ScrollArea viewportRef={scrollRef}>
               <div ref={aboveListRef}>
                 {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}

@@ -87,11 +87,6 @@ export const ROW_SEPARATOR_CLASS =
 export const HEADER_SEPARATOR_CLASS =
   'relative before:absolute before:-left-1 before:top-1.5 before:bottom-1.5 before:w-px before:bg-divider';
 
-/**
- * Temporary: consumers are migrated to `getOperationsMinWidth` in the next
- * tasks.
- */
-export const OPERATIONS_MIN_WIDTH = 'min-w-[1060px]';
 export const ROW_HEIGHT = 68;
 // Vertical gap between operation cards; matches the `pb-1.5` on each virtualized row.
 export const ROW_GAP = 6;
