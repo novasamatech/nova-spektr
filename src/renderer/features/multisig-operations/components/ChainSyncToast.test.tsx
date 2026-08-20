@@ -55,7 +55,12 @@ describe('useChainSyncToast', () => {
     render(<Harness />);
 
     expect(testState.custom).toHaveBeenCalledTimes(1);
-    expect(testState.custom.mock.calls[0]?.[1]).toMatchObject({ id: CHAIN_SYNC_TOAST_ID, duration: Infinity });
+    expect(testState.custom.mock.calls[0]?.[1]).toMatchObject({
+      id: CHAIN_SYNC_TOAST_ID,
+      duration: Infinity,
+      dismissible: true,
+      closeButton: true,
+    });
     expect(testState.dismiss).not.toHaveBeenCalled();
   });
 
@@ -104,22 +109,64 @@ describe('ChainSyncToastContent', () => {
     expect(screen.getByText('operations.sync.connecting')).toBeInTheDocument();
   });
 
-  it('reports progress and reveals the per-chain list on toggle', () => {
+  it('reports progress and reveals the per-chain list on hover, then keeps it open when pinned by click', () => {
     testState.syncState = { expected: ['0x01', '0x02'] as ChainId[], fetched: ['0x01'] as ChainId[] };
-    render(<ChainSyncToastContent />);
+    const { container } = render(<ChainSyncToastContent />);
 
     expect(screen.getByText('operations.sync.syncing')).toBeInTheDocument();
 
+    const card = container.firstElementChild as HTMLElement;
     const toggle = screen.getByRole('button');
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('0x01')).not.toBeInTheDocument();
 
-    fireEvent.click(toggle);
+    fireEvent.mouseEnter(card);
 
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('0x01')).toBeInTheDocument();
     expect(screen.getByText('operations.sync.synced')).toBeInTheDocument();
     expect(screen.getByText('0x02')).toBeInTheDocument();
     expect(screen.getByText('operations.sync.loading')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.mouseLeave(card);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('0x01')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    fireEvent.mouseLeave(card);
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('0x01')).not.toBeInTheDocument();
+  });
+
+  it('renders no toggle control when no chain is expected yet', () => {
+    testState.syncState = { expected: [], fetched: [] };
+    render(<ChainSyncToastContent />);
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('drops aria-controls while collapsed and points it at the list while open', () => {
+    testState.syncState = { expected: ['0x01'] as ChainId[], fetched: [] };
+    const { container } = render(<ChainSyncToastContent />);
+
+    const card = container.firstElementChild as HTMLElement;
+    const toggle = screen.getByRole('button');
+    expect(toggle).not.toHaveAttribute('aria-controls');
+
+    fireEvent.mouseEnter(card);
+
+    const list = container.querySelector('ul');
+    expect(list).not.toBeNull();
+    expect(toggle).toHaveAttribute('aria-controls', list!.id);
+
+    fireEvent.mouseLeave(card);
+
+    expect(toggle).not.toHaveAttribute('aria-controls');
   });
 });
