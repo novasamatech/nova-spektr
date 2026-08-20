@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 
@@ -136,10 +136,11 @@ operation every co-signer then sees in the operations table.
 - **Call data** (only if the draft was saved without it) — the submitter pastes call data, sees a decoded preview, and
   confirms; this patches the draft on the backend, then advances to confirm.
 - **Confirm** — shows the signing path as a breadcrumb (plus a review popover for paths of length ≥ 2), a signatory
-  selector when more than one valid signatory exists, wallet/account/signatory details, description, an external decode
-  link, expandable call args, the **fee**, the **multisig deposit** when the route contains a multisig, and **validation
-  errors** from a balance-aware validator that checks every account that must pay along the route. The Sign button stays
-  disabled until the wrapped extrinsic and fee are ready, validation passes, and the initiator is available.
+  selector when more than one valid signatory exists, wallet/account/signatory details, the **recipient** of a transfer
+  call (when one can be decoded), description, an external decode link, expandable call args, the **fee**, the
+  **multisig deposit** when the route contains a multisig, and **validation errors** from a balance-aware validator that
+  checks every account that must pay along the route. The Sign button stays disabled until the wrapped extrinsic and fee
+  are ready, validation passes, and the initiator is available.
 - **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. On success it shows a success
   toast and records a backend operation description linking the draft to the resulting on-chain operation, so the
   multisig operation inherits the draft's description. A **Submitted** badge shows until the backend confirms.
@@ -148,6 +149,23 @@ Submission is gated: the user must be signed in to the backend, the draft must c
 primary action is _Add call data_), and a local account matching the draft's source must exist (otherwise a wallet
 pairing prompt is shown). Whether the wallet also holds a usable signatory on the path is a separate, later check inside
 the submit flow (see [States / scenarios](#states--scenarios)).
+
+### Unknown recipient warnings
+
+Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md), which is itself gated on the
+external address book connection — a user who never connected it sees nothing here. Only drafts whose call data decodes
+to a transfer (or XCM transfer) have a recipient; every other draft is unaffected.
+
+- **Create → Confirm.** When the decoded recipient is not known (`unknown`) or cannot be checked (`unverifiable`), an
+  amber acknowledgement box appears below the transaction card, above the "This does not sign yet" note. **Create
+  draft** stays disabled until its checkbox is ticked. The tick is cleared by anything that can change the recipient —
+  new call data, another chain, closing the modal, or opening a new one — so it never carries over to a different
+  address. This is where the transfer form's _draft mode_ hands off: the form skips its own gate when saving as a draft
+  and relies on this step instead.
+- **Submit → Confirm.** The same box (with the multisig-signing copy — submitting is the first approval) appears above
+  the Sign button; **Sign** is disabled until ticked. The acknowledgement resets on every flow start and finish.
+- **Recipient row.** The submit confirm always shows the decoded recipient as a **Recipient** row in the details — the
+  warning never points at an address the user can't see.
 
 ## States / scenarios
 

@@ -166,7 +166,8 @@ notes.
 - `sign-wallet-connect` (no spec planned)
 
 > See also: [`dashboard-operations-queue`](#dashboard) — surfaces pending drafts and operations awaiting signature on
-> the dashboard.
+> the dashboard. [`recipient-verification`](#contacts--notifications) — unknown-recipient gate on the draft confirm
+> steps.
 
 ## Basket
 
@@ -202,8 +203,8 @@ notes.
 - [`recipient-verification`](../aggregates/recipient-verification/README.md) (aggregate)
 
 > See also: [`send-to-contact`](#transfers) — the transfer flow launched from the contacts page;
-> [`transfer`](#transfers) and [`multisig-operations`](#multisig) — consume `recipient-verification` for
-> unknown-recipient warnings.
+> [`transfer`](#transfers), [`multisig-operations`](#multisig) and [`drafts`](#operations--signing) — consume
+> `recipient-verification` for unknown-recipient warnings.
 
 ## App Shell & Platform
 

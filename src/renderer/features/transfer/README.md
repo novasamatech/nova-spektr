@@ -1,6 +1,6 @@
 # Transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-17
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
 
 ## Overview
 
@@ -91,7 +91,8 @@ external address book connection — nothing here shows for a user who has never
   acknowledgement never silently carries over to a different address; it survives the warning's own copy changing (e.g.
   a mid-flow reconnect turning `unverifiable` into `unknown`).
 - **Draft mode exemption.** The acknowledgement gate does not apply, and the box is not shown, while saving as a draft —
-  nothing is signed yet, so the warning fires later when the draft is actually signed.
+  nothing is signed yet. The gate runs instead on the draft's own confirm steps (Create and Submit), see
+  [Drafts](../drafts/README.md#unknown-recipient-warnings).
 - **Confirmation step.** A one-line amber note appears under the Recipient row restating that the address is not in the
   address book. It is informational only — the gate already ran on the form, so there is nothing to acknowledge again
   here.
