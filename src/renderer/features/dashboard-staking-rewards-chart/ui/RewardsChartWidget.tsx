@@ -14,7 +14,7 @@ import { useRewardsChart } from '../hooks/useRewardsChart';
 import { useRewardsEraAnchor } from '../hooks/useRewardsEraAnchor';
 import { useWalletByAccountId } from '../hooks/useWalletByAccountId';
 import { DEFAULT_RANGE, RANGE_KEYS } from '../lib/buckets';
-import { TOOLTIP_WIDTH } from '../lib/constants';
+import { TOOLTIP_INSET, TOOLTIP_WIDTH } from '../lib/constants';
 import { resolveBucketEra } from '../lib/era';
 import { resolveVisibleAccountRows } from '../lib/tooltip';
 import { type RangeKey } from '../lib/types';
@@ -95,6 +95,9 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
   // Centred on the bar, then pulled back inside the card so a first or last bar
   // never pushes the card past the edge.
   const tooltipLeft = hover ? clamp(hover.x - TOOLTIP_WIDTH / 2, 0, Math.max(hover.width - TOOLTIP_WIDTH, 0)) : 0;
+  // The same inset the row budget assumes, applied from the one place that
+  // knows the plot's height — a `max-h-[calc(...)]` class would say it twice.
+  const tooltipMaxHeight = hover ? Math.max(hover.height - TOOLTIP_INSET, 0) : 0;
 
   return (
     <DashboardWidget scroll={false}>
@@ -177,8 +180,8 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
               the plot would lose its total line off the bottom of the widget. */}
           {hoveredBucket ? (
             <div
-              className="pointer-events-none absolute top-1 z-10 flex max-h-[calc(100%-0.5rem)] flex-col"
-              style={{ left: tooltipLeft }}
+              className="pointer-events-none absolute top-1 z-10 flex flex-col"
+              style={{ left: tooltipLeft, maxHeight: tooltipMaxHeight }}
             >
               <RewardsChartTooltip
                 bucket={hoveredBucket}

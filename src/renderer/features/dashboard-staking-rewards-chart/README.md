@@ -45,8 +45,8 @@ Because nothing scrolls, everything has to fit the cell at every size the widget
   sliding out of reach.
 - The hover card is **bounded by the plot**, and lists as many contributing accounts as that height has room for —
   largest first, so a taller widget shows more of them and a widget at its minimum still shows the biggest. Whatever is
-  left over is named ("and 4 more"), never dropped silently, and its rewards still count towards the Total. The bucket
-  title and the Total line never give way; the account rows do.
+  left over is named ("and 4 more accounts"), never dropped silently, and its rewards still count towards the Total. The
+  bucket title and the Total line never give way; the account rows do.
 
 ### Ranges and bucketing
 

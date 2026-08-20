@@ -64,6 +64,7 @@ export const RewardsChartTooltip = ({
     // the part that gives, while the title and the total, the two lines that
     // must always be readable, do not.
     <div
+      data-testid="rewards-tooltip"
       className="pointer-events-none flex min-h-0 flex-col rounded-lg border border-token-container-border bg-white p-3 shadow-card-shadow"
       style={{ width: TOOLTIP_WIDTH }}
     >
