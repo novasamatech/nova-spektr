@@ -56,16 +56,14 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
   // Unmounting mid-drag (a filter change re-renders the header) would otherwise
   // leave the drag state stuck: hairlines lit, list text unselectable.
   useEffect(() => {
-    return () => {
-      if (!drag.current) return;
-      drag.current = null;
-      teardown.current?.();
-      teardown.current = null;
-      operationsTableLayoutModel.resizeEnded();
-    };
+    return () => finishDrag();
   }, []);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    // A second pointerdown while a drag is already live (second finger, secondary
+    // button) must not leak the previous window `pointerup` listener or pointer capture.
+    finishDrag();
+
     event.preventDefault();
     event.stopPropagation();
 

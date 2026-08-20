@@ -114,6 +114,20 @@ describe('OperationsTableHeader', () => {
     expect(testState.sortToggled).not.toHaveBeenCalled();
   });
 
+  it('a second pointerdown during a drag ends the first drag first', () => {
+    render(<OperationsTableHeader />);
+    const handle = screen.getByLabelText('operations.table.resizeSubmitter');
+
+    fireEvent.pointerDown(handle, { clientX: 100, pointerId: 1 });
+    fireEvent.pointerDown(handle, { clientX: 120, pointerId: 2 });
+
+    expect(testState.resizeStarted).toHaveBeenCalledTimes(2);
+    expect(testState.resizeEnded).toHaveBeenCalledTimes(1);
+
+    fireEvent.pointerUp(handle, { clientX: 120, pointerId: 2 });
+    expect(testState.resizeEnded).toHaveBeenCalledTimes(2);
+  });
+
   it('resizes from the keyboard', () => {
     render(<OperationsTableHeader />);
     const handle = screen.getByLabelText('operations.table.resizeSubmitter');
