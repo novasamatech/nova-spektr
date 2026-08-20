@@ -526,6 +526,13 @@ const $chainSyncState = combine(
   }),
 );
 
+// One boolean for the sync toast: a wallet without multisig accounts never syncs anything
+// (`$expectedChainIds` stays empty forever, so the toast would never dismiss), otherwise we
+// are syncing until every expected chain has reported.
+const $isChainSyncing = combine($multisigAccounts, $chainSyncState, (multisigAccounts, { expected, fetched }) => {
+  return multisigAccounts.length > 0 && (expected.length === 0 || fetched.length < expected.length);
+});
+
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
@@ -544,6 +551,7 @@ export const operationsContextModel = {
   $historyOperationsCount,
   $visibleOperationsCount,
   $chainSyncState,
+  $isChainSyncing,
   $sort,
   $collapsedSections,
 

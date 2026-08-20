@@ -202,7 +202,7 @@ export const Operations = () => {
                 {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
 
                 {(isDeferredLoading || isDeepLinkLoading) && (
-                  <div className="mt-4 flex w-full items-center justify-center gap-x-3">
+                  <div className="mt-4 flex w-full items-center justify-center">
                     <Loader color="primary" size={25} />
                   </div>
                 )}
