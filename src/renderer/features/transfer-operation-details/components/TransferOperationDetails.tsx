@@ -34,7 +34,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
 
     result.push(
       <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-        <NamedAccount accountId={destination} variant="short" chain={chain} />
+        <NamedAccount accountId={destination} variant="short" iconSize={20} chain={chain} />
       </DetailRow>,
     );
 
@@ -46,7 +46,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   if (isXcmTransaction(transaction) && sender) {
     result.push(
       <DetailRow label={t('operation.details.sender')} className="text-text-secondary">
-        <NamedAccount accountId={sender} variant="short" chain={chain} />
+        <NamedAccount accountId={sender} variant="short" iconSize={20} chain={chain} />
       </DetailRow>,
     );
   }

@@ -62,7 +62,7 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
       <div className="flex flex-col gap-y-2">
         <SmallTitleText>{label}</SmallTitleText>
         <FootnoteText className="text-text-secondary">
-          <NamedAccount accountId={accountId} chain={chain ?? undefined} variant="short" />
+          <NamedAccount accountId={accountId} chain={chain ?? undefined} variant="short" iconSize={20} />
         </FootnoteText>
 
         {signatories && threshold !== null && total !== null && (
@@ -75,7 +75,7 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
               {signatories.map(signatoryId => (
                 <li key={signatoryId} className="flex items-center gap-x-2">
                   <FootnoteText className="truncate text-text-secondary">
-                    <NamedAccount accountId={signatoryId} chain={chain ?? undefined} variant="short" />
+                    <NamedAccount accountId={signatoryId} chain={chain ?? undefined} variant="short" iconSize={20} />
                   </FootnoteText>
                 </li>
               ))}

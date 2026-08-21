@@ -47,7 +47,7 @@ export const VerifyProxyOperationDetails = ({ operation }: Props) => {
       <div className="flex flex-col gap-y-2">
         <SmallTitleText>{t('operations.verifyProxy.details.targetSection')}</SmallTitleText>
         <FootnoteText className="text-text-secondary">
-          <NamedAccount accountId={info.delegateAccountId} chain={chain ?? undefined} variant="short" />
+          <NamedAccount accountId={info.delegateAccountId} chain={chain ?? undefined} variant="short" iconSize={20} />
         </FootnoteText>
       </div>
 

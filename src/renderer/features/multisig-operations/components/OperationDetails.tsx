@@ -47,16 +47,34 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
         </DetailRow>
 
         <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
-          <NamedAccount accountId={operation.depositor} chain={chain} walletNameAs="fallback" variant="short" />
+          <NamedAccount
+            accountId={operation.depositor}
+            chain={chain}
+            walletNameAs="fallback"
+            variant="short"
+            iconSize={20}
+          />
         </DetailRow>
 
         <DetailRow label={t('operation.details.multisig')} className="text-text-secondary">
-          <NamedAccount accountId={multisigAccountId} chain={chain} walletNameAs="fallback" variant="short" />
+          <NamedAccount
+            accountId={multisigAccountId}
+            chain={chain}
+            walletNameAs="fallback"
+            variant="short"
+            iconSize={20}
+          />
         </DetailRow>
 
         {sourceAccountId && (
           <DetailRow label={t('operation.details.source')} className="text-text-secondary">
-            <NamedAccount accountId={sourceAccountId} chain={chain} walletNameAs="fallback" variant="short" />
+            <NamedAccount
+              accountId={sourceAccountId}
+              chain={chain}
+              walletNameAs="fallback"
+              variant="short"
+              iconSize={20}
+            />
           </DetailRow>
         )}
 

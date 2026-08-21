@@ -81,7 +81,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" iconSize={20} chain={chain} />
         </DetailRow>,
       );
     }
@@ -89,7 +89,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemoveProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" iconSize={20} chain={chain} />
         </DetailRow>,
       );
     }
@@ -97,7 +97,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <NamedAccount accountId={sender} variant="short" chain={chain} />
+          <NamedAccount accountId={sender} variant="short" iconSize={20} chain={chain} />
         </DetailRow>,
       );
     }

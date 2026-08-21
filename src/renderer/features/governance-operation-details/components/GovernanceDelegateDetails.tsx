@@ -69,7 +69,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (delegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <NamedAccount accountId={delegationTarget} variant="short" chain={chain} />
+        <NamedAccount accountId={delegationTarget} variant="short" iconSize={20} chain={chain} />
       </DetailRow>,
     );
   }
@@ -77,7 +77,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (!delegationTarget && undelegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <NamedAccount accountId={undelegationTarget} variant="short" chain={chain} />
+        <NamedAccount accountId={undelegationTarget} variant="short" iconSize={20} chain={chain} />
       </DetailRow>,
     );
   }

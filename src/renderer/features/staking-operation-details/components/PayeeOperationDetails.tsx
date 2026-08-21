@@ -30,7 +30,12 @@ export const PayeeOperationDetails = ({ operation }: Props) => {
         {typeof payee === 'string' ? (
           t('staking.confirmation.restakeRewards')
         ) : (
-          <NamedAccount accountId={toAccountId(payee.Account)} variant="short" chain={chains[operation.chainId]} />
+          <NamedAccount
+            accountId={toAccountId(payee.Account)}
+            variant="short"
+            iconSize={20}
+            chain={chains[operation.chainId]}
+          />
         )}
       </DetailRow>,
     );
