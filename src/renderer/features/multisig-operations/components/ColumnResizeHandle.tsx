@@ -9,7 +9,10 @@ type Props = {
   column: ResizableColumn;
   /** Current width — the drag applies its delta to this value. */
   width: number;
-  /** Positions the handle over the gap midpoint, e.g. `-right-[9px]`. */
+  /**
+   * Positions the handle over the gap midpoint, e.g. `-right-3` (a 16px handle
+   * centred 4px into the 8px gap).
+   */
   className?: string;
 };
 
@@ -35,7 +38,7 @@ type DragState = {
 };
 
 /**
- * 10px-wide grab zone on a header cell's right edge. Invisible until hovered;
+ * 16px-wide grab zone on a header cell's right edge. Invisible until hovered;
  * the line turns accent while dragging. Pointer capture keeps the drag alive
  * when the cursor leaves the handle. Clicks are swallowed so the cell's sort
  * does not toggle. Also keyboard-operable: ←/→ resize by 8px (32px with Shift),
@@ -142,7 +145,8 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
       aria-valuemax={COLUMN_MAX_WIDTHS[column]}
       title={t('operations.table.resizeHint')}
       className={cnTw(
-        'group/handle absolute top-0 bottom-0 z-10 flex w-2.5 cursor-col-resize items-center justify-center',
+        // 16px wide and stretched over the header's vertical padding so the boundary is easy to grab.
+        'group/handle absolute -inset-y-2 z-10 flex w-4 cursor-col-resize items-center justify-center',
         'focus-visible:outline-2 focus-visible:outline-icon-accent',
         className,
       )}

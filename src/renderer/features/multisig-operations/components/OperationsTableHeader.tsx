@@ -128,14 +128,14 @@ export const OperationsTableHeader = () => {
           className={cnTw(operationColumns.titleCell, 'flex')}
           label={t('operations.table.operation')}
           sortable={{ sortKey: 'type', sort, title: t('operations.table.sortByType') }}
-          resize={{ column: 'operation', width: widths.operation, handleClass: '-right-[9px]' }}
+          resize={{ column: 'operation', width: widths.operation, handleClass: '-right-3' }}
         />
         {visibility.value && (
           <HeaderCell
             className={cnTw(operationColumns.value, HEADER_SEPARATOR_CLASS, 'flex')}
             label={t('operations.table.value')}
             sortable={{ sortKey: 'value', sort, title: t('operations.table.sortByValue') }}
-            resize={{ column: 'value', width: widths.value, handleClass: '-right-[9px]' }}
+            resize={{ column: 'value', width: widths.value, handleClass: '-right-3' }}
           />
         )}
       </div>
@@ -145,7 +145,7 @@ export const OperationsTableHeader = () => {
           className={cnTw(operationColumns.submitter, HEADER_SEPARATOR_CLASS, 'flex')}
           label={t('operations.table.submitter')}
           sortable={{ sortKey: 'submitter', sort, title: t('operations.table.sortBySubmitter') }}
-          resize={{ column: 'submitter', width: widths.submitter, handleClass: '-right-[9px]' }}
+          resize={{ column: 'submitter', width: widths.submitter, handleClass: '-right-3' }}
         />
       )}
 
@@ -154,7 +154,7 @@ export const OperationsTableHeader = () => {
         <HeaderCell
           className={cnTw(operationColumns.initiator, HEADER_SEPARATOR_CLASS, 'flex')}
           label={t('operations.table.initiator')}
-          resize={{ column: 'initiator', width: widths.initiator, handleClass: '-right-[9px]' }}
+          resize={{ column: 'initiator', width: widths.initiator, handleClass: '-right-3' }}
         />
       )}
 
@@ -173,14 +173,14 @@ export const OperationsTableHeader = () => {
         <HeaderCell
           className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
           label={statusLabel}
-          resize={{ column: 'status', width: widths.status, handleClass: '-right-[9px]' }}
+          resize={{ column: 'status', width: widths.status, handleClass: '-right-3' }}
         />
       )}
       {visibility.actions && (
         <HeaderCell
-          className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-end')}
+          className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
           label={showActionsLabel ? t('operations.table.actions') : ''}
-          resize={{ column: 'actions', width: widths.actions, handleClass: '-right-[9px]' }}
+          resize={{ column: 'actions', width: widths.actions, handleClass: '-right-3' }}
         />
       )}
 
