@@ -1,14 +1,32 @@
 import { type Store, combine } from 'effector';
 
 import { type Chain } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { createSyntheticProxiedAccount, scopeProxiedAccount } from './path-account-resolution';
 
-const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
+/**
+ * A flex multisig answers to two accountIds — `accountId` is the pure-proxy
+ * facade, `multisigAccountId` is the inner multisig — so a `multisig` node may
+ * only collapse onto it when the _previous_ node is the `proxied` facade of
+ * that same account. Matching it anywhere else turns a plain `multisig ->
+ * signer` path into `asMulti(proxy.proxy(real = facade, ...))`: the operation
+ * silently executes from the pure proxy the user never picked, while every UI
+ * surface keeps showing the multisig from the saved path.
+ */
+const isFlexCollapseHop = (account: AnyAccount, node: PathNode, previousNode: PathNode | undefined): boolean => {
+  return (
+    accountUtils.isFlexibleMultisigAccount(account) &&
+    account.multisigAccountId === node.accountId &&
+    previousNode?.kind === 'proxied' &&
+    previousNode.accountId === account.accountId
+  );
+};
+
+const matchesNode = (account: AnyAccount, node: PathNode, previousNode: PathNode | undefined): boolean => {
   if (node.kind === 'proxied') {
     return (
       (accountUtils.isProxiedAccount(account) && account.accountId === node.accountId) ||
@@ -18,7 +36,7 @@ const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
   if (node.kind === 'multisig') {
     return (
       (accountUtils.isMultisigAccount(account) && account.accountId === node.accountId) ||
-      (accountUtils.isFlexibleMultisigAccount(account) && account.multisigAccountId === node.accountId)
+      isFlexCollapseHop(account, node, previousNode)
     );
   }
   return account.accountId === node.accountId;
@@ -57,19 +75,30 @@ const resolveProxiedNodeAccount = (
   });
 };
 
+export type PathResolution = {
+  /** Resolved accounts, or null for a trivial path / an unresolvable node. */
+  route: AnyAccount[] | null;
+  /**
+   * The first node with no matching local account. Non-null only when the path
+   * itself is resolvable in principle (length >= 2) but an account is missing,
+   * so callers can name the account the user has to add.
+   */
+  missingNode: PathNode | null;
+};
+
 /**
- * Resolves `$signingPath` to `AnyAccount[]` for `createComplexTxStore`'s
- * `routeOverride`. Returns null for trivial paths or unresolvable nodes — the
- * tx store falls back to its BFS route in that case.
+ * Resolves `$signingPath` to concrete accounts. Reports the node that could not
+ * be resolved so the caller can tell the user _which_ account is missing rather
+ * than that "something" is unresolvable.
  */
-export const createPathRouteStore = (
+export const createPathResolutionStore = (
   signingPath: Store<PathNode[]>,
   chain: Store<Chain | null>,
-): Store<AnyAccount[] | null> =>
+): Store<PathResolution> =>
   combine(
     { path: signingPath, allAccounts: accounts.$list, chainValue: chain },
-    ({ path, allAccounts, chainValue }): AnyAccount[] | null => {
-      if (nullable(chainValue) || path.length < 2) return null;
+    ({ path, allAccounts, chainValue }): PathResolution => {
+      if (nullable(chainValue) || path.length < 2) return { route: null, missingNode: null };
 
       const chainAccounts = accountService.filterAccountsOnChain(allAccounts, chainValue);
 
@@ -79,17 +108,36 @@ export const createPathRouteStore = (
         // facade sharing the same accountId — otherwise the wrong forceProxyType
         // ends up in the extrinsic when both exist in the wallet (SPEK-558).
         const nextNode = path[index + 1];
-        const account =
-          node.kind === 'proxied'
+        const previousNode = path[index - 1];
+        const previousAccount = resolved.at(-1);
+        // The flex facade resolved for the previous `proxied` node also *is*
+        // this multisig hop — take it directly, so an unrelated stand-alone
+        // MultisigAccount sharing the inner accountId can't win the `find`
+        // below and add a second `asMulti` wrapper on top of the flex one.
+        const collapsesOntoPrevious =
+          nonNullable(previousAccount) && isFlexCollapseHop(previousAccount, node, previousNode);
+        const account = collapsesOntoPrevious
+          ? previousAccount
+          : node.kind === 'proxied'
             ? resolveProxiedNodeAccount(chainAccounts, node, nextNode, chainValue)
-            : chainAccounts.find((a) => matchesNode(a, node));
-        if (!account) return null;
+            : chainAccounts.find((a) => matchesNode(a, node, previousNode));
+        if (!account) return { route: null, missingNode: node };
 
         // Flex multisig spans two consecutive hops as one account; its
         // transformer wraps both layers in a single step.
         if (resolved.at(-1) !== account) resolved.push(account);
       }
 
-      return resolved;
+      return { route: resolved, missingNode: null };
     },
   );
+
+/**
+ * Resolves `$signingPath` to `AnyAccount[]` for `createComplexTxStore`'s
+ * `routeOverride`. Returns null for trivial paths or unresolvable nodes — the
+ * tx store falls back to its BFS route in that case.
+ */
+export const createPathRouteStore = (
+  signingPath: Store<PathNode[]>,
+  chain: Store<Chain | null>,
+): Store<AnyAccount[] | null> => createPathResolutionStore(signingPath, chain).map(({ route }) => route);

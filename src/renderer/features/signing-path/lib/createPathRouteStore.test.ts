@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 
-import { createPathRouteStore } from './createPathRouteStore';
+import { createPathResolutionStore, createPathRouteStore } from './createPathRouteStore';
 
 const acc = (n: number): AccountId => `1${'0'.repeat(46)}${n}`.slice(0, 48) as AccountId;
 
@@ -55,6 +55,28 @@ const makeMultisigAccount = (accountId: AccountId): AnyAccount => {
     signingType: SigningType.MULTISIG,
     signatories: [],
     threshold: 1,
+    createdAt: 0,
+  } as unknown as AnyAccount;
+};
+
+const makeFlexMultisigAccount = (facadeAccountId: AccountId, multisigAccountId: AccountId): AnyAccount => {
+  return {
+    id: `acct-flex-${facadeAccountId}`,
+    type: 'chain',
+    walletId: 1,
+    name: `flex-${facadeAccountId}`,
+    accountId: facadeAccountId,
+    multisigAccountId,
+    accountType: AccountType.FLEX_MULTISIG,
+    chainId: '0xaaaa',
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.MULTISIG,
+    signatories: [],
+    threshold: 2,
+    proxyType: 'Any',
+    deposit: '0',
+    entropyBlockNumber: 0,
+    extrinsicIndex: 0,
     createdAt: 0,
   } as unknown as AnyAccount;
 };
@@ -300,6 +322,71 @@ describe('createPathRouteStore', () => {
     expect(scope.getState($route)).toEqual([flexMultisig, signerAccount]);
   });
 
+  it('never resolves a bare multisig source onto a flex facade sharing the inner accountId', () => {
+    const facadeId = acc(1);
+    const innerMultisigId = acc(2);
+    const signerId = acc(3);
+
+    const flexMultisig = makeFlexMultisigAccount(facadeId, innerMultisigId);
+    const innerMultisig = makeMultisigAccount(innerMultisigId);
+    const signerAccount = makeAccount(signerId);
+
+    const $path = createStore<PathNode[]>([multisig(innerMultisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    // Flex account first in the list: without the position check `find` would
+    // return it and the extrinsic would become asMulti(proxy.proxy(real =
+    // facade)) — executing from a pure proxy the draft never named.
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [flexMultisig, innerMultisig, signerAccount]]]),
+    });
+
+    expect(scope.getState($route)).toEqual([innerMultisig, signerAccount]);
+  });
+
+  it('returns null when a bare multisig source only exists as a flex inner multisig', () => {
+    const facadeId = acc(1);
+    const innerMultisigId = acc(2);
+    const signerId = acc(3);
+
+    const $path = createStore<PathNode[]>([multisig(innerMultisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [makeFlexMultisigAccount(facadeId, innerMultisigId), makeAccount(signerId)]],
+      ]),
+    });
+
+    // Unresolvable rather than silently re-routed through the proxy facade —
+    // the submit flow blocks with a signing-path-unresolved error.
+    expect(scope.getState($route)).toBeNull();
+  });
+
+  it('collapses the flex pair even when the inner multisig also exists as its own account', () => {
+    const facadeId = acc(1);
+    const innerMultisigId = acc(2);
+    const signerId = acc(3);
+
+    const flexMultisig = makeFlexMultisigAccount(facadeId, innerMultisigId);
+    const innerMultisig = makeMultisigAccount(innerMultisigId);
+    const signerAccount = makeAccount(signerId);
+
+    const $path = createStore<PathNode[]>([proxied(facadeId, 'Any'), multisig(innerMultisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    // Stand-alone inner multisig first in the list: taking it for the second
+    // hop would stack a second asMulti on top of the flex wrapper.
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [innerMultisig, flexMultisig, signerAccount]]]),
+    });
+
+    expect(scope.getState($route)).toEqual([flexMultisig, signerAccount]);
+  });
+
   it('skips an ethereum-account candidate on a substrate chain (crypto mismatch)', () => {
     const ethAccountId = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' as unknown as AccountId;
     const $path = createStore<PathNode[]>([proxied(ethAccountId), signer(acc(1))]);
@@ -313,5 +400,78 @@ describe('createPathRouteStore', () => {
     // Ethereum-shaped accountId on a non-ethereum chain → isCryptoMatch fails
     // → first node unresolvable → whole route returns null.
     expect(scope.getState($route)).toBeNull();
+  });
+});
+
+describe('createPathResolutionStore', () => {
+  beforeEach(() => {
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      body: () => true,
+      available: () => true,
+    });
+  });
+
+  afterEach(() => {
+    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+  });
+
+  it('reports the first node with no local account', () => {
+    const multisigId = acc(1);
+    const signerId = acc(2);
+
+    const $path = createStore<PathNode[]>([multisig(multisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $resolution = createPathResolutionStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeMultisigAccount(multisigId)]]]),
+    });
+
+    expect(scope.getState($resolution)).toEqual({ route: null, missingNode: signer(signerId) });
+  });
+
+  it('reports the source node when it is the missing one', () => {
+    const multisigId = acc(1);
+    const signerId = acc(2);
+
+    const $path = createStore<PathNode[]>([multisig(multisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $resolution = createPathResolutionStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(signerId)]]]),
+    });
+
+    expect(scope.getState($resolution)).toEqual({ route: null, missingNode: multisig(multisigId) });
+  });
+
+  it('reports no missing node for a fully resolved path', () => {
+    const multisigId = acc(1);
+    const signerId = acc(2);
+
+    const multisigAccount = makeMultisigAccount(multisigId);
+    const signerAccount = makeAccount(signerId);
+
+    const $path = createStore<PathNode[]>([multisig(multisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $resolution = createPathResolutionStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [multisigAccount, signerAccount]]]),
+    });
+
+    expect(scope.getState($resolution)).toEqual({ route: [multisigAccount, signerAccount], missingNode: null });
+  });
+
+  it('reports no missing node for a trivial path — nothing to add, nothing to blame', () => {
+    const $path = createStore<PathNode[]>([signer(acc(1))]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $resolution = createPathResolutionStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([[accounts.__test.$list, [makeAccount(acc(1))]]]),
+    });
+
+    expect(scope.getState($resolution)).toEqual({ route: null, missingNode: null });
   });
 });
