@@ -26,7 +26,7 @@ import {
 import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus, operationDetailsUtils } from '@/entities/operations';
 import {
@@ -106,13 +106,6 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
-
-  const allAccounts = useUnit(accounts.$list);
-  const depositorWallet = useMemo(() => {
-    const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
-
-    return depositorSignatory ? wallets.find(w => w.id === depositorSignatory.walletId) : undefined;
-  }, [allAccounts, wallets, operation.depositor]);
 
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
@@ -234,7 +227,6 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
               <NamedAccount
                 accountId={operation.depositor}
                 chain={chains[operation.chainId]}
-                wallet={depositorWallet}
                 walletNameAs="fallback"
                 iconSize={28}
                 hideExplorers

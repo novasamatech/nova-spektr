@@ -13,7 +13,7 @@ import {
 } from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
-import { type AnyAccount, accounts, contactMultisigsModel } from '@/domains/network';
+import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
@@ -86,7 +86,6 @@ export const DraftRow = ({
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const backendContacts = useUnit(contactModel.$backendContacts);
-  const allAccounts = useUnit(accounts.$list);
   const widths = useOperationColumnWidths();
 
   const chain = chains[draft.chainId as ChainId];
@@ -137,15 +136,6 @@ export const DraftRow = ({
   const displayAccountIdRaw = draft.proxyAccountId ?? draft.multisigAccountId;
   const displayAccountId = displayAccountIdRaw ? toAccountId(displayAccountIdRaw) : undefined;
   const initiatorAccountId = draft.initiatorAccountId ? toAccountId(draft.initiatorAccountId) : undefined;
-  // Fallback only: the initiator's own contact/identity name still wins, the
-  // wallet name just stands in for a Vault derivation path or a short address.
-  const initiatorWallet = useMemo<Wallet | undefined>(() => {
-    if (!initiatorAccountId) return undefined;
-
-    const owned = allAccounts.find((a) => a.accountId === initiatorAccountId);
-
-    return owned ? wallets.find((w) => w.id === owned.walletId) : undefined;
-  }, [allAccounts, wallets, initiatorAccountId]);
   const displayAccount = draft.proxyAccountId ? proxyAccount : baseMultisigAccount;
   const displayWallet = useMemo<Wallet | undefined>(() => {
     if (!displayAccount) return undefined;
@@ -233,7 +223,6 @@ export const DraftRow = ({
                 <NamedAccount
                   accountId={initiatorAccountId}
                   chain={chain}
-                  wallet={initiatorWallet}
                   walletNameAs="fallback"
                   iconSize={28}
                   hideExplorers

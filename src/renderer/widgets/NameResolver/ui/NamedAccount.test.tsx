@@ -11,14 +11,20 @@ const useAccountName = vi.fn((_params: unknown) => 'resolved');
 vi.mock('@/domains/network', () => ({
   useAccountName: (params: unknown) => useAccountName(params),
   // Mirrors the real hook: no wallet, no name.
-  useWalletName: (wallet: unknown) => (wallet ? 'Wallet Name' : null),
+  useWalletName: (wallet: { id: number } | null | undefined) =>
+    wallet ? (wallet.id === 2 ? 'Owning Wallet Name' : 'Wallet Name') : null,
 }));
 
 vi.mock('@/shared/ui-entities/Account/Account', () => ({
-  Account: ({ title }: { title?: string }) => <div data-testid="account">{title}</div>,
+  Account: ({ title, walletType }: { title?: string; walletType?: WalletType }) => (
+    <div data-testid="account" data-wallet-type={walletType}>
+      {title}
+    </div>
+  ),
 }));
 
 const accountId = createAccountId('named-account');
+const ownedAccountId = createAccountId('owned-account');
 
 const wallet: Wallet = {
   id: 1,
@@ -26,6 +32,17 @@ const wallet: Wallet = {
   type: WalletType.WATCH_ONLY,
   accounts: [],
 };
+
+const owningWallet: Wallet = {
+  id: 2,
+  name: 'Raw Owning Wallet Name',
+  type: WalletType.POLKADOT_VAULT,
+  accounts: [],
+};
+
+vi.mock('../lib/useOwningWallet', () => ({
+  useOwningWallet: (id: unknown) => (id === ownedAccountId ? owningWallet : null),
+}));
 
 const getNameParams = () => useAccountName.mock.calls.at(-1)?.[0];
 
@@ -71,5 +88,26 @@ describe('widgets/NameResolver/NamedAccount', () => {
     );
 
     expect(getNameParams()).toMatchObject({ title: 'Explicit', fallbackName: 'Wallet Name' });
+  });
+
+  it('should look up the owning wallet in fallback mode when no wallet is passed', () => {
+    render(<NamedAccount accountId={ownedAccountId} chain={polkadotChain} walletNameAs="fallback" />);
+
+    expect(getNameParams()).toMatchObject({ title: undefined, fallbackName: 'Owning Wallet Name' });
+    expect(screen.getByTestId('account')).toHaveAttribute('data-wallet-type', String(WalletType.POLKADOT_VAULT));
+  });
+
+  it('should let an explicit wallet win over the owning wallet in fallback mode', () => {
+    render(<NamedAccount accountId={ownedAccountId} chain={polkadotChain} wallet={wallet} walletNameAs="fallback" />);
+
+    expect(getNameParams()).toMatchObject({ fallbackName: 'Wallet Name' });
+    expect(screen.getByTestId('account')).toHaveAttribute('data-wallet-type', String(WalletType.WATCH_ONLY));
+  });
+
+  it('should ignore the owning wallet in override mode when no wallet is passed', () => {
+    render(<NamedAccount accountId={ownedAccountId} chain={polkadotChain} />);
+
+    expect(getNameParams()).toMatchObject({ title: undefined, fallbackName: undefined });
+    expect(screen.getByTestId('account')).not.toHaveAttribute('data-wallet-type');
   });
 });

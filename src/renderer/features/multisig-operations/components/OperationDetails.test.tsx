@@ -117,19 +117,16 @@ describe('OperationDetails', () => {
     const row = screen.getByTestId('row-operation.details.depositor');
     expect(row).toHaveTextContent(depositor);
     expect(row.querySelector('[data-title]')).toBeNull();
-    expect(row.querySelector('[data-wallet]')).not.toBeNull();
+    // No wallet is handed over: NamedAccount looks the owning wallet up itself.
     expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
   });
 
-  it('renders the multisig and source rows in fallback mode too, without an owned wallet of their own', () => {
+  it('renders the multisig and source rows in fallback mode too', () => {
     render(<OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} />);
 
     for (const label of ['row-operation.details.multisig', 'row-operation.details.source']) {
       const row = screen.getByTestId(label);
       expect(row.querySelector('[data-title]')).toBeNull();
-      // Neither id belongs to a local wallet in this fixture, so there is
-      // nothing to fall back to — but the mode is still the fallback one.
-      expect(row.querySelector('[data-wallet]')).toBeNull();
       expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
     }
   });

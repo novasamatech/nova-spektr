@@ -4,6 +4,7 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Account } from '@/shared/ui-entities/Account/Account';
 import { useAccountName, useWalletName } from '@/domains/network';
+import { useOwningWallet } from '../lib/useOwningWallet';
 
 type Props = Omit<ComponentProps<typeof Account>, 'chain' | 'walletType'> & {
   accountId: AccountId;
@@ -32,7 +33,9 @@ type Props = Omit<ComponentProps<typeof Account>, 'chain' | 'walletType'> & {
    * `fallback`: the account resolves on its own (custom name → contacts →
    * identity) and the wallet name only fills in before the stored account name
    * / short address — so a contact name shows when there is one, and the keyset
-   * name otherwise instead of a derivation path.
+   * name otherwise instead of a derivation path. In `fallback` mode, when
+   * `wallet` is omitted the owning local wallet is looked up automatically
+   * (`useOwningWallet`).
    */
   walletNameAs?: 'override' | 'fallback';
 };
@@ -44,7 +47,11 @@ export const NamedAccount = memo((props: Props) => {
   // `override` mode it is passed as `title` and beats everything; in `fallback`
   // mode the account resolves on its own and this only fills in before the
   // stored account name / short address.
-  const walletName = useWalletName(wallet);
+  // In `fallback` mode callers don't have to hand-roll the owning-wallet lookup:
+  // resolving it here keeps every row on the same rule the search resolvers use.
+  const owningWallet = useOwningWallet(accountId, chain);
+  const effectiveWallet = wallet ?? (walletNameAs === 'fallback' ? owningWallet : null);
+  const walletName = useWalletName(effectiveWallet);
   const resolvedName = useAccountName({
     accountId,
     chain,
@@ -53,6 +60,12 @@ export const NamedAccount = memo((props: Props) => {
   });
 
   return (
-    <Account {...rest} accountId={accountId} chain={chain ?? null} title={resolvedName} walletType={wallet?.type} />
+    <Account
+      {...rest}
+      accountId={accountId}
+      chain={chain ?? null}
+      title={resolvedName}
+      walletType={effectiveWallet?.type}
+    />
   );
 });

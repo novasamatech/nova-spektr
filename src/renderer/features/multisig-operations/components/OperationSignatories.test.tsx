@@ -156,17 +156,17 @@ describe('OperationSignatories', () => {
   it('resolves every signatory through NamedAccount with the wallet name as a fallback, never as an override', () => {
     render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
 
-    // Own signatory: the wallet is passed, but only as a fallback — so an
-    // address-book name still wins over the keyset name.
+    // Own signatory: no wallet is handed over — NamedAccount looks the owning
+    // wallet up itself and uses it only as a fallback, so an address-book name
+    // still wins over the keyset name.
     const owned = screen.getByText(ownedSignatoryId);
     expect(owned).not.toHaveAttribute('data-title');
-    expect(owned).toHaveAttribute('data-wallet', 'yes');
     expect(owned).toHaveAttribute('data-wallet-as', 'fallback');
 
-    // A signatory outside the user's wallets simply has no wallet to fall back to.
+    // A signatory outside the user's wallets resolves the same way.
     const contact = screen.getByText(contactSignatoryId);
     expect(contact).not.toHaveAttribute('data-title');
-    expect(contact).not.toHaveAttribute('data-wallet');
+    expect(contact).toHaveAttribute('data-wallet-as', 'fallback');
 
     expect(screen.queryByText('Signer Wallet')).not.toBeInTheDocument();
     expect(screen.queryByText('Alice Signer')).not.toBeInTheDocument();
