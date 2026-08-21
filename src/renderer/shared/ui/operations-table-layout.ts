@@ -16,6 +16,22 @@ export const RESIZABLE_COLUMNS: readonly ResizableColumn[] = [
   'actions',
 ];
 
+/**
+ * Columns the user can switch off from the header's settings menu. Operation is
+ * not toggleable — a row without it has nothing to identify it by.
+ */
+export type ToggleableColumn = 'value' | 'submitter' | 'initiator' | 'description' | 'status' | 'actions';
+export type ColumnVisibility = Record<ToggleableColumn, boolean>;
+
+export const TOGGLEABLE_COLUMNS: readonly ToggleableColumn[] = [
+  'value',
+  'submitter',
+  'initiator',
+  'description',
+  'status',
+  'actions',
+];
+
 export const COLUMN_DEFAULT_WIDTHS: ColumnWidths = {
   operation: 240,
   value: 140,
@@ -60,11 +76,14 @@ const CELL_GAP = 8;
  */
 const CHEVRON_WIDTH = 16;
 /**
- * Trailing cells — status, actions and the chevron slot, each preceded by a
- * gap.
+ * Trailing cells — status and actions when visible, plus the always-present
+ * chevron slot, each preceded by a gap.
  */
-const getTrailingWidth = (widths: ColumnWidths) =>
-  CELL_GAP + widths.status + CELL_GAP + widths.actions + CELL_GAP + CHEVRON_WIDTH;
+const getTrailingWidth = (widths: ColumnWidths, visibility: ColumnVisibility) =>
+  (visibility.status ? CELL_GAP + widths.status : 0) +
+  (visibility.actions ? CELL_GAP + widths.actions : 0) +
+  CELL_GAP +
+  CHEVRON_WIDTH;
 /** Row horizontal padding (`px-4`) on both sides. */
 const ROW_PADDING = 32;
 /** Space the Description cell keeps at the default window so text still shows. */
@@ -78,7 +97,9 @@ const MIN_WIDTH_FLOOR = 1060;
 export const clampColumnWidth = (column: ResizableColumn, width: number) =>
   Math.round(Math.min(COLUMN_MAX_WIDTHS[column], Math.max(COLUMN_MIN_WIDTHS[column], width)));
 
-export const getLeftBlockWidth = (widths: ColumnWidths) => widths.operation + CELL_GAP + widths.value;
+/** Operation, plus the Value cell riding along inside the same block when shown. */
+export const getLeftBlockWidth = (widths: ColumnWidths, visibility: ColumnVisibility) =>
+  widths.operation + (visibility.value ? CELL_GAP + widths.value : 0);
 
 /**
  * Inline style for a fixed-width cell; flex-basis keeps it from shrinking in
@@ -87,25 +108,23 @@ export const getLeftBlockWidth = (widths: ColumnWidths) => widths.operation + CE
 export const getColumnStyle = (width: number): CSSProperties => ({ width, flex: `0 0 ${width}px` });
 
 /**
- * Minimum list width for the current column widths. The Initiator column counts
- * only while it is rendered (≥1536px). Widening past the window falls back to
- * horizontal scroll instead of clipping rows.
+ * Minimum list width for the current column widths — hidden columns don't
+ * count. Widening past the window falls back to horizontal scroll instead of
+ * clipping rows.
  */
-export const getOperationsMinWidth = (widths: ColumnWidths, { showInitiator }: { showInitiator: boolean }) =>
+export const getOperationsMinWidth = (widths: ColumnWidths, visibility: ColumnVisibility) =>
   Math.max(
     MIN_WIDTH_FLOOR,
     ROW_PADDING +
-      getLeftBlockWidth(widths) +
-      CELL_GAP +
-      widths.submitter +
-      (showInitiator ? CELL_GAP + widths.initiator : 0) +
-      CELL_GAP +
-      DESCRIPTION_FLOOR +
-      getTrailingWidth(widths),
+      getLeftBlockWidth(widths, visibility) +
+      (visibility.submitter ? CELL_GAP + widths.submitter : 0) +
+      (visibility.initiator ? CELL_GAP + widths.initiator : 0) +
+      (visibility.description ? CELL_GAP + DESCRIPTION_FLOOR : 0) +
+      getTrailingWidth(widths, visibility),
   );
 
 export const operationColumns = {
-  /** Width comes from `getColumnStyle(getLeftBlockWidth(widths))`. */
+  /** Width comes from `getColumnStyle(getLeftBlockWidth(widths, visibility))`. */
   leftBlock: 'shrink-0',
   titleCell: 'flex-1 min-w-0',
   /** Width comes from `getColumnStyle(widths.value)`. */
@@ -113,10 +132,11 @@ export const operationColumns = {
   /** Width comes from `getColumnStyle(widths.submitter)`. */
   submitter: 'shrink-0',
   /**
-   * Hidden below 2xl (≥1536px, `INITIATOR_COLUMN_MEDIA_QUERY`); width comes
-   * from `getColumnStyle(widths.initiator)`.
+   * Rendered only when `visibility.initiator` says so (its default follows
+   * `INITIATOR_COLUMN_MEDIA_QUERY`); width comes from
+   * `getColumnStyle(widths.initiator)`.
    */
-  initiator: 'hidden shrink-0 2xl:flex',
+  initiator: 'shrink-0',
   description: 'flex-1 min-w-0 pl-4',
   /** Width comes from `getColumnStyle(widths.status)`. */
   status: 'shrink-0',

@@ -1,2 +1,7 @@
 export { operationsTableLayoutModel } from './model';
-export { useIsInitiatorColumnVisible, useIsResizingColumns, useOperationColumnWidths } from './hooks';
+export {
+  useIsInitiatorColumnVisible,
+  useIsResizingColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from './hooks';

@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { COLUMN_DEFAULT_WIDTHS } from '@/shared/ui/operations-table-layout';
@@ -10,10 +11,29 @@ if (typeof window.PointerEvent === 'undefined') {
   Object.defineProperty(window, 'PointerEvent', { value: MouseEvent, configurable: true });
 }
 
+const ALL_VISIBLE = {
+  value: true,
+  submitter: true,
+  initiator: true,
+  description: true,
+  status: true,
+  actions: true,
+};
+
 const testState = vi.hoisted(() => ({
   tab: 'pending' as string,
   isScopeMerged: false,
   hasEverConnected: true,
+  visibility: {
+    value: true,
+    submitter: true,
+    initiator: true,
+    description: true,
+    status: true,
+    actions: true,
+  } as Record<string, boolean>,
+  columnVisibilityChanged: vi.fn(),
+  layoutReset: vi.fn(),
   columnResized: vi.fn(),
   columnAutofit: vi.fn(),
   resizeStarted: vi.fn(),
@@ -49,8 +69,11 @@ vi.mock('@/aggregates/operations-table-layout', () => ({
     columnAutofit: testState.columnAutofit,
     resizeStarted: testState.resizeStarted,
     resizeEnded: testState.resizeEnded,
+    columnVisibilityChanged: testState.columnVisibilityChanged,
+    layoutReset: testState.layoutReset,
   },
   useOperationColumnWidths: () => COLUMN_DEFAULT_WIDTHS,
+  useOperationColumnVisibility: () => testState.visibility,
   useIsInitiatorColumnVisible: () => true,
 }));
 
@@ -67,6 +90,9 @@ describe('OperationsTableHeader', () => {
   beforeEach(() => {
     testState.tab = 'pending';
     testState.isScopeMerged = false;
+    testState.visibility = { ...ALL_VISIBLE };
+    testState.columnVisibilityChanged.mockReset();
+    testState.layoutReset.mockReset();
     testState.columnResized.mockReset();
     testState.columnAutofit.mockReset();
     testState.resizeStarted.mockReset();
@@ -167,5 +193,45 @@ describe('OperationsTableHeader', () => {
 
     fireEvent.doubleClick(screen.getByLabelText('operations.table.resizeInitiator'));
     expect(testState.columnAutofit).toHaveBeenCalledWith('initiator');
+  });
+});
+
+describe('OperationsTableHeader column visibility', () => {
+  beforeEach(() => {
+    testState.visibility = { ...ALL_VISIBLE };
+    testState.columnVisibilityChanged.mockReset();
+    testState.layoutReset.mockReset();
+  });
+
+  it('drops the caption and the handle of a hidden column', () => {
+    testState.visibility = { ...ALL_VISIBLE, submitter: false };
+    render(<OperationsTableHeader />);
+
+    expect(screen.queryByText('operations.table.submitter')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('operations.table.resizeSubmitter')).not.toBeInTheDocument();
+    expect(screen.getByText('operations.table.operation')).toBeInTheDocument();
+  });
+
+  it('toggles a column from the settings menu', async () => {
+    const user = userEvent.setup();
+    render(<OperationsTableHeader />);
+
+    await user.click(screen.getByLabelText('operations.table.settings'));
+    // The caption also reads "Description" — scope the click to the menu.
+    const menu = await screen.findByTestId('Dropdown');
+    await user.click(within(menu).getByText('operations.table.description'));
+
+    expect(testState.columnVisibilityChanged).toHaveBeenCalledWith({ column: 'description', visible: false });
+  });
+
+  it('resets the layout from the settings menu', async () => {
+    const user = userEvent.setup();
+    render(<OperationsTableHeader />);
+
+    await user.click(screen.getByLabelText('operations.table.settings'));
+    await user.click(await screen.findByText('operations.table.resetDefaults'));
+
+    expect(testState.layoutReset).toHaveBeenCalled();
+    expect(testState.sortToggled).not.toHaveBeenCalled();
   });
 });

@@ -18,8 +18,8 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import {
-  useIsInitiatorColumnVisible,
   useIsResizingColumns,
+  useOperationColumnVisibility,
   useOperationColumnWidths,
 } from '@/aggregates/operations-table-layout';
 import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
@@ -60,7 +60,7 @@ export const Operations = () => {
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
   const widths = useOperationColumnWidths();
   const isResizing = useIsResizingColumns();
-  const showInitiator = useIsInitiatorColumnVisible();
+  const visibility = useOperationColumnVisibility();
 
   const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
 
@@ -181,7 +181,7 @@ export const Operations = () => {
           <div
             className={cnTw('group/list h-full', isResizing && 'select-none')}
             data-resizing={isResizing || undefined}
-            style={showTable ? { minWidth: getOperationsMinWidth(widths, { showInitiator }) } : undefined}
+            style={showTable ? { minWidth: getOperationsMinWidth(widths, visibility) } : undefined}
           >
             <ScrollArea viewportRef={scrollRef}>
               {/* The heading and the sticky column header are siblings of the list, not wrapped

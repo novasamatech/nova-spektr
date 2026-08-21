@@ -2,15 +2,23 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { IconButton } from '@/shared/ui';
 import {
   type ResizableColumn,
+  type ToggleableColumn,
   HEADER_SEPARATOR_CLASS,
+  TOGGLEABLE_COLUMNS,
   getColumnStyle,
   getLeftBlockWidth,
   operationColumns,
 } from '@/shared/ui/operations-table-layout';
+import { Dropdown } from '@/shared/ui-kit';
 import { connectionHistoryModel } from '@/aggregates/backend';
-import { useOperationColumnWidths } from '@/aggregates/operations-table-layout';
+import {
+  operationsTableLayoutModel,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { type OperationsSort, type SortDirection, type SortKey } from '../lib/operations-sort';
 import { operationsContextModel } from '../model/context';
 
@@ -58,6 +66,16 @@ type HeaderCellProps = {
   resize?: ResizeProps;
 };
 
+/** Menu captions reuse the column captions; Status is labelled "Signed" there. */
+const COLUMN_LABEL_KEYS: Record<ToggleableColumn, string> = {
+  value: 'operations.table.value',
+  submitter: 'operations.table.submitter',
+  initiator: 'operations.table.initiator',
+  description: 'operations.table.description',
+  status: 'operations.table.signed',
+  actions: 'operations.table.actions',
+};
+
 const HeaderCell = ({ label, className, sortable, resize }: HeaderCellProps) => {
   const active = sortable !== undefined && sortable.sort?.by === sortable.sortKey;
   const direction = active && sortable.sort ? sortable.sort.direction : null;
@@ -93,6 +111,7 @@ export const OperationsTableHeader = () => {
   const isScopeMerged = useUnit(operationsContextModel.$isScopeMerged);
   const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
   const widths = useOperationColumnWidths();
+  const visibility = useOperationColumnVisibility();
 
   // Pending rows carry "X of Y signed"; everywhere else the pill is a resolved status.
   const statusLabel = tab === 'pending' && !isScopeMerged ? t('operations.table.signed') : t('operations.table.status');
@@ -103,7 +122,7 @@ export const OperationsTableHeader = () => {
     <div className="sticky top-0 z-10 flex items-center gap-x-2 border-b border-divider bg-background-default px-4 py-2">
       <div
         className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
-        style={getColumnStyle(getLeftBlockWidth(widths))}
+        style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
       >
         <HeaderCell
           className={cnTw(operationColumns.titleCell, 'flex')}
@@ -111,45 +130,89 @@ export const OperationsTableHeader = () => {
           sortable={{ sortKey: 'type', sort, title: t('operations.table.sortByType') }}
           resize={{ column: 'operation', width: widths.operation, handleClass: '-right-[9px]' }}
         />
-        <HeaderCell
-          className={cnTw(operationColumns.value, HEADER_SEPARATOR_CLASS, 'flex')}
-          label={t('operations.table.value')}
-          sortable={{ sortKey: 'value', sort, title: t('operations.table.sortByValue') }}
-          resize={{ column: 'value', width: widths.value, handleClass: '-right-[9px]' }}
-        />
+        {visibility.value && (
+          <HeaderCell
+            className={cnTw(operationColumns.value, HEADER_SEPARATOR_CLASS, 'flex')}
+            label={t('operations.table.value')}
+            sortable={{ sortKey: 'value', sort, title: t('operations.table.sortByValue') }}
+            resize={{ column: 'value', width: widths.value, handleClass: '-right-[9px]' }}
+          />
+        )}
       </div>
 
-      <HeaderCell
-        className={cnTw(operationColumns.submitter, HEADER_SEPARATOR_CLASS, 'flex')}
-        label={t('operations.table.submitter')}
-        sortable={{ sortKey: 'submitter', sort, title: t('operations.table.sortBySubmitter') }}
-        resize={{ column: 'submitter', width: widths.submitter, handleClass: '-right-[9px]' }}
-      />
+      {visibility.submitter && (
+        <HeaderCell
+          className={cnTw(operationColumns.submitter, HEADER_SEPARATOR_CLASS, 'flex')}
+          label={t('operations.table.submitter')}
+          sortable={{ sortKey: 'submitter', sort, title: t('operations.table.sortBySubmitter') }}
+          resize={{ column: 'submitter', width: widths.submitter, handleClass: '-right-[9px]' }}
+        />
+      )}
 
-      {/* Not sortable, but resizable like its neighbours; hidden below 2xl via `operationColumns.initiator`. */}
-      <HeaderCell
-        className={cnTw(operationColumns.initiator, HEADER_SEPARATOR_CLASS)}
-        label={t('operations.table.initiator')}
-        resize={{ column: 'initiator', width: widths.initiator, handleClass: '-right-[9px]' }}
-      />
+      {/* Not sortable, but resizable like its neighbours. */}
+      {visibility.initiator && (
+        <HeaderCell
+          className={cnTw(operationColumns.initiator, HEADER_SEPARATOR_CLASS, 'flex')}
+          label={t('operations.table.initiator')}
+          resize={{ column: 'initiator', width: widths.initiator, handleClass: '-right-[9px]' }}
+        />
+      )}
 
       {/* Descriptions come from the external address book — hide the label (keeping the column spacer)
-          until it has been connected, mirroring the drafts section gate. */}
-      <div className={cnTw(operationColumns.description, HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-text-tertiary')}>
-        {hasEverConnected && t('operations.table.description')}
-      </div>
+          until it has been connected, mirroring the drafts section gate. A hidden Description keeps
+          the same flexible spacer so the fixed columns don't slide left. */}
+      {visibility.description ? (
+        <div className={cnTw(operationColumns.description, HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-text-tertiary')}>
+          {hasEverConnected && t('operations.table.description')}
+        </div>
+      ) : (
+        <div className="min-w-0 flex-1" />
+      )}
 
-      <HeaderCell
-        className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
-        label={statusLabel}
-        resize={{ column: 'status', width: widths.status, handleClass: '-right-[9px]' }}
-      />
-      <HeaderCell
-        className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-end')}
-        label={showActionsLabel ? t('operations.table.actions') : ''}
-        resize={{ column: 'actions', width: widths.actions, handleClass: '-right-[9px]' }}
-      />
-      <div className={operationColumns.chevron} />
+      {visibility.status && (
+        <HeaderCell
+          className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
+          label={statusLabel}
+          resize={{ column: 'status', width: widths.status, handleClass: '-right-[9px]' }}
+        />
+      )}
+      {visibility.actions && (
+        <HeaderCell
+          className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-end')}
+          label={showActionsLabel ? t('operations.table.actions') : ''}
+          resize={{ column: 'actions', width: widths.actions, handleClass: '-right-[9px]' }}
+        />
+      )}
+
+      {/* Occupies the rows' chevron slot; `-m-1.5` cancels the IconButton padding so the
+          28px control still lays out as the 16px column. */}
+      <div
+        className={cnTw(operationColumns.chevron, 'flex items-center justify-center')}
+        onClick={event => event.stopPropagation()}
+      >
+        <Dropdown align="end">
+          <Dropdown.Trigger>
+            <IconButton name="settingsLite" size={16} className="-m-1.5" ariaLabel={t('operations.table.settings')} />
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <Dropdown.Group label={t('operations.table.columns')}>
+              {TOGGLEABLE_COLUMNS.map(column => (
+                <Dropdown.CheckboxItem
+                  key={column}
+                  checked={visibility[column]}
+                  onChange={visible => operationsTableLayoutModel.columnVisibilityChanged({ column, visible })}
+                >
+                  {t(COLUMN_LABEL_KEYS[column])}
+                </Dropdown.CheckboxItem>
+              ))}
+            </Dropdown.Group>
+            <Dropdown.Separator />
+            <Dropdown.Item onSelect={() => operationsTableLayoutModel.layoutReset()}>
+              {t('operations.table.resetDefaults')}
+            </Dropdown.Item>
+          </Dropdown.Content>
+        </Dropdown>
+      </div>
     </div>
   );
 };

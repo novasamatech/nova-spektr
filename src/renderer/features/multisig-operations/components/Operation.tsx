@@ -36,7 +36,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { useOperationColumnWidths } from '@/aggregates/operations-table-layout';
+import { useOperationColumnVisibility, useOperationColumnWidths } from '@/aggregates/operations-table-layout';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -97,6 +97,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const description = useOperationDescription(operation.id);
   const isDraftLinked = useIsDraftLinkedOperation(operation.id);
   const widths = useOperationColumnWidths();
+  const visibility = useOperationColumnVisibility();
 
   const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
   const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
@@ -159,14 +160,14 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             {proxyEdit ? (
               <div
                 className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
-                style={getColumnStyle(getLeftBlockWidth(widths))}
+                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
               >
                 <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
               </div>
             ) : verifyProxy ? (
               <div
                 className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
-                style={getColumnStyle(getLeftBlockWidth(widths))}
+                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
               >
                 <VerifyProxyOperationCard
                   info={verifyProxy}
@@ -177,7 +178,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             ) : (
               <div
                 className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
-                style={getColumnStyle(getLeftBlockWidth(widths))}
+                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
               >
                 <OperationIcon operation={operation} account={multisigAccount} />
 
@@ -193,81 +194,101 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                     ))}
                 </div>
 
-                <div
-                  className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
-                  style={getColumnStyle(widths.value)}
-                >
-                  {titleData.amount && (
-                    <OperationAmount value={titleData.amount.value} asset={titleData.amount.asset} />
-                  )}
-                </div>
+                {visibility.value && (
+                  <div
+                    className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                    style={getColumnStyle(widths.value)}
+                  >
+                    {titleData.amount && (
+                      <OperationAmount value={titleData.amount.value} asset={titleData.amount.asset} />
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
-            <div
-              className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
-              style={getColumnStyle(widths.submitter)}
-            >
-              {accountAddress && (
+            {visibility.submitter && (
+              <div
+                className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.submitter)}
+              >
+                {accountAddress && (
+                  <NamedAccount
+                    accountId={multisigAccount.accountId}
+                    chain={isFlexibleMultisigAccount ? chains[multisigAccount.chainId] : undefined}
+                    wallet={wallet}
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
+                  />
+                )}
+              </div>
+            )}
+
+            {visibility.initiator && (
+              <div
+                className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.initiator)}
+              >
                 <NamedAccount
-                  accountId={multisigAccount.accountId}
-                  chain={isFlexibleMultisigAccount ? chains[multisigAccount.chainId] : undefined}
-                  wallet={wallet}
+                  accountId={operation.depositor}
+                  chain={chains[operation.chainId]}
+                  walletNameAs="fallback"
                   iconSize={28}
                   hideExplorers
                   variant="short"
                 />
-              )}
-            </div>
-
-            <div
-              className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'h-full items-center')}
-              style={getColumnStyle(widths.initiator)}
-            >
-              <NamedAccount
-                accountId={operation.depositor}
-                chain={chains[operation.chainId]}
-                walletNameAs="fallback"
-                iconSize={28}
-                hideExplorers
-                variant="short"
-              />
-            </div>
-
-            <div
-              className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center gap-x-2')}
-            >
-              {isDraftLinked && (
-                <Tooltip open={description ? undefined : false}>
-                  <Tooltip.Trigger>
-                    <div className="inline-flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-                      <CaptionText className="text-icon-accent uppercase">
-                        {t('operations.drafts.operationBadge')}
-                      </CaptionText>
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{description}</Tooltip.Content>
-                </Tooltip>
-              )}
-              <div className="min-w-0 flex-1">
-                <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
               </div>
-              <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
-            </div>
+            )}
 
-            <div
-              className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-center')}
-              style={getColumnStyle(widths.status)}
-            >
-              <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
-            </div>
+            {/* A hidden Description leaves the same flexible spacer behind so the trailing
+                columns keep their place at the row's right edge. */}
+            {visibility.description ? (
+              <div
+                className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center gap-x-2')}
+              >
+                {isDraftLinked && (
+                  <Tooltip open={description ? undefined : false}>
+                    <Tooltip.Trigger>
+                      <div className="inline-flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                        <CaptionText className="text-icon-accent uppercase">
+                          {t('operations.drafts.operationBadge')}
+                        </CaptionText>
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{description}</Tooltip.Content>
+                  </Tooltip>
+                )}
+                <div className="min-w-0 flex-1">
+                  <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
+                </div>
+                <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
+              </div>
+            ) : (
+              <div className="min-w-0 flex-1" />
+            )}
 
-            <div
-              className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-end')}
-              style={getColumnStyle(widths.actions)}
-            >
-              <OperationActions operation={operation} account={multisigAccount} className="w-full" />
-            </div>
+            {visibility.status && (
+              <div
+                className={cnTw(
+                  operationColumns.status,
+                  ROW_SEPARATOR_CLASS,
+                  'flex h-full items-center justify-center',
+                )}
+                style={getColumnStyle(widths.status)}
+              >
+                <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
+              </div>
+            )}
+
+            {visibility.actions && (
+              <div
+                className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-end')}
+                style={getColumnStyle(widths.actions)}
+              >
+                <OperationActions operation={operation} account={multisigAccount} className="w-full" />
+              </div>
+            )}
           </div>
         </Accordion.Button>
         <Accordion.Content>

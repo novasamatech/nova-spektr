@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
-import { useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
-import { INITIATOR_COLUMN_MEDIA_QUERY } from '@/shared/ui/operations-table-layout';
+import { type ColumnVisibility, INITIATOR_COLUMN_MEDIA_QUERY } from '@/shared/ui/operations-table-layout';
 
 import { operationsTableLayoutModel } from './model';
 
@@ -28,3 +28,26 @@ const getInitiatorBreakpoint = () => getInitiatorMedia().matches;
  */
 export const useIsInitiatorColumnVisible = () =>
   useSyncExternalStore(subscribeToInitiatorBreakpoint, getInitiatorBreakpoint, () => false);
+
+/**
+ * Effective visibility: the user's overrides on top of the defaults. Everything
+ * is on by default except Initiator, whose default follows the ≥1536px
+ * breakpoint — until the user makes a call, at which point the choice sticks at
+ * every window size.
+ */
+export const useOperationColumnVisibility = (): ColumnVisibility => {
+  const overrides = useUnit(operationsTableLayoutModel.$visibilityOverrides);
+  const initiatorDefault = useIsInitiatorColumnVisible();
+
+  return useMemo(
+    () => ({
+      value: overrides.value ?? true,
+      submitter: overrides.submitter ?? true,
+      initiator: overrides.initiator ?? initiatorDefault,
+      description: overrides.description ?? true,
+      status: overrides.status ?? true,
+      actions: overrides.actions ?? true,
+    }),
+    [overrides, initiatorDefault],
+  );
+};

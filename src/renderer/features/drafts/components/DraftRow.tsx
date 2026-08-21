@@ -19,7 +19,7 @@ import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
-import { useOperationColumnWidths } from '@/aggregates/operations-table-layout';
+import { useOperationColumnVisibility, useOperationColumnWidths } from '@/aggregates/operations-table-layout';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -87,6 +87,7 @@ export const DraftRow = ({
   const wallets = useUnit(walletModel.$wallets);
   const backendContacts = useUnit(contactModel.$backendContacts);
   const widths = useOperationColumnWidths();
+  const visibility = useOperationColumnVisibility();
 
   const chain = chains[draft.chainId as ChainId];
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
@@ -169,7 +170,7 @@ export const DraftRow = ({
           <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
             <div
               className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
-              style={getColumnStyle(getLeftBlockWidth(widths))}
+              style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
             >
               <DraftIcon />
 
@@ -191,110 +192,126 @@ export const DraftRow = ({
                 </div>
               </div>
 
+              {visibility.value && (
+                <div
+                  className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                  style={getColumnStyle(widths.value)}
+                >
+                  {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
+                </div>
+              )}
+            </div>
+
+            {visibility.submitter && (
               <div
-                className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
-                style={getColumnStyle(widths.value)}
+                className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.submitter)}
               >
-                {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
-              </div>
-            </div>
-
-            <div
-              className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
-              style={getColumnStyle(widths.submitter)}
-            >
-              {displayAccountId && (
-                <NamedAccount
-                  accountId={displayAccountId}
-                  chain={chain}
-                  wallet={displayWallet}
-                  iconSize={28}
-                  hideExplorers
-                  variant="short"
-                />
-              )}
-            </div>
-
-            <div
-              className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'h-full items-center')}
-              style={getColumnStyle(widths.initiator)}
-            >
-              {initiatorAccountId ? (
-                <NamedAccount
-                  accountId={initiatorAccountId}
-                  chain={chain}
-                  walletNameAs="fallback"
-                  iconSize={28}
-                  hideExplorers
-                  variant="short"
-                />
-              ) : (
-                <FootnoteText className="truncate text-text-tertiary italic">
-                  {t('operations.drafts.noInitiator')}
-                </FootnoteText>
-              )}
-            </div>
-
-            <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}>
-              <DraftDescription description={draft.description} />
-            </div>
-
-            <div
-              className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')}
-              style={getColumnStyle(widths.status)}
-            />
-
-            <div
-              className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
-              style={getColumnStyle(widths.actions)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="min-w-0 flex-1">
-                {isSubmitted ? (
-                  <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
-                    <CaptionText className="text-icon-positive uppercase">
-                      {t('operations.drafts.submittedBadge')}
-                    </CaptionText>
-                  </div>
-                ) : !hasInitiator ? (
-                  <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
-                ) : !draft.callData ? (
-                  <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
-                    <Tooltip.Trigger>
-                      <Button
-                        size="sm"
-                        variant="fill"
-                        className="w-full"
-                        disabled={!isAuthenticated || !canWrite}
-                        onClick={() => onSubmit(draft)}
-                      >
-                        {t('operations.drafts.addCallDataButton')}
-                      </Button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>
-                      {!isAuthenticated
-                        ? t('operations.drafts.connectToSubmit')
-                        : t('operations.drafts.noWritePermission')}
-                    </Tooltip.Content>
-                  </Tooltip>
-                ) : (
-                  <Tooltip open={isAuthenticated ? false : undefined}>
-                    <Tooltip.Trigger>
-                      <Button
-                        size="sm"
-                        variant="fill"
-                        className="w-full"
-                        disabled={!isAuthenticated}
-                        onClick={() => onSubmit(draft)}
-                      >
-                        {t('operations.drafts.submitButton')}
-                      </Button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
-                  </Tooltip>
+                {displayAccountId && (
+                  <NamedAccount
+                    accountId={displayAccountId}
+                    chain={chain}
+                    wallet={displayWallet}
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
+                  />
                 )}
               </div>
-            </div>
+            )}
+
+            {visibility.initiator && (
+              <div
+                className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.initiator)}
+              >
+                {initiatorAccountId ? (
+                  <NamedAccount
+                    accountId={initiatorAccountId}
+                    chain={chain}
+                    walletNameAs="fallback"
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
+                  />
+                ) : (
+                  <FootnoteText className="truncate text-text-tertiary italic">
+                    {t('operations.drafts.noInitiator')}
+                  </FootnoteText>
+                )}
+              </div>
+            )}
+
+            {/* A hidden Description leaves the same flexible spacer behind so the trailing
+                columns keep their place at the row's right edge. */}
+            {visibility.description ? (
+              <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}>
+                <DraftDescription description={draft.description} />
+              </div>
+            ) : (
+              <div className="min-w-0 flex-1" />
+            )}
+
+            {visibility.status && (
+              <div
+                className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')}
+                style={getColumnStyle(widths.status)}
+              />
+            )}
+
+            {visibility.actions && (
+              <div
+                className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                style={getColumnStyle(widths.actions)}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="min-w-0 flex-1">
+                  {isSubmitted ? (
+                    <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
+                      <CaptionText className="text-icon-positive uppercase">
+                        {t('operations.drafts.submittedBadge')}
+                      </CaptionText>
+                    </div>
+                  ) : !hasInitiator ? (
+                    <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+                  ) : !draft.callData ? (
+                    <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="fill"
+                          className="w-full"
+                          disabled={!isAuthenticated || !canWrite}
+                          onClick={() => onSubmit(draft)}
+                        >
+                          {t('operations.drafts.addCallDataButton')}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        {!isAuthenticated
+                          ? t('operations.drafts.connectToSubmit')
+                          : t('operations.drafts.noWritePermission')}
+                      </Tooltip.Content>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip open={isAuthenticated ? false : undefined}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="fill"
+                          className="w-full"
+                          disabled={!isAuthenticated}
+                          onClick={() => onSubmit(draft)}
+                        >
+                          {t('operations.drafts.submitButton')}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </Accordion.Button>
         <Accordion.Content>
