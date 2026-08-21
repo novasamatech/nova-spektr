@@ -1,8 +1,10 @@
 export {
   type ColumnVisibility,
   type ColumnWidths,
+  type HoverColumn,
   type ResizableColumn,
   type ToggleableColumn,
+  CELL_COLUMN_ATTRIBUTE,
   COLUMN_DEFAULT_WIDTHS,
   COLUMN_FIT_WIDTHS,
   COLUMN_MAX_WIDTHS,
@@ -10,21 +12,26 @@ export {
   EMPTY_SECTION_BOX_HEIGHT,
   EMPTY_SECTION_HEIGHT,
   HEADER_SEPARATOR_CLASS,
+  HOVERED_COLUMN_ATTRIBUTE,
   INITIATOR_COLUMN_MEDIA_QUERY,
   RESIZABLE_COLUMNS,
   ROW_GAP,
   ROW_HEIGHT,
   SECTION_HEADER_HEIGHT,
+  TABLE_GROUP_CLASS,
   TOGGLEABLE_COLUMNS,
   clampColumnWidth,
   getCellProps,
   getColumnStyle,
+  getDescriptionCellProps,
   getHeaderCellProps,
+  getHoverableProps,
   getLeftBlockProps,
   getLeftBlockWidth,
   getOperationsMinWidth,
   getRowProps,
   operationColumns,
 } from './layout';
+export { handleColumnPointerLeave, handleColumnPointerOver } from './column-hover';
 export { operationsTableLayoutModel } from './model';
 export { useIsResizingColumns, useOperationColumnVisibility, useOperationColumnWidths } from './hooks';

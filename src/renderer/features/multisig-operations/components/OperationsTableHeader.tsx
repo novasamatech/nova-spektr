@@ -12,7 +12,9 @@ import {
   HEADER_SEPARATOR_CLASS,
   TOGGLEABLE_COLUMNS,
   getColumnStyle,
+  getDescriptionCellProps,
   getHeaderCellProps,
+  getHoverableProps,
   getLeftBlockWidth,
   operationColumns,
   operationsTableLayoutModel,
@@ -131,7 +133,7 @@ export const OperationsTableHeader = () => {
   return (
     <div className="sticky top-0 z-10 flex items-center gap-x-2 border-b border-divider bg-background-default px-4 py-2">
       <div
-        className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}
+        {...getHoverableProps('operation', cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2'))}
         style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
       >
         <HeaderCell
@@ -173,7 +175,7 @@ export const OperationsTableHeader = () => {
           until it has been connected, mirroring the drafts section gate. A hidden Description keeps
           the same flexible spacer so the fixed columns don't slide left. */}
       {visibility.description ? (
-        <div className={cnTw(operationColumns.description, HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-text-tertiary')}>
+        <div {...getDescriptionCellProps(cnTw(HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-text-tertiary'))}>
           {hasEverConnected && t('operations.table.description')}
         </div>
       ) : (

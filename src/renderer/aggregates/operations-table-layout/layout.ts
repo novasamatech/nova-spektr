@@ -168,12 +168,53 @@ export const SECTION_HEADER_HEIGHT = 42;
 export const EMPTY_SECTION_BOX_HEIGHT = 60;
 export const EMPTY_SECTION_HEIGHT = EMPTY_SECTION_BOX_HEIGHT + ROW_GAP;
 
-type CellProps = { className: string; style: CSSProperties };
 /**
  * Fixed-width columns rendered as plain cells — Operation is the left block
  * (`getLeftBlockProps`), not a cell of its own.
  */
 type CellColumn = Exclude<ResizableColumn, 'operation'>;
+/**
+ * Every column a pointer can rest on; the left Operation+Value block counts as
+ * Operation.
+ */
+export type HoverColumn = ResizableColumn | 'description';
+
+/**
+ * Column hover is one DOM attribute on the scroller, not React state: cells are
+ * flex children of their own rows, so no `:hover` can span a column, and a
+ * store would re-render every visible row on each pointer move. The scroller
+ * carries `TABLE_GROUP_CLASS` and gets `data-hovered-column="<column>"` from
+ * `column-hover.ts`; each cell carries `data-column` and the matching
+ * `group-data-[hovered-column=…]/table:` class, so the browser repaints only
+ * the cells of that column.
+ */
+export const HOVERED_COLUMN_ATTRIBUTE = 'data-hovered-column';
+export const CELL_COLUMN_ATTRIBUTE = 'data-column';
+export const TABLE_GROUP_CLASS = 'group/table';
+// Full literal strings — Tailwind only generates the classes it can see in the source.
+const COLUMN_HOVER_CLASS: Record<HoverColumn, string> = {
+  operation: 'group-data-[hovered-column=operation]/table:bg-hover',
+  value: 'group-data-[hovered-column=value]/table:bg-hover',
+  submitter: 'group-data-[hovered-column=submitter]/table:bg-hover',
+  initiator: 'group-data-[hovered-column=initiator]/table:bg-hover',
+  description: 'group-data-[hovered-column=description]/table:bg-hover',
+  status: 'group-data-[hovered-column=status]/table:bg-hover',
+  actions: 'group-data-[hovered-column=actions]/table:bg-hover',
+};
+
+type HoverableProps = { className: string; [CELL_COLUMN_ATTRIBUTE]: HoverColumn };
+type RowProps = { className: string; style: CSSProperties };
+type CellProps = HoverableProps & { style: CSSProperties };
+
+/**
+ * Marks an element as a cell of `column` for the column-hover highlight: the
+ * `data-column` the scroller's pointer handler reads, plus the class that
+ * paints the cell while that column is hovered.
+ */
+export const getHoverableProps = (column: HoverColumn, className?: string): HoverableProps => ({
+  className: cnTw(COLUMN_HOVER_CLASS[column], className),
+  [CELL_COLUMN_ATTRIBUTE]: column,
+});
 
 /** A row cell fills the row height and centres its content vertically. */
 const ROW_CELL_CLASS = 'flex h-full items-center';
@@ -182,7 +223,7 @@ const ROW_CELL_CLASS = 'flex h-full items-center';
  * The strip of cells inside an operation or draft row; its height is the one
  * the virtualizer measures with.
  */
-export const getRowProps = (className?: string): CellProps => ({
+export const getRowProps = (className?: string): RowProps => ({
   className: cnTw('flex w-full items-center gap-x-2 overflow-hidden', className),
   style: { height: ROW_HEIGHT },
 });
@@ -193,21 +234,28 @@ export const getLeftBlockProps = (
   visibility: ColumnVisibility,
   className?: string,
 ): CellProps => ({
-  className: cnTw(operationColumns.leftBlock, ROW_CELL_CLASS, className),
+  ...getHoverableProps('operation', cnTw(operationColumns.leftBlock, ROW_CELL_CLASS, className)),
   style: getColumnStyle(getLeftBlockWidth(widths, visibility)),
 });
 
 /** A fixed-width row cell; `className` adds the per-column alignment. */
 export const getCellProps = (column: CellColumn, widths: ColumnWidths, className?: string): CellProps => ({
-  className: cnTw(operationColumns[column], ROW_CELL_CLASS, className),
+  ...getHoverableProps(column, cnTw(operationColumns[column], ROW_CELL_CLASS, className)),
   style: getColumnStyle(widths[column]),
 });
+
+/**
+ * The flexible Description cell (row or header); `className` adds the context's
+ * own classes.
+ */
+export const getDescriptionCellProps = (className?: string): HoverableProps =>
+  getHoverableProps('description', cnTw(operationColumns.description, className));
 
 /**
  * The header caption over a fixed-width column: the left hairline, no
  * row-height stretch.
  */
 export const getHeaderCellProps = (column: CellColumn, widths: ColumnWidths, className?: string): CellProps => ({
-  className: cnTw(operationColumns[column], HEADER_SEPARATOR_CLASS, 'flex', className),
+  ...getHoverableProps(column, cnTw(operationColumns[column], HEADER_SEPARATOR_CLASS, 'flex', className)),
   style: getColumnStyle(widths[column]),
 });

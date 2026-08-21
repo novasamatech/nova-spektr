@@ -16,7 +16,10 @@ import {
   ROW_GAP,
   ROW_HEIGHT,
   SECTION_HEADER_HEIGHT,
+  TABLE_GROUP_CLASS,
   getOperationsMinWidth,
+  handleColumnPointerLeave,
+  handleColumnPointerOver,
   useIsResizingColumns,
   useOperationColumnVisibility,
   useOperationColumnWidths,
@@ -176,7 +179,12 @@ export const Operations = () => {
       )}
 
       {hasMultisigAccounts && (
-        <div className="h-full overflow-x-auto overflow-y-hidden" data-operations-scroller>
+        <div
+          className={cnTw('h-full overflow-x-auto overflow-y-hidden', TABLE_GROUP_CLASS)}
+          data-operations-scroller
+          onPointerOver={handleColumnPointerOver}
+          onPointerLeave={handleColumnPointerLeave}
+        >
           <div
             className={cnTw('h-full', isResizing && 'select-none')}
             style={showTable ? { minWidth: getOperationsMinWidth(widths, visibility) } : undefined}

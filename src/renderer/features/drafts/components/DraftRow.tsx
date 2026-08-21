@@ -15,6 +15,7 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
 import {
   getCellProps,
+  getDescriptionCellProps,
   getLeftBlockProps,
   getRowProps,
   operationColumns,
@@ -234,7 +235,7 @@ export const DraftRow = ({
             {/* A hidden Description leaves the same flexible spacer behind so the trailing
                 columns keep their place at the row's right edge. */}
             {visibility.description ? (
-              <div className={cnTw(operationColumns.description, 'flex h-full items-center')}>
+              <div {...getDescriptionCellProps('flex h-full items-center')}>
                 <DraftDescription description={draft.description} />
               </div>
             ) : (

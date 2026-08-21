@@ -23,6 +23,10 @@ cell scaffolding (row height, cell classes, the left Operation+Value block) live
   coalesced during a drag so a pointer move does not hit storage on every pixel.
 - The drag flag is on for the duration of a header-handle drag so the list can suspend text selection while the pointer
   moves.
+- Hovering a cell highlights its whole column — every operation and draft row plus the header caption — so a value can
+  be read down the table without losing the column. Operation and Value count as one column with the left block; the
+  highlight clears over row gaps, headings and when the pointer leaves the list. It is a browser-only repaint: no row
+  re-renders, no state.
 
 ## Used by
 
