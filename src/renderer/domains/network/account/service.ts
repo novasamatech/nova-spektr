@@ -153,6 +153,16 @@ type ResolveAccountNameParams = {
   chain?: Chain | null;
   title?: string;
   /**
+   * A name to fall back to (typically the owning wallet's name) when the
+   * account resolves to nothing better than its stored name or short address.
+   * Unlike `title` it never beats an explicit name — custom account name,
+   * contact or identity all still win. An address-shaped fallback (a shortened
+   * address, the pure-proxy form) is skipped as no better than what follows —
+   * which also means a user-typed wallet name that happens to look like
+   * `abcd...wxyz` is ignored here and the stored name / short address shows.
+   */
+  fallbackName?: string;
+  /**
    * The specific account this name is being resolved for, when the caller
    * already knows it. Skips the accountId-only lookup below, which cannot
    * disambiguate between different accounts (e.g. across wallets) that happen
@@ -404,6 +414,7 @@ function resolveAccountName({
   identities,
   chains,
   title,
+  fallbackName,
   account,
 }: ResolveAccountNameParams): string {
   if (title) {
@@ -430,6 +441,13 @@ function resolveAccountName({
     if (identity) {
       return identity.name;
     }
+  }
+
+  // A caller-supplied fallback (e.g. the owning wallet's name) beats a generated
+  // account name such as a Vault derivation path, but never an explicit name —
+  // and an address-shaped fallback is no better than what follows, so skip it.
+  if (fallbackName && !isGeneratedAccountName(fallbackName)) {
+    return fallbackName;
   }
 
   if (relatedAccount?.name) {

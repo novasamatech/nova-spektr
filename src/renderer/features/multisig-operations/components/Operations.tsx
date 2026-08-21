@@ -4,36 +4,44 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { CountChip, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { OPERATIONS_MIN_WIDTH, ROW_GAP, ROW_HEIGHT, SECTION_HEADER_HEIGHT } from '@/shared/ui/operations-table-layout';
+import { FootnoteText } from '@/shared/ui';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
-import { DraftsSection } from '@/features/drafts';
-import { type OperationSection, SECTION_LABEL_KEYS } from '../lib/operations-sections';
-import { type OperationWithAccount, operationsContextModel } from '../model/context';
+import {
+  EMPTY_SECTION_BOX_HEIGHT,
+  EMPTY_SECTION_HEIGHT,
+  ROW_GAP,
+  ROW_HEIGHT,
+  SECTION_HEADER_HEIGHT,
+  getOperationsMinWidth,
+  useIsResizingColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
+import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
+import { buildFlatItems } from '../lib/build-flat-items';
+import { SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS, STATUS_FILTER_LABEL_KEYS } from '../lib/operations-sections';
+import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
-import { ChainSyncStatus } from './ChainSyncStatus';
+import { useChainSyncToast } from './ChainSyncToast';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsTableHeader } from './OperationsTableHeader';
+import { SectionHeading } from './SectionHeading';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
 import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
-type FlatItem =
-  | { type: 'section'; section: OperationSection; count: number }
-  | { type: 'operation'; item: OperationWithAccount };
-
-const isSectionItem = (item: FlatItem): item is FlatItem & { type: 'section' } => item.type === 'section';
-
 export const Operations = () => {
   const { t } = useI18n();
+
+  useChainSyncToast();
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
@@ -44,12 +52,14 @@ export const Operations = () => {
   const sectionedOps = useUnit(operationsContextModel.$sectionedOperations);
   const collapsedSections = useUnit(operationsContextModel.$collapsedSections);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
-  const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
   const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
+  const widths = useOperationColumnWidths();
+  const isResizing = useIsResizingColumns();
+  const visibility = useOperationColumnVisibility();
 
   const operationIds = useMemo(() => filteredOps.map(({ operation }) => operation.id), [filteredOps]);
 
@@ -57,37 +67,43 @@ export const Operations = () => {
 
   const hasMultisigAccounts = multisigAccounts.length > 0;
 
-  // Virtualization already limits rendering to visible items + overscan,
-  // so useDeferredList (which defers via useDeferredValue) only adds latency.
-  const isDeferredLoading = isTabDataLoading;
-  const deferredOps = filteredOps;
   // Drafts obey the Status filter like any other section: visible when no
   // status is selected or when `drafts` is among the selected statuses.
   const matchesStatusFilter = filter.status.length === 0 || filter.status.includes('drafts');
   const showDrafts = tab === 'pending' && hasEverConnected && matchesStatusFilter;
 
-  const flatItems = useMemo(() => {
-    const items: FlatItem[] = [];
-    for (const { section, items: sectionItems } of sectionedOps) {
-      items.push({ type: 'section', section, count: sectionItems.length });
-      if (collapsedSections[section]) continue;
+  const draftsState = useDraftsSectionState(filter);
+  const showDraftsGroup = showDrafts && draftsState.isAvailable;
+  // The first visible group's heading is drawn above the sticky column header
+  // (Page → Section → Table); the virtual list starts with that group's rows.
+  const firstSection = sectionedOps[0]?.section ?? null;
+  const headingAboveList = showDraftsGroup
+    ? { key: 'drafts' as const, labelKey: STATUS_FILTER_LABEL_KEYS.drafts, count: draftsState.count }
+    : firstSection
+      ? { key: firstSection, labelKey: SECTION_LABEL_KEYS[firstSection], count: sectionedOps[0]?.items.length }
+      : null;
+  // Sections derive from the filtered operations (plus the always-present In-progress group),
+  // so a non-empty sections list is the one "there are rows to draw" signal. Virtualization
+  // already limits rendering to visible items + overscan, so nothing is deferred here.
+  const hasSections = sectionedOps.length > 0;
+  const showTable = hasSections || showDraftsGroup;
 
-      for (const item of sectionItems) {
-        items.push({ type: 'operation', item });
-      }
-    }
-
-    return items;
-  }, [sectionedOps, collapsedSections]);
+  // The first group's heading is rendered above the sticky column header, unless
+  // the drafts group owns that slot.
+  const flatItems = useMemo(
+    () => buildFlatItems(sectionedOps, collapsedSections, { firstHeadingAbove: !showDraftsGroup }),
+    [sectionedOps, collapsedSections, showDraftsGroup],
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const aboveListRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
-  // Keep scrollMargin in sync with the container's offset from the scroll root.
-  // DraftsSection and the table header above the list have variable height; without this the
-  // virtualizer computes scroll offsets relative to the wrong origin and items disappear on scroll.
+  // Keep scrollMargin in sync with the container's offset from the scroll root. Everything above
+  // the list — the first group's heading, the sticky column header, DraftsSection — has variable
+  // height; without this the virtualizer computes scroll offsets relative to the wrong origin and
+  // items disappear on scroll. Runs on every render, so it covers whatever Operations re-renders.
   useLayoutEffect(() => {
     const el = listContainerRef.current;
     if (!el) return;
@@ -95,10 +111,10 @@ export const Operations = () => {
     setScrollMargin(prev => (prev === newMargin ? prev : newMargin));
   });
 
-  // DraftsSection mutates its own height from local state (collapse toggle,
-  // expandable draft rows) without re-rendering Operations, so the effect above
-  // never fires for it — observe the content above the list to keep
-  // scrollMargin following those changes.
+  // The heading and the column header are siblings above the list and only change with a render.
+  // The drafts block is the exception: it mutates its own height from local state (collapse toggle,
+  // expandable draft rows) without re-rendering Operations, so the effect above never fires for it —
+  // observe that block to keep scrollMargin following those changes.
   useLayoutEffect(() => {
     const above = aboveListRef.current;
     if (!above) return;
@@ -116,14 +132,22 @@ export const Operations = () => {
   const virtualizer = useVirtualizer({
     count: flatItems.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => (flatItems[index]?.type === 'section' ? SECTION_HEADER_HEIGHT : ROW_HEIGHT + ROW_GAP),
+    estimateSize: index => {
+      const type = flatItems[index]?.type;
+      if (type === 'section') return SECTION_HEADER_HEIGHT;
+      if (type === 'empty') return EMPTY_SECTION_HEIGHT;
+
+      return ROW_HEIGHT + ROW_GAP;
+    },
     overscan: 15,
     scrollMargin,
     getItemKey: index => {
       const item = flatItems[index];
       if (!item) return `unknown-${index}`;
+      if (item.type === 'section') return `section-${item.section}`;
+      if (item.type === 'empty') return `empty-${item.section}`;
 
-      return isSectionItem(item) ? `section-${item.section}` : item.item.operation.id;
+      return item.item.operation.id;
     },
   });
 
@@ -152,29 +176,38 @@ export const Operations = () => {
       )}
 
       {hasMultisigAccounts && (
-        <div className="h-full overflow-x-auto overflow-y-hidden">
-          <div className={cnTw('h-full', (deferredOps.length > 0 || showDrafts) && OPERATIONS_MIN_WIDTH)}>
+        <div className="h-full overflow-x-auto overflow-y-hidden" data-operations-scroller>
+          <div
+            className={cnTw('h-full', isResizing && 'select-none')}
+            style={showTable ? { minWidth: getOperationsMinWidth(widths, visibility) } : undefined}
+          >
             <ScrollArea viewportRef={scrollRef}>
+              {/* The heading and the sticky column header are siblings of the list, not wrapped
+                  together with it: a sticky box is bounded by its parent, so nesting the header in
+                  a block that ends above the list would un-pin it as soon as that block scrolls out. */}
+              {showTable && headingAboveList && (
+                <SectionHeading
+                  label={t(headingAboveList.labelKey)}
+                  count={headingAboveList.count}
+                  collapsed={!!collapsedSections[headingAboveList.key]}
+                  onToggle={() => operationsContextModel.toggleSection(headingAboveList.key)}
+                />
+              )}
+              {showTable && <OperationsTableHeader />}
+
+              {/* Network sync progress lives in the bottom-right toast (`useChainSyncToast`),
+                  so nothing is drawn between the drafts group and the first operations. */}
               <div ref={aboveListRef}>
-                {(deferredOps.length > 0 || showDrafts) && <OperationsTableHeader />}
-
-                {showDrafts && <DraftsSection scope={filter} />}
-
-                {(isDeferredLoading || isDeepLinkLoading) && (
-                  <div className="mt-4 flex w-full items-center justify-center gap-x-3">
-                    <Loader color="primary" size={25} />
-                    <ChainSyncStatus />
-                  </div>
-                )}
+                {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
               </div>
 
-              {!isDeferredLoading && deferredOps.length === 0 && (
+              {!isTabDataLoading && !hasSections && (
                 <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
                   <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
                 </Box>
               )}
 
-              {deferredOps.length > 0 && (
+              {hasSections && (
                 <div
                   ref={listContainerRef}
                   style={{
@@ -200,32 +233,29 @@ export const Operations = () => {
                           transform: `translateY(${virtualRow.start - scrollMargin}px)`,
                         }}
                       >
-                        {isSectionItem(item) ? (
-                          <button
-                            type="button"
-                            aria-expanded={!collapsedSections[item.section]}
-                            className={cnTw(
-                              'flex items-center gap-2 rounded-sm px-2 pt-4 pb-1.5',
-                              'focus-visible:outline-2 focus-visible:outline-icon-accent',
-                            )}
-                            onClick={() => operationsContextModel.toggleSection(item.section)}
+                        {item.type === 'section' ? (
+                          <SectionHeading
+                            label={t(SECTION_LABEL_KEYS[item.section])}
+                            count={item.count}
+                            collapsed={!!collapsedSections[item.section]}
+                            onToggle={() => operationsContextModel.toggleSection(item.section)}
+                          />
+                        ) : item.type === 'empty' ? (
+                          <div
+                            className="mb-1.5 flex items-center justify-center rounded-lg border border-dashed border-shade-12"
+                            style={{ height: EMPTY_SECTION_BOX_HEIGHT }}
                           >
-                            <Icon
-                              name="shelfDown"
-                              size={15}
-                              className={cnTw(
-                                'text-icon-default transition-transform',
-                                collapsedSections[item.section] ? 'rotate-0' : 'rotate-180',
-                              )}
-                            />
-                            <FootnoteText className="font-semibold text-text-primary">
-                              {t(SECTION_LABEL_KEYS[item.section])}
+                            <FootnoteText className="text-text-tertiary">
+                              {t(SECTION_EMPTY_LABEL_KEYS[item.section] ?? SECTION_EMPTY_LABEL_KEYS.in_progress)}
                             </FootnoteText>
-                            <CountChip count={item.count} />
-                          </button>
+                          </div>
                         ) : (
                           <div className="pb-1.5">
-                            <AsyncItem fallback={<div className="h-[68px] rounded bg-block-background-default" />}>
+                            <AsyncItem
+                              fallback={
+                                <div className="rounded bg-block-background-default" style={{ height: ROW_HEIGHT }} />
+                              }
+                            >
                               <Operation
                                 key={
                                   item.item.operation.id === focusedOperationId

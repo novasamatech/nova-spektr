@@ -61,7 +61,9 @@ const walletNames: Record<string, string> = {
 };
 
 const resolvers: SearchResolvers = {
-  resolveAccountName: (accountId) => accountNames[accountId] ?? '',
+  // Mirrors the real resolver: a contact/identity name wins, the caller's
+  // fallback (the owning wallet's name) only fills in when there is none.
+  resolveAccountName: (accountId, _chain, fallbackName) => accountNames[accountId] ?? fallbackName ?? '',
   resolveWalletName: (accountId) => walletNames[accountId] ?? null,
   // Real encoding — address assertions must mean something.
   resolveAddress: (accountId, chain) => toAddress(accountId, { prefix: chain?.addressPrefix }),
@@ -188,6 +190,15 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([assignedDraft, polkadotDraft], scope).map((d) => d.id)).toEqual(['draft-assigned']);
     });
 
+    test('search matches the initiator wallet name when the initiator has no name of its own', () => {
+      // Dave resolves to no account name, so the Initiator column falls back to
+      // the owning wallet's name — the query must match exactly that.
+      const walletOnlyDraft = createMockDraft({ id: 'draft-wallet-only', initiatorAccountId: DAVE_ACCOUNT_ID });
+      const scope = { ...emptyScope, searchQuery: 'Dave Proxy Wallet' };
+
+      expect(filterWithSearch([walletOnlyDraft, polkadotDraft], scope).map((d) => d.id)).toEqual(['draft-wallet-only']);
+    });
+
     test('search matches the initiator address with the draft chain prefix', () => {
       // Bob's accountId on Polkadot (prefix 0) starts with 14E5nq...
       const scope = { ...emptyScope, searchQuery: '14E5nq' };
@@ -266,6 +277,15 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: '15oF4' }).map((d) => d.id)).toEqual([
         'draft-nested',
       ]);
+    });
+
+    test('matches an intermediate hop by its owning wallet name when the account has none', () => {
+      // The root hop is neither the submitter nor the initiator; the panel shows
+      // it as its wallet's name (no account name, no contact), so the query must
+      // match that name too.
+      expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Team Multisig' }).map((d) => d.id)).toEqual(
+        ['draft-nested'],
+      );
     });
 
     test('matches the deepest multisig and the signer too', () => {

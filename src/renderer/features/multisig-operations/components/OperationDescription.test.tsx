@@ -52,7 +52,8 @@ vi.mock('@/shared/i18n', () => ({
         'operation.editDescriptionButton': 'Edit',
         'operation.editDescriptionTitle': 'Edit description',
         'operation.saveDescriptionButton': 'Save',
-        'operation.showDescriptionButton': 'Show full',
+        'operation.showLessButton': 'Show less',
+        'operation.showMoreButton': 'Show more',
       };
 
       return translations[key] ?? key;
@@ -163,6 +164,28 @@ describe('OperationDescription', () => {
     expect(screen.queryByRole('button', { name: 'Add description' })).not.toBeInTheDocument();
   });
 
+  it('renders the whole description inline without a modal', () => {
+    testState.description = 'Line one\nLine two of a fairly long note';
+
+    renderDescription();
+
+    expect(screen.getByText(/Line one/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument();
+  });
+
+  it('collapses descriptions longer than 620 characters behind Show more / Show less', async () => {
+    const user = userEvent.setup();
+    testState.description = `${'lorem ipsum '.repeat(60)}TAIL`;
+
+    renderDescription();
+
+    expect(screen.queryByText(/TAIL/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show more' }));
+    expect(screen.getByText(/TAIL/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show less' }));
+    expect(screen.queryByText(/TAIL/)).not.toBeInTheDocument();
+  });
+
   it('hides edit controls for an existing description when the multisig is missing from contacts', () => {
     testState.description = 'Already described';
     testState.values.set(testState.stores.contacts, []);
@@ -171,6 +194,25 @@ describe('OperationDescription', () => {
 
     expect(screen.getByText('Already described')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the cut when the tail is one long token', () => {
+    testState.description = `Note: ${'x'.repeat(700)}`;
+
+    renderDescription();
+
+    expect(screen.getByText(/^Note: x{100,}…$/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
+  });
+
+  it('hides Edit but keeps Show more for a long description when editing is not allowed', () => {
+    testState.description = 'x'.repeat(700);
+    testState.values.set(testState.stores.contacts, []);
+
+    renderDescription();
+
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument();
   });
 
   it('patches an existing description and updates the shared description cache', async () => {

@@ -1,16 +1,16 @@
 import { useUnit } from 'effector-react';
 
-import { type Draft, PERMISSIONS, useDrafts } from '@/domains/backend';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { type Draft, useDrafts } from '@/domains/backend';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { backendContactsModel } from '@/features/contacts';
+
+import { useCanReadDrafts } from './useCanReadDrafts';
 
 export function useReadableDrafts(): { drafts: Draft[]; available: boolean } {
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
-  const isAuthenticated = useUnit(authModel.$isAuthenticated);
-  const authState = useUnit(authModel.$authState);
   const isHealthy = useUnit(backendContactsModel.$isHealthy);
+  const canRead = useCanReadDrafts();
 
-  const canRead = isAuthenticated && !!authState?.permissions.includes(PERMISSIONS.OPERATION_DRAFT_READ);
   const available = isHealthy && canRead;
   const { data: drafts } = useDrafts(available ? backendUrl : null);
 

@@ -264,10 +264,39 @@ function accountMatchesSignatory(account: Pick<AnyAccount, 'accountId' | 'wallet
 }
 
 /**
+ * A wallet account the user can sign with on behalf of `signatory` on `chain`:
+ * it holds the signatory key, is not watch-only and is available on the chain.
+ */
+function canSignAsSignatory(account: AnyAccount, signatory: Signatory, chain: Chain): boolean {
+  return (
+    account.signingType !== SigningType.WATCH_ONLY &&
+    accountMatchesSignatory(account, signatory) &&
+    accountService.isAccountAvailableOnChain(account, chain)
+  );
+}
+
+/**
+ * Returns the multisig signatories the user owns on `chain` — those backed by
+ * at least one non-watch-only wallet account available on the chain. This is
+ * the set a "signed" state is about; the chain-availability check is what keeps
+ * it in step with `findActionableSignatories`.
+ */
+function findOwnSignatories(
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount,
+  walletAccounts: AnyAccount[],
+  chain: Chain | null | undefined,
+): Signatory[] {
+  if (!chain) return [];
+
+  return multisigAccount.signatories.filter(signatory =>
+    walletAccounts.some(account => canSignAsSignatory(account, signatory, chain)),
+  );
+}
+
+/**
  * Returns the user-controlled signatory accounts that can still act on this
- * operation — i.e. signatories that haven't approved yet, available on the
- * chain, and not watch-only. An empty array means "user can only reject / is
- * just waiting".
+ * operation — i.e. own signatories (see `findOwnSignatories`) that haven't
+ * approved yet. An empty array means "user can only reject / is just waiting".
  */
 function findActionableSignatories(
   op: Pick<MultisigOperation, 'events'>,
@@ -278,21 +307,28 @@ function findActionableSignatories(
   if (!chain) return [];
 
   const approvedBy = getApprovers(op);
-  const actionable: AnyAccount[] = [];
 
-  for (const signatory of multisigAccount.signatories) {
-    if (approvedBy.has(signatory.accountId)) continue;
+  return findOwnSignatories(multisigAccount, walletAccounts, chain)
+    .filter(signatory => !approvedBy.has(signatory.accountId))
+    .flatMap(signatory => walletAccounts.filter(account => canSignAsSignatory(account, signatory, chain)));
+}
 
-    for (const account of walletAccounts) {
-      if (account.signingType === SigningType.WATCH_ONLY) continue;
-      if (!accountMatchesSignatory(account, signatory)) continue;
-      if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+/**
+ * True when the user owns at least one signatory on `chain` and every own
+ * signatory has already approved — nothing is left for the user to sign.
+ */
+function hasSignedWithAllOwnSignatories(
+  op: Pick<MultisigOperation, 'events'>,
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount,
+  walletAccounts: AnyAccount[],
+  chain: Chain | null | undefined,
+): boolean {
+  const ownSignatories = findOwnSignatories(multisigAccount, walletAccounts, chain);
+  if (ownSignatories.length === 0) return false;
 
-      actionable.push(account);
-    }
-  }
+  const approvedBy = getApprovers(op);
 
-  return actionable;
+  return ownSignatories.every(signatory => approvedBy.has(signatory.accountId));
 }
 
 export const multisigOperationService = {
@@ -317,6 +353,8 @@ export const multisigOperationService = {
   getApprovers,
   getApprovalsCount,
   getOperationTimestamp,
+  findOwnSignatories,
   findActionableSignatories,
+  hasSignedWithAllOwnSignatories,
   accountMatchesSignatory,
 };

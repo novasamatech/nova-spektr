@@ -47,7 +47,16 @@ describe('createAccountNameCacheKey', () => {
 
     const key = createAccountNameCacheKey({ accountId, chain: polkadotChain });
 
-    expect(key).toBe(`${accountId}:${polkadotChainId}:${polkadotChain.addressPrefix}:`);
+    expect(key).toBe(`${accountId}:${polkadotChainId}:${polkadotChain.addressPrefix}::`);
+  });
+
+  it('should key on fallbackName, so the same account resolved with and without a wallet-name fallback gets its own slot', () => {
+    const accountId = createAccountId('arbitrary');
+
+    const plainKey = createAccountNameCacheKey({ accountId, chain: polkadotChain });
+    const fallbackKey = createAccountNameCacheKey({ accountId, chain: polkadotChain, fallbackName: 'Adams Keyset' });
+
+    expect(plainKey).not.toBe(fallbackKey);
   });
 });
 

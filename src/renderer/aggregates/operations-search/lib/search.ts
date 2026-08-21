@@ -1,6 +1,7 @@
 import { type Chain } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type WalletNameMode } from '@/domains/network';
 
 import { type SearchResolvers } from './account-name';
 
@@ -12,6 +13,13 @@ export type SearchAccountRef = {
    */
   chain: Chain | null;
   walletName: string | null;
+  /**
+   * Mirrors `<NamedAccount walletNameAs>`. `override` (default): the row
+   * displays the wallet name outright, so both it and the resolved account name
+   * are searchable. `fallback`: the row displays one name — the account's own,
+   * with the wallet name filling in — and the query matches exactly that.
+   */
+  walletNameAs?: WalletNameMode;
 };
 
 /**
@@ -65,7 +73,11 @@ export const searchOperationRows = (
     query: trimmedQuery,
     getMeta: row => ({
       accountNames: row.accounts
-        .flatMap(account => [account.walletName ?? '', resolvers.resolveAccountName(account.accountId, account.chain)])
+        .flatMap(account =>
+          account.walletNameAs === 'fallback'
+            ? [resolvers.resolveAccountName(account.accountId, account.chain, account.walletName ?? undefined)]
+            : [account.walletName ?? '', resolvers.resolveAccountName(account.accountId, account.chain)],
+        )
         .join(JOIN),
       accountAddresses: row.accounts
         .map(account => resolvers.resolveAddress(account.accountId, account.chain))

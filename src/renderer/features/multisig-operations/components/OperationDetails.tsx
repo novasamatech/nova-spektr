@@ -1,65 +1,100 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
-import { type MultisigOperation, accounts, multisigOperationService, useWalletName } from '@/domains/network';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { walletModel } from '@/entities/wallet';
+import { findCoreTransaction } from '@/entities/transaction';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { OperationAmount } from '@/widgets/transaction-amount';
+import { formatPalletCall } from '../lib/format-pallet-call';
+import { type OperationAmountValue } from '../lib/types';
 
 import { OperationDescription } from './OperationDescription';
 
 type Props = PropsWithChildren<{
   operation: MultisigOperation;
+  amount?: OperationAmountValue;
 }>;
 
-export const OperationDetails = ({ operation, children }: Props) => {
+type AccountRowProps = {
+  label: string;
+  accountId: AccountId;
+  chain: Chain | undefined;
+};
+
+// `walletNameAs="fallback"`, never `title`: the resolver must reach the account's
+// contact or identity name first; the wallet name only fills in where the stored
+// name would be a Vault derivation path.
+const AccountRow = ({ label, accountId, chain }: AccountRowProps) => (
+  <DetailRow label={label} className="text-text-secondary">
+    <NamedAccount
+      accountId={accountId}
+      chain={chain}
+      walletNameAs="fallback"
+      variant="short"
+      iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+    />
+  </DetailRow>
+);
+
+export const OperationDetails = ({ operation, amount, children }: Props) => {
   const { t, formatDate } = useI18n();
 
-  const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const allAccounts = useUnit(accounts.$list);
-
-  const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
-  const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
-  const depositorWalletName = useWalletName(depositorWallet ?? null);
 
   const approvals = multisigOperationService.getApprovals(operation);
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
   const date = new Date(operation.timestamp || initEvent?.timestamp || Date.now());
+
+  // Both ids are recorded on the operation at ingest; a Source exists only when the call really is proxied.
+  const multisigAccountId = operation.multisigAccountId;
+  const sourceAccountId = operation.proxiedAccountId;
+
+  // Proxy wrappers are unwrapped so the chip names the call a signer is actually
+  // authorising; the raw section/method fallback covers undecoded operations.
+  const coreTx = findCoreTransaction(operation.transaction);
+  const palletCall = formatPalletCall(coreTx?.section ?? operation.section, coreTx?.method ?? operation.method);
 
   return (
     <div className="flex flex-col gap-y-4 border-r border-divider p-4">
       <SmallTitleText>{t('operation.detailsTitle')}</SmallTitleText>
 
       <div className="flex flex-col gap-y-2">
-        {depositorSignatory && nonNullable(chain) && (
-          <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
-            {depositorWallet ? (
-              <div className="flex items-center gap-2">
-                <WalletIcon size={16} type={depositorWallet.type} />
-                <span>{depositorWalletName ?? depositorWallet.name}</span>
-                <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
-              </div>
-            ) : (
-              <div className="flex min-w-min">
-                <FootnoteText className="text-text-secondary">
-                  <NamedAccount accountId={depositorSignatory.accountId} chain={chain} variant="short" />
-                </FootnoteText>
-              </div>
-            )}
-          </DetailRow>
+        <DetailRow label={t('operation.details.dateTime')}>
+          <span>{formatDate(date, 'PPp')}</span>
+        </DetailRow>
+
+        <AccountRow label={t('operation.details.depositor')} accountId={operation.depositor} chain={chain} />
+
+        <AccountRow label={t('operation.details.multisig')} accountId={multisigAccountId} chain={chain} />
+
+        {sourceAccountId && (
+          <AccountRow label={t('operation.details.source')} accountId={sourceAccountId} chain={chain} />
         )}
 
         {children}
 
-        <DetailRow label={t('operation.details.dateTime')}>
-          <span>{formatDate(date, 'PPp')}</span>
-        </DetailRow>
+        {palletCall && (
+          <DetailRow label={t('operation.details.operationType')}>
+            <FootnoteText
+              as="span"
+              className="min-w-0 truncate rounded-md bg-tab-background px-2 py-0.5 font-mono text-text-primary"
+            >
+              {palletCall}
+            </FootnoteText>
+          </DetailRow>
+        )}
+
+        {amount && (
+          <DetailRow label={t('operation.details.amount')}>
+            <OperationAmount value={amount.value} asset={amount.asset} iconSize={22} />
+          </DetailRow>
+        )}
 
         <OperationDescription operation={operation} chain={chain} />
       </div>

@@ -5,7 +5,6 @@ import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Accordion, Button, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
-import { operationColumns } from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
@@ -14,6 +13,14 @@ import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
+import {
+  getCellProps,
+  getLeftBlockProps,
+  getRowProps,
+  operationColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -80,6 +87,8 @@ export const DraftRow = ({
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const backendContacts = useUnit(contactModel.$backendContacts);
+  const widths = useOperationColumnWidths();
+  const visibility = useOperationColumnVisibility();
 
   const chain = chains[draft.chainId as ChainId];
   const contact = backendContacts.find((c) => c.accountId === draft.multisigAccountId);
@@ -159,8 +168,8 @@ export const DraftRow = ({
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}
         <Accordion.Button buttonClass="px-4 text-left">
-          <div className="flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
-            <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+          <div {...getRowProps()}>
+            <div {...getLeftBlockProps(widths, visibility, 'gap-x-2')}>
               <DraftIcon />
 
               <div
@@ -181,93 +190,108 @@ export const DraftRow = ({
                 </div>
               </div>
 
-              {amount && (
-                <OperationAmount value={amount.value} asset={amount.asset} className={operationColumns.value} />
+              {visibility.value && (
+                <div {...getCellProps('value', widths)}>
+                  {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
+                </div>
               )}
             </div>
 
-            <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
-              {displayAccountId && (
-                <NamedAccount
-                  accountId={displayAccountId}
-                  chain={chain}
-                  wallet={displayWallet}
-                  iconSize={28}
-                  hideExplorers
-                  variant="short"
-                />
-              )}
-            </div>
-
-            <div className={cnTw(operationColumns.initiator, 'items-center')}>
-              {initiatorAccountId ? (
-                <NamedAccount
-                  accountId={initiatorAccountId}
-                  chain={chain}
-                  iconSize={28}
-                  hideExplorers
-                  variant="short"
-                />
-              ) : (
-                <FootnoteText className="truncate text-text-tertiary italic">
-                  {t('operations.drafts.noInitiator')}
-                </FootnoteText>
-              )}
-            </div>
-
-            <div className={operationColumns.description}>
-              <DraftDescription description={draft.description} />
-            </div>
-
-            <div className={operationColumns.status} />
-
-            <div className={cnTw(operationColumns.actions, 'flex items-center')} onClick={(e) => e.stopPropagation()}>
-              <div className="min-w-0 flex-1">
-                {isSubmitted ? (
-                  <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
-                    <CaptionText className="text-icon-positive uppercase">
-                      {t('operations.drafts.submittedBadge')}
-                    </CaptionText>
-                  </div>
-                ) : !hasInitiator ? (
-                  <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
-                ) : !draft.callData ? (
-                  <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
-                    <Tooltip.Trigger>
-                      <Button
-                        size="sm"
-                        variant="fill"
-                        className="w-full"
-                        disabled={!isAuthenticated || !canWrite}
-                        onClick={() => onSubmit(draft)}
-                      >
-                        {t('operations.drafts.addCallDataButton')}
-                      </Button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>
-                      {!isAuthenticated
-                        ? t('operations.drafts.connectToSubmit')
-                        : t('operations.drafts.noWritePermission')}
-                    </Tooltip.Content>
-                  </Tooltip>
-                ) : (
-                  <Tooltip open={isAuthenticated ? false : undefined}>
-                    <Tooltip.Trigger>
-                      <Button
-                        size="sm"
-                        variant="fill"
-                        className="w-full"
-                        disabled={!isAuthenticated}
-                        onClick={() => onSubmit(draft)}
-                      >
-                        {t('operations.drafts.submitButton')}
-                      </Button>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
-                  </Tooltip>
+            {visibility.submitter && (
+              <div {...getCellProps('submitter', widths)}>
+                {displayAccountId && (
+                  <NamedAccount
+                    accountId={displayAccountId}
+                    chain={chain}
+                    wallet={displayWallet}
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
+                  />
                 )}
               </div>
-            </div>
+            )}
+
+            {visibility.initiator && (
+              <div {...getCellProps('initiator', widths)}>
+                {initiatorAccountId ? (
+                  <NamedAccount
+                    accountId={initiatorAccountId}
+                    chain={chain}
+                    walletNameAs="fallback"
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
+                  />
+                ) : (
+                  <FootnoteText className="truncate text-text-tertiary italic">
+                    {t('operations.drafts.noInitiator')}
+                  </FootnoteText>
+                )}
+              </div>
+            )}
+
+            {/* A hidden Description leaves the same flexible spacer behind so the trailing
+                columns keep their place at the row's right edge. */}
+            {visibility.description ? (
+              <div className={cnTw(operationColumns.description, 'flex h-full items-center')}>
+                <DraftDescription description={draft.description} />
+              </div>
+            ) : (
+              <div className={operationColumns.descriptionSpacer} />
+            )}
+
+            {visibility.status && <div {...getCellProps('status', widths)} />}
+
+            {visibility.actions && (
+              <div {...getCellProps('actions', widths)} onClick={(e) => e.stopPropagation()}>
+                <div className="min-w-0 flex-1">
+                  {isSubmitted ? (
+                    <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">
+                      <CaptionText className="text-icon-positive uppercase">
+                        {t('operations.drafts.submittedBadge')}
+                      </CaptionText>
+                    </div>
+                  ) : !hasInitiator ? (
+                    <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
+                  ) : !draft.callData ? (
+                    <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="fill"
+                          className="w-full min-w-0 truncate whitespace-nowrap"
+                          disabled={!isAuthenticated || !canWrite}
+                          onClick={() => onSubmit(draft)}
+                        >
+                          {t('operations.drafts.addCallDataButton')}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>
+                        {!isAuthenticated
+                          ? t('operations.drafts.connectToSubmit')
+                          : t('operations.drafts.noWritePermission')}
+                      </Tooltip.Content>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip open={isAuthenticated ? false : undefined}>
+                      <Tooltip.Trigger>
+                        <Button
+                          size="sm"
+                          variant="fill"
+                          className="w-full min-w-0 truncate whitespace-nowrap"
+                          disabled={!isAuthenticated}
+                          onClick={() => onSubmit(draft)}
+                        >
+                          {t('operations.drafts.submitButton')}
+                        </Button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
+                    </Tooltip>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </Accordion.Button>
         <Accordion.Content>

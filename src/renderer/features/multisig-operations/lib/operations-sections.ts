@@ -12,6 +12,15 @@ export const SECTION_LABEL_KEYS: Record<OperationSection, string> = {
 };
 
 /**
+ * Copy for a section rendered with no rows. Only the always-present in-progress
+ * group can reach that state today; other sections are omitted when empty, so
+ * its copy doubles as the fallback for any section lacking its own.
+ */
+export const SECTION_EMPTY_LABEL_KEYS: { in_progress: string } & Partial<Record<OperationSection, string>> = {
+  in_progress: 'operations.sections.inProgressEmpty',
+};
+
+/**
  * Values selectable in the Status filter. Extends operation sections with
  * `drafts` — not an operation status, but the drafts section obeys the same
  * filter: it is visible only when no status is selected or `drafts` is.
@@ -39,7 +48,7 @@ export const isStatusFilterValue = (value: string): value is StatusFilterValue =
   return STATUS_FILTER_ORDER.some(status => status === value);
 };
 
-export const getOperationSection = (operation: MultisigOperation): OperationSection => {
+export const getOperationSection = (operation: Pick<MultisigOperation, 'status'>): OperationSection => {
   if (operation.status === 'pending') return 'in_progress';
   if (operation.status === 'executed') return 'completed';
 

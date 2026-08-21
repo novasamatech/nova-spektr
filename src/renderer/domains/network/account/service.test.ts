@@ -9,7 +9,7 @@ import {
   CryptoType,
   SigningType,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
   createPolkadotWallet,
@@ -663,6 +663,145 @@ describe('account service', () => {
       });
 
       expect(result).toBe('Main');
+    });
+
+    it('should use fallbackName over a generated stored name', () => {
+      const derivedAccountId = createAccountId('derived');
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: derivedAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: '//polkadot//0',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: derivedAccountId,
+        chain: polkadotChain,
+        accounts: [derivedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Adams Keyset');
+    });
+
+    it('should prioritize a backend contact over fallbackName', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'FINOPS_DOT_ADAM',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('FINOPS_DOT_ADAM');
+    });
+
+    it('should prioritize a custom account name over fallbackName', () => {
+      const customAccountId = createAccountId('custom-over-fallback');
+      const customAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: customAccountId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'Custom Account Name',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: customAccountId,
+        chain: polkadotChain,
+        accounts: [customAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Custom Account Name');
+    });
+
+    it('should use fallbackName instead of the short address for an unknown account', () => {
+      const unknownAccountId = createAccountId('unknown-with-fallback');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Adams Keyset');
+    });
+
+    it('skips an address-shaped fallback and keeps the stored account name', () => {
+      const multisigAccountId = createAccountId('multisig-with-address-fallback');
+      const multisigAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: multisigAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: 'E2E Multisig',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: multisigAccountId,
+        chain: polkadotChain,
+        accounts: [multisigAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: '14N1KQ...deJrHP',
+      });
+
+      expect(result).toBe('E2E Multisig');
+    });
+
+    it('skips an address-shaped fallback and falls through to the short address for an unknown account', () => {
+      const unknownAccountId = createAccountId('unknown-with-address-fallback');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: '5Grw...utQY',
+      });
+
+      expect(result).toBe(toShortAddress(toAddress(unknownAccountId, { prefix: polkadotChain.addressPrefix }), 5));
+    });
+
+    it('skips a user-typed wallet name that happens to look like a shortened address', () => {
+      // Documented trade-off of the address-shaped heuristic: the fallback is
+      // dropped, the resolver degrades to the short address, nothing breaks.
+      const unknownAccountId = createAccountId('unknown-with-address-like-wallet-name');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Main...Vault',
+      });
+
+      expect(result).toBe(toShortAddress(toAddress(unknownAccountId, { prefix: polkadotChain.addressPrefix }), 5));
     });
 
     it('should prioritize custom name over local contact', () => {

@@ -51,7 +51,7 @@ export {
   Table,
 } from './Table';
 export { Indicator } from './Indicator/Indicator';
-export { NotificationProvider, useNotification } from './NotificationContext';
+export { NotificationProvider, TOAST_WIDTH, useNotification } from './NotificationContext';
 export { Speedometer } from './Speedometer/Speedomenter';
 export { type DateRange, type DateRangePickerProps, DateRangePicker } from './DateRangePicker';
 

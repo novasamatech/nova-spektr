@@ -199,7 +199,12 @@ export const DraftFullInfo = ({
               <HelpText className="w-[64px] shrink-0 text-text-tertiary uppercase">
                 {t(PATH_ROLE_KEYS[node.kind])}
               </HelpText>
-              <NamedAccount variant="short" accountId={node.accountId} chain={chain ?? undefined} />
+              <NamedAccount
+                variant="short"
+                accountId={node.accountId}
+                chain={chain ?? undefined}
+                walletNameAs="fallback"
+              />
             </li>
           ))}
         </ul>

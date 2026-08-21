@@ -1,4 +1,5 @@
-export { type OperationTitle, operationTitleTransformer } from './components/Operation';
+export { type OperationTitle } from './lib/types';
+export { operationTitleTransformer } from './components/Operation';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationOverviewSlot } from './components/OperationSignatories';
 export { OperationIcon, operationIconTransformer } from './components/OperationIcon';
@@ -25,3 +26,6 @@ import './model/proxy-edit-details-feature';
 // The two panels are mutually exclusive at the data level — each renders null when its
 // own parser fails, so only the matching one shows.
 import './model/verify-proxy-details-feature';
+// Side-effect import: a draft deep link expands a collapsed Drafts group. Keep it last — it loads
+// the `@/features/drafts` barrel, which re-enters this one (see the module's comment).
+import './model/draft-deep-link-expand';

@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
@@ -14,12 +14,32 @@ is, who has already signed, and whether it is their turn. This view is where tha
 approving or rejecting it, inspecting its decoded call, supplying missing call data, following its event log, attaching
 a shared description, and (when the address book is connected) nudging the signatories who still need to act.
 
-The list is a **table**: a sticky column header (Operation / Value / Submitter / Initiator / Description) with sortable
-columns sits above rows grouped into collapsible **status sections** (In progress / Completed / Rejected). The
-**Initiator** column is hidden on narrower windows (shown at ≥1536px) so the extra column never forces horizontal
-scroll. The **Description** header label is shown only once the external address book has been connected (descriptions
-are address-book data) — the same gate that reveals the drafts section; until then the column area stays blank. Saved
-**drafts** awaiting submission appear as the first collapsible section under the same table header on the Pending tab.
+The list is a **table**. Above it sits the heading of the first visible group (Drafts when the drafts group is shown,
+otherwise In progress), then a sticky column header (Operation / Value / Submitter / Initiator / Description / Signed /
+Actions) that stays pinned across every group below — page → section → table. **Every column except Description is
+resizable**: drag the boundary in the header (double-click autofits; 180–440 / 120–300 / 140–440 / 140–440 / 90–220 /
+120–320 px), Description absorbs the slack, widths persist per user (see the
+[`operations-table-layout`](../../aggregates/operations-table-layout/README.md) aggregate), and widening past the window
+falls back to horizontal scroll. Handles are keyboard-operable (←/→ by 8px, Shift for 32px, Home = minimum, End =
+autofit). Column boundaries appear as hairlines in the header only; rows stay clean cards. A **settings** button closes
+the header row: it opens a menu that switches individual columns (Value, Submitter, Initiator, Description, Signed,
+Actions) on and off and offers **Reset to defaults**, which restores both the widths and the visibility. Choices persist
+per user and apply to draft rows too; a hidden column leaves no gap — Description keeps its flexible spacer so the
+trailing columns stay put. The **Initiator** column's default follows the window width (on from ≥1536px, off below)
+until the user decides in the menu, after which the choice sticks at every size; a hidden column stops counting toward
+the list's minimum width. The **Signed** caption sits over the "X of Y signed" pills on the Pending tab and reads
+**Status** on History and in the merged scope; **Actions** is hidden on History, which has no row actions. The
+**Description** header label is shown only once the external address book has been connected (descriptions are
+address-book data) — the same gate that reveals the drafts group; until then the column area stays blank. **In
+progress** is always present on the Pending tab — and in the merged "All operations" scope, which replaces the tabs —
+while no filter or search narrows the list — an empty group shows a dashed "No operations awaiting signatures"
+placeholder instead of disappearing; with a narrowing filter that matches nothing, the usual filtered empty state shows
+instead.
+
+Network sync progress is a persistent bottom-right toast (_Syncing networks… n/total_, hover for the per-chain list)
+that dismisses itself once every expected chain has reported; it never occupies the list. It carries a close button, and
+a closed toast stays closed for the current sync cycle — an offline session, where no network ever reports, is not shown
+it again on every visit to the page; the next sync cycle (a fresh set of expected networks) brings it back.
 
 ## Who can use it / when it applies
 
@@ -118,14 +138,20 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
 - **Value** — the operation's amount and asset, when one can be extracted from the (core) call.
 - **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
 - **Initiator** — the operation's depositor (its first approver — the co-signer others are waiting on), resolved to a
-  name the same way the expanded Depositor detail is. Hidden below 1536px to avoid horizontal scroll.
+  name the same way the expanded Depositor detail is (custom name → contact → identity → the owning wallet's name →
+  stored account name → short address). Shown by default only from 1536px up (to avoid horizontal scroll) until the user
+  switches it on or off in the column settings menu, after which that choice holds at every window size — for draft rows
+  too.
 - **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
   operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
   operation's description.
-- **Status** — a bordered pill: **"X of Y signed"** while pending, **Executed** or **Rejected** once resolved.
+- **Status** — under the _Signed_ / _Status_ caption, a bordered pill: **"X of Y signed"** while pending, **Executed**
+  or **Rejected** once resolved.
 - **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
-  external multisig). An operation [awaiting its final status](#awaiting-the-final-status) shows an **Updating status**
-  loader here instead.
+  external multisig). When the user owns at least one signatory and **every** one of them has already approved, a green
+  **Signed** pill takes the Approve slot ("Signed with all your signatory accounts") instead of an empty cell; Reject
+  stays available to a depositor who has signed. An operation [awaiting its final status](#awaiting-the-final-status)
+  shows an **Updating status** loader here instead.
 
 ### Awaiting the final status
 
@@ -142,9 +168,17 @@ other operation.
 There is no share button on the row — sharing lives in the expanded Signatories panel header. Expanding a row reveals
 three panels:
 
-- **Details** — depositor, timestamp, the recognised transaction's specifics, and the shared **operation description**
-  (preview with a "show full" expansion and an Edit action when editing is allowed). Special shapes render their bespoke
-  details here.
+- **Details** — a signer's verification sheet, account-first. Rows in fixed order: **Date & Time**; **Depositor** — the
+  individual signatory account that reserved the multisig deposit, resolved like any account (custom name → contact →
+  identity → the owning wallet's name → stored account name → short address) — the wallet name only ever fills in for a
+  key the address book doesn't know, it never overrides a contact name; **Multisig** — the multisig account itself (for
+  a flexible multisig, the backing multisig); **Source** — only for proxied operations, the proxied account the call
+  executes from (for a flexible multisig, its pure proxy); then the recognised transaction's specifics (Recipient,
+  networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
+  (verification data, not a title; omitted when the call is unknown); **Amount** when the row's Value cell shows one;
+  and the shared **operation description** as full wrapped text under a hairline (descriptions past 620 characters
+  collapse behind _Show more_), with an Edit action when editing is allowed. Special shapes render their bespoke details
+  here.
 - **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
   remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
@@ -169,7 +203,8 @@ On a resolved operation without a description the cell is simply empty.
 ### Signatories and the log
 
 The Signatories panel header carries two tabs — **Signatories** and **Log** (with a badge counting the operation's
-events) — plus header actions:
+events) — styled as one segmented control (the selected tab sits on the grey tab background, the other is tertiary text)
+— plus header actions:
 
 - **Notify remaining signers** — on a pending operation with the address-book backend connected and the multisig known
   to the external address book, a button that nudges the still-pending signatories (see
@@ -179,9 +214,11 @@ events) — plus header actions:
 - **Share** — copies the operation's deep link (with a confirmation toast).
 
 **Signatory list.** A single flat list of all signatories, ordered so the story reads top-to-bottom: a signatory who
-**rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory
-resolves to its wallet or contact name where known (falling back to a short, copyable address) and carries a status chip
-— **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
+**rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory is
+resolved as an _account_ — custom name → local/backend contact → identity → the owning wallet's name → stored account
+name → short, copyable address — so a Vault-derived key shows its address-book name rather than its derivation path, and
+falls back to its keyset name (not the derivation path) when the address book has no entry for it. Each carries a status
+chip — **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
 
 **The Log.** The Log tab shows a chronological activity feed of the operation's on-chain lifecycle inline, grouped by
 day (oldest first). It distinguishes three event kinds:
@@ -261,11 +298,11 @@ action, and a re-sync badge).
 
 ### Description states
 
-An **existing** description is always shown — inline in the row's Description cell, and in the Details panel (preview
-with a "show full" expansion); only the ability to **add or edit** it depends on the state below. Adding and editing
-happen in a shared description editor modal, reachable from both the row cell and the Details panel. The **empty**
-description area is shown, or not, per this rule (in this view the operation is always a multisig and never a draft
-submission):
+An **existing** description is always shown — inline in the row's Description cell, and in the Details panel (full
+wrapped text, collapsed behind _Show more_ past 620 characters); only the ability to **add or edit** it depends on the
+state below. Adding and editing happen in a shared description editor modal, reachable from both the row cell and the
+Details panel. The **empty** description area is shown, or not, per this rule (in this view the operation is always a
+multisig and never a draft submission):
 
 ```mermaid
 flowchart TD
@@ -370,14 +407,18 @@ the scope — it narrows the current tab. Clearing the filters restores the tabs
 
 ### Sections, sorting, and navigation
 
-Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** — each with
-a collapsible header showing its count (so the Pending tab has one section, History has up to two, and the merged scope
-can additionally show a trailing **Hidden** section when the Status filter selects it). Collapsing a section is
-remembered while the page is open; a deep link into a collapsed section expands it so the target can be focused. The
-list is virtualised for long histories.
+Within a tab, operations are grouped into **status sections** — **In progress**, **Completed**, **Rejected** (plus a
+trailing **Hidden** section in the merged scope, when the Status filter selects it) — each with a collapsible heading
+showing its count (so the Pending tab has one section, History has up to two). **The first visible group's heading is
+rendered above the sticky column header** and toggles that group; every other group's heading sits inline in the list,
+above its rows. **Drafts**, when shown, is that first group — its heading (label, count) is drawn by this view and its
+collapse state lives here too, not in the `drafts` feature. Collapsing a group is remembered for as long as the app runs
+— leaving and reopening the page keeps it; a deep link into a collapsed group (an operation's or a draft's) expands it
+so the target can be focused. The list is virtualised for long histories.
 
 The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
-ascending → descending → off:
+ascending → descending → off. Sorting and resizing are independent: the resize handle swallows its click so dragging
+never toggles a sort.
 
 - **Operation** — by the recognised operation type (its internal type identifier, so like operations group together; the
   order does not exactly match the displayed titles).
@@ -427,13 +468,15 @@ A **Clear** control appears once any filter is active.
 ### Drafts section
 
 On the **Pending** tab (once the address book has ever been connected), saved operation **drafts** render as the first
-collapsible section of the table — under the shared column header, above the status sections — styled and column-aligned
-like operation rows, newest first. The section obeys the **Status filter** (visible with no status selected, or when
-**Drafts** is selected). A draft row shows the would-be operation (title, network and creation date, amount, submitter),
-an Edit action, and its primary control (submit or the step it is blocked on); like an operation row it **expands** into
-a details panel; drafts can be shared, edited, and deleted subject to backend permissions. Once a draft is submitted, it
-leaves the section and its resulting operation row is badged **FROM DRAFT**. The drafts flow itself (creation, review,
-submission, the row's panels) belongs to the `drafts` feature — this view only hosts its section.
+group of the table — its heading sits above the sticky column header, styled and column-aligned like operation rows,
+newest first. This view draws the Drafts heading (label and count) and owns its collapse state; the `drafts` feature's
+own section renders only the rows and the New-draft control below it. The group obeys the **Status filter** (visible
+with no status selected, or when **Drafts** is selected). A draft row shows the would-be operation (title, network and
+creation date, amount, submitter), an Edit action, and its primary control (submit or the step it is blocked on); like
+an operation row it **expands** into a details panel; drafts can be shared, edited, and deleted subject to backend
+permissions. Once a draft is submitted, it leaves the group and its resulting operation row is badged **FROM DRAFT**.
+The drafts flow itself (creation, review, submission, the row's panels) belongs to the `drafts` feature — this view only
+hosts its group.
 
 ## Lifecycle
 

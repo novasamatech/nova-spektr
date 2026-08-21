@@ -16,6 +16,7 @@ export type {
   AnyAccountDraft,
   ChainAccount,
   UniversalAccount,
+  WalletNameMode,
 } from './account/types';
 
 export { accountSync } from './account-sync/store';

@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, validateCallData } from '@/shared/lib/utils';
-import { Button, FootnoteText, Loader } from '@/shared/ui';
+import { Button, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import {
   type MultisigOperation,
@@ -20,6 +20,11 @@ import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { ApproveTxModal } from './modals/ApproveTx';
 import { CallDataModal } from './modals/CallDataModal';
 import { RejectTxModal } from './modals/RejectTx';
+
+// `Button` wraps its children in a plain `<div>`; the ellipsis has to live on that
+// text box (a flex item) rather than on the flex `<button>` itself, or the label
+// just clips at the column's minimum width.
+const BUTTON_CLASS_NAME = 'w-full min-w-0 [&>div]:min-w-0 [&>div]:truncate';
 
 type Props = {
   operation: MultisigOperation;
@@ -84,6 +89,16 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   const needsCallData = isActionable && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
+  // Nothing left to approve because the user already did — say so instead of leaving a blank cell.
+  // "Own" is decided by the same service predicate that gates Approve, so the two can never disagree.
+  const hasSignedWithAllOwn = multisigOperationService.hasSignedWithAllOwnSignatories(
+    operation,
+    account,
+    allAccounts,
+    chain,
+  );
+  const isSignedByUser = !isContact && isActionable && !isApproveAvailable && !needsCallData && hasSignedWithAllOwn;
+
   if (!chain && !isContact) return null;
 
   if (isContact) {
@@ -96,26 +111,41 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   return (
     <div className={cnTw('grid w-[220px] shrink-0 grid-cols-2 gap-x-2', className)} onClick={e => e.stopPropagation()}>
-      <div className="flex">
+      <div className="flex min-w-0">
         {api && chain && isRejectAvailable && (
           <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button pallet="error" variant="fill" size="sm" className="w-full">
+            <Button pallet="error" variant="fill" size="sm" className={BUTTON_CLASS_NAME}>
               {t('operation.rejectButton')}
             </Button>
           </RejectTxModal>
         )}
       </div>
-      <div className="flex">
+      <div className="flex min-w-0">
         {api && chain && isApproveAvailable && (
           <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button size="sm" className="w-full">
+            <Button size="sm" className={BUTTON_CLASS_NAME}>
               {t('operation.approveButton')}
             </Button>
           </ApproveTxModal>
         )}
+        {isSignedByUser && (
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div
+                tabIndex={0}
+                aria-label={t('operation.signedTooltip')}
+                className="inline-flex h-7 w-full min-w-0 items-center justify-center gap-x-1 rounded-full bg-badge-green-background-default px-3 text-button-small text-text-positive"
+              >
+                <Icon name="checkmarkOutline" size={14} className="shrink-0 text-icon-positive" />
+                <span className="min-w-0 truncate">{t('operation.signedButton')}</span>
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('operation.signedTooltip')}</Tooltip.Content>
+          </Tooltip>
+        )}
         {api && chain && needsCallData && (
           <CallDataModal api={api} operation={operation} chain={chain}>
-            <Button size="sm" variant="chip" className="w-full whitespace-nowrap">
+            <Button size="sm" variant="chip" className={BUTTON_CLASS_NAME}>
               {t('operation.callData.addCallDataButton')}
             </Button>
           </CallDataModal>

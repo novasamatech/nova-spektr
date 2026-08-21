@@ -143,6 +143,46 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
   return true;
 };
 
+/**
+ * Whether the filter narrows the list in any way: a search query, a
+ * network/type/proxy-type selection, a date range, or a status selection other
+ * than `in_progress`. Selecting only `in_progress` matches the default view, so
+ * it narrows nothing.
+ */
+export const hasNarrowingFilter = (filters: OperationsFilterCriteria): boolean => {
+  return (
+    filters.searchQuery.trim().length > 0 ||
+    filters.network.length > 0 ||
+    filters.type.length > 0 ||
+    filters.proxyType.length > 0 ||
+    nonNullable(filters.dateRange?.from) ||
+    nonNullable(filters.dateRange?.to) ||
+    filters.status.some(status => status !== 'in_progress')
+  );
+};
+
+/**
+ * Whether the In-progress group stays in the list even with no rows in it. The
+ * merged "All operations" scope replaces the tabs, so it counts as the pending
+ * view here; `hasNarrowingFilter` alone decides whether the list is narrowed —
+ * a filter or search that matches nothing shows the filtered empty state
+ * instead of an empty group.
+ */
+export const shouldAlwaysShowInProgress = ({
+  tab,
+  isScopeMerged,
+  filter,
+}: {
+  tab: OperationsFilterTab;
+  isScopeMerged: boolean;
+  filter: OperationsFilterCriteria;
+}): boolean => {
+  // `isScopeMerged` is not redundant with the tab: the context model forces the tab to 'pending'
+  // on the filter change that merges the scope, but that sample runs after the sectioning combine
+  // has already recomputed once in the same tick with the old tab.
+  return (tab === 'pending' || isScopeMerged) && !hasNarrowingFilter(filter);
+};
+
 type WalletSearchSources = {
   accounts: AnyAccount[];
   contacts: Contact[];
@@ -186,12 +226,12 @@ export const buildOperationSearchRow = (
         walletName: walletNames.get(account.walletId) ?? null,
       },
       {
-        // Initiator, shown in the expanded details. When the depositor belongs
-        // to a local wallet, `OperationDetails` renders its wallet name rather
-        // than the resolved account name, so search must cover it too.
+        // Initiator (row cell and expanded Depositor row) resolves by account
+        // with the wallet name as fallback — search matches exactly that name.
         accountId: operation.depositor,
         chain: initiatorChain,
         walletName: resolveWalletName(operation.depositor, initiatorChain),
+        walletNameAs: 'fallback',
       },
     ],
     // Rendered, but fetched only for operations that already passed the filter —

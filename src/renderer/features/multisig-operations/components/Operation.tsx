@@ -1,11 +1,9 @@
-import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
 import {
   type Asset,
-  type AssetByChains,
   type Chain,
   type ChainId,
   type DecodedTransaction,
@@ -17,11 +15,10 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
-import { operationColumns } from '@/shared/ui/operations-table-layout';
 import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleStatus, operationDetailsUtils } from '@/entities/operations';
 import {
@@ -31,10 +28,19 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import {
+  getCellProps,
+  getLeftBlockProps,
+  getRowProps,
+  operationColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
+import { type OperationTitle } from '../lib/types';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { deepLinkModel } from '../model/deep-link';
 import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
@@ -51,16 +57,6 @@ type Props = {
   isDefaultOpen?: boolean;
   chains: Record<ChainId, Chain>;
   wallets: Wallet[];
-};
-
-export type OperationTitle = {
-  title?: string;
-  amount?: {
-    value: BN | string;
-    asset: Asset | AssetByChains;
-  };
-  sourceChainId?: ChainId;
-  destinationChainId?: ChainId; // For XCM transactions
 };
 
 /**
@@ -88,6 +84,8 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const { t } = useI18n();
   const description = useOperationDescription(operation.id);
   const isDraftLinked = useIsDraftLinkedOperation(operation.id);
+  const widths = useOperationColumnWidths();
+  const visibility = useOperationColumnVisibility();
 
   const resolveRecipientWarning = useUnit(recipientVerificationModel.$resolveWarning);
   const destinationAccountId = operationDetailsUtils.getDestinationAccountId(operation) ?? null;
@@ -97,12 +95,6 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     () => wallets.find(w => w.id === multisigAccount.walletId),
     [wallets, multisigAccount.walletId],
   );
-
-  const allAccounts = useUnit(accounts.$list);
-  const depositorWallet = useMemo(() => {
-    const depositorSignatory = allAccounts.find(a => a.accountId === operation.depositor);
-    return depositorSignatory ? wallets.find(w => w.id === depositorSignatory.walletId) : undefined;
-  }, [allAccounts, wallets, operation.depositor]);
 
   const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = isFlexibleMultisigAccount ? findCoreTransaction(operation.transaction) : operation.transaction;
@@ -125,12 +117,17 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     t,
   });
 
+  // Memoised so the expanded row's `memo(OperationFullInfo)` sees the same `amount` reference between renders.
+  const amount = useMemo(() => {
+    const value = coreTx ? getTransactionAmount(coreTx) : null;
+
+    return asset && value ? { value, asset } : undefined;
+  }, [coreTx, asset]);
+
   let titleData: OperationTitle;
   if (externalTitle) {
     titleData = externalTitle;
   } else {
-    const amount = coreTx ? getTransactionAmount(coreTx) : null;
-
     titleData = {
       title:
         coreTx?.section && coreTx?.method
@@ -138,7 +135,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           : operation.section && operation.method
             ? formatSectionAndMethod(operation.section, operation.method)
             : t('operations.titles.unknown'),
-      amount: asset && amount ? { value: amount, asset } : undefined,
+      amount,
       sourceChainId: operation.chainId,
     };
   }
@@ -152,13 +149,13 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}
         <Accordion.Button buttonClass="px-4 text-left">
-          <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
+          <div {...getRowProps('group/row')}>
             {proxyEdit ? (
-              <div className={operationColumns.leftBlock}>
+              <div {...getLeftBlockProps(widths, visibility)}>
                 <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
               </div>
             ) : verifyProxy ? (
-              <div className={operationColumns.leftBlock}>
+              <div {...getLeftBlockProps(widths, visibility)}>
                 <VerifyProxyOperationCard
                   info={verifyProxy}
                   chain={chains[operation.chainId]}
@@ -166,7 +163,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 />
               </div>
             ) : (
-              <div className={cnTw(operationColumns.leftBlock, 'flex items-center gap-x-2')}>
+              <div {...getLeftBlockProps(widths, visibility, 'gap-x-2')}>
                 <OperationIcon operation={operation} account={multisigAccount} />
 
                 <div
@@ -181,71 +178,90 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                     ))}
                 </div>
 
-                {titleData.amount && (
-                  <OperationAmount
-                    value={titleData.amount.value}
-                    asset={titleData.amount.asset}
-                    className={operationColumns.value}
+                {visibility.value && (
+                  <div {...getCellProps('value', widths)}>
+                    {titleData.amount && (
+                      <OperationAmount value={titleData.amount.value} asset={titleData.amount.asset} />
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {visibility.submitter && (
+              <div {...getCellProps('submitter', widths)}>
+                {accountAddress && (
+                  <NamedAccount
+                    accountId={multisigAccount.accountId}
+                    chain={isFlexibleMultisigAccount ? chains[multisigAccount.chainId] : undefined}
+                    wallet={wallet}
+                    iconSize={28}
+                    hideExplorers
+                    variant="short"
                   />
                 )}
               </div>
             )}
 
-            <div className={cnTw(operationColumns.submitter, 'flex items-center')}>
-              {accountAddress && (
+            {visibility.initiator && (
+              <div {...getCellProps('initiator', widths)}>
                 <NamedAccount
-                  accountId={multisigAccount.accountId}
-                  chain={isFlexibleMultisigAccount ? chains[multisigAccount.chainId] : undefined}
-                  wallet={wallet}
+                  accountId={operation.depositor}
+                  chain={chains[operation.chainId]}
+                  walletNameAs="fallback"
                   iconSize={28}
                   hideExplorers
                   variant="short"
                 />
-              )}
-            </div>
-
-            <div className={cnTw(operationColumns.initiator, 'items-center')}>
-              <NamedAccount
-                accountId={operation.depositor}
-                chain={chains[operation.chainId]}
-                wallet={depositorWallet}
-                iconSize={28}
-                hideExplorers
-                variant="short"
-              />
-            </div>
-
-            <div className={cnTw(operationColumns.description, 'flex items-center gap-x-2')}>
-              {isDraftLinked && (
-                <Tooltip open={description ? undefined : false}>
-                  <Tooltip.Trigger>
-                    <div className="inline-flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
-                      <CaptionText className="text-icon-accent uppercase">
-                        {t('operations.drafts.operationBadge')}
-                      </CaptionText>
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{description}</Tooltip.Content>
-                </Tooltip>
-              )}
-              <div className="min-w-0 flex-1">
-                <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
               </div>
-              <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
-            </div>
+            )}
 
-            <div className={cnTw(operationColumns.status, 'flex justify-center')}>
-              <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
-            </div>
+            {/* A hidden Description leaves the same flexible spacer behind so the trailing
+                columns keep their place at the row's right edge. */}
+            {visibility.description ? (
+              <div className={cnTw(operationColumns.description, 'flex h-full items-center gap-x-2')}>
+                {isDraftLinked && (
+                  <Tooltip open={description ? undefined : false}>
+                    <Tooltip.Trigger>
+                      <div className="inline-flex shrink-0 items-center rounded-[20px] border border-icon-accent/30 bg-icon-accent/8 px-2.5 py-1">
+                        <CaptionText className="text-icon-accent uppercase">
+                          {t('operations.drafts.operationBadge')}
+                        </CaptionText>
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{description}</Tooltip.Content>
+                  </Tooltip>
+                )}
+                <div className="min-w-0 flex-1">
+                  <OperationDescriptionCell operation={operation} chain={chains[operation.chainId]} />
+                </div>
+                <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
+              </div>
+            ) : (
+              <div className={operationColumns.descriptionSpacer} />
+            )}
 
-            <div className={cnTw(operationColumns.actions, 'flex justify-end')}>
-              <OperationActions operation={operation} account={multisigAccount} className="w-full" />
-            </div>
+            {visibility.status && (
+              <div {...getCellProps('status', widths, 'justify-center')}>
+                <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
+              </div>
+            )}
+
+            {visibility.actions && (
+              <div {...getCellProps('actions', widths, 'justify-end')}>
+                <OperationActions operation={operation} account={multisigAccount} className="w-full" />
+              </div>
+            )}
           </div>
         </Accordion.Button>
         <Accordion.Content>
           <div className="border-t border-divider">
-            <OperationFullInfo operation={operation} account={multisigAccount} deepLink={deepLink} />
+            <OperationFullInfo
+              operation={operation}
+              account={multisigAccount}
+              amount={titleData.amount}
+              deepLink={deepLink}
+            />
           </div>
         </Accordion.Content>
       </Accordion>

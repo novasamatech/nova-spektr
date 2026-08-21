@@ -28,18 +28,15 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
 import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bucketOperations } from '../lib/bucket-operations';
 import {
   type WalletSearchEntry,
   buildOperationSearchRow,
   filterOperation,
   getWalletSearchEntries,
+  shouldAlwaysShowInProgress,
 } from '../lib/operations-filter';
-import {
-  type OperationSection,
-  type StatusFilterValue,
-  SECTION_ORDER,
-  getOperationSection,
-} from '../lib/operations-sections';
+import { type StatusFilterValue, getOperationSection } from '../lib/operations-sections';
 import { type OperationsSort, type SortKey, getNextSortState, sortOperations } from '../lib/operations-sort';
 import { type OperationWithAccount } from '../lib/types';
 
@@ -369,11 +366,15 @@ const $visibleOperationsCount = $filteredOperations.map(operations => operations
 const sortToggled = createEvent<SortKey>();
 const $sort = createStore<OperationsSort>(null).on(sortToggled, getNextSortState);
 
-const toggleSection = createEvent<OperationSection>();
-const $collapsedSections = createStore<Partial<Record<OperationSection, boolean>>>({}).on(
-  toggleSection,
-  (state, section) => ({ ...state, [section]: !state[section] }),
-);
+// The drafts group shares this state, hence `StatusFilterValue` rather than `OperationSection`.
+// Never reset: a collapsed group stays collapsed for as long as the app runs, across page visits.
+const toggleSection = createEvent<StatusFilterValue>();
+// Deep links target it (see `draft-deep-link-expand.ts` for the Drafts group): a link must land on
+// a visible row. Same-reference return keeps an already expanded group from emitting an update.
+const expandSection = createEvent<StatusFilterValue>();
+const $collapsedSections = createStore<Partial<Record<StatusFilterValue, boolean>>>({})
+  .on(toggleSection, (state, section) => ({ ...state, [section]: !state[section] }))
+  .on(expandSection, (state, section) => (state[section] ? { ...state, [section]: false } : state));
 
 const $sectionedOperations = combine(
   {
@@ -386,31 +387,24 @@ const $sectionedOperations = combine(
     identities: identity.$list,
     hiddenIds: $hiddenOperationIds,
     isScopeMerged: $isScopeMerged,
+    tab: $tab,
+    filter: $filter,
   },
-  ({ operations, sort, chains, wallets, allAccounts, contacts, identities, hiddenIds, isScopeMerged }) => {
-    const buckets = new Map<OperationSection, OperationWithAccount[]>();
-    for (const item of operations) {
-      // In the merged scope hidden ops (surfaced via the Status filter) get their
-      // own trailing section; on the Hidden tab they keep their status sections.
-      const isHidden = isScopeMerged && hiddenIds.includes(item.operation.id);
-      const section = isHidden ? 'hidden' : getOperationSection(item.operation);
-      const list = buckets.get(section) ?? [];
-      list.push(item);
-      buckets.set(section, list);
-    }
+  ({ operations, sort, chains, wallets, allAccounts, contacts, identities, hiddenIds, isScopeMerged, tab, filter }) => {
+    // In the merged scope hidden ops (surfaced via the Status filter) get their
+    // own trailing section; on the Hidden tab they keep their status sections.
+    const buckets = bucketOperations(operations, {
+      hiddenIds,
+      isScopeMerged,
+      // The Pending tab (and the merged scope, which replaces the tabs) keeps its In-progress
+      // group even when empty — but only when nothing narrows the list.
+      alwaysShowInProgress: shouldAlwaysShowInProgress({ tab, isScopeMerged, filter }),
+    });
 
-    const sections: { section: OperationSection; items: OperationWithAccount[] }[] = [];
-    for (const section of SECTION_ORDER) {
-      const items = buckets.get(section);
-      if (!items) continue;
-
-      sections.push({
-        section,
-        items: sortOperations(items, sort, { chains, wallets, accounts: allAccounts, contacts, identities }),
-      });
-    }
-
-    return sections;
+    return buckets.map(({ section, items }) => ({
+      section,
+      items: sortOperations(items, sort, { chains, wallets, accounts: allAccounts, contacts, identities }),
+    }));
   },
 );
 
@@ -535,6 +529,26 @@ const $chainSyncState = combine(
   }),
 );
 
+// One boolean for the sync toast: a wallet without multisig accounts never syncs anything
+// (`$expectedChainIds` stays empty forever, so the toast would never dismiss), otherwise we
+// are syncing until every expected chain has reported.
+const $isChainSyncing = combine($multisigAccounts, $chainSyncState, (multisigAccounts, { expected, fetched }) => {
+  return multisigAccounts.length > 0 && (expected.length === 0 || fetched.length < expected.length);
+});
+
+// Closing the toast is remembered for the session: offline, `expected` stays empty for as long as
+// no API connects, so `$isChainSyncing` never drops and every visit to the page would re-create a
+// toast the user already closed. A new set of expected chains (a fresh subscription, or the reset
+// on leaving the page) starts a new sync cycle and shows the toast again.
+const syncToastDismissed = createEvent();
+const $isSyncToastDismissed = createStore(false)
+  .on(syncToastDismissed, () => true)
+  .reset(multisigOperation.$expectedChainIds);
+
+const $isSyncToastVisible = combine($isChainSyncing, $isSyncToastDismissed, (syncing, dismissed) => {
+  return syncing && !dismissed;
+});
+
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
@@ -553,6 +567,9 @@ export const operationsContextModel = {
   $historyOperationsCount,
   $visibleOperationsCount,
   $chainSyncState,
+  $isChainSyncing,
+  $isSyncToastDismissed,
+  $isSyncToastVisible,
   $sort,
   $collapsedSections,
 
@@ -563,4 +580,6 @@ export const operationsContextModel = {
   unhideOperation,
   sortToggled,
   toggleSection,
+  expandSection,
+  syncToastDismissed,
 };

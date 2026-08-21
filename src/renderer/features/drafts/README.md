@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
@@ -9,15 +9,19 @@ operation — its call, its signing path, and a mandatory description of intent 
 the shared **address-book backend**, so every co-signer with access sees the same draft list, and any of them (with the
 right permissions) can review, edit, share, submit, or delete a draft.
 
-Drafts surface as a collapsible **Drafts section** inside the operations table on the
-[Operations view's](../multisig-operations/README.md) Pending tab — the first section under the shared column header,
-styled and column-aligned like operation rows, gated by the view's Status filter and narrowed by the filters a draft can
-evaluate (network, date range, search; an active transaction-type or proxy-type filter hides all drafts — see the
-Operations view spec). Search matches a draft's description and the names and addresses of every account it shows — the
-proxy, the multisig and the assigned **initiator** — so "which drafts is Adam expected to submit?" is answerable by
-typing a name, without opening each draft's Submit dialog (see
-[`operations-search`](../../aggregates/operations-search/README.md)). A compact subsection with the same submit gating
-also appears in the dashboard's operations queue.
+Drafts surface as a **Drafts group** inside the operations table on the
+[Operations view's](../multisig-operations/README.md) Pending tab — the first group, styled and column-aligned like
+operation rows, gated by the view's Status filter and narrowed by the filters a draft can evaluate (network, date range,
+search; an active transaction-type or proxy-type filter hides all drafts — see the Operations view spec). Because it is
+the first visible group, its **heading (label and count) is drawn and its collapse state is owned by the Operations
+view**, not by this feature: `useDraftsSectionState` (in `lib/useDraftsSectionState.ts`) is the one source of truth for
+whether the group renders, its rows and the count the heading shows (`0` for an empty group, like the In-progress group;
+no chip while the address book is unhealthy), and `DraftsSection` (`components/DraftsSection.tsx`) reads the same hook
+to render only the rows and the New-draft control, taking `isCollapsed` as a prop instead of drawing its own header.
+Search matches a draft's description and the names and addresses of every account it shows — the proxy, the multisig and
+the assigned **initiator** — so "which drafts is Adam expected to submit?" is answerable by typing a name, without
+opening each draft's Submit dialog (see [`operations-search`](../../aggregates/operations-search/README.md)). A compact
+subsection with the same submit gating also appears in the dashboard's operations queue.
 
 Because drafts live on the backend they are inherently multi-user: shareable via a deep link
 (`Paths.OPERATIONS?draftId=…`), auto-fetched on sign-in, and re-polled every 30s — so every client picks up others' add
@@ -46,9 +50,11 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
 - **Value** — the amount and asset, when one can be extracted from the call.
 - **Submitter** — the draft's source account (the proxied source for a proxy-routed draft, otherwise the multisig),
   resolved to a name.
-- **Initiator** — the draft's assigned signer (`initiatorAccountId`), resolved via address-book contacts the same way
-  the Signing-path panel is (contact name, short-address fallback for unknown accounts). A draft with no assigned
-  initiator stays visible with an explicit **Unassigned** mark. Hidden below 1536px to avoid horizontal scroll.
+- **Initiator** — the draft's assigned signer (`initiatorAccountId`), resolved like any account — custom name →
+  address-book contact → identity → the owning wallet's name → stored account name → short address — in both the
+  collapsed row and the Signing-path panel. A draft with no assigned initiator stays visible with an explicit
+  **Unassigned** mark. Like the operations' Initiator column it is shown by default only from 1536px up, until the user
+  decides in the Operations view's column settings menu — that choice then holds at every window size.
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
 - **Actions** — one primary control:
 

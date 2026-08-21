@@ -1,8 +1,9 @@
+import { type ReactNode, useState } from 'react';
+
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { resolveDescriptionAreaState } from '@/shared/lib/operation-description/resolveDescriptionAreaState';
-import { Button, DetailRow, FootnoteText } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Button, FootnoteText } from '@/shared/ui';
 import { useOperationDescription } from '@/domains/backend';
 import { type MultisigOperation } from '@/domains/network';
 import { ReconnectAddressBookButton } from '@/features/contacts';
@@ -16,42 +17,58 @@ type Props = {
   chain: Chain | undefined;
 };
 
-const DESCRIPTION_PREVIEW_LENGTH = 40;
+/** Past this length the text is cut at a word boundary behind "Show more". */
+const DESCRIPTION_COLLAPSE_LENGTH = 620;
+
+/**
+ * Keep the word-boundary trim only when it preserves most of the budget (a long
+ * hash/URL at the cut would otherwise blank the text).
+ */
+const COLLAPSE_TRIM_FLOOR = DESCRIPTION_COLLAPSE_LENGTH * 0.8;
+
+const collapseDescription = (description: string) => {
+  const raw = description.slice(0, DESCRIPTION_COLLAPSE_LENGTH);
+  const trimmed = raw.replace(/\s+\S*$/, '');
+
+  return `${trimmed.length > COLLAPSE_TRIM_FLOOR ? trimmed : raw}…`;
+};
+
+type BlockProps = {
+  action?: ReactNode;
+  children: ReactNode;
+};
+
+/** Label row + content underneath, separated from the rows above by a hairline. */
+const DescriptionBlock = ({ action, children }: BlockProps) => {
+  const { t } = useI18n();
+
+  return (
+    <div className="mt-0.5 flex flex-col gap-y-1.5 border-t border-divider pt-3">
+      <div className="flex items-center gap-x-2">
+        <FootnoteText className="text-text-tertiary">{t('operation.descriptionLabel')}</FootnoteText>
+        <span className="flex-1" />
+        {action}
+      </div>
+      <div className="flex min-w-0 flex-col items-start gap-y-1">{children}</div>
+    </div>
+  );
+};
 
 export const OperationDescription = ({ operation, chain }: Props) => {
   const { t } = useI18n();
   const description = useOperationDescription(operation.id);
   const { canEdit, hasWritePermission, isInAddressBook, isHealthy, hasEverConnected } =
     useDescriptionEditing(operation);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (description) {
-    const isLongDescription = description.length > DESCRIPTION_PREVIEW_LENGTH;
-    const preview = isLongDescription
-      ? `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH).trimEnd()}...`
-      : description;
+    const isLong = description.length > DESCRIPTION_COLLAPSE_LENGTH;
+    const shown = isLong && !isExpanded ? collapseDescription(description) : description;
 
     return (
-      <DetailRow label={t('operation.descriptionLabel')}>
-        <div className="flex min-w-0 items-center justify-end gap-x-3">
-          <FootnoteText className="max-w-full truncate text-right text-text-secondary">{preview}</FootnoteText>
-          {isLongDescription && (
-            <Modal size="mdlg" height="fit">
-              <Modal.Trigger>
-                <Button size="sm" variant="text" className="shrink-0 p-0">
-                  {t('operation.showDescriptionButton')}
-                </Button>
-              </Modal.Trigger>
-              <Modal.Title close>{t('operation.descriptionLabel')}</Modal.Title>
-              <Modal.Content>
-                <div className="px-5 py-4">
-                  <FootnoteText className="break-words whitespace-pre-wrap text-text-secondary">
-                    {description}
-                  </FootnoteText>
-                </div>
-              </Modal.Content>
-            </Modal>
-          )}
-          {canEdit && (
+      <DescriptionBlock
+        action={
+          canEdit && (
             <DescriptionEditorModal
               operation={operation}
               trigger={
@@ -60,9 +77,22 @@ export const OperationDescription = ({ operation, chain }: Props) => {
                 </Button>
               }
             />
-          )}
-        </div>
-      </DetailRow>
+          )
+        }
+      >
+        <FootnoteText className="break-words whitespace-pre-wrap text-text-primary">{shown}</FootnoteText>
+        {isLong && (
+          <Button
+            size="sm"
+            variant="text"
+            className="p-0"
+            aria-expanded={isExpanded}
+            onClick={() => setIsExpanded(expanded => !expanded)}
+          >
+            {isExpanded ? t('operation.showLessButton') : t('operation.showMoreButton')}
+          </Button>
+        )}
+      </DescriptionBlock>
     );
   }
 
@@ -79,17 +109,17 @@ export const OperationDescription = ({ operation, chain }: Props) => {
 
   if (state === 'error') {
     return (
-      <DetailRow label={t('operation.descriptionLabel')} wrapperClassName="items-start">
+      <DescriptionBlock>
         <div className="flex w-full flex-wrap items-center gap-x-1 gap-y-1 rounded-lg border border-alert-border-negative bg-alert-background-negative p-3 text-footnote text-text-primary">
           <DescriptionNotInBookMessage operation={operation} chain={chain} />
         </div>
-      </DetailRow>
+      </DescriptionBlock>
     );
   }
 
   if (state === 'reconnect') {
     return (
-      <DetailRow label={t('operation.descriptionLabel')}>
+      <DescriptionBlock>
         <ReconnectAddressBookButton
           size="sm"
           variant="text"
@@ -97,12 +127,12 @@ export const OperationDescription = ({ operation, chain }: Props) => {
           label={t('addressBook.auth.reconnectButton')}
           className="shrink-0 gap-x-1 p-0"
         />
-      </DetailRow>
+      </DescriptionBlock>
     );
   }
 
   return (
-    <DetailRow label={t('operation.descriptionLabel')}>
+    <DescriptionBlock>
       <DescriptionEditorModal
         operation={operation}
         trigger={
@@ -111,6 +141,6 @@ export const OperationDescription = ({ operation, chain }: Props) => {
           </Button>
         }
       />
-    </DetailRow>
+    </DescriptionBlock>
   );
 };

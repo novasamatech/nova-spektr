@@ -5,7 +5,7 @@ import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, nullable, toAccountId } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText } from '@/shared/ui';
+import { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow, FootnoteText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import {
@@ -81,7 +81,12 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount
+            accountId={toAccountId(delegate)}
+            variant="short"
+            iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+            chain={chain}
+          />
         </DetailRow>,
       );
     }
@@ -89,7 +94,12 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemoveProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount
+            accountId={toAccountId(delegate)}
+            variant="short"
+            iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+            chain={chain}
+          />
         </DetailRow>,
       );
     }
@@ -97,7 +107,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <NamedAccount accountId={sender} variant="short" chain={chain} />
+          <NamedAccount accountId={sender} variant="short" iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE} chain={chain} />
         </DetailRow>,
       );
     }

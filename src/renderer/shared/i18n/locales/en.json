@@ -2824,7 +2824,8 @@
     "editDescriptionButton": "Edit",
     "editDescriptionTitle": "Edit description",
     "saveDescriptionButton": "Save",
-    "showDescriptionButton": "Show full",
+    "showLessButton": "Show less",
+    "showMoreButton": "Show more",
     "createFlexibleMultisig": {
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
@@ -2856,7 +2857,9 @@
       "description": "Description",
       "destinationChain": "To network",
       "fromNetwork": "From network",
+      "multisig": "Multisig",
       "multisigWallet": "Wallet",
+      "operationType": "Operation type",
       "parsedFile": "Parsed file",
       "payee": "Rewards destination",
       "recipient": "Recipient",
@@ -2868,6 +2871,7 @@
       "senderAccount": "Sender account",
       "senderProxiedWallet": "Sender proxied wallet",
       "signerAccount": "Signer Account",
+      "source": "Source",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
@@ -2949,6 +2953,8 @@
     },
     "signatoriesTitle": "Signatories",
     "signatoriesTitleCount": "Signatories { count }",
+    "signedButton": "Signed",
+    "signedTooltip": "Signed with all your signatory accounts",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "awaitingOutcomeDescription": "Waiting for the final status — it will be updated automatically when network data is received",
@@ -3180,6 +3186,7 @@
       "completed": "Completed",
       "hidden": "Hidden",
       "inProgress": "In progress",
+      "inProgressEmpty": "No operations awaiting signatures",
       "rejected": "Rejected"
     },
     "shareOperationTooltip": "Share transaction link with signatories",
@@ -3190,14 +3197,22 @@
       "syncing": "Syncing networks... {synced}/{total}"
     },
     "table": {
+      "actions": "Actions",
+      "columns": "Columns",
       "operation": "Operation",
       "value": "Value",
       "submitter": "Submitter",
       "initiator": "Initiator",
       "description": "Description",
+      "resetDefaults": "Reset to defaults",
+      "resizeColumn": "Resize {column} column",
+      "resizeHint": "Drag to resize · double-click to autofit",
+      "settings": "Table settings",
+      "signed": "Signed",
       "sortByType": "Sort by operation type",
       "sortByValue": "Sort by value (amount, vote stake, etc.)",
-      "sortBySubmitter": "Sort by submitter"
+      "sortBySubmitter": "Sort by submitter",
+      "status": "Status"
     },
     "tabs": {
       "all": "All operations",

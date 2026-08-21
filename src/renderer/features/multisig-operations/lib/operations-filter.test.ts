@@ -17,16 +17,19 @@ import { type OperationSearchRow, type SearchResolvers, searchOperationRows } fr
 
 import {
   type OperationsFilterContext,
+  type OperationsFilterCriteria,
   buildOperationSearchRow,
   filterOperation,
   getFilterableTxType,
   getWalletSearchEntries,
+  hasNarrowingFilter,
   matchesDateRange,
   matchesNetwork,
   matchesProxyType,
   matchesStatus,
   matchesTab,
   matchesTxType,
+  shouldAlwaysShowInProgress,
 } from './operations-filter';
 
 const MOCK_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
@@ -360,7 +363,9 @@ describe('operations-filter', () => {
 
     const names: Record<string, string> = { [ALICE_ID]: 'Alice Multisig', [BOB_ID]: 'Adam Initiator' };
     const resolvers: Pick<SearchResolvers, 'resolveAccountName' | 'resolveAddress'> = {
-      resolveAccountName: accountId => names[accountId] ?? '',
+      // Mirrors the real resolver: a known (contact/identity) name wins, the
+      // caller's fallback only fills in when there is none.
+      resolveAccountName: (accountId, _chain, fallbackName) => names[accountId] ?? fallbackName ?? '',
       // Real encoding — the prefix assertions below depend on it.
       resolveAddress: (accountId, chain) => toAddress(accountId, { prefix: chain?.addressPrefix }),
     };
@@ -368,7 +373,7 @@ describe('operations-filter', () => {
     const search = (rows: OperationSearchRow[], query: string) => searchOperationRows(rows, query, resolvers);
 
     // Initiator wallet-name resolver. Defaults to none so the address /
-    // account-name assertions below are unaffected; the dedicated test supplies one.
+    // account-name assertions below are unaffected; the dedicated tests supply one.
     const noInitiatorWallet = (): string | null => null;
 
     test('returns null for an empty query so no filtering is applied', () => {
@@ -406,14 +411,26 @@ describe('operations-filter', () => {
       expect(search([row], 'Adam')).toEqual(new Set(['op-1']));
     });
 
-    test('matches the initiator wallet name shown in the details panel', () => {
-      // A local-wallet depositor renders as its wallet name (not the resolved
-      // account name) in OperationDetails, so search must cover it.
-      const op = createMockOperation({ depositor: BOB_ID });
-      const resolveWallet = (accountId: AccountId): string | null => (accountId === BOB_ID ? 'Initiator Vault' : null);
+    test('matches the initiator wallet name when the depositor has no contact of its own', () => {
+      // Charlie has no resolved account name, so the Initiator cell falls back
+      // to the owning wallet's name — search must match exactly that.
+      const op = createMockOperation({ depositor: CHARLIE_ID });
+      const resolveWallet = (accountId: AccountId): string | null =>
+        accountId === CHARLIE_ID ? 'Charlies Keyset' : null;
       const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), resolveWallet);
 
-      expect(search([row], 'Initiator Vault')).toEqual(new Set(['op-1']));
+      expect(search([row], 'Charlies Keyset')).toEqual(new Set(['op-1']));
+    });
+
+    test('matches the initiator contact name, not the wallet name, when the depositor has a contact', () => {
+      // Bob resolves to a contact name, so the wallet name never reaches the
+      // screen — and must not be searchable either.
+      const op = createMockOperation({ depositor: BOB_ID });
+      const resolveWallet = (accountId: AccountId): string | null => (accountId === BOB_ID ? 'Bobs Keyset' : null);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), resolveWallet);
+
+      expect(search([row], 'Adam')).toEqual(new Set(['op-1']));
+      expect(search([row], 'Bobs Keyset')).toEqual(new Set());
     });
 
     test('matches the initiator address formatted with the operation chain prefix', () => {
@@ -660,6 +677,102 @@ describe('operations-filter', () => {
       });
 
       expect(entries).toEqual([{ id: 1, name: 'multisig wallet' }]);
+    });
+  });
+
+  describe('hasNarrowingFilter', () => {
+    const emptyFilter: OperationsFilterCriteria = {
+      network: [],
+      type: [],
+      proxyType: [],
+      status: [],
+      dateRange: undefined,
+      searchQuery: '',
+    };
+
+    test('empty filter narrows nothing', () => {
+      expect(hasNarrowingFilter(emptyFilter)).toBe(false);
+    });
+
+    test('blank search query narrows nothing', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, searchQuery: '   ' })).toBe(false);
+    });
+
+    test('search query narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, searchQuery: 'alice' })).toBe(true);
+    });
+
+    test('in_progress status alone narrows nothing', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['in_progress'] })).toBe(false);
+    });
+
+    test('any other status narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['completed'] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, status: ['in_progress', 'completed'] })).toBe(true);
+    });
+
+    test('network, type, proxy type and date range narrow the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, network: [MOCK_CHAIN_ID] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, type: [TransactionType.TRANSFER] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, proxyType: ['Any'] })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, dateRange: { from: new Date('2024-01-01') } })).toBe(true);
+    });
+  });
+
+  describe('shouldAlwaysShowInProgress', () => {
+    const emptyFilter: OperationsFilterCriteria = {
+      network: [],
+      type: [],
+      proxyType: [],
+      status: [],
+      dateRange: undefined,
+      searchQuery: '',
+    };
+
+    test('kept on the pending tab with no filter', () => {
+      expect(shouldAlwaysShowInProgress({ tab: 'pending', isScopeMerged: false, filter: emptyFilter })).toBe(true);
+    });
+
+    test('kept in the merged scope when only in_progress is selected', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, status: ['in_progress'] },
+        }),
+      ).toBe(true);
+    });
+
+    test('dropped when another status narrows the list', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, status: ['completed'] },
+        }),
+      ).toBe(false);
+    });
+
+    test('dropped for a network filter or a search query', () => {
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: true,
+          filter: { ...emptyFilter, network: [MOCK_CHAIN_ID] },
+        }),
+      ).toBe(false);
+      expect(
+        shouldAlwaysShowInProgress({
+          tab: 'pending',
+          isScopeMerged: false,
+          filter: { ...emptyFilter, searchQuery: 'alice' },
+        }),
+      ).toBe(false);
+    });
+
+    test('dropped on the history and hidden tabs outside the merged scope', () => {
+      expect(shouldAlwaysShowInProgress({ tab: 'history', isScopeMerged: false, filter: emptyFilter })).toBe(false);
+      expect(shouldAlwaysShowInProgress({ tab: 'hidden', isScopeMerged: false, filter: emptyFilter })).toBe(false);
     });
   });
 });
