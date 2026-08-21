@@ -17,12 +17,7 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
-import {
-  ROW_SEPARATOR_CLASS,
-  getColumnStyle,
-  getLeftBlockWidth,
-  operationColumns,
-} from '@/shared/ui/operations-table-layout';
+import { getColumnStyle, getLeftBlockWidth, operationColumns } from '@/shared/ui/operations-table-layout';
 import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
@@ -196,7 +191,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
                 {visibility.value && (
                   <div
-                    className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                    className={cnTw(operationColumns.value, 'flex h-full items-center')}
                     style={getColumnStyle(widths.value)}
                   >
                     {titleData.amount && (
@@ -209,7 +204,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             {visibility.submitter && (
               <div
-                className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                className={cnTw(operationColumns.submitter, 'flex h-full items-center')}
                 style={getColumnStyle(widths.submitter)}
               >
                 {accountAddress && (
@@ -227,7 +222,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             {visibility.initiator && (
               <div
-                className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                className={cnTw(operationColumns.initiator, 'flex h-full items-center')}
                 style={getColumnStyle(widths.initiator)}
               >
                 <NamedAccount
@@ -244,9 +239,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             {/* A hidden Description leaves the same flexible spacer behind so the trailing
                 columns keep their place at the row's right edge. */}
             {visibility.description ? (
-              <div
-                className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center gap-x-2')}
-              >
+              <div className={cnTw(operationColumns.description, 'flex h-full items-center gap-x-2')}>
                 {isDraftLinked && (
                   <Tooltip open={description ? undefined : false}>
                     <Tooltip.Trigger>
@@ -270,11 +263,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             {visibility.status && (
               <div
-                className={cnTw(
-                  operationColumns.status,
-                  ROW_SEPARATOR_CLASS,
-                  'flex h-full items-center justify-center',
-                )}
+                className={cnTw(operationColumns.status, 'flex h-full items-center justify-center')}
                 style={getColumnStyle(widths.status)}
               >
                 <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
@@ -283,7 +272,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             {visibility.actions && (
               <div
-                className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-end')}
+                className={cnTw(operationColumns.actions, 'flex h-full items-center justify-end')}
                 style={getColumnStyle(widths.actions)}
               >
                 <OperationActions operation={operation} account={multisigAccount} className="w-full" />

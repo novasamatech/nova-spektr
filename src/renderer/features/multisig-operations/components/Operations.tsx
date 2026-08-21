@@ -179,8 +179,7 @@ export const Operations = () => {
       {hasMultisigAccounts && (
         <div className="h-full overflow-x-auto overflow-y-hidden" data-operations-scroller>
           <div
-            className={cnTw('group/list h-full', isResizing && 'select-none')}
-            data-resizing={isResizing || undefined}
+            className={cnTw('h-full', isResizing && 'select-none')}
             style={showTable ? { minWidth: getOperationsMinWidth(widths, visibility) } : undefined}
           >
             <ScrollArea viewportRef={scrollRef}>

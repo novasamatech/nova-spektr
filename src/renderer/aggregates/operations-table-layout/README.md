@@ -18,8 +18,7 @@ Shared by the operations rows, the drafts rows and the sticky column header so a
   default.
 - Widths persist per user in local storage (`operations-table-column-widths`) and sync across windows; a stored value
   from an older build or a hand-edited one is merged over the defaults and clamped to each column's range.
-- `$resizingColumn` is set for the duration of a drag so every row can show its column hairlines, not just the hovered
-  one.
+- `$resizingColumn` is set for the duration of a drag so the list can suspend text selection while the pointer moves.
 
 ## Used by
 

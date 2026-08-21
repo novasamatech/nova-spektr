@@ -146,13 +146,9 @@ export const operationColumns = {
 } as const;
 
 /**
- * Hairline on the left edge of a cell, drawn in the middle of the 8px gap. Rows
- * reveal it on hover (`group/row`) and while a column is being resized
- * (`group/list` + `data-resizing`); the header shows it permanently via
- * `HEADER_SEPARATOR_CLASS`.
+ * Hairline on the left edge of a header cell, drawn in the middle of the 8px
+ * gap. Only the header marks column boundaries — rows stay clean cards.
  */
-export const ROW_SEPARATOR_CLASS =
-  'relative before:absolute before:-left-1 before:top-[13px] before:bottom-[13px] before:w-px before:bg-divider before:opacity-0 before:transition-opacity group-hover/row:before:opacity-100 group-data-[resizing=true]/list:before:opacity-100';
 export const HEADER_SEPARATOR_CLASS =
   'relative before:absolute before:-left-1 before:top-1.5 before:bottom-1.5 before:w-px before:bg-divider';
 

@@ -5,12 +5,7 @@ import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Accordion, Button, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
-import {
-  ROW_SEPARATOR_CLASS,
-  getColumnStyle,
-  getLeftBlockWidth,
-  operationColumns,
-} from '@/shared/ui/operations-table-layout';
+import { getColumnStyle, getLeftBlockWidth, operationColumns } from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
@@ -194,7 +189,7 @@ export const DraftRow = ({
 
               {visibility.value && (
                 <div
-                  className={cnTw(operationColumns.value, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                  className={cnTw(operationColumns.value, 'flex h-full items-center')}
                   style={getColumnStyle(widths.value)}
                 >
                   {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
@@ -204,7 +199,7 @@ export const DraftRow = ({
 
             {visibility.submitter && (
               <div
-                className={cnTw(operationColumns.submitter, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                className={cnTw(operationColumns.submitter, 'flex h-full items-center')}
                 style={getColumnStyle(widths.submitter)}
               >
                 {displayAccountId && (
@@ -222,7 +217,7 @@ export const DraftRow = ({
 
             {visibility.initiator && (
               <div
-                className={cnTw(operationColumns.initiator, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                className={cnTw(operationColumns.initiator, 'flex h-full items-center')}
                 style={getColumnStyle(widths.initiator)}
               >
                 {initiatorAccountId ? (
@@ -245,7 +240,7 @@ export const DraftRow = ({
             {/* A hidden Description leaves the same flexible spacer behind so the trailing
                 columns keep their place at the row's right edge. */}
             {visibility.description ? (
-              <div className={cnTw(operationColumns.description, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}>
+              <div className={cnTw(operationColumns.description, 'flex h-full items-center')}>
                 <DraftDescription description={draft.description} />
               </div>
             ) : (
@@ -253,15 +248,12 @@ export const DraftRow = ({
             )}
 
             {visibility.status && (
-              <div
-                className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')}
-                style={getColumnStyle(widths.status)}
-              />
+              <div className={cnTw(operationColumns.status, 'h-full')} style={getColumnStyle(widths.status)} />
             )}
 
             {visibility.actions && (
               <div
-                className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+                className={cnTw(operationColumns.actions, 'flex h-full items-center')}
                 style={getColumnStyle(widths.actions)}
                 onClick={(e) => e.stopPropagation()}
               >
