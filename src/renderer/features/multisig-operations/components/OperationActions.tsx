@@ -96,26 +96,26 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   return (
     <div className={cnTw('grid w-[220px] shrink-0 grid-cols-2 gap-x-2', className)} onClick={e => e.stopPropagation()}>
-      <div className="flex">
+      <div className="flex min-w-0">
         {api && chain && isRejectAvailable && (
           <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button pallet="error" variant="fill" size="sm" className="w-full">
+            <Button pallet="error" variant="fill" size="sm" className="w-full min-w-0 truncate whitespace-nowrap">
               {t('operation.rejectButton')}
             </Button>
           </RejectTxModal>
         )}
       </div>
-      <div className="flex">
+      <div className="flex min-w-0">
         {api && chain && isApproveAvailable && (
           <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button size="sm" className="w-full">
+            <Button size="sm" className="w-full min-w-0 truncate whitespace-nowrap">
               {t('operation.approveButton')}
             </Button>
           </ApproveTxModal>
         )}
         {api && chain && needsCallData && (
           <CallDataModal api={api} operation={operation} chain={chain}>
-            <Button size="sm" variant="chip" className="w-full whitespace-nowrap">
+            <Button size="sm" variant="chip" className="w-full min-w-0 truncate whitespace-nowrap">
               {t('operation.callData.addCallDataButton')}
             </Button>
           </CallDataModal>

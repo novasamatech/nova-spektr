@@ -239,10 +239,14 @@ export const DraftRow = ({
               <DraftDescription description={draft.description} />
             </div>
 
-            <div className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')} />
+            <div
+              className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'h-full')}
+              style={getColumnStyle(widths.status)}
+            />
 
             <div
               className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center')}
+              style={getColumnStyle(widths.actions)}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="min-w-0 flex-1">

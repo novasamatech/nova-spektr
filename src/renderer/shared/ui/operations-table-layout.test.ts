@@ -5,6 +5,7 @@ import {
   COLUMN_FIT_WIDTHS,
   COLUMN_MAX_WIDTHS,
   COLUMN_MIN_WIDTHS,
+  RESIZABLE_COLUMNS,
   clampColumnWidth,
   getLeftBlockWidth,
   getOperationsMinWidth,
@@ -22,7 +23,7 @@ describe('operations-table-layout', () => {
   });
 
   it('fit widths sit inside the allowed range', () => {
-    for (const column of ['operation', 'value', 'submitter', 'initiator'] as const) {
+    for (const column of RESIZABLE_COLUMNS) {
       expect(COLUMN_FIT_WIDTHS[column]).toBeGreaterThanOrEqual(COLUMN_MIN_WIDTHS[column]);
       expect(COLUMN_FIT_WIDTHS[column]).toBeLessThanOrEqual(COLUMN_MAX_WIDTHS[column]);
     }
@@ -37,6 +38,11 @@ describe('operations-table-layout', () => {
     expect(getOperationsMinWidth({ ...COLUMN_DEFAULT_WIDTHS, submitter: 304 }, { showInitiator: false })).toBe(
       1060 + 124,
     );
+  });
+
+  it('the trailing columns count towards the min width', () => {
+    expect(getOperationsMinWidth({ ...COLUMN_DEFAULT_WIDTHS, actions: 208 }, { showInitiator: false })).toBe(1060 + 40);
+    expect(getOperationsMinWidth({ ...COLUMN_DEFAULT_WIDTHS, status: 150 }, { showInitiator: false })).toBe(1060 + 40);
   });
 
   it('counts the initiator column only while it is visible', () => {

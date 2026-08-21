@@ -18,6 +18,8 @@ const LABEL_KEYS: Record<ResizableColumn, string> = {
   value: 'operations.table.resizeValue',
   submitter: 'operations.table.resizeSubmitter',
   initiator: 'operations.table.resizeInitiator',
+  status: 'operations.table.resizeStatus',
+  actions: 'operations.table.resizeActions',
 };
 
 /** Arrow-key resize step; Shift switches to the coarse one. */

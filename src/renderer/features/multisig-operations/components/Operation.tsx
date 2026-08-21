@@ -257,12 +257,14 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
             <div
               className={cnTw(operationColumns.status, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-center')}
+              style={getColumnStyle(widths.status)}
             >
               <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
             </div>
 
             <div
               className={cnTw(operationColumns.actions, ROW_SEPARATOR_CLASS, 'flex h-full items-center justify-end')}
+              style={getColumnStyle(widths.actions)}
             >
               <OperationActions operation={operation} account={multisigAccount} className="w-full" />
             </div>

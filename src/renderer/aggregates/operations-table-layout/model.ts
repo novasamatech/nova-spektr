@@ -6,6 +6,7 @@ import {
   type ResizableColumn,
   COLUMN_DEFAULT_WIDTHS,
   COLUMN_FIT_WIDTHS,
+  RESIZABLE_COLUMNS,
   clampColumnWidth,
 } from '@/shared/ui/operations-table-layout';
 
@@ -26,10 +27,10 @@ const $resizingColumn = createStore<ResizableColumn | null>(null)
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
 /**
- * Stored widths may come from an older build (missing a column, e.g.
- * `initiator` added later) or be hand-edited to something out of range or
- * non-numeric. Fill missing columns with defaults, drop non-numbers, and clamp
- * the rest so a stored payload can never produce an invalid width.
+ * Stored widths may come from an older build (missing a column, e.g. `status`
+ * and `actions` became resizable later) or be hand-edited to something out of
+ * range or non-numeric. Fill missing columns with defaults, drop non-numbers,
+ * and clamp the rest so a stored payload can never produce an invalid width.
  */
 export const sanitizeColumnWidths = (stored: unknown): ColumnWidths => {
   const source = isRecord(stored) ? stored : {};
@@ -37,15 +38,16 @@ export const sanitizeColumnWidths = (stored: unknown): ColumnWidths => {
   const widthFor = (column: ResizableColumn): number => {
     const value = source[column];
     const numericWidth = typeof value === 'number' && Number.isFinite(value) ? value : COLUMN_DEFAULT_WIDTHS[column];
+
     return clampColumnWidth(column, numericWidth);
   };
 
-  return {
-    operation: widthFor('operation'),
-    value: widthFor('value'),
-    submitter: widthFor('submitter'),
-    initiator: widthFor('initiator'),
-  };
+  const widths = { ...COLUMN_DEFAULT_WIDTHS };
+  for (const column of RESIZABLE_COLUMNS) {
+    widths[column] = widthFor(column);
+  }
+
+  return widths;
 };
 
 // A stored value from an older build or a hand-edited one is merged over the

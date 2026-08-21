@@ -1,7 +1,12 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { COLUMN_DEFAULT_WIDTHS, COLUMN_FIT_WIDTHS, COLUMN_MAX_WIDTHS } from '@/shared/ui/operations-table-layout';
+import {
+  COLUMN_DEFAULT_WIDTHS,
+  COLUMN_FIT_WIDTHS,
+  COLUMN_MAX_WIDTHS,
+  COLUMN_MIN_WIDTHS,
+} from '@/shared/ui/operations-table-layout';
 import { operationsTableLayoutModel, sanitizeColumnWidths } from '../model';
 
 describe('operationsTableLayoutModel', () => {
@@ -41,6 +46,17 @@ describe('sanitizeColumnWidths', () => {
     expect(sanitizeColumnWidths({ operation: 9999, value: 'wide', submitter: NaN })).toEqual({
       ...COLUMN_DEFAULT_WIDTHS,
       operation: COLUMN_MAX_WIDTHS.operation,
+    });
+  });
+
+  it('fills the status and actions columns added in a later build', () => {
+    expect(sanitizeColumnWidths({ operation: 300 })).toMatchObject({
+      status: COLUMN_DEFAULT_WIDTHS.status,
+      actions: COLUMN_DEFAULT_WIDTHS.actions,
+    });
+    expect(sanitizeColumnWidths({ status: 9999, actions: 10 })).toMatchObject({
+      status: COLUMN_MAX_WIDTHS.status,
+      actions: COLUMN_MIN_WIDTHS.actions,
     });
   });
 

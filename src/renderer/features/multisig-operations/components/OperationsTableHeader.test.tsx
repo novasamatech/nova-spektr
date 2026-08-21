@@ -154,6 +154,12 @@ describe('OperationsTableHeader', () => {
     expect(testState.columnAutofit).toHaveBeenCalledWith('value');
   });
 
+  it('the actions column has its own resize handle', () => {
+    render(<OperationsTableHeader />);
+    fireEvent.doubleClick(screen.getByLabelText('operations.table.resizeActions'));
+    expect(testState.columnAutofit).toHaveBeenCalledWith('actions');
+  });
+
   it('the initiator caption is not sortable but has its own resize handle', () => {
     render(<OperationsTableHeader />);
     const caption = screen.getByText('operations.table.initiator');

@@ -1,23 +1,70 @@
 import { type CSSProperties } from 'react';
 
-export type ResizableColumn = 'operation' | 'value' | 'submitter' | 'initiator';
+export type ResizableColumn = 'operation' | 'value' | 'submitter' | 'initiator' | 'status' | 'actions';
 export type ColumnWidths = Record<ResizableColumn, number>;
 
-export const COLUMN_DEFAULT_WIDTHS: ColumnWidths = { operation: 240, value: 140, submitter: 180, initiator: 180 };
-export const COLUMN_MIN_WIDTHS: ColumnWidths = { operation: 180, value: 120, submitter: 140, initiator: 140 };
-export const COLUMN_MAX_WIDTHS: ColumnWidths = { operation: 440, value: 300, submitter: 440, initiator: 440 };
+/**
+ * Every resizable column, in visual order — iterate this instead of casting
+ * `Object.keys`.
+ */
+export const RESIZABLE_COLUMNS: readonly ResizableColumn[] = [
+  'operation',
+  'value',
+  'submitter',
+  'initiator',
+  'status',
+  'actions',
+];
+
+export const COLUMN_DEFAULT_WIDTHS: ColumnWidths = {
+  operation: 240,
+  value: 140,
+  submitter: 180,
+  initiator: 180,
+  status: 110,
+  actions: 168,
+};
+export const COLUMN_MIN_WIDTHS: ColumnWidths = {
+  operation: 180,
+  value: 120,
+  submitter: 140,
+  initiator: 140,
+  status: 90,
+  actions: 120,
+};
+export const COLUMN_MAX_WIDTHS: ColumnWidths = {
+  operation: 440,
+  value: 300,
+  submitter: 440,
+  initiator: 440,
+  status: 220,
+  actions: 320,
+};
 /** Double-click autofit targets — wide enough for the longest realistic value. */
-export const COLUMN_FIT_WIDTHS: ColumnWidths = { operation: 268, value: 164, submitter: 304, initiator: 304 };
+export const COLUMN_FIT_WIDTHS: ColumnWidths = {
+  operation: 268,
+  value: 164,
+  submitter: 304,
+  initiator: 304,
+  status: 110,
+  actions: 168,
+};
 /** The Initiator column only renders at this viewport width (Tailwind `2xl`). */
 export const INITIATOR_COLUMN_MEDIA_QUERY = '(min-width: 1536px)';
 
 /** `gap-x-2` between cells. */
 const CELL_GAP = 8;
 /**
- * Fixed (non-resizable) trailing cells: status 110 + actions 168 + chevron 16,
- * each preceded by a gap.
+ * The `w-4` cell closing the row (chevron on rows, settings menu in the
+ * header).
  */
-const TRAILING_WIDTH = CELL_GAP + 110 + CELL_GAP + 168 + CELL_GAP + 16;
+const CHEVRON_WIDTH = 16;
+/**
+ * Trailing cells — status, actions and the chevron slot, each preceded by a
+ * gap.
+ */
+const getTrailingWidth = (widths: ColumnWidths) =>
+  CELL_GAP + widths.status + CELL_GAP + widths.actions + CELL_GAP + CHEVRON_WIDTH;
 /** Row horizontal padding (`px-4`) on both sides. */
 const ROW_PADDING = 32;
 /** Space the Description cell keeps at the default window so text still shows. */
@@ -54,7 +101,7 @@ export const getOperationsMinWidth = (widths: ColumnWidths, { showInitiator }: {
       (showInitiator ? CELL_GAP + widths.initiator : 0) +
       CELL_GAP +
       DESCRIPTION_FLOOR +
-      TRAILING_WIDTH,
+      getTrailingWidth(widths),
   );
 
 export const operationColumns = {
@@ -71,8 +118,10 @@ export const operationColumns = {
    */
   initiator: 'hidden shrink-0 2xl:flex',
   description: 'flex-1 min-w-0 pl-4',
-  status: 'w-[110px] shrink-0',
-  actions: 'w-[168px] shrink-0',
+  /** Width comes from `getColumnStyle(widths.status)`. */
+  status: 'shrink-0',
+  /** Width comes from `getColumnStyle(widths.actions)`. */
+  actions: 'shrink-0',
   chevron: 'w-4 shrink-0',
 } as const;
 

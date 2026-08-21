@@ -139,16 +139,16 @@ export const OperationsTableHeader = () => {
         {hasEverConnected && t('operations.table.description')}
       </div>
 
-      <div
-        className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-center text-text-tertiary')}
-      >
-        {statusLabel}
-      </div>
-      <div
-        className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, LABEL_CLASS, 'text-right text-text-tertiary')}
-      >
-        {showActionsLabel && t('operations.table.actions')}
-      </div>
+      <HeaderCell
+        className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
+        label={statusLabel}
+        resize={{ column: 'status', width: widths.status, handleClass: '-right-[9px]' }}
+      />
+      <HeaderCell
+        className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-end')}
+        label={showActionsLabel ? t('operations.table.actions') : ''}
+        resize={{ column: 'actions', width: widths.actions, handleClass: '-right-[9px]' }}
+      />
       <div className={operationColumns.chevron} />
     </div>
   );
