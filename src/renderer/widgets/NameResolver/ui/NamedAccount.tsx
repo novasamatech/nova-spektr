@@ -3,7 +3,7 @@ import { type ComponentProps, memo } from 'react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Account } from '@/shared/ui-entities/Account/Account';
-import { useAccountName, useWalletName } from '@/domains/network';
+import { type WalletNameMode, useAccountName, useWalletName } from '@/domains/network';
 import { useOwningWallet } from '../lib/useOwningWallet';
 
 type Props = Omit<ComponentProps<typeof Account>, 'chain' | 'walletType'> & {
@@ -37,26 +37,22 @@ type Props = Omit<ComponentProps<typeof Account>, 'chain' | 'walletType'> & {
    * `wallet` is omitted the owning local wallet is looked up automatically
    * (`useOwningWallet`).
    */
-  walletNameAs?: 'override' | 'fallback';
+  walletNameAs?: WalletNameMode;
 };
 
 export const NamedAccount = memo((props: Props) => {
   const { accountId, chain, title, wallet, walletNameAs = 'override', ...rest } = props;
-  // useWalletName runs the full chain (custom name → local/backend contact →
-  // identity → wallet.name) so it produces a "best name" for the wallet. In
-  // `override` mode it is passed as `title` and beats everything; in `fallback`
-  // mode the account resolves on its own and this only fills in before the
-  // stored account name / short address.
-  // In `fallback` mode callers don't have to hand-roll the owning-wallet lookup:
-  // resolving it here keeps every row on the same rule the search resolvers use.
-  const owningWallet = useOwningWallet(accountId, chain);
-  const effectiveWallet = wallet ?? (walletNameAs === 'fallback' ? owningWallet : null);
+  const isWalletNameFallback = walletNameAs === 'fallback';
+  // The owning-wallet scan is opt-in (it walks every local account): only a
+  // fallback-mode caller without an explicit `wallet` needs it.
+  const owningWallet = useOwningWallet(isWalletNameFallback && !wallet ? accountId : null, chain);
+  const effectiveWallet = wallet ?? owningWallet;
   const walletName = useWalletName(effectiveWallet);
   const resolvedName = useAccountName({
     accountId,
     chain,
-    title: walletNameAs === 'fallback' ? title : (title ?? walletName ?? undefined),
-    fallbackName: walletNameAs === 'fallback' ? (walletName ?? undefined) : undefined,
+    title: isWalletNameFallback ? title : (title ?? walletName ?? undefined),
+    fallbackName: isWalletNameFallback ? (walletName ?? undefined) : undefined,
   });
 
   return (

@@ -22,9 +22,10 @@ search resolves them the same way before matching. Typing a name you can see alw
 | A note                  | A draft's description                                                                                                                              |
 | A call hash             | An operation's call hash                                                                                                                           |
 
-A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft that
-is **every hop of its signing path** (which is exactly what the details panel lists — so a nested multisig's root hop is
-searchable even though no flat field stores it); for an operation, the submitter and the initiator.
+A row's searchable accounts go beyond the collapsed row, but not as far as every account the expanded panel shows: for a
+draft they are **every hop of its signing path** (exactly what its details panel lists — so a nested multisig's root hop
+is searchable even though no flat field stores it, and each hop matches the one name it displays); for an operation they
+are the **submitter and the initiator** — the Multisig / Source rows of its Details panel are not indexed.
 
 **Known gap — an operation's description is displayed but not searchable.** Descriptions come from the address book and
 are fetched only for operations that already passed the filter, so feeding them into the filter would be circular

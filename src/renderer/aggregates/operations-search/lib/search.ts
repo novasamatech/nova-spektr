@@ -1,6 +1,7 @@
 import { type Chain } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type WalletNameMode } from '@/domains/network';
 
 import { type SearchResolvers } from './account-name';
 
@@ -18,7 +19,7 @@ export type SearchAccountRef = {
    * are searchable. `fallback`: the row displays one name — the account's own,
    * with the wallet name filling in — and the query matches exactly that.
    */
-  walletNameAs?: 'override' | 'fallback';
+  walletNameAs?: WalletNameMode;
 };
 
 /**

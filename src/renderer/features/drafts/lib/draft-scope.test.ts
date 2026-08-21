@@ -279,6 +279,15 @@ describe('filterDraftsByScope', () => {
       ]);
     });
 
+    test('matches an intermediate hop by its owning wallet name when the account has none', () => {
+      // The root hop is neither the submitter nor the initiator; the panel shows
+      // it as its wallet's name (no account name, no contact), so the query must
+      // match that name too.
+      expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Team Multisig' }).map((d) => d.id)).toEqual(
+        ['draft-nested'],
+      );
+    });
+
     test('matches the deepest multisig and the signer too', () => {
       expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Charlie' }).map((d) => d.id)).toEqual([
         'draft-nested',

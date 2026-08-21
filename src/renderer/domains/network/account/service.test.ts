@@ -786,6 +786,24 @@ describe('account service', () => {
       expect(result).toBe(toShortAddress(toAddress(unknownAccountId, { prefix: polkadotChain.addressPrefix }), 5));
     });
 
+    it('skips a user-typed wallet name that happens to look like a shortened address', () => {
+      // Documented trade-off of the address-shaped heuristic: the fallback is
+      // dropped, the resolver degrades to the short address, nothing breaks.
+      const unknownAccountId = createAccountId('unknown-with-address-like-wallet-name');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Main...Vault',
+      });
+
+      expect(result).toBe(toShortAddress(toAddress(unknownAccountId, { prefix: polkadotChain.addressPrefix }), 5));
+    });
+
     it('should prioritize custom name over local contact', () => {
       const customAccountId = createAccountId('test');
       const customAccount: ChainAccount = {

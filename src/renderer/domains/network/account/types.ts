@@ -55,3 +55,12 @@ export type AccountNode = {
 };
 
 export type AccountValidationError = { account: AnyAccount; message: string };
+
+/**
+ * How a wallet's name takes part in resolving one of its accounts' names.
+ * `override`: the wallet name is the label, beating everything. `fallback`: the
+ * account resolves on its own and the wallet name only fills in before the
+ * stored account name / short address. Shared by the display side
+ * (`<NamedAccount walletNameAs>`) and the search side so they cannot drift.
+ */
+export type WalletNameMode = 'override' | 'fallback';

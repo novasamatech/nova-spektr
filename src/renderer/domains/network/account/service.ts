@@ -156,7 +156,10 @@ type ResolveAccountNameParams = {
    * A name to fall back to (typically the owning wallet's name) when the
    * account resolves to nothing better than its stored name or short address.
    * Unlike `title` it never beats an explicit name — custom account name,
-   * contact or identity all still win.
+   * contact or identity all still win. An address-shaped fallback (a shortened
+   * address, the pure-proxy form) is skipped as no better than what follows —
+   * which also means a user-typed wallet name that happens to look like
+   * `abcd...wxyz` is ignored here and the stored name / short address shows.
    */
   fallbackName?: string;
   /**
