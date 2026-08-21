@@ -2,27 +2,22 @@ import { type KeyboardEvent, type PointerEvent, useEffect, useRef } from 'react'
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { type ResizableColumn, COLUMN_MAX_WIDTHS, COLUMN_MIN_WIDTHS } from '@/shared/ui/operations-table-layout';
-import { operationsTableLayoutModel } from '@/aggregates/operations-table-layout';
+import {
+  type ResizableColumn,
+  COLUMN_MAX_WIDTHS,
+  COLUMN_MIN_WIDTHS,
+  operationsTableLayoutModel,
+} from '@/aggregates/operations-table-layout';
 
 type Props = {
   column: ResizableColumn;
   /** Current width — the drag applies its delta to this value. */
   width: number;
   /**
-   * Positions the handle over the gap midpoint, e.g. `-right-3` (a 16px handle
-   * centred 4px into the 8px gap).
+   * The column's caption as shown in the header; named in the handle's
+   * accessible label.
    */
-  className?: string;
-};
-
-const LABEL_KEYS: Record<ResizableColumn, string> = {
-  operation: 'operations.table.resizeOperation',
-  value: 'operations.table.resizeValue',
-  submitter: 'operations.table.resizeSubmitter',
-  initiator: 'operations.table.resizeInitiator',
-  status: 'operations.table.resizeStatus',
-  actions: 'operations.table.resizeActions',
+  columnLabel: string;
 };
 
 /** Arrow-key resize step; Shift switches to the coarse one. */
@@ -38,13 +33,13 @@ type DragState = {
 };
 
 /**
- * 16px-wide grab zone on a header cell's right edge. Invisible until hovered;
- * the line turns accent while dragging. Pointer capture keeps the drag alive
- * when the cursor leaves the handle. Clicks are swallowed so the cell's sort
- * does not toggle. Also keyboard-operable: ←/→ resize by 8px (32px with Shift),
- * Home shrinks to the column minimum, End autofits.
+ * 16px-wide grab zone centred on the gap after a header cell (4px into the 8px
+ * gap). Invisible until hovered; the line turns accent while dragging. Pointer
+ * capture keeps the drag alive when the cursor leaves the handle. Also
+ * keyboard-operable: ←/→ resize by 8px (32px with Shift), Home shrinks to the
+ * column minimum, End autofits.
  */
-export const ColumnResizeHandle = ({ column, width, className }: Props) => {
+export const ColumnResizeHandle = ({ column, width, columnLabel }: Props) => {
   const { t } = useI18n();
   const drag = useRef<DragState | null>(null);
   /** Removes the window-level safety listener and releases the pointer capture. */
@@ -59,18 +54,20 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
   };
 
   // Unmounting mid-drag (a filter change re-renders the header) would otherwise
-  // leave the drag state stuck: hairlines lit, list text unselectable.
+  // leave the drag state stuck and the list text unselectable.
   useEffect(() => {
     return () => finishDrag();
   }, []);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    // A second pointerdown while a drag is already live (second finger, secondary
-    // button) must not leak the previous window `pointerup` listener or pointer capture.
+    // Only the primary button drags; a right or middle click is not a resize.
+    if (event.button !== 0) return;
+
+    // A second pointerdown while a drag is already live (second finger) must not
+    // leak the previous window `pointerup` listener or pointer capture.
     finishDrag();
 
     event.preventDefault();
-    event.stopPropagation();
 
     const target = event.currentTarget;
     const pointerId = event.pointerId;
@@ -96,7 +93,7 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
       }
     };
 
-    operationsTableLayoutModel.resizeStarted(column);
+    operationsTableLayoutModel.resizeStarted();
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -139,16 +136,16 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
       role="separator"
       tabIndex={0}
       aria-orientation="vertical"
-      aria-label={t(LABEL_KEYS[column])}
+      aria-label={t('operations.table.resizeColumn', { column: columnLabel })}
       aria-valuenow={width}
       aria-valuemin={COLUMN_MIN_WIDTHS[column]}
       aria-valuemax={COLUMN_MAX_WIDTHS[column]}
       title={t('operations.table.resizeHint')}
       className={cnTw(
-        // 16px wide and stretched over the header's vertical padding so the boundary is easy to grab.
-        'group/handle absolute -inset-y-2 z-10 flex w-4 cursor-col-resize items-center justify-center',
+        // 16px wide and stretched over the header's vertical padding so the boundary is easy to grab;
+        // `touch-none` keeps touch panning from cancelling the pointer capture mid-drag.
+        'group/handle absolute -inset-y-2 -right-3 z-10 flex w-4 cursor-col-resize touch-none items-center justify-center',
         'focus-visible:outline-2 focus-visible:outline-icon-accent',
-        className,
       )}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -156,11 +153,7 @@ export const ColumnResizeHandle = ({ column, width, className }: Props) => {
       onPointerCancel={finishDrag}
       onLostPointerCapture={finishDrag}
       onKeyDown={handleKeyDown}
-      onClick={event => event.stopPropagation()}
-      onDoubleClick={event => {
-        event.stopPropagation();
-        operationsTableLayoutModel.columnAutofit(column);
-      }}
+      onDoubleClick={() => operationsTableLayoutModel.columnAutofit(column)}
     >
       <span className="h-full w-px bg-transparent transition-colors group-hover/handle:bg-icon-accent group-focus-visible/handle:bg-icon-accent group-active/handle:bg-icon-accent" />
     </div>

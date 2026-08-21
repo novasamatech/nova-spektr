@@ -10,7 +10,7 @@ import {
   clampColumnWidth,
   getLeftBlockWidth,
   getOperationsMinWidth,
-} from './operations-table-layout';
+} from '../layout';
 
 const ALL_VISIBLE = {
   value: true,

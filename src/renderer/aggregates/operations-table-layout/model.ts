@@ -11,11 +11,20 @@ import {
   RESIZABLE_COLUMNS,
   TOGGLEABLE_COLUMNS,
   clampColumnWidth,
-} from '@/shared/ui/operations-table-layout';
+} from './layout';
+
+export const COLUMN_WIDTHS_STORAGE_KEY = 'operations-table-column-widths';
+export const COLUMN_VISIBILITY_STORAGE_KEY = 'operations-table-column-visibility';
+/**
+ * `columnResized` fires on every `pointermove` of a drag; effector-storage
+ * writes synchronously and each write raises a cross-window `storage` event, so
+ * the widths are flushed to storage at most once per this window.
+ */
+const COLUMN_WIDTHS_PERSIST_MS = 300;
 
 const columnResized = createEvent<{ column: ResizableColumn; width: number }>();
 const columnAutofit = createEvent<ResizableColumn>();
-const resizeStarted = createEvent<ResizableColumn>();
+const resizeStarted = createEvent();
 const resizeEnded = createEvent();
 /**
  * The caller passes the new effective value: the store only holds overrides, so
@@ -39,9 +48,10 @@ const $visibilityOverrides = createStore<Partial<ColumnVisibility>>({})
   .on(columnVisibilityChanged, (overrides, { column, visible }) => ({ ...overrides, [column]: visible }))
   .reset(layoutReset);
 
-// Rows light up their column hairlines while a header handle is being dragged.
-const $resizingColumn = createStore<ResizableColumn | null>(null)
-  .on(resizeStarted, (_, column) => column)
+// Set for the duration of a header-handle drag; the list suspends text
+// selection while it is on so the pointer only resizes.
+const $isResizing = createStore(false)
+  .on(resizeStarted, () => true)
   .reset(resizeEnded);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
@@ -91,14 +101,15 @@ export const sanitizeColumnVisibility = (stored: unknown): Partial<ColumnVisibil
 // A stored value from an older build or a hand-edited one is merged over the
 // defaults and clamped to each column's range.
 persist({
-  key: 'operations-table-column-widths',
+  key: COLUMN_WIDTHS_STORAGE_KEY,
   store: $columnWidths,
   sync: true,
+  timeout: COLUMN_WIDTHS_PERSIST_MS,
   deserialize: raw => sanitizeColumnWidths(JSON.parse(raw)),
 });
 
 persist({
-  key: 'operations-table-column-visibility',
+  key: COLUMN_VISIBILITY_STORAGE_KEY,
   store: $visibilityOverrides,
   sync: true,
   deserialize: raw => sanitizeColumnVisibility(JSON.parse(raw)),
@@ -106,7 +117,7 @@ persist({
 
 export const operationsTableLayoutModel = {
   $columnWidths,
-  $resizingColumn,
+  $isResizing,
   $visibilityOverrides,
   columnResized,
   columnAutofit,

@@ -1,12 +1,11 @@
 import { useUnit } from 'effector-react';
 import { useMemo, useSyncExternalStore } from 'react';
 
-import { type ColumnVisibility, INITIATOR_COLUMN_MEDIA_QUERY } from '@/shared/ui/operations-table-layout';
-
+import { type ColumnVisibility, INITIATOR_COLUMN_MEDIA_QUERY } from './layout';
 import { operationsTableLayoutModel } from './model';
 
 export const useOperationColumnWidths = () => useUnit(operationsTableLayoutModel.$columnWidths);
-export const useIsResizingColumns = () => useUnit(operationsTableLayoutModel.$resizingColumn) !== null;
+export const useIsResizingColumns = () => useUnit(operationsTableLayoutModel.$isResizing);
 
 // One MediaQueryList shared by subscribe and snapshot: a fresh `matchMedia` per
 // snapshot call would allocate on every render, and subscribing to a different
@@ -26,7 +25,7 @@ const getInitiatorBreakpoint = () => getInitiatorMedia().matches;
  * Mirrors the Tailwind `2xl:` gate on the Initiator column so JS (min-width
  * maths) and CSS agree on whether the column is rendered.
  */
-export const useIsInitiatorColumnVisible = () =>
+const useIsInitiatorColumnVisible = () =>
   useSyncExternalStore(subscribeToInitiatorBreakpoint, getInitiatorBreakpoint, () => false);
 
 /**

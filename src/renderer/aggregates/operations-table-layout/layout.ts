@@ -1,5 +1,7 @@
 import { type CSSProperties } from 'react';
 
+import { cnTw } from '@/shared/lib/utils';
+
 export type ResizableColumn = 'operation' | 'value' | 'submitter' | 'initiator' | 'status' | 'actions';
 export type ColumnWidths = Record<ResizableColumn, number>;
 
@@ -138,6 +140,11 @@ export const operationColumns = {
    */
   initiator: 'shrink-0',
   description: 'flex-1 min-w-0 pl-4',
+  /**
+   * Stands in for a hidden Description so the trailing columns keep their place
+   * at the row's right edge.
+   */
+  descriptionSpacer: 'min-w-0 flex-1',
   /** Width comes from `getColumnStyle(widths.status)`. */
   status: 'shrink-0',
   /** Width comes from `getColumnStyle(widths.actions)`. */
@@ -157,5 +164,50 @@ export const ROW_HEIGHT = 68;
 export const ROW_GAP = 6;
 // Section header estimate: 16px top padding + 20px content + 6px bottom padding.
 export const SECTION_HEADER_HEIGHT = 42;
-// Dashed "no operations" placeholder inside an empty section (60px box + row gap).
-export const EMPTY_SECTION_HEIGHT = 60 + ROW_GAP;
+// Dashed "no operations" placeholder box inside an empty section, and its virtualized slot (box + row gap).
+export const EMPTY_SECTION_BOX_HEIGHT = 60;
+export const EMPTY_SECTION_HEIGHT = EMPTY_SECTION_BOX_HEIGHT + ROW_GAP;
+
+type CellProps = { className: string; style: CSSProperties };
+/**
+ * Fixed-width columns rendered as plain cells — Operation is the left block
+ * (`getLeftBlockProps`), not a cell of its own.
+ */
+type CellColumn = Exclude<ResizableColumn, 'operation'>;
+
+/** A row cell fills the row height and centres its content vertically. */
+const ROW_CELL_CLASS = 'flex h-full items-center';
+
+/**
+ * The strip of cells inside an operation or draft row; its height is the one
+ * the virtualizer measures with.
+ */
+export const getRowProps = (className?: string): CellProps => ({
+  className: cnTw('flex w-full items-center gap-x-2 overflow-hidden', className),
+  style: { height: ROW_HEIGHT },
+});
+
+/** Operation cell — with the Value cell riding along inside it when shown. */
+export const getLeftBlockProps = (
+  widths: ColumnWidths,
+  visibility: ColumnVisibility,
+  className?: string,
+): CellProps => ({
+  className: cnTw(operationColumns.leftBlock, ROW_CELL_CLASS, className),
+  style: getColumnStyle(getLeftBlockWidth(widths, visibility)),
+});
+
+/** A fixed-width row cell; `className` adds the per-column alignment. */
+export const getCellProps = (column: CellColumn, widths: ColumnWidths, className?: string): CellProps => ({
+  className: cnTw(operationColumns[column], ROW_CELL_CLASS, className),
+  style: getColumnStyle(widths[column]),
+});
+
+/**
+ * The header caption over a fixed-width column: the left hairline, no
+ * row-height stretch.
+ */
+export const getHeaderCellProps = (column: CellColumn, widths: ColumnWidths, className?: string): CellProps => ({
+  className: cnTw(operationColumns[column], HEADER_SEPARATOR_CLASS, 'flex', className),
+  style: getColumnStyle(widths[column]),
+});

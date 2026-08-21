@@ -1,7 +1,30 @@
-export { operationsTableLayoutModel } from './model';
 export {
-  useIsInitiatorColumnVisible,
-  useIsResizingColumns,
-  useOperationColumnVisibility,
-  useOperationColumnWidths,
-} from './hooks';
+  type ColumnVisibility,
+  type ColumnWidths,
+  type ResizableColumn,
+  type ToggleableColumn,
+  COLUMN_DEFAULT_WIDTHS,
+  COLUMN_FIT_WIDTHS,
+  COLUMN_MAX_WIDTHS,
+  COLUMN_MIN_WIDTHS,
+  EMPTY_SECTION_BOX_HEIGHT,
+  EMPTY_SECTION_HEIGHT,
+  HEADER_SEPARATOR_CLASS,
+  INITIATOR_COLUMN_MEDIA_QUERY,
+  RESIZABLE_COLUMNS,
+  ROW_GAP,
+  ROW_HEIGHT,
+  SECTION_HEADER_HEIGHT,
+  TOGGLEABLE_COLUMNS,
+  clampColumnWidth,
+  getCellProps,
+  getColumnStyle,
+  getHeaderCellProps,
+  getLeftBlockProps,
+  getLeftBlockWidth,
+  getOperationsMinWidth,
+  getRowProps,
+  operationColumns,
+} from './layout';
+export { operationsTableLayoutModel } from './model';
+export { useIsResizingColumns, useOperationColumnVisibility, useOperationColumnWidths } from './hooks';

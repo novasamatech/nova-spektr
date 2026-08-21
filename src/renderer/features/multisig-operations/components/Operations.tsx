@@ -5,26 +5,25 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import {
-  EMPTY_SECTION_HEIGHT,
-  ROW_GAP,
-  ROW_HEIGHT,
-  SECTION_HEADER_HEIGHT,
-  getOperationsMinWidth,
-} from '@/shared/ui/operations-table-layout';
 import { AsyncItem, Box, ScrollArea } from '@/shared/ui-kit';
 import { useOperationDescriptionsFetch } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import {
+  EMPTY_SECTION_BOX_HEIGHT,
+  EMPTY_SECTION_HEIGHT,
+  ROW_GAP,
+  ROW_HEIGHT,
+  SECTION_HEADER_HEIGHT,
+  getOperationsMinWidth,
   useIsResizingColumns,
   useOperationColumnVisibility,
   useOperationColumnWidths,
 } from '@/aggregates/operations-table-layout';
 import { DraftsSection, useDraftsSectionState } from '@/features/drafts';
 import { buildFlatItems } from '../lib/build-flat-items';
-import { SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS } from '../lib/operations-sections';
+import { SECTION_EMPTY_LABEL_KEYS, SECTION_LABEL_KEYS, STATUS_FILTER_LABEL_KEYS } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -68,10 +67,6 @@ export const Operations = () => {
 
   const hasMultisigAccounts = multisigAccounts.length > 0;
 
-  // Virtualization already limits rendering to visible items + overscan,
-  // so useDeferredList (which defers via useDeferredValue) only adds latency.
-  const isDeferredLoading = isTabDataLoading;
-  const deferredOps = filteredOps;
   // Drafts obey the Status filter like any other section: visible when no
   // status is selected or when `drafts` is among the selected statuses.
   const matchesStatusFilter = filter.status.length === 0 || filter.status.includes('drafts');
@@ -83,11 +78,15 @@ export const Operations = () => {
   // (Page → Section → Table); the virtual list starts with that group's rows.
   const firstSection = sectionedOps[0]?.section ?? null;
   const headingAboveList = showDraftsGroup
-    ? { key: 'drafts' as const, labelKey: 'operations.drafts.title', count: draftsState.count }
+    ? { key: 'drafts' as const, labelKey: STATUS_FILTER_LABEL_KEYS.drafts, count: draftsState.count }
     : firstSection
       ? { key: firstSection, labelKey: SECTION_LABEL_KEYS[firstSection], count: sectionedOps[0]?.items.length }
       : null;
-  const showTable = deferredOps.length > 0 || showDraftsGroup || sectionedOps.length > 0;
+  // Sections derive from the filtered operations (plus the always-present In-progress group),
+  // so a non-empty sections list is the one "there are rows to draw" signal. Virtualization
+  // already limits rendering to visible items + overscan, so nothing is deferred here.
+  const hasSections = sectionedOps.length > 0;
+  const showTable = hasSections || showDraftsGroup;
 
   // The first group's heading is rendered above the sticky column header, unless
   // the drafts group owns that slot.
@@ -188,7 +187,7 @@ export const Operations = () => {
                   a block that ends above the list would un-pin it as soon as that block scrolls out. */}
               {showTable && headingAboveList && (
                 <SectionHeading
-                  labelKey={headingAboveList.labelKey}
+                  label={t(headingAboveList.labelKey)}
                   count={headingAboveList.count}
                   collapsed={!!collapsedSections[headingAboveList.key]}
                   onToggle={() => operationsContextModel.toggleSection(headingAboveList.key)}
@@ -202,13 +201,13 @@ export const Operations = () => {
                 {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
               </div>
 
-              {!isDeferredLoading && deferredOps.length === 0 && sectionedOps.length === 0 && (
+              {!isTabDataLoading && !hasSections && (
                 <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
                   <EmptyOperations isEmptyFromFilters={isFiltersSelected} tab={tab} />
                 </Box>
               )}
 
-              {sectionedOps.length > 0 && (
+              {hasSections && (
                 <div
                   ref={listContainerRef}
                   style={{
@@ -236,20 +235,27 @@ export const Operations = () => {
                       >
                         {item.type === 'section' ? (
                           <SectionHeading
-                            labelKey={SECTION_LABEL_KEYS[item.section]}
+                            label={t(SECTION_LABEL_KEYS[item.section])}
                             count={item.count}
                             collapsed={!!collapsedSections[item.section]}
                             onToggle={() => operationsContextModel.toggleSection(item.section)}
                           />
                         ) : item.type === 'empty' ? (
-                          <div className="mb-1.5 flex h-[60px] items-center justify-center rounded-lg border border-dashed border-shade-12">
+                          <div
+                            className="mb-1.5 flex items-center justify-center rounded-lg border border-dashed border-shade-12"
+                            style={{ height: EMPTY_SECTION_BOX_HEIGHT }}
+                          >
                             <FootnoteText className="text-text-tertiary">
-                              {t(SECTION_EMPTY_LABEL_KEYS[item.section] ?? 'operations.sections.inProgressEmpty')}
+                              {t(SECTION_EMPTY_LABEL_KEYS[item.section] ?? SECTION_EMPTY_LABEL_KEYS.in_progress)}
                             </FootnoteText>
                           </div>
                         ) : (
                           <div className="pb-1.5">
-                            <AsyncItem fallback={<div className="h-[68px] rounded bg-block-background-default" />}>
+                            <AsyncItem
+                              fallback={
+                                <div className="rounded bg-block-background-default" style={{ height: ROW_HEIGHT }} />
+                              }
+                            >
                               <Operation
                                 key={
                                   item.item.operation.id === focusedOperationId

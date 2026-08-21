@@ -1,19 +1,20 @@
 import { allSettled, fork } from 'effector';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { COLUMN_DEFAULT_WIDTHS, COLUMN_FIT_WIDTHS, COLUMN_MAX_WIDTHS, COLUMN_MIN_WIDTHS } from '../layout';
 import {
-  COLUMN_DEFAULT_WIDTHS,
-  COLUMN_FIT_WIDTHS,
-  COLUMN_MAX_WIDTHS,
-  COLUMN_MIN_WIDTHS,
-} from '@/shared/ui/operations-table-layout';
-import { operationsTableLayoutModel, sanitizeColumnVisibility, sanitizeColumnWidths } from '../model';
+  COLUMN_VISIBILITY_STORAGE_KEY,
+  COLUMN_WIDTHS_STORAGE_KEY,
+  operationsTableLayoutModel,
+  sanitizeColumnVisibility,
+  sanitizeColumnWidths,
+} from '../model';
 
 describe('operationsTableLayoutModel', () => {
   it('starts from the default widths', () => {
     const scope = fork();
     expect(scope.getState(operationsTableLayoutModel.$columnWidths)).toEqual(COLUMN_DEFAULT_WIDTHS);
-    expect(scope.getState(operationsTableLayoutModel.$resizingColumn)).toBeNull();
+    expect(scope.getState(operationsTableLayoutModel.$isResizing)).toBe(false);
   });
 
   it('clamps a resize into the column range', async () => {
@@ -53,12 +54,49 @@ describe('operationsTableLayoutModel', () => {
     expect(scope.getState(operationsTableLayoutModel.$visibilityOverrides)).toEqual({});
   });
 
-  it('tracks the column being dragged', async () => {
+  it('flags a drag for as long as it lasts', async () => {
     const scope = fork();
-    await allSettled(operationsTableLayoutModel.resizeStarted, { scope, params: 'value' });
-    expect(scope.getState(operationsTableLayoutModel.$resizingColumn)).toBe('value');
+    await allSettled(operationsTableLayoutModel.resizeStarted, { scope });
+    expect(scope.getState(operationsTableLayoutModel.$isResizing)).toBe(true);
     await allSettled(operationsTableLayoutModel.resizeEnded, { scope });
-    expect(scope.getState(operationsTableLayoutModel.$resizingColumn)).toBeNull();
+    expect(scope.getState(operationsTableLayoutModel.$isResizing)).toBe(false);
+  });
+});
+
+describe('operationsTableLayoutModel hydration', () => {
+  // The model hydrates from local storage at module load, so every case seeds
+  // storage first and then imports a fresh copy of the module. A fork would start
+  // from the store defaults, so the hydrated root state is read directly.
+  beforeEach(() => {
+    vi.resetModules();
+    localStorage.clear();
+  });
+
+  it('keeps the defaults when the stored payloads are not JSON', async () => {
+    localStorage.setItem(COLUMN_WIDTHS_STORAGE_KEY, '{not json');
+    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, 'nope');
+
+    const { operationsTableLayoutModel: model } = await import('../model');
+
+    // eslint-disable-next-line effector/no-getState
+    expect(model.$columnWidths.getState()).toEqual(COLUMN_DEFAULT_WIDTHS);
+    // eslint-disable-next-line effector/no-getState
+    expect(model.$visibilityOverrides.getState()).toEqual({});
+  });
+
+  it('merges a stored payload over the defaults and clamps it', async () => {
+    localStorage.setItem(COLUMN_WIDTHS_STORAGE_KEY, JSON.stringify({ operation: 9999, value: 'wide' }));
+    localStorage.setItem(COLUMN_VISIBILITY_STORAGE_KEY, JSON.stringify({ initiator: true, value: 'yes' }));
+
+    const { operationsTableLayoutModel: model } = await import('../model');
+
+    // eslint-disable-next-line effector/no-getState
+    expect(model.$columnWidths.getState()).toEqual({
+      ...COLUMN_DEFAULT_WIDTHS,
+      operation: COLUMN_MAX_WIDTHS.operation,
+    });
+    // eslint-disable-next-line effector/no-getState
+    expect(model.$visibilityOverrides.getState()).toEqual({ initiator: true });
   });
 });
 

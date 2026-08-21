@@ -1,11 +1,9 @@
-import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
 import {
   type Asset,
-  type AssetByChains,
   type Chain,
   type ChainId,
   type DecodedTransaction,
@@ -17,7 +15,6 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatSectionAndMethod, toAddress } from '@/shared/lib/utils';
 import { Accordion, CaptionText } from '@/shared/ui';
-import { getColumnStyle, getLeftBlockWidth, operationColumns } from '@/shared/ui/operations-table-layout';
 import { UnknownRecipientBadge } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { useIsDraftLinkedOperation, useOperationDescription } from '@/domains/backend';
@@ -31,11 +28,19 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { useOperationColumnVisibility, useOperationColumnWidths } from '@/aggregates/operations-table-layout';
+import {
+  getCellProps,
+  getLeftBlockProps,
+  getRowProps,
+  operationColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { parseProxyEditOperation } from '../lib/proxy-edit';
+import { type OperationTitle } from '../lib/types';
 import { parseVerifyProxyOperation } from '../lib/verify-proxy-op';
 import { deepLinkModel } from '../model/deep-link';
 import { EditControllerOperationCard } from '../ui/EditControllerOperationCard';
@@ -52,18 +57,6 @@ type Props = {
   isDefaultOpen?: boolean;
   chains: Record<ChainId, Chain>;
   wallets: Wallet[];
-};
-
-export type OperationAmountValue = {
-  value: BN | string;
-  asset: Asset | AssetByChains;
-};
-
-export type OperationTitle = {
-  title?: string;
-  amount?: OperationAmountValue;
-  sourceChainId?: ChainId;
-  destinationChainId?: ChainId; // For XCM transactions
 };
 
 /**
@@ -124,12 +117,17 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     t,
   });
 
+  // Memoised so the expanded row's `memo(OperationFullInfo)` sees the same `amount` reference between renders.
+  const amount = useMemo(() => {
+    const value = coreTx ? getTransactionAmount(coreTx) : null;
+
+    return asset && value ? { value, asset } : undefined;
+  }, [coreTx, asset]);
+
   let titleData: OperationTitle;
   if (externalTitle) {
     titleData = externalTitle;
   } else {
-    const amount = coreTx ? getTransactionAmount(coreTx) : null;
-
     titleData = {
       title:
         coreTx?.section && coreTx?.method
@@ -137,7 +135,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           : operation.section && operation.method
             ? formatSectionAndMethod(operation.section, operation.method)
             : t('operations.titles.unknown'),
-      amount: asset && amount ? { value: amount, asset } : undefined,
+      amount,
       sourceChainId: operation.chainId,
     };
   }
@@ -151,19 +149,13 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}
         <Accordion.Button buttonClass="px-4 text-left">
-          <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
+          <div {...getRowProps('group/row')}>
             {proxyEdit ? (
-              <div
-                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
-                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
-              >
+              <div {...getLeftBlockProps(widths, visibility)}>
                 <EditControllerOperationCard info={proxyEdit} chain={chains[operation.chainId]} />
               </div>
             ) : verifyProxy ? (
-              <div
-                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center')}
-                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
-              >
+              <div {...getLeftBlockProps(widths, visibility)}>
                 <VerifyProxyOperationCard
                   info={verifyProxy}
                   chain={chains[operation.chainId]}
@@ -171,10 +163,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 />
               </div>
             ) : (
-              <div
-                className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
-                style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
-              >
+              <div {...getLeftBlockProps(widths, visibility, 'gap-x-2')}>
                 <OperationIcon operation={operation} account={multisigAccount} />
 
                 <div
@@ -190,10 +179,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 </div>
 
                 {visibility.value && (
-                  <div
-                    className={cnTw(operationColumns.value, 'flex h-full items-center')}
-                    style={getColumnStyle(widths.value)}
-                  >
+                  <div {...getCellProps('value', widths)}>
                     {titleData.amount && (
                       <OperationAmount value={titleData.amount.value} asset={titleData.amount.asset} />
                     )}
@@ -203,10 +189,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             )}
 
             {visibility.submitter && (
-              <div
-                className={cnTw(operationColumns.submitter, 'flex h-full items-center')}
-                style={getColumnStyle(widths.submitter)}
-              >
+              <div {...getCellProps('submitter', widths)}>
                 {accountAddress && (
                   <NamedAccount
                     accountId={multisigAccount.accountId}
@@ -221,10 +204,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             )}
 
             {visibility.initiator && (
-              <div
-                className={cnTw(operationColumns.initiator, 'flex h-full items-center')}
-                style={getColumnStyle(widths.initiator)}
-              >
+              <div {...getCellProps('initiator', widths)}>
                 <NamedAccount
                   accountId={operation.depositor}
                   chain={chains[operation.chainId]}
@@ -258,23 +238,17 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 <UnknownRecipientBadge warning={recipientWarning} variant="recipient" />
               </div>
             ) : (
-              <div className="min-w-0 flex-1" />
+              <div className={operationColumns.descriptionSpacer} />
             )}
 
             {visibility.status && (
-              <div
-                className={cnTw(operationColumns.status, 'flex h-full items-center justify-center')}
-                style={getColumnStyle(widths.status)}
-              >
+              <div {...getCellProps('status', widths, 'justify-center')}>
                 <OperationTitleStatus operation={operation} account={multisigAccount} className="mx-0 w-auto" />
               </div>
             )}
 
             {visibility.actions && (
-              <div
-                className={cnTw(operationColumns.actions, 'flex h-full items-center justify-end')}
-                style={getColumnStyle(widths.actions)}
-              >
+              <div {...getCellProps('actions', widths, 'justify-end')}>
                 <OperationActions operation={operation} account={multisigAccount} className="w-full" />
               </div>
             )}

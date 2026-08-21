@@ -1,20 +1,20 @@
 import { useUnit } from 'effector-react';
+import { type CSSProperties } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui';
+import { Dropdown } from '@/shared/ui-kit';
+import { connectionHistoryModel } from '@/aggregates/backend';
 import {
   type ResizableColumn,
   type ToggleableColumn,
   HEADER_SEPARATOR_CLASS,
   TOGGLEABLE_COLUMNS,
   getColumnStyle,
+  getHeaderCellProps,
   getLeftBlockWidth,
   operationColumns,
-} from '@/shared/ui/operations-table-layout';
-import { Dropdown } from '@/shared/ui-kit';
-import { connectionHistoryModel } from '@/aggregates/backend';
-import {
   operationsTableLayoutModel,
   useOperationColumnVisibility,
   useOperationColumnWidths,
@@ -52,11 +52,20 @@ const SortArrows = ({ direction }: SortArrowsProps) => (
   </span>
 );
 
-type ResizeProps = { column: ResizableColumn; width: number; handleClass: string };
+type ResizeProps = {
+  column: ResizableColumn;
+  width: number;
+  /**
+   * Names the column in the handle's accessible label when the visible caption
+   * is blank.
+   */
+  label?: string;
+};
 
 type HeaderCellProps = {
   label: string;
   className?: string;
+  style?: CSSProperties;
   /**
    * Sortable columns (Operation / Value / Submitter) render the label as a sort
    * button.
@@ -76,13 +85,13 @@ const COLUMN_LABEL_KEYS: Record<ToggleableColumn, string> = {
   actions: 'operations.table.actions',
 };
 
-const HeaderCell = ({ label, className, sortable, resize }: HeaderCellProps) => {
+const HeaderCell = ({ label, className, style, sortable, resize }: HeaderCellProps) => {
   const active = sortable !== undefined && sortable.sort?.by === sortable.sortKey;
   const direction = active && sortable.sort ? sortable.sort.direction : null;
   const labelClass = cnTw(LABEL_CLASS, active ? 'text-text-primary' : 'text-text-tertiary');
 
   return (
-    <div className={cnTw('relative items-center', className)} style={resize && getColumnStyle(resize.width)}>
+    <div className={cnTw('relative items-center', className)} style={style}>
       {sortable ? (
         <button
           type="button"
@@ -99,7 +108,7 @@ const HeaderCell = ({ label, className, sortable, resize }: HeaderCellProps) => 
       ) : (
         <span className={labelClass}>{label}</span>
       )}
-      {resize && <ColumnResizeHandle column={resize.column} width={resize.width} className={resize.handleClass} />}
+      {resize && <ColumnResizeHandle column={resize.column} width={resize.width} columnLabel={resize.label ?? label} />}
     </div>
   );
 };
@@ -116,6 +125,7 @@ export const OperationsTableHeader = () => {
   // Pending rows carry "X of Y signed"; everywhere else the pill is a resolved status.
   const statusLabel = tab === 'pending' && !isScopeMerged ? t('operations.table.signed') : t('operations.table.status');
   // History rows have no row actions, so the caption would float over nothing.
+  const actionsLabel = t('operations.table.actions');
   const showActionsLabel = tab !== 'history';
 
   return (
@@ -126,35 +136,36 @@ export const OperationsTableHeader = () => {
       >
         <HeaderCell
           className={cnTw(operationColumns.titleCell, 'flex')}
+          style={getColumnStyle(widths.operation)}
           label={t('operations.table.operation')}
           sortable={{ sortKey: 'type', sort, title: t('operations.table.sortByType') }}
-          resize={{ column: 'operation', width: widths.operation, handleClass: '-right-3' }}
+          resize={{ column: 'operation', width: widths.operation }}
         />
         {visibility.value && (
           <HeaderCell
-            className={cnTw(operationColumns.value, HEADER_SEPARATOR_CLASS, 'flex')}
+            {...getHeaderCellProps('value', widths)}
             label={t('operations.table.value')}
             sortable={{ sortKey: 'value', sort, title: t('operations.table.sortByValue') }}
-            resize={{ column: 'value', width: widths.value, handleClass: '-right-3' }}
+            resize={{ column: 'value', width: widths.value }}
           />
         )}
       </div>
 
       {visibility.submitter && (
         <HeaderCell
-          className={cnTw(operationColumns.submitter, HEADER_SEPARATOR_CLASS, 'flex')}
+          {...getHeaderCellProps('submitter', widths)}
           label={t('operations.table.submitter')}
           sortable={{ sortKey: 'submitter', sort, title: t('operations.table.sortBySubmitter') }}
-          resize={{ column: 'submitter', width: widths.submitter, handleClass: '-right-3' }}
+          resize={{ column: 'submitter', width: widths.submitter }}
         />
       )}
 
       {/* Not sortable, but resizable like its neighbours. */}
       {visibility.initiator && (
         <HeaderCell
-          className={cnTw(operationColumns.initiator, HEADER_SEPARATOR_CLASS, 'flex')}
+          {...getHeaderCellProps('initiator', widths)}
           label={t('operations.table.initiator')}
-          resize={{ column: 'initiator', width: widths.initiator, handleClass: '-right-3' }}
+          resize={{ column: 'initiator', width: widths.initiator }}
         />
       )}
 
@@ -166,30 +177,27 @@ export const OperationsTableHeader = () => {
           {hasEverConnected && t('operations.table.description')}
         </div>
       ) : (
-        <div className="min-w-0 flex-1" />
+        <div className={operationColumns.descriptionSpacer} />
       )}
 
       {visibility.status && (
         <HeaderCell
-          className={cnTw(operationColumns.status, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
+          {...getHeaderCellProps('status', widths, 'justify-center')}
           label={statusLabel}
-          resize={{ column: 'status', width: widths.status, handleClass: '-right-3' }}
+          resize={{ column: 'status', width: widths.status }}
         />
       )}
       {visibility.actions && (
         <HeaderCell
-          className={cnTw(operationColumns.actions, HEADER_SEPARATOR_CLASS, 'flex justify-center')}
-          label={showActionsLabel ? t('operations.table.actions') : ''}
-          resize={{ column: 'actions', width: widths.actions, handleClass: '-right-3' }}
+          {...getHeaderCellProps('actions', widths, 'justify-center')}
+          label={showActionsLabel ? actionsLabel : ''}
+          resize={{ column: 'actions', width: widths.actions, label: actionsLabel }}
         />
       )}
 
       {/* Occupies the rows' chevron slot; `-m-1.5` cancels the IconButton padding so the
           28px control still lays out as the 16px column. */}
-      <div
-        className={cnTw(operationColumns.chevron, 'flex items-center justify-center')}
-        onClick={event => event.stopPropagation()}
-      >
+      <div className={cnTw(operationColumns.chevron, 'flex items-center justify-center')}>
         <Dropdown align="end">
           <Dropdown.Trigger>
             <IconButton name="settingsLite" size={16} className="-m-1.5" ariaLabel={t('operations.table.settings')} />
