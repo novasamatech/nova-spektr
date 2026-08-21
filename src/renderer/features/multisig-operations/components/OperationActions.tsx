@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, validateCallData } from '@/shared/lib/utils';
-import { Button, FootnoteText, Loader } from '@/shared/ui';
+import { Button, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import {
   type MultisigOperation,
@@ -84,6 +84,18 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   const needsCallData = isActionable && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
+  // The user's own signatories — the ones a "Signed" state would be about. Watch-only
+  // accounts can never sign, so owning one is not owning a signatory.
+  const approvedBy = multisigOperationService.getApprovers(operation);
+  const ownSignatories = account.signatories.filter(signatory =>
+    allAccounts.some(
+      a => !accountUtils.isWatchOnlyAccount(a) && multisigOperationService.accountMatchesSignatory(a, signatory),
+    ),
+  );
+  const hasSignedWithAllOwn = ownSignatories.length > 0 && ownSignatories.every(s => approvedBy.has(s.accountId));
+  // Nothing left to approve because the user already did — say so instead of leaving a blank cell.
+  const isSignedByUser = !isContact && isActionable && !isApproveAvailable && !needsCallData && hasSignedWithAllOwn;
+
   if (!chain && !isContact) return null;
 
   if (isContact) {
@@ -112,6 +124,20 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
               {t('operation.approveButton')}
             </Button>
           </ApproveTxModal>
+        )}
+        {isSignedByUser && (
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div
+                role="status"
+                className="inline-flex h-7 w-full items-center justify-center gap-x-1 rounded-full bg-badge-green-background-default px-3 text-button-small text-text-positive"
+              >
+                <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />
+                {t('operation.signedButton')}
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('operation.signedTooltip')}</Tooltip.Content>
+          </Tooltip>
         )}
         {api && chain && needsCallData && (
           <CallDataModal api={api} operation={operation} chain={chain}>

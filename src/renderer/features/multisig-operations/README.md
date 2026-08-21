@@ -145,8 +145,10 @@ boundaries on hover and while a column is being resized:
 - **Status** — under the _Signed_ / _Status_ caption, a bordered pill: **"X of Y signed"** while pending, **Executed**
   or **Rejected** once resolved.
 - **Actions** — Approve / Reject / Add call data buttons per the rules above (or the Add-wallet pairing prompt for an
-  external multisig). An operation [awaiting its final status](#awaiting-the-final-status) shows an **Updating status**
-  loader here instead.
+  external multisig). When the user owns at least one signatory and **every** one of them has already approved, a green
+  **Signed** pill takes the Approve slot ("Signed with all your signatory accounts") instead of an empty cell; Reject
+  stays available to a depositor who has signed. An operation [awaiting its final status](#awaiting-the-final-status)
+  shows an **Updating status** loader here instead.
 
 ### Awaiting the final status
 

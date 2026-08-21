@@ -2886,6 +2886,8 @@
     },
     "signatoriesTitle": "Signatories",
     "signatoriesTitleCount": "Signatories { count }",
+    "signedButton": "Signed",
+    "signedTooltip": "Signed with all your signatory accounts",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "awaitingOutcomeDescription": "Waiting for the final status — it will be updated automatically when network data is received",
