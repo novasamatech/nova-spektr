@@ -43,7 +43,7 @@ import { recipientVerificationModel } from '@/aggregates/recipient-verification'
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
-import { createPathRouteStore } from '@/features/signing-path';
+import { createPathResolutionStore } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 
@@ -197,7 +197,14 @@ sample({
 const $draftSigningPath = $draft.map((draft): PathNode[] =>
   Array.isArray(draft?.signingPath) ? draft.signingPath : [],
 );
-const $pathRoute = createPathRouteStore($draftSigningPath, $chain);
+const $pathResolution = createPathResolutionStore($draftSigningPath, $chain);
+const $pathRoute = $pathResolution.map(({ route }) => route);
+/**
+ * The account from the saved path that has no local counterpart. Surfaced to
+ * the UI so the blocked-submit screen can name it instead of saying the path is
+ * "unresolvable".
+ */
+const $pathMissingAccountId = $pathResolution.map(({ missingNode }) => missingNode?.accountId ?? null);
 
 // Canonical initiator: for path-driven drafts the route's first node is the
 // authored top of the chain (matters for nested-multisig drafts where
@@ -208,25 +215,13 @@ const $initiator = combine(
   ({ pathRoute, flowInitiator }) => pathRoute?.[0] ?? flowInitiator,
 );
 
-// Legacy BFS route — only consumed when the draft has no saved signing path.
-// The gate is *inside* the combine so `accountService.findRoute` (which
-// allocates an account graph) doesn't run at all for path-driven drafts.
-// `createRouteStore` would be simpler but it's unconditional, so we inline
-// the logic here.
-const $bfsRoute = combine(
-  {
-    saved: $draftSigningPath,
-    chain: $chain,
-    initiator: $initiator,
-    signatory: $signatoryStore,
-    accounts: walletModel.$availableAccounts,
-  },
-  ({ saved, chain, initiator, signatory, accounts }) => {
-    if (saved.length > 0) return [];
-    if (nullable(chain) || nullable(initiator) || nullable(signatory)) return [];
-
-    return accountService.findRoute(initiator, signatory, accounts, chain);
-  },
+// The draft carries no usable path at all: a legacy draft saved before the
+// field existed, or a truncated one. There is nothing to follow, and route
+// discovery would pick a route the draft's authors never agreed on — so these
+// drafts are not submittable (`hasSigningPath` gates the row's button too).
+const $pathMissingError = combine(
+  { draft: $draft, saved: $draftSigningPath },
+  ({ draft, saved }) => nonNullable(draft) && saved.length < 2,
 );
 
 // Draft has a non-trivial saved path but it can't be resolved against the
@@ -235,38 +230,54 @@ const $bfsRoute = combine(
 // Defence-in-depth: `$pathRoute` already returns `null` while `$chain` is
 // null, but the explicit guard avoids accidental regressions if the resolver
 // ever surfaces a non-null route before chain settles.
-const $pathResolutionError = combine(
+const $pathUnresolvedError = combine(
   { saved: $draftSigningPath, resolved: $pathRoute, chain: $chain },
   ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
 );
 
-// Path-driven drafts: strictly follow the resolved path; never silently
-// re-route through BFS. Legacy drafts (no saved path) keep the BFS fallback
-// for backwards compatibility.
-const $route = combine(
-  { bfs: $bfsRoute, saved: $draftSigningPath, resolved: $pathRoute },
-  ({ bfs, saved, resolved }) => {
-    if (saved.length === 0) return bfs;
-    return resolved && resolved.length > 0 ? resolved : [];
-  },
+const $pathResolutionError = combine(
+  $pathMissingError,
+  $pathUnresolvedError,
+  (missing, unresolved) => missing || unresolved,
+);
+
+// Strictly the saved path, resolved — there is no fallback route. An empty
+// array here always means "blocked", never "figure it out from the accounts".
+const $route = $pathRoute.map((resolved) => resolved ?? []);
+
+// Hard gate: an unresolvable path must never reach the wrapper. `$route` is
+// `[]` in that case, and `wrapTransaction` over an empty route returns the
+// *raw* call — signable, and executing from the signer's own account instead of
+// the authored route. Withholding the transaction keeps `$wrappedTx` null, so
+// the confirm step can't init and the Sign button never appears.
+const $transactionToWrap = combine(
+  { transaction: $transaction, pathError: $pathResolutionError },
+  ({ transaction, pathError }) => (pathError ? null : transaction),
 );
 
 const { $tx: $wrappedTx } = createWrappedTxStore({
   api: $api,
-  transaction: $transaction,
+  transaction: $transactionToWrap,
   route: $route,
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
-type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved';
+type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved' | 'signing-path-missing';
 const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStarted);
 // Derived so it always reflects the current path-resolution and extrinsic
 // state. A sample-based "set once" store would stick after a transient init
 // flip even after the path resolves.
 const $wrappedTxErrorKind = combine(
-  { extrinsicFailed: $extrinsicCreationFailed, pathError: $pathResolutionError },
-  ({ extrinsicFailed, pathError }): WrappedTxErrorKind | null => {
-    if (pathError) return 'signing-path-unresolved';
+  {
+    extrinsicFailed: $extrinsicCreationFailed,
+    pathMissing: $pathMissingError,
+    pathUnresolved: $pathUnresolvedError,
+  },
+  ({ extrinsicFailed, pathMissing, pathUnresolved }): WrappedTxErrorKind | null => {
+    // Distinct from `unresolved`: nothing to add locally would fix it, so the
+    // UI says "recreate the draft" instead of naming an account.
+    if (pathMissing) return 'signing-path-missing';
+    if (pathUnresolved) return 'signing-path-unresolved';
     if (extrinsicFailed) return 'extrinsic';
     return null;
   },
@@ -286,8 +297,14 @@ sample({
   target: createWrappedExtrinsicFx,
 });
 
+// Guarded rather than a bare forward: the effect is async, so an extrinsic
+// built just before the path was found unresolvable could land afterwards and
+// re-arm the Sign button on an already-blocked flow.
 sample({
   clock: createWrappedExtrinsicFx.doneData,
+  source: $pathResolutionError,
+  filter: (pathError) => !pathError,
+  fn: (_, extrinsic) => extrinsic,
   target: $wrappedExtrinsic,
 });
 
@@ -429,32 +446,25 @@ const {
 
 /**
  * True iff the draft has an initiatorAccountId but the user can no longer sign
- * with it (so they must pick a replacement). For path-driven drafts, the
- * canonical signer is the path's leaf — accept it if it matches any wallet
- * account, independent of the wallet's account-graph traversal.
+ * with it (so they must pick a replacement). The canonical signer is the path's
+ * leaf — accept it if it matches any wallet account, independent of the
+ * wallet's account-graph traversal.
  */
 const $initiatorUnavailable = combine(
   {
     draft: $draft,
-    signatories: $signatories,
     availableAccounts: walletModel.$availableAccounts,
     signatory: $signatoryStore,
   },
-  ({ draft, signatories, availableAccounts, signatory }) => {
+  ({ draft, availableAccounts, signatory }) => {
     if (!draft?.initiatorAccountId) return false;
     // A valid signatory was already picked (auto-selected or by the user) —
     // the banner has nothing left to ask for.
     if (signatory !== null) return false;
 
-    if (Array.isArray(draft.signingPath) && draft.signingPath.length > 0) {
-      return !availableAccounts.some(
-        (a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
-      );
-    }
-
-    if (signatories.length === 0) return false;
-
-    return !signatories.some((s) => s.accountId === draft.initiatorAccountId);
+    return !availableAccounts.some(
+      (a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
+    );
   },
 );
 
@@ -615,8 +625,14 @@ sample({
     displayInitiator: $displayInitiator,
     signatory: $signatoryStore,
     route: $route,
+    pathError: $pathResolutionError,
   },
+  // `!pathError` is the backstop for the whole "sign only along the saved
+  // path" rule: whatever leaks through the stores upstream, the confirm step
+  // never opens while an account on the path is missing, so there is no screen
+  // from which the draft could be signed.
   filter: (s) =>
+    !s.pathError &&
     nonNullable(s.draft) &&
     nonNullable(s.wrappedTx) &&
     nonNullable(s.fee) &&
@@ -855,6 +871,7 @@ export const submitDraftModel = {
   $wrappedTxErrorKind,
   $route,
   $pathResolutionError,
+  $pathMissingAccountId,
   $submittedDraftIds,
   $multisigThreshold,
   $multisigDeposit,

@@ -24,6 +24,7 @@ import {
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
+import { hasSigningPath } from '../lib/submit-draft-availability';
 import { useDraftOperationTitle } from '../lib/useDraftOperationTitle';
 import { useDraftTransactionAmount } from '../lib/useDraftTransactionAmount';
 
@@ -252,6 +253,24 @@ export const DraftRow = ({
                         {t('operations.drafts.submittedBadge')}
                       </CaptionText>
                     </div>
+                  ) : !hasSigningPath(draft) ? (
+                    // Terminal state: no route to follow and no fallback, so the
+                    // button is disabled here rather than in the submit dialog.
+                    <Tooltip>
+                      <Tooltip.Trigger>
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="fill"
+                            className="w-full min-w-0 truncate whitespace-nowrap"
+                            disabled
+                          >
+                            {t('operations.drafts.submitButton')}
+                          </Button>
+                        </div>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content>{t('operations.drafts.signingPathMissingTooltip')}</Tooltip.Content>
+                    </Tooltip>
                   ) : !hasInitiator ? (
                     <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
                   ) : !draft.callData ? (

@@ -23,6 +23,7 @@ import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { accounts, transactionService } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -136,6 +137,8 @@ const ConfirmStep = () => {
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
   const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
+  const missingAccountId = useUnit(submitDraftModel.$pathMissingAccountId);
+  const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
@@ -165,6 +168,10 @@ const ConfirmStep = () => {
   }, [wrappedTxError]);
 
   const confirm = confirms.at(0) ?? null;
+
+  // `confirm` is null on the blocked-path screen, so the chain comes from the
+  // draft rather than from the confirm payload.
+  const missingAccountChain = draft ? (chains[draft.chainId] ?? null) : null;
 
   const wrappedArgs = useMemo(() => {
     if (!wrappedExtrinsic || !confirm?.chain) return null;
@@ -257,6 +264,46 @@ const ConfirmStep = () => {
 
   if (!confirm) {
     if (showWrappedTxError) {
+      // Name the account the path needs: "add this one and the draft becomes
+      // submittable" is actionable, "the path is unresolvable" is not. Falls
+      // back to the generic copy when the resolver couldn't point at a node
+      // (e.g. the whole path is malformed).
+      if (wrappedTxErrorKind === 'signing-path-unresolved' && missingAccountId && missingAccountChain) {
+        return (
+          <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+            <Icon className="text-icon-negative" name="warnCutout" size={60} />
+            <Box gap={2} horizontalAlign="center">
+              <FootnoteText align="center" className="text-text-primary">
+                {t('operations.drafts.signingPathAccountMissing')}
+              </FootnoteText>
+              <NamedAccount variant="short" accountId={missingAccountId} chain={missingAccountChain} />
+              <FootnoteText align="center" className="text-text-tertiary">
+                {t('operations.drafts.signingPathAccountMissingHint')}
+              </FootnoteText>
+            </Box>
+          </Box>
+        );
+      }
+
+      // A draft saved without a signing path can't be submitted at all: there
+      // is no route to follow and discovering one would sign through a path
+      // nobody agreed on. Nothing to fix locally — say so and offer the exit.
+      if (wrappedTxErrorKind === 'signing-path-missing') {
+        return (
+          <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+            <Icon className="text-icon-negative" name="warnCutout" size={60} />
+            <Box gap={2} horizontalAlign="center">
+              <FootnoteText align="center" className="text-text-primary">
+                {t('operations.drafts.signingPathMissing')}
+              </FootnoteText>
+              <FootnoteText align="center" className="text-text-tertiary">
+                {t('operations.drafts.signingPathMissingHint')}
+              </FootnoteText>
+            </Box>
+          </Box>
+        );
+      }
+
       const messageKey =
         wrappedTxErrorKind === 'signing-path-unresolved'
           ? 'operations.drafts.signingPathUnresolved'
