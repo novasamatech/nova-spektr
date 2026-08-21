@@ -189,6 +189,7 @@
   },
   "assetBalance": {
     "locked": "Locked",
+    "lessThan": "<{value}",
     "number": "{value, number}",
     "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
@@ -614,6 +615,72 @@
         "assetCount_other": "{count} assets",
         "asset": "Asset",
         "holdings": "Holdings"
+      }
+    },
+    "accountsTable": {
+      "title": "Accounts",
+      "searchPlaceholder": "Account, address, chain",
+      "exportCsv": "Export CSV",
+      "exportCsvEmpty": "No rows to export",
+      "fullView": "Full view",
+      "fullViewTitle": "All accounts",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "subtotal": "Subtotal",
+      "activeFilters": "{count} active",
+      "clearAll": "Clear all",
+      "filters": {
+        "title": "Filters",
+        "network": "Network",
+        "chain": "Chain",
+        "account": "Account",
+        "asset": "Token",
+        "assetSearch": "Find a token",
+        "assetEmpty": "No tokens match",
+        "amountTitle": "Row total, {currency}",
+        "amountMin": "Min {value}",
+        "amountPlaceholder": "Minimum, e.g. 100K",
+        "presetAny": "Any",
+        "presetMin": "≥ {value}",
+        "removeFilter": "Remove {label}",
+        "anyValue": "Any",
+        "selectedCount_one": "{count} selected",
+        "selectedCount_other": "{count} selected"
+      },
+      "walletTypes": {
+        "vault": "Polkadot Vault",
+        "multisig": "Multisig",
+        "proxied": "Proxied",
+        "watchOnly": "Watch-only",
+        "walletConnect": "WalletConnect",
+        "contact": "Address book contact",
+        "other": "Other"
+      },
+      "columns": {
+        "network": "Network",
+        "chain": "Chain",
+        "account": "Account",
+        "address": "Address",
+        "asset": "Asset",
+        "transferable": "Transferable",
+        "staked": "Staked",
+        "governance": "Governance",
+        "other": "Other",
+        "total": "Total"
+      },
+      "empty": {
+        "title": "No rows match your filters",
+        "description": "Every account was filtered out. Drop one of the active filters to bring rows back.",
+        "clearFilters": "Clear filters"
+      },
+      "noSelection": "Select accounts above to view balances",
+      "noBalances": {
+        "title": "No balances to show",
+        "description": "The selected accounts hold nothing on the connected networks."
+      },
+      "footer": {
+        "showing": "Showing {rows} of {total} rows in {accounts} accounts",
+        "note": "Account subtotals are fiat · the sorted column ranks both accounts and their rows · \"—\" = not applicable on this chain"
       }
     },
     "totalRewards": {

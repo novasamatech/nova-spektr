@@ -40,7 +40,7 @@ export const formatAmount = (amount: string, precision: number): string => {
 };
 
 type FormatBalanceShorthands = Record<Suffix, boolean>;
-type FormatBalanceConfig = Partial<{
+export type FormatBalanceConfig = Partial<{
   round: 'up' | 'down';
   shorthands: Partial<FormatBalanceShorthands>;
   keepPrecision: boolean;
