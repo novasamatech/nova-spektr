@@ -175,9 +175,20 @@ sample({
 
 // Replace $draft with the server-confirmed version so $transaction picks up
 // the new callData and the rest of the flow proceeds as if it were never
-// missing.
+// missing. The saved path is carried over when the PATCH response doesn't echo
+// one: `signingPath` parses with a `[]` default, and an empty path now means
+// "unsubmittable", so a trimmed response would brick the draft the user is in
+// the middle of completing.
+const withPreservedPath = (updated: Draft, current: Draft | null): Draft => {
+  if (updated.signingPath.length > 0 || nullable(current) || current.signingPath.length === 0) return updated;
+
+  return { ...updated, signingPath: current.signingPath };
+};
+
 sample({
   clock: submitCallDataFx.doneData,
+  source: $draft,
+  fn: (current, updated) => withPreservedPath(updated, current),
   target: [$draft, draftsResource.draftUpdated],
 });
 

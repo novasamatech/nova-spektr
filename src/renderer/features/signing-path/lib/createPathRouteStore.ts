@@ -10,23 +10,33 @@ import { createSyntheticProxiedAccount, scopeProxiedAccount } from './path-accou
 
 /**
  * A flex multisig answers to two accountIds — `accountId` is the pure-proxy
- * facade, `multisigAccountId` is the inner multisig — so a `multisig` node may
- * only collapse onto it when the _previous_ node is the `proxied` facade of
- * that same account. Matching it anywhere else turns a plain `multisig ->
- * signer` path into `asMulti(proxy.proxy(real = facade, ...))`: the operation
- * silently executes from the pure proxy the user never picked, while every UI
- * surface keeps showing the multisig from the saved path.
+ * facade, `multisigAccountId` is the inner multisig — and the path spends two
+ * hops on it: `proxied(facade) → multisig(inner)`. The second hop collapses
+ * onto the account already resolved for the first, so the match is made against
+ * that _resolved account_, never by searching the account list for "something
+ * whose inner multisig has this id".
+ *
+ * Searching would let a flex account answer a `multisig` node it has no
+ * business answering — a plain `multisig -> signer` path would become
+ * `asMulti(proxy.proxy(real = facade, ...))`, executing from a pure proxy the
+ * user never picked while every UI surface still shows the saved multisig.
  */
-const isFlexCollapseHop = (account: AnyAccount, node: PathNode, previousNode: PathNode | undefined): boolean => {
+const collapsesOntoFlexAccount = (
+  previousAccount: AnyAccount | undefined,
+  node: PathNode,
+  previousNode: PathNode | undefined,
+): boolean => {
   return (
-    accountUtils.isFlexibleMultisigAccount(account) &&
-    account.multisigAccountId === node.accountId &&
+    nonNullable(previousAccount) &&
+    node.kind === 'multisig' &&
+    accountUtils.isFlexibleMultisigAccount(previousAccount) &&
+    previousAccount.multisigAccountId === node.accountId &&
     previousNode?.kind === 'proxied' &&
-    previousNode.accountId === account.accountId
+    previousNode.accountId === previousAccount.accountId
   );
 };
 
-const matchesNode = (account: AnyAccount, node: PathNode, previousNode: PathNode | undefined): boolean => {
+const matchesNode = (account: AnyAccount, node: PathNode): boolean => {
   if (node.kind === 'proxied') {
     return (
       (accountUtils.isProxiedAccount(account) && account.accountId === node.accountId) ||
@@ -34,10 +44,7 @@ const matchesNode = (account: AnyAccount, node: PathNode, previousNode: PathNode
     );
   }
   if (node.kind === 'multisig') {
-    return (
-      (accountUtils.isMultisigAccount(account) && account.accountId === node.accountId) ||
-      isFlexCollapseHop(account, node, previousNode)
-    );
+    return accountUtils.isMultisigAccount(account) && account.accountId === node.accountId;
   }
   return account.accountId === node.accountId;
 };
@@ -111,16 +118,14 @@ export const createPathResolutionStore = (
         const previousNode = path[index - 1];
         const previousAccount = resolved.at(-1);
         // The flex facade resolved for the previous `proxied` node also *is*
-        // this multisig hop — take it directly, so an unrelated stand-alone
-        // MultisigAccount sharing the inner accountId can't win the `find`
-        // below and add a second `asMulti` wrapper on top of the flex one.
-        const collapsesOntoPrevious =
-          nonNullable(previousAccount) && isFlexCollapseHop(previousAccount, node, previousNode);
-        const account = collapsesOntoPrevious
+        // this multisig hop — take it directly, so a stand-alone MultisigAccount
+        // sharing the inner accountId can't win the `find` below and add a
+        // second `asMulti` wrapper on top of the flex one.
+        const account = collapsesOntoFlexAccount(previousAccount, node, previousNode)
           ? previousAccount
           : node.kind === 'proxied'
             ? resolveProxiedNodeAccount(chainAccounts, node, nextNode, chainValue)
-            : chainAccounts.find((a) => matchesNode(a, node, previousNode));
+            : chainAccounts.find((a) => matchesNode(a, node));
         if (!account) return { route: null, missingNode: node };
 
         // Flex multisig spans two consecutive hops as one account; its

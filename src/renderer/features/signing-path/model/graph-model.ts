@@ -306,9 +306,11 @@ function buildSources(
   //    `multisigAccountId`, so the path it produces is `proxied → multisig →
   //    signer` (same shape as pure proxy + multisig). $multisigByAccountId
   //    already keys the inner multisig; here we register the facade itself.
+  const flexInnerMultisigIds = new Set<AccountId>();
   for (const account of accountList) {
     if (!accountUtils.isFlexibleMultisigAccount(account)) continue;
     if (account.chainId !== chainId) continue;
+    flexInnerMultisigIds.add(account.multisigAccountId);
     if (seenAccounts.has(account.accountId)) continue;
     if (!hasReachableMultisigDelegate(account.accountId)) continue;
 
@@ -321,11 +323,25 @@ function buildSources(
     });
   }
 
+  // A flex multisig is keyed in `multisigByAccountId` under its *inner*
+  // multisig, so without this it would also be offered as a stand-alone
+  // multisig source — the same wallet twice, under two addresses. Picking that
+  // entry builds a `multisig(inner) → signer` path that resolves to nothing
+  // (the local account is the facade, not the inner multisig), leaving a draft
+  // that can never be submitted. It stays offered when the inner multisig also
+  // exists as a multisig of its own: then it is a real, separate origin.
+  const standaloneMultisigIds = new Set(
+    accountList.filter(accountUtils.isMultisigAccount).map((account) => account.accountId),
+  );
+  const isFlexInnerOnly = (accountId: AccountId) =>
+    flexInnerMultisigIds.has(accountId) && !standaloneMultisigIds.has(accountId);
+
   // 2. Direct multisig sources — anything in the merged lookup (own +
   //    backend contacts). Iterating the unified map means own multisigs
   //    surface here even when the user hasn't synced them as a contact.
   for (const accountId of multisigByAccountId.keys()) {
     if (seenAccounts.has(accountId)) continue;
+    if (isFlexInnerOnly(accountId)) continue;
     if (canReach && !canReach(accountId)) continue;
     seenAccounts.add(accountId);
     sources.push({

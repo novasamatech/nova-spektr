@@ -447,6 +447,54 @@ describe('Submit Draft — submit & edit flows', () => {
     });
   });
 
+  describe('call-data completion keeps the draft submittable', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Filling in missing call data never drops the saved signing path',
+      });
+    });
+
+    it('preserves the saved path when the update response comes back without one', async () => {
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(backendConfigurationModel.$backendUrl, BASE_URL)
+          .withStoreValue(authModel.$authState, authState),
+      );
+
+      const path: PathNode[] = [
+        { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+        { kind: 'signer', accountId: SIGNER_ID },
+      ];
+      const draft = makeDraft(path, {
+        multisigAccountId: MULTISIG_TOP_ID,
+        initiatorAccountId: SIGNER_ID,
+        callData: null,
+      });
+
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigDirect, chain: polkadotChain },
+      });
+
+      // `signingPath` parses with a `[]` default, and an empty path now means
+      // "unsubmittable" — a trimmed PATCH response must not brick the draft
+      // the user is in the middle of completing.
+      const updateDraft = vi
+        .spyOn(draftsService, 'updateDraft')
+        .mockResolvedValue({ ...draft, callData: CALL_DATA, signingPath: [] });
+
+      await allSettled(submitDraftModel.callDataChanged, { scope: env.scope, params: CALL_DATA });
+      await allSettled(submitDraftModel.callDataConfirmRequested, { scope: env.scope });
+
+      expect(updateDraft).toHaveBeenCalledTimes(1);
+      expect(env.getState(submitDraftModel.$draft)?.signingPath).toEqual(path);
+      expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).not.toBe('signing-path-missing');
+    });
+  });
+
   describe('submit gate (dashboard queue preconditions)', () => {
     beforeEach(async () => {
       await allureMetadata({

@@ -387,6 +387,37 @@ describe('createPathRouteStore', () => {
     expect(scope.getState($route)).toEqual([flexMultisig, signerAccount]);
   });
 
+  it('does not let a flex account answer a multisig hop behind a real proxied account', () => {
+    const proxiedId = acc(1);
+    const innerMultisigId = acc(2);
+    const signerId = acc(3);
+
+    // Same accountId carries both a real ProxiedAccount and a flex facade
+    // (the SPEK-558 shape). The proxied one wins the first hop, so the second
+    // hop is a plain multisig — the flex must not collapse onto it, or the
+    // route stacks the flex's own proxy wrapper on top of the explicit hop.
+    const proxiedAccount = makeProxiedAccount(proxiedId);
+    const flexMultisig = makeFlexMultisigAccount(proxiedId, innerMultisigId);
+    const innerMultisig = makeMultisigAccount(innerMultisigId);
+    const signerAccount = makeAccount(signerId);
+
+    const $path = createStore<PathNode[]>([proxied(proxiedId, 'Any'), multisig(innerMultisigId), signer(signerId)]);
+    const $chain = createStore<Chain | null>(CHAIN_A);
+    const $route = createPathRouteStore($path, $chain);
+
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, [flexMultisig, proxiedAccount, innerMultisig, signerAccount]],
+      ]),
+    });
+
+    const route = scope.getState($route);
+    expect(route).toHaveLength(3);
+    expect(route?.[0]?.accountId).toBe(proxiedId);
+    expect(route?.[1]).toBe(innerMultisig);
+    expect(route?.[2]).toBe(signerAccount);
+  });
+
   it('skips an ethereum-account candidate on a substrate chain (crypto mismatch)', () => {
     const ethAccountId = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' as unknown as AccountId;
     const $path = createStore<PathNode[]>([proxied(ethAccountId), signer(acc(1))]);

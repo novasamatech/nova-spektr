@@ -91,6 +91,35 @@ function makeOwnMultisigAccount(accountId: AccountId, signatories: AccountId[], 
   return draft as unknown as AnyAccount;
 }
 
+function makeOwnFlexMultisigAccount(
+  facadeAccountId: AccountId,
+  multisigAccountId: AccountId,
+  signatories: AccountId[],
+  threshold = 2,
+): AnyAccount {
+  const draft = {
+    id: `flex-${facadeAccountId}`,
+    type: 'chain',
+    accountType: AccountType.FLEX_MULTISIG,
+    walletId: 3,
+    name: `flex-${facadeAccountId}`,
+    accountId: facadeAccountId,
+    multisigAccountId,
+    chainId: CHAIN,
+    cryptoType: CryptoType.SR25519,
+    signingType: SigningType.MULTISIG,
+    signatories: signatories.map((sigId) => ({ accountId: sigId })),
+    threshold,
+    proxyType: 'Any',
+    deposit: '0',
+    entropyBlockNumber: 0,
+    extrinsicIndex: 0,
+    createdAt: 0,
+  };
+
+  return draft as unknown as AnyAccount;
+}
+
 // Seed helper: contacts go into $contacts (writable), proxies dict is keyed by proxiedAccountId,
 // and own accounts go into accounts.__test.$list so the restrictToOwn graph mode has a leaf set.
 function makeValues(
@@ -543,5 +572,44 @@ describe('graph-model', () => {
 
       expect(graphModel.$defaultPathFor($initiator, $chainId)).toBe(graphModel.$defaultPathFor($initiator, $chainId));
     });
+  });
+
+  it('$sourcesFor offers a flexible multisig once — as its facade, not also as its inner multisig', () => {
+    const facade = acc(1);
+    const inner = acc(2);
+    const signer = acc(3);
+
+    const flex = makeOwnFlexMultisigAccount(facade, inner, [signer]);
+    const scope = fork({
+      values: makeValues(
+        [makeContact(inner, 'InnerMultisig', { signatories: [signer], threshold: 2 })],
+        [makeProxy(inner, facade, CHAIN)],
+        [flex, makeOwnAccount(signer)],
+      ),
+    });
+
+    const accountIds = scope.getState(graphModel.$sourcesFor(CHAIN)).map((s) => s.accountId);
+
+    expect(accountIds).toContain(facade);
+    // Picking the inner multisig would build `multisig(inner) -> signer`, which
+    // resolves to nothing locally — the account here is the facade.
+    expect(accountIds).not.toContain(inner);
+  });
+
+  it('$sourcesFor keeps the inner accountId when it is also a multisig of its own', () => {
+    const facade = acc(1);
+    const inner = acc(2);
+    const signer = acc(3);
+
+    const flex = makeOwnFlexMultisigAccount(facade, inner, [signer]);
+    const standalone = makeOwnMultisigAccount(inner, [signer]);
+    const scope = fork({
+      values: makeValues([], [makeProxy(inner, facade, CHAIN)], [flex, standalone, makeOwnAccount(signer)]),
+    });
+
+    const accountIds = scope.getState(graphModel.$sourcesFor(CHAIN)).map((s) => s.accountId);
+
+    expect(accountIds).toContain(facade);
+    expect(accountIds).toContain(inner);
   });
 });

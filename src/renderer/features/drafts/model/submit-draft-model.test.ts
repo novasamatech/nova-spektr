@@ -5,6 +5,7 @@ import { type Chain, type ChainId, AccountType, CryptoType, SigningType } from '
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { backendConfigurationModel } from '@/aggregates/backend';
 
 import { submitDraftModel } from './submit-draft-model';
 
@@ -68,7 +69,10 @@ const makeDraft = (): Draft => ({
 // looks unresolvable for the wrong reason.
 const setupScope = async (accountList: AnyAccount[]) => {
   const scope = fork({
-    values: new Map<any, any>([[accounts.__test.$list, accountList]]),
+    values: new Map<any, any>([
+      [accounts.__test.$list, accountList],
+      [backendConfigurationModel.$backendUrl, 'https://backend.test'],
+    ]),
   });
 
   await allSettled(accountService.accountAvailabilityOnChainAnyOf.registerHandler, {

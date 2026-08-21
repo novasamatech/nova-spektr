@@ -232,7 +232,11 @@ const ConfirmStep = () => {
   }, [draft, wallets]);
 
   const showSignatorySelect = signatories.length > 1;
-  const noSignatories = signatories.length === 0;
+  // A path we can't follow is the more specific problem, and it usually *causes*
+  // the empty signatory list (the wallet holds no account for the path's leaf).
+  // Reporting "this wallet has no accounts" instead would send the user to add
+  // an account without saying which one.
+  const noSignatories = signatories.length === 0 && !wrappedTxError;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
   if (noSignatories) {
