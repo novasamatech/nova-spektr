@@ -456,6 +456,13 @@ describe('Submit Draft — submit & edit flows', () => {
       });
     });
 
+    // Every precondition below is tested against a draft that *does* carry a
+    // signing path — without one the path gate fires first and masks them.
+    const gatePath: PathNode[] = [
+      { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+      { kind: 'signer', accountId: SIGNER_ID },
+    ];
+
     // Mirrors DraftsSubsection: `useMultisigByAccountId` keyed lookup + Boolean(account).
     const hasLocalMultisig = (draft: Draft) =>
       env
@@ -465,16 +472,25 @@ describe('Submit Draft — submit & edit flows', () => {
     it('gates with connect-to-submit when there is no active backend session', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, null));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'operations.drafts.connectToSubmit' });
     });
 
-    it('gates with add-call-data when the draft has no call data', async () => {
+    it('gates a legacy draft with no signing path — before every other precondition', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
       const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID, callData: null });
+      const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
+
+      expect(gate).toEqual({ canSubmit: false, reasonKey: 'operations.drafts.signingPathMissingTooltip' });
+    });
+
+    it('gates with add-call-data when the draft has no call data', async () => {
+      env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
+
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID, callData: null });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'dashboard.operationsQueue.submitNeedsCallData' });
@@ -484,7 +500,7 @@ describe('Submit Draft — submit & edit flows', () => {
       // Only a plain signer locally — the draft's multisig lives elsewhere.
       env = await buildEnv([signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'dashboard.operationsQueue.submitUnavailable' });
@@ -493,7 +509,7 @@ describe('Submit Draft — submit & edit flows', () => {
     it('opens the gate when session, call data and a matching local multisig are all present', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: true, reasonKey: null });
