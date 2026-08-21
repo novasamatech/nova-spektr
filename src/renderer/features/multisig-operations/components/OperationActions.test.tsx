@@ -89,7 +89,7 @@ const multisigAccount = {
 };
 
 const renderActions = (approvedBy: string[]) =>
-  render(<OperationActions operation={makeOperation(approvedBy) as any} account={multisigAccount as any} />);
+  render(<OperationActions operation={makeOperation(approvedBy) as never} account={multisigAccount as never} />);
 
 describe('OperationActions', () => {
   beforeEach(() => {
@@ -107,7 +107,7 @@ describe('OperationActions', () => {
     renderActions(['sig-1']);
 
     expect(screen.getByText('operation.signedButton')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByLabelText('operation.signedTooltip')).toBeInTheDocument();
     expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
   });
 
@@ -133,6 +133,18 @@ describe('OperationActions', () => {
     renderActions(['sig-1']);
 
     expect(screen.queryByText('operation.signedButton')).not.toBeInTheDocument();
+    expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
+  });
+
+  it('shows both Reject and Signed when the depositor has signed with all own accounts', () => {
+    // makeOperation's depositor is 'sig-2' — owning it (local, non-watch-only,
+    // on-chain) makes Reject available; being the only own signatory and having
+    // already approved makes the Signed pill appear too.
+    testState.accounts = [makeAccount('sig-2')];
+    renderActions(['sig-2']);
+
+    expect(screen.getByText('operation.rejectButton')).toBeInTheDocument();
+    expect(screen.getByText('operation.signedButton')).toBeInTheDocument();
     expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
   });
 });

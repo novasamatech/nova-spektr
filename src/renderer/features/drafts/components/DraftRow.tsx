@@ -280,7 +280,7 @@ export const DraftRow = ({
                         <Button
                           size="sm"
                           variant="fill"
-                          className="w-full"
+                          className="w-full min-w-0 truncate whitespace-nowrap"
                           disabled={!isAuthenticated || !canWrite}
                           onClick={() => onSubmit(draft)}
                         >
@@ -299,7 +299,7 @@ export const DraftRow = ({
                         <Button
                           size="sm"
                           variant="fill"
-                          className="w-full"
+                          className="w-full min-w-0 truncate whitespace-nowrap"
                           disabled={!isAuthenticated}
                           onClick={() => onSubmit(draft)}
                         >

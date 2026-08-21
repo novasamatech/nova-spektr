@@ -16,7 +16,7 @@ a shared description, and (when the address book is connected) nudging the signa
 
 The list is a **table**. Above it sits the heading of the first visible group (Drafts when the drafts group is shown,
 otherwise In progress), then a sticky column header (Operation / Value / Submitter / Initiator / Description / Signed /
-Actions) that stays pinned across every group below — page → section → table. **Every column except Operation is
+Actions) that stays pinned across every group below — page → section → table. **Every column except Description is
 resizable**: drag the boundary in the header (double-click autofits; 180–440 / 120–300 / 140–440 / 140–440 / 90–220 /
 120–320 px), Description absorbs the slack, widths persist per user (see the
 [`operations-table-layout`](../../aggregates/operations-table-layout/README.md) aggregate), and widening past the window

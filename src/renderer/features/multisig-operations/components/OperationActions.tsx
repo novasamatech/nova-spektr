@@ -129,10 +129,11 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
           <Tooltip>
             <Tooltip.Trigger>
               <div
-                role="status"
-                className="inline-flex h-7 w-full items-center justify-center gap-x-1 rounded-full bg-badge-green-background-default px-3 text-button-small text-text-positive"
+                tabIndex={0}
+                aria-label={t('operation.signedTooltip')}
+                className="inline-flex h-7 w-full min-w-0 items-center justify-center gap-x-1 truncate rounded-full bg-badge-green-background-default px-3 text-button-small whitespace-nowrap text-text-positive"
               >
-                <Icon name="checkmarkOutline" size={14} className="text-icon-positive" />
+                <Icon name="checkmarkOutline" size={14} className="shrink-0 text-icon-positive" />
                 {t('operation.signedButton')}
               </div>
             </Tooltip.Trigger>
