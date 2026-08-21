@@ -201,7 +201,9 @@ For the FSD layer overview and domain/aggregate/feature folder structures see
   `custom-account-name → local contact → backend contact → identity → wallet.name` and feeds the result through as a
   name fallback. The `title` prop is an _override_ (returns immediately, skipping all resolution — see
   `accountService.resolveAccountName`); reserve it for cases where the caller has _already_ resolved the right name and
-  wants to force it. The raw `<Account>` from `@/shared/ui-entities` is presentational only.
+  wants to force it. Pass `walletNameAs="fallback"` when the account's own contact/identity name must win and the wallet
+  name should only fill in before the stored account name (the multisig Initiator/Depositor/signatory rows use it). The
+  raw `<Account>` from `@/shared/ui-entities` is presentational only.
 
 ### UI/Chart Patterns
 
