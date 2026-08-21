@@ -177,6 +177,9 @@ export const shouldAlwaysShowInProgress = ({
   isScopeMerged: boolean;
   filter: OperationsFilterCriteria;
 }): boolean => {
+  // `isScopeMerged` is not redundant with the tab: the context model forces the tab to 'pending'
+  // on the filter change that merges the scope, but that sample runs after the sectioning combine
+  // has already recomputed once in the same tick with the old tab.
   return (tab === 'pending' || isScopeMerged) && !hasNarrowingFilter(filter);
 };
 

@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const testState = vi.hoisted(() => ({
   accountsStore: Symbol('accounts'),
   accounts: [] as unknown[],
+  /** Account ids the chain-availability check rejects for the rendered chain. */
+  unavailableOnChain: [] as string[],
+  isAccountAvailableOnChain: (account: { accountId: string }) =>
+    !testState.unavailableOnChain.includes(account.accountId),
 }));
 
 vi.mock('effector-react', () => ({
@@ -14,7 +18,7 @@ vi.mock('@/shared/i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }
 
 // Chain availability leans on DI registrations that a unit test has no business booting.
 vi.mock('@/domains/network/account/service', () => ({
-  accountService: { isAccountAvailableOnChain: () => true },
+  accountService: { isAccountAvailableOnChain: testState.isAccountAvailableOnChain },
 }));
 
 // The real service decides who may still act — only the surrounding stores are faked.
@@ -23,7 +27,7 @@ vi.mock('@/domains/network', async () => {
 
   return {
     multisigOperationService: (service as { multisigOperationService: unknown }).multisigOperationService,
-    accountService: { isAccountAvailableOnChain: () => true },
+    accountService: { isAccountAvailableOnChain: testState.isAccountAvailableOnChain },
     accounts: { $list: testState.accountsStore },
     isContactMultisigAccount: () => false,
   };
@@ -31,9 +35,17 @@ vi.mock('@/domains/network', async () => {
 
 vi.mock('@/entities/network', () => ({ useNetworkData: () => ({ api: { name: 'api' }, chain: { name: 'chain' } }) }));
 
-vi.mock('@/entities/wallet', () => ({
-  accountUtils: { isWatchOnlyAccount: (account: { signingType: string }) => account.signingType === 'watch_only' },
-}));
+// Only the depositor (Reject) check still goes through `accountUtils`; signatory
+// ownership is decided by the real service above, against the real `SigningType`.
+vi.mock('@/entities/wallet', async () => {
+  const { SigningType } = await import('@/shared/core');
+
+  return {
+    accountUtils: {
+      isWatchOnlyAccount: (account: { signingType: string }) => account.signingType === SigningType.WATCH_ONLY,
+    },
+  };
+});
 
 vi.mock('@/features/wallet-pairing', () => ({ WalletPairingOperationTrigger: () => <div>pair-wallet</div> }));
 
@@ -56,6 +68,8 @@ vi.mock('@/shared/ui-kit', () => ({
     Content: () => null,
   }),
 }));
+
+import { SigningType } from '@/shared/core';
 
 import { OperationActions } from './OperationActions';
 
@@ -88,12 +102,13 @@ const multisigAccount = {
   signatories: SIGNATORIES.map(accountId => ({ accountId })),
 };
 
-const renderActions = (approvedBy: string[]) =>
-  render(<OperationActions operation={makeOperation(approvedBy) as never} account={multisigAccount as never} />);
+const renderActions = (approvedBy: string[], account: object = multisigAccount) =>
+  render(<OperationActions operation={makeOperation(approvedBy) as never} account={account as never} />);
 
 describe('OperationActions', () => {
   beforeEach(() => {
     testState.accounts = [makeAccount('sig-1')];
+    testState.unavailableOnChain = [];
   });
 
   it('offers Approve while an own signatory has not signed', () => {
@@ -129,11 +144,34 @@ describe('OperationActions', () => {
   });
 
   it('ignores a watch-only account holding the signatory', () => {
-    testState.accounts = [{ ...makeAccount('sig-1'), signingType: 'watch_only' }];
+    testState.accounts = [{ ...makeAccount('sig-1'), signingType: SigningType.WATCH_ONLY }];
     renderActions(['sig-1']);
 
     expect(screen.queryByText('operation.signedButton')).not.toBeInTheDocument();
     expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
+  });
+
+  it('shows Signed when the only other own key is not available on this chain', () => {
+    // sig-3 is held, but not on this chain — the service offers nothing to approve
+    // with, so the cell must say Signed rather than stay blank.
+    testState.accounts = [makeAccount('sig-1'), makeAccount('sig-3')];
+    testState.unavailableOnChain = ['sig-3'];
+    renderActions(['sig-1']);
+
+    expect(screen.getByText('operation.signedButton')).toBeInTheDocument();
+    expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
+  });
+
+  it('asks for call data instead of Approve or Signed at the final signing without call data', () => {
+    // Threshold 2, one approval in: the next signature executes and needs the
+    // call data. The user still holds an unsigned key (sig-3), so the action is
+    // "Add call data" — not Approve, and certainly not Signed.
+    testState.accounts = [makeAccount('sig-1'), makeAccount('sig-3')];
+    renderActions(['sig-1'], { ...multisigAccount, threshold: 2 });
+
+    expect(screen.getByText('operation.callData.addCallDataButton')).toBeInTheDocument();
+    expect(screen.queryByText('operation.approveButton')).not.toBeInTheDocument();
+    expect(screen.queryByText('operation.signedButton')).not.toBeInTheDocument();
   });
 
   it('shows both Reject and Signed when the depositor has signed with all own accounts', () => {

@@ -24,8 +24,10 @@ export const bucketOperations = <T extends Bucketable>(
   const buckets = new Map<OperationSection, T[]>();
   if (alwaysShowInProgress) buckets.set('in_progress', []);
 
+  const hidden = new Set(hiddenIds);
+
   for (const item of operations) {
-    const isHidden = isScopeMerged && hiddenIds.includes(item.operation.id);
+    const isHidden = isScopeMerged && hidden.has(item.operation.id);
     const section = isHidden ? 'hidden' : getOperationSection(item.operation);
     const list = buckets.get(section) ?? [];
     list.push(item);

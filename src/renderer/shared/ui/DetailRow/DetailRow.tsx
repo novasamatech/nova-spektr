@@ -3,6 +3,12 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '../Typography';
 
+/**
+ * Identicon size for accounts rendered as a `DetailRow` value — one size across
+ * a details column.
+ */
+export const DETAIL_ROW_ACCOUNT_ICON_SIZE = 20;
+
 type Props = {
   label: ReactNode;
   className?: string;

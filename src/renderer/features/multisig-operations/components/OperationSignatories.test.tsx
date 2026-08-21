@@ -3,23 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type MultisigAccount, type Wallet } from '@/shared/core';
+import { type MultisigAccount } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 
 import { OperationSignatories } from './OperationSignatories';
 
 const stores = vi.hoisted(() => ({
-  walletsStore: Symbol('wallets'),
   accountsStore: Symbol('accounts'),
 }));
 
 vi.mock('effector-react', () => ({
-  useUnit: (store: symbol) => {
-    if (store === stores.walletsStore) return testWallets;
-    if (store === stores.accountsStore) return testAccounts;
-    return undefined;
-  },
+  useUnit: (store: symbol) => (store === stores.accountsStore ? testAccounts : undefined),
 }));
 
 vi.mock('@/shared/di', () => ({
@@ -44,6 +39,7 @@ vi.mock('@/shared/lib/utils', () => ({
 }));
 
 vi.mock('@/shared/ui', () => ({
+  DETAIL_ROW_ACCOUNT_ICON_SIZE: 20,
   CountChip: ({ count }: { count: number }) => <span>{count}</span>,
   FootnoteText: ({ children, as: Component = 'h4' }: { children: ReactNode; as?: keyof HTMLElementTagNameMap }) => (
     <Component>{children}</Component>
@@ -89,7 +85,6 @@ vi.mock('@/entities/wallet', () => ({
   accountUtils: {
     isFlexibleMultisigAccount: () => false,
   },
-  walletModel: { $wallets: stores.walletsStore },
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
@@ -118,22 +113,12 @@ vi.mock('./NotifySignersButton', () => ({ NotifySignersButton: () => null }));
 
 const ownedSignatoryId = '0x01' as AccountId;
 const contactSignatoryId = '0x02' as AccountId;
-const signerWalletId = 1;
-
-const testWallets = [
-  {
-    id: signerWalletId,
-    name: 'Signer Wallet',
-    accounts: [],
-    type: 'polkadot_vault',
-  },
-] as unknown as Wallet[];
 
 const testAccounts = [
   {
     id: 'owned-signatory',
     name: 'Alice Signer',
-    walletId: signerWalletId,
+    walletId: 1,
     accountId: ownedSignatoryId,
   },
 ] as unknown as AnyAccount[];
@@ -168,7 +153,6 @@ describe('OperationSignatories', () => {
     expect(contact).not.toHaveAttribute('data-title');
     expect(contact).toHaveAttribute('data-wallet-as', 'fallback');
 
-    expect(screen.queryByText('Signer Wallet')).not.toBeInTheDocument();
     expect(screen.queryByText('Alice Signer')).not.toBeInTheDocument();
   });
 

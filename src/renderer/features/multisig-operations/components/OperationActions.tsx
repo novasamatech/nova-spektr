@@ -21,6 +21,11 @@ import { ApproveTxModal } from './modals/ApproveTx';
 import { CallDataModal } from './modals/CallDataModal';
 import { RejectTxModal } from './modals/RejectTx';
 
+// `Button` wraps its children in a plain `<div>`; the ellipsis has to live on that
+// text box (a flex item) rather than on the flex `<button>` itself, or the label
+// just clips at the column's minimum width.
+const BUTTON_CLASS_NAME = 'w-full min-w-0 [&>div]:min-w-0 [&>div]:truncate';
+
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount | FlexibleMultisigAccount;
@@ -84,16 +89,14 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
 
   const needsCallData = isActionable && hasApproveAccount && isFinalSigning && !hasValidCallData;
 
-  // The user's own signatories — the ones a "Signed" state would be about. Watch-only
-  // accounts can never sign, so owning one is not owning a signatory.
-  const approvedBy = multisigOperationService.getApprovers(operation);
-  const ownSignatories = account.signatories.filter(signatory =>
-    allAccounts.some(
-      a => !accountUtils.isWatchOnlyAccount(a) && multisigOperationService.accountMatchesSignatory(a, signatory),
-    ),
-  );
-  const hasSignedWithAllOwn = ownSignatories.length > 0 && ownSignatories.every(s => approvedBy.has(s.accountId));
   // Nothing left to approve because the user already did — say so instead of leaving a blank cell.
+  // "Own" is decided by the same service predicate that gates Approve, so the two can never disagree.
+  const hasSignedWithAllOwn = multisigOperationService.hasSignedWithAllOwnSignatories(
+    operation,
+    account,
+    allAccounts,
+    chain,
+  );
   const isSignedByUser = !isContact && isActionable && !isApproveAvailable && !needsCallData && hasSignedWithAllOwn;
 
   if (!chain && !isContact) return null;
@@ -111,7 +114,7 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
       <div className="flex min-w-0">
         {api && chain && isRejectAvailable && (
           <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button pallet="error" variant="fill" size="sm" className="w-full min-w-0 truncate whitespace-nowrap">
+            <Button pallet="error" variant="fill" size="sm" className={BUTTON_CLASS_NAME}>
               {t('operation.rejectButton')}
             </Button>
           </RejectTxModal>
@@ -120,7 +123,7 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
       <div className="flex min-w-0">
         {api && chain && isApproveAvailable && (
           <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
-            <Button size="sm" className="w-full min-w-0 truncate whitespace-nowrap">
+            <Button size="sm" className={BUTTON_CLASS_NAME}>
               {t('operation.approveButton')}
             </Button>
           </ApproveTxModal>
@@ -131,10 +134,10 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
               <div
                 tabIndex={0}
                 aria-label={t('operation.signedTooltip')}
-                className="inline-flex h-7 w-full min-w-0 items-center justify-center gap-x-1 truncate rounded-full bg-badge-green-background-default px-3 text-button-small whitespace-nowrap text-text-positive"
+                className="inline-flex h-7 w-full min-w-0 items-center justify-center gap-x-1 rounded-full bg-badge-green-background-default px-3 text-button-small text-text-positive"
               >
                 <Icon name="checkmarkOutline" size={14} className="shrink-0 text-icon-positive" />
-                {t('operation.signedButton')}
+                <span className="min-w-0 truncate">{t('operation.signedButton')}</span>
               </div>
             </Tooltip.Trigger>
             <Tooltip.Content>{t('operation.signedTooltip')}</Tooltip.Content>
@@ -142,7 +145,7 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
         )}
         {api && chain && needsCallData && (
           <CallDataModal api={api} operation={operation} chain={chain}>
-            <Button size="sm" variant="chip" className="w-full min-w-0 truncate whitespace-nowrap">
+            <Button size="sm" variant="chip" className={BUTTON_CLASS_NAME}>
               {t('operation.callData.addCallDataButton')}
             </Button>
           </CallDataModal>

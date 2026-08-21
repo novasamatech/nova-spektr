@@ -15,6 +15,9 @@ export { wireDraftSourceBalance } from './lib/wireDraftSourceBalance';
 export { type DraftSeed, createDraftModel } from './model/create-draft-model';
 export { type Draft } from '@/domains/backend';
 export { type DraftListScope, filterDraftsByScope } from './lib/draft-scope';
+// Keep above the exports that reach `@/features/multisig-operations` (`useSubmitDraft`,
+// `useDraftOperationTitle`, …): that feature wires `draftDeepLinkModel` at load time while this
+// barrel may still be evaluating (see `multisig-operations/model/draft-deep-link-expand.ts`).
 export { draftDeepLinkModel } from './model/draft-deep-link';
 export { DraftIcon } from './components/DraftIcon';
 export { useVisibleDrafts } from './lib/useVisibleDrafts';

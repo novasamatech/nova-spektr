@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { DetailRow, FootnoteText } from '@/shared/ui';
+import { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
@@ -69,7 +69,12 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (delegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <NamedAccount accountId={delegationTarget} variant="short" iconSize={20} chain={chain} />
+        <NamedAccount
+          accountId={delegationTarget}
+          variant="short"
+          iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+          chain={chain}
+        />
       </DetailRow>,
     );
   }
@@ -77,7 +82,12 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (!delegationTarget && undelegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <NamedAccount accountId={undelegationTarget} variant="short" iconSize={20} chain={chain} />
+        <NamedAccount
+          accountId={undelegationTarget}
+          variant="short"
+          iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+          chain={chain}
+        />
       </DetailRow>,
     );
   }

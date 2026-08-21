@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
-import { DetailRow } from '@/shared/ui';
+import { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -33,7 +33,7 @@ export const PayeeOperationDetails = ({ operation }: Props) => {
           <NamedAccount
             accountId={toAccountId(payee.Account)}
             variant="short"
-            iconSize={20}
+            iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
             chain={chains[operation.chainId]}
           />
         )}

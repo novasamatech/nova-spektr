@@ -13,9 +13,10 @@ export const SECTION_LABEL_KEYS: Record<OperationSection, string> = {
 
 /**
  * Copy for a section rendered with no rows. Only the always-present in-progress
- * group can reach that state today; other sections are omitted when empty.
+ * group can reach that state today; other sections are omitted when empty, so
+ * its copy doubles as the fallback for any section lacking its own.
  */
-export const SECTION_EMPTY_LABEL_KEYS: Partial<Record<OperationSection, string>> = {
+export const SECTION_EMPTY_LABEL_KEYS: { in_progress: string } & Partial<Record<OperationSection, string>> = {
   in_progress: 'operations.sections.inProgressEmpty',
 };
 

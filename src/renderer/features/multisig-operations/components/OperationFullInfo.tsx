@@ -4,8 +4,8 @@ import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/cor
 import { Slot, createSlot } from '@/shared/di';
 import { type MultisigOperation } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
+import { type OperationAmountValue } from '../lib/types';
 
-import { type OperationAmountValue } from './Operation';
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { type NotificationStatus } from '@/shared/core';
 import { ButtonLink, Icon } from '@/shared/ui';
+import { TOAST_WIDTH } from '@/shared/ui-kit';
 import { type ToastData, notificationModel } from '@/entities/notification';
 
 const TOAST_DURATION = 5000;
@@ -37,7 +38,10 @@ export const NotificationsPortal = () => {
 
       toast.custom(
         (toastId) => (
-          <div className="flex w-[356px] items-start gap-2 rounded-lg bg-white p-3 shadow-card-shadow">
+          <div
+            className="flex items-start gap-2 rounded-lg bg-white p-3 shadow-card-shadow"
+            style={{ width: TOAST_WIDTH }}
+          >
             <div className="mt-0.5 shrink-0">{getIconForStatus(status)}</div>
             <div className="flex flex-1 flex-col gap-1">
               <span className="text-body-bold text-text-primary">{displayTitle}</span>

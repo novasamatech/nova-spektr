@@ -1,4 +1,4 @@
-import { type Scope, allSettled, createWatch, fork } from 'effector';
+import { type Scope, allSettled, createWatch, fork, launch } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
 // Mock components that cause circular dependency issues
@@ -7,12 +7,14 @@ vi.mock('../components/Operation', () => ({
 }));
 
 import { type MultisigAccount, AccountType, ProxyVariant, WalletType } from '@/shared/core';
-import { createAccountId, polkadotChainId } from '@/shared/mocks';
+import { createAccountId, kusamaChainId, polkadotChainId } from '@/shared/mocks';
 import { accounts, multisigOperation } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
+import { draftDeepLinkModel } from '@/features/drafts';
 
 import { operationsContextModel } from './context';
 import { deepLinkModel } from './deep-link';
+import './draft-deep-link-expand';
 
 describe('operations context model', () => {
   const mockAccountId = createAccountId(1);
@@ -516,6 +518,91 @@ describe('operations context model', () => {
 
       expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({ in_progress: true });
     });
+
+    it('should expand a collapsed Drafts group on a draft deep link and leave the other groups alone', async () => {
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$collapsedSections, { drafts: true, completed: true }),
+      });
+
+      // `handler.triggered` is typed as a derived `Event`, so it is fired through `launch`.
+      launch({ target: draftDeepLinkModel.handler.triggered, params: { draftId: 'draft-1' }, scope });
+      await allSettled(scope);
+
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toEqual({ drafts: false, completed: true });
+    });
+
+    it('should not emit an update when expanding an already expanded group', async () => {
+      const collapsed = { completed: true };
+      const scope = fork({
+        values: new Map().set(operationsContextModel.$collapsedSections, collapsed),
+      });
+      const spy = vi.fn();
+      createWatch({ unit: operationsContextModel.$collapsedSections.updates, fn: spy, scope });
+
+      await allSettled(operationsContextModel.expandSection, { scope, params: 'drafts' });
+
+      expect(spy).not.toHaveBeenCalled();
+      expect(scope.getState(operationsContextModel.$collapsedSections)).toBe(collapsed);
+    });
+  });
+
+  describe('Chain syncing', () => {
+    const chainA = polkadotChainId;
+    const chainB = kusamaChainId;
+
+    it('should never report syncing for a wallet without multisig accounts', async () => {
+      const scope = fork({
+        values: new Map().set(multisigOperation.__test.$expectedChainIds, [chainA]),
+      });
+
+      expect(scope.getState(operationsContextModel.$isChainSyncing)).toBe(false);
+    });
+
+    it('should report syncing (connecting) while no expected chain is known yet', async () => {
+      const scope = fork({
+        values: new Map().set(multisigOperation.__test.$expectedChainIds, []).set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      expect(scope.getState(operationsContextModel.$isChainSyncing)).toBe(true);
+    });
+
+    it('should report syncing until every expected chain has reported', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$expectedChainIds, [chainA, chainB])
+          .set(multisigOperation.__test.$fetchedChainIds, [chainA])
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      expect(scope.getState(operationsContextModel.$isChainSyncing)).toBe(true);
+
+      await allSettled(multisigOperation.__test.$fetchedChainIds, { scope, params: [chainA, chainB] });
+
+      expect(scope.getState(operationsContextModel.$isChainSyncing)).toBe(false);
+    });
+
+    it('should remember a closed toast until a new set of expected chains starts a sync cycle', async () => {
+      const scope = fork({
+        values: new Map().set(multisigOperation.__test.$expectedChainIds, []).set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      expect(scope.getState(operationsContextModel.$isSyncToastVisible)).toBe(true);
+
+      await allSettled(operationsContextModel.syncToastDismissed, { scope });
+
+      // Still syncing (offline: nothing ever reports), but the close is remembered.
+      expect(scope.getState(operationsContextModel.$isChainSyncing)).toBe(true);
+      expect(scope.getState(operationsContextModel.$isSyncToastDismissed)).toBe(true);
+      expect(scope.getState(operationsContextModel.$isSyncToastVisible)).toBe(false);
+
+      await allSettled(multisigOperation.__test.$expectedChainIds, { scope, params: [chainA] });
+
+      expect(scope.getState(operationsContextModel.$isSyncToastDismissed)).toBe(false);
+      expect(scope.getState(operationsContextModel.$isSyncToastVisible)).toBe(true);
+    });
   });
 
   describe('Scope merged', () => {
@@ -647,6 +734,49 @@ describe('operations context model', () => {
 
       expect(sections.map(s => s.section)).toEqual(['in_progress']);
       expect(sections[0]?.items.map(i => i.operation.id)).toEqual([pendingOp.id]);
+    });
+
+    it('should keep an empty In-progress section on the pending tab while nothing narrows the list', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      expect(scope.getState(operationsContextModel.$sectionedOperations)).toEqual([
+        { section: 'in_progress', items: [] },
+      ]);
+    });
+
+    it('should drop the empty In-progress section once a narrowing filter matches nothing', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { searchQuery: 'zzzz-no-match' } });
+      expect(scope.getState(operationsContextModel.$sectionedOperations)).toEqual([]);
+
+      await allSettled(operationsContextModel.resetFilters, { scope });
+      await allSettled(operationsContextModel.setFilter, { scope, params: { network: ['polkadot'] } });
+      expect(scope.getState(operationsContextModel.$sectionedOperations)).toEqual([]);
+    });
+
+    it('should not keep the empty In-progress section on the history tab', async () => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, [])
+          .set(operationsContextModel.$tab, 'history')
+          .set(accounts.__test.$populated, true),
+      });
+      await populateAccounts(scope, [mockMultisigAccount]);
+
+      expect(scope.getState(operationsContextModel.$sectionedOperations)).toEqual([]);
     });
   });
 });

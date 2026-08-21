@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Button, DETAIL_ROW_ACCOUNT_ICON_SIZE, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -47,7 +47,12 @@ export const VerifyProxyOperationDetails = ({ operation }: Props) => {
       <div className="flex flex-col gap-y-2">
         <SmallTitleText>{t('operations.verifyProxy.details.targetSection')}</SmallTitleText>
         <FootnoteText className="text-text-secondary">
-          <NamedAccount accountId={info.delegateAccountId} chain={chain ?? undefined} variant="short" iconSize={20} />
+          <NamedAccount
+            accountId={info.delegateAccountId}
+            chain={chain ?? undefined}
+            variant="short"
+            iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+          />
         </FootnoteText>
       </div>
 

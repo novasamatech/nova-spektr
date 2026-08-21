@@ -1,1 +1,1 @@
-export { NotificationProvider, useNotification } from './NotificationContext';
+export { NotificationProvider, TOAST_WIDTH, useNotification } from './NotificationContext';

@@ -37,7 +37,9 @@ placeholder instead of disappearing; with a narrowing filter that matches nothin
 instead.
 
 Network sync progress is a persistent bottom-right toast (_Syncing networks… n/total_, hover for the per-chain list)
-that dismisses itself once every expected chain has reported; it never occupies the list.
+that dismisses itself once every expected chain has reported; it never occupies the list. It carries a close button, and
+a closed toast stays closed for the current sync cycle — an offline session, where no network ever reports, is not shown
+it again on every visit to the page; the next sync cycle (a fresh set of expected networks) brings it back.
 
 ## Who can use it / when it applies
 
@@ -137,7 +139,9 @@ A collapsed row is a fixed-height card whose cells line up with the sticky table
 - **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
 - **Initiator** — the operation's depositor (its first approver — the co-signer others are waiting on), resolved to a
   name the same way the expanded Depositor detail is (custom name → contact → identity → the owning wallet's name →
-  stored account name → short address). Hidden below 1536px to avoid horizontal scroll.
+  stored account name → short address). Shown by default only from 1536px up (to avoid horizontal scroll) until the user
+  switches it on or off in the column settings menu, after which that choice holds at every window size — for draft rows
+  too.
 - **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
   operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
   operation's description.
@@ -408,8 +412,9 @@ trailing **Hidden** section in the merged scope, when the Status filter selects 
 showing its count (so the Pending tab has one section, History has up to two). **The first visible group's heading is
 rendered above the sticky column header** and toggles that group; every other group's heading sits inline in the list,
 above its rows. **Drafts**, when shown, is that first group — its heading (label, count) is drawn by this view and its
-collapse state lives here too, not in the `drafts` feature. Collapsing a group is remembered while the page is open; a
-deep link into a collapsed group expands it so the target can be focused. The list is virtualised for long histories.
+collapse state lives here too, not in the `drafts` feature. Collapsing a group is remembered for as long as the app runs
+— leaving and reopening the page keeps it; a deep link into a collapsed group (an operation's or a draft's) expands it
+so the target can be focused. The list is virtualised for long histories.
 
 The sticky table header offers **sorting** on three columns, applied **within each section**. Clicking a column cycles
 ascending → descending → off. Sorting and resizing are independent: the resize handle swallows its click so dragging

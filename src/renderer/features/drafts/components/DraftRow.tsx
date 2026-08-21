@@ -5,7 +5,6 @@ import { type ChainId, type Wallet, CryptoType, WalletType } from '@/shared/core
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, toAccountId } from '@/shared/lib/utils';
 import { Accordion, Button, CaptionText, FootnoteText, HelpText } from '@/shared/ui';
-import { getColumnStyle, getLeftBlockWidth, operationColumns } from '@/shared/ui/operations-table-layout';
 import { Tooltip } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, contactMultisigsModel } from '@/domains/network';
@@ -14,7 +13,14 @@ import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel } from '@/aggregates/backend';
-import { useOperationColumnVisibility, useOperationColumnWidths } from '@/aggregates/operations-table-layout';
+import {
+  getCellProps,
+  getLeftBlockProps,
+  getRowProps,
+  operationColumns,
+  useOperationColumnVisibility,
+  useOperationColumnWidths,
+} from '@/aggregates/operations-table-layout';
 import { WalletPairingOperationTrigger } from '@/features/wallet-pairing';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
@@ -162,11 +168,8 @@ export const DraftRow = ({
         {/* text-left: Disclosure.Button is a <button>, whose default centered
             text-align cascades into the address/description lines */}
         <Accordion.Button buttonClass="px-4 text-left">
-          <div className="group/row flex h-[68px] w-full items-center gap-x-2 overflow-hidden">
-            <div
-              className={cnTw(operationColumns.leftBlock, 'flex h-full items-center gap-x-2')}
-              style={getColumnStyle(getLeftBlockWidth(widths, visibility))}
-            >
+          <div {...getRowProps()}>
+            <div {...getLeftBlockProps(widths, visibility, 'gap-x-2')}>
               <DraftIcon />
 
               <div
@@ -188,20 +191,14 @@ export const DraftRow = ({
               </div>
 
               {visibility.value && (
-                <div
-                  className={cnTw(operationColumns.value, 'flex h-full items-center')}
-                  style={getColumnStyle(widths.value)}
-                >
+                <div {...getCellProps('value', widths)}>
                   {amount && <OperationAmount value={amount.value} asset={amount.asset} />}
                 </div>
               )}
             </div>
 
             {visibility.submitter && (
-              <div
-                className={cnTw(operationColumns.submitter, 'flex h-full items-center')}
-                style={getColumnStyle(widths.submitter)}
-              >
+              <div {...getCellProps('submitter', widths)}>
                 {displayAccountId && (
                   <NamedAccount
                     accountId={displayAccountId}
@@ -216,10 +213,7 @@ export const DraftRow = ({
             )}
 
             {visibility.initiator && (
-              <div
-                className={cnTw(operationColumns.initiator, 'flex h-full items-center')}
-                style={getColumnStyle(widths.initiator)}
-              >
+              <div {...getCellProps('initiator', widths)}>
                 {initiatorAccountId ? (
                   <NamedAccount
                     accountId={initiatorAccountId}
@@ -244,19 +238,13 @@ export const DraftRow = ({
                 <DraftDescription description={draft.description} />
               </div>
             ) : (
-              <div className="min-w-0 flex-1" />
+              <div className={operationColumns.descriptionSpacer} />
             )}
 
-            {visibility.status && (
-              <div className={cnTw(operationColumns.status, 'h-full')} style={getColumnStyle(widths.status)} />
-            )}
+            {visibility.status && <div {...getCellProps('status', widths)} />}
 
             {visibility.actions && (
-              <div
-                className={cnTw(operationColumns.actions, 'flex h-full items-center')}
-                style={getColumnStyle(widths.actions)}
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div {...getCellProps('actions', widths)} onClick={(e) => e.stopPropagation()}>
                 <div className="min-w-0 flex-1">
                   {isSubmitted ? (
                     <div className="flex items-center justify-center rounded-[20px] border border-icon-positive/30 bg-icon-positive/8 px-2.5 py-1">

@@ -13,14 +13,13 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
-import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
+import { AddressBookHealthOverlay } from '@/features/contacts';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { resolveDraftProxyAccount } from '../lib/draft-account-resolution';
 import { type DraftListScope } from '../lib/draft-scope';
 import { useCanCreateDraft } from '../lib/useCanCreateDraft';
-import { useCanReadDrafts } from '../lib/useCanReadDrafts';
+import { useDraftsSectionState } from '../lib/useDraftsSectionState';
 import { useSubmitDraft } from '../lib/useSubmitDraft';
-import { useVisibleDrafts } from '../lib/useVisibleDrafts';
 import { DESCRIPTION_MAX_LENGTH, createDraftModel } from '../model/create-draft-model';
 import { draftDeepLinkModel } from '../model/draft-deep-link';
 import '../model/drafts-model'; // side-effect: orchestration wiring
@@ -43,16 +42,17 @@ export const DraftsSection = ({ scope, isCollapsed }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
-  const isHealthy = useUnit(backendContactsModel.$isHealthy);
   const focusedDraftId = useUnit(draftDeepLinkModel.$focusedDraftId);
 
-  const canRead = useCanReadDrafts();
+  // Same hook the Operations view uses for the heading, so "does the group render"
+  // and "which rows does it hold" have one source of truth.
+  const { isAvailable, isHealthy, drafts: visibleDrafts } = useDraftsSectionState(scope);
+
   const canWrite = useCanCreateDraft();
   // Deleting a draft is write-gated: the backend dropped the dedicated
   // `operation-draft:delete` permission (DELETE endpoint checks `:write`).
   const canDelete = canWrite;
 
-  const { drafts: visibleDrafts } = useVisibleDrafts(scope);
   const submittedDraftIds = useUnit(submitDraftModel.$submittedDraftIds);
 
   const sortedDrafts = useMemo(
@@ -201,7 +201,7 @@ export const DraftsSection = ({ scope, isCollapsed }: Props) => {
     setEditingDraft(null);
   };
 
-  if (isHealthy && !canRead) return null;
+  if (!isAvailable) return null;
 
   return (
     <div>

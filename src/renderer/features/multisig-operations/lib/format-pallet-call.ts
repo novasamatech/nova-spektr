@@ -1,4 +1,4 @@
-const capitalize = (value: string) => `${value[0]?.toUpperCase() ?? ''}${value.slice(1)}`;
+import { upperFirst } from 'lodash';
 
 /**
  * Raw `pallet · Call` label for the Details panel — verification data a signer
@@ -9,5 +9,5 @@ const capitalize = (value: string) => `${value[0]?.toUpperCase() ?? ''}${value.s
 export const formatPalletCall = (section: string | null | undefined, method: string | null | undefined) => {
   if (!section || !method) return null;
 
-  return `${capitalize(section)} · ${capitalize(method)}`;
+  return `${upperFirst(section)} · ${upperFirst(method)}`;
 };

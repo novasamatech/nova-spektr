@@ -28,6 +28,12 @@ const NotificationContext = createContext<NotificationContextProps>({ modal: noo
 const DEFAULT_NOTIFICATION_DURATION = 3000;
 const NO_AUTO_DISMISS = 0;
 
+/**
+ * Width of a custom toast card (`toast.custom`): every caller draws the same
+ * column.
+ */
+export const TOAST_WIDTH = 356;
+
 const createModalNotification = (props: ModalNotificationProps): ModalNotification => ({
   content: props.content,
   title: props.title ?? '',

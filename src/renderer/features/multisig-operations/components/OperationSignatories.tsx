@@ -12,7 +12,7 @@ import {
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
-import { CountChip, FootnoteText, IconButton } from '@/shared/ui';
+import { CountChip, DETAIL_ROW_ACCOUNT_ICON_SIZE, FootnoteText, IconButton } from '@/shared/ui';
 import { Copy, Tooltip } from '@/shared/ui-kit';
 import {
   type AnyAccount,
@@ -198,7 +198,7 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
                 chain={chain ?? undefined}
                 walletNameAs="fallback"
                 variant="short"
-                iconSize={20}
+                iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
               />
             </SignatoryCard>
           ))}

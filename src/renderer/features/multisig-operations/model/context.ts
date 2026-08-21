@@ -367,11 +367,14 @@ const sortToggled = createEvent<SortKey>();
 const $sort = createStore<OperationsSort>(null).on(sortToggled, getNextSortState);
 
 // The drafts group shares this state, hence `StatusFilterValue` rather than `OperationSection`.
+// Never reset: a collapsed group stays collapsed for as long as the app runs, across page visits.
 const toggleSection = createEvent<StatusFilterValue>();
-const $collapsedSections = createStore<Partial<Record<StatusFilterValue, boolean>>>({}).on(
-  toggleSection,
-  (state, section) => ({ ...state, [section]: !state[section] }),
-);
+// Deep links target it (see `draft-deep-link-expand.ts` for the Drafts group): a link must land on
+// a visible row. Same-reference return keeps an already expanded group from emitting an update.
+const expandSection = createEvent<StatusFilterValue>();
+const $collapsedSections = createStore<Partial<Record<StatusFilterValue, boolean>>>({})
+  .on(toggleSection, (state, section) => ({ ...state, [section]: !state[section] }))
+  .on(expandSection, (state, section) => (state[section] ? { ...state, [section]: false } : state));
 
 const $sectionedOperations = combine(
   {
@@ -533,6 +536,19 @@ const $isChainSyncing = combine($multisigAccounts, $chainSyncState, (multisigAcc
   return multisigAccounts.length > 0 && (expected.length === 0 || fetched.length < expected.length);
 });
 
+// Closing the toast is remembered for the session: offline, `expected` stays empty for as long as
+// no API connects, so `$isChainSyncing` never drops and every visit to the page would re-create a
+// toast the user already closed. A new set of expected chains (a fresh subscription, or the reset
+// on leaving the page) starts a new sync cycle and shows the toast again.
+const syncToastDismissed = createEvent();
+const $isSyncToastDismissed = createStore(false)
+  .on(syncToastDismissed, () => true)
+  .reset(multisigOperation.$expectedChainIds);
+
+const $isSyncToastVisible = combine($isChainSyncing, $isSyncToastDismissed, (syncing, dismissed) => {
+  return syncing && !dismissed;
+});
+
 export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
@@ -552,6 +568,8 @@ export const operationsContextModel = {
   $visibleOperationsCount,
   $chainSyncState,
   $isChainSyncing,
+  $isSyncToastDismissed,
+  $isSyncToastVisible,
   $sort,
   $collapsedSections,
 
@@ -562,4 +580,6 @@ export const operationsContextModel = {
   unhideOperation,
   sortToggled,
   toggleSection,
+  expandSection,
+  syncToastDismissed,
 };

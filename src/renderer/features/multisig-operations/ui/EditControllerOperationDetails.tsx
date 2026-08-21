@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Button, DETAIL_ROW_ACCOUNT_ICON_SIZE, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -62,7 +62,12 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
       <div className="flex flex-col gap-y-2">
         <SmallTitleText>{label}</SmallTitleText>
         <FootnoteText className="text-text-secondary">
-          <NamedAccount accountId={accountId} chain={chain ?? undefined} variant="short" iconSize={20} />
+          <NamedAccount
+            accountId={accountId}
+            chain={chain ?? undefined}
+            variant="short"
+            iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+          />
         </FootnoteText>
 
         {signatories && threshold !== null && total !== null && (
@@ -75,7 +80,12 @@ export const EditControllerOperationDetails = ({ operation }: Props) => {
               {signatories.map(signatoryId => (
                 <li key={signatoryId} className="flex items-center gap-x-2">
                   <FootnoteText className="truncate text-text-secondary">
-                    <NamedAccount accountId={signatoryId} chain={chain ?? undefined} variant="short" iconSize={20} />
+                    <NamedAccount
+                      accountId={signatoryId}
+                      chain={chain ?? undefined}
+                      variant="short"
+                      iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+                    />
                   </FootnoteText>
                 </li>
               ))}

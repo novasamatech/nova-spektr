@@ -1,22 +1,45 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '@/entities/transaction';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { formatPalletCall } from '../lib/format-pallet-call';
+import { type OperationAmountValue } from '../lib/types';
 
-import { type OperationAmountValue } from './Operation';
 import { OperationDescription } from './OperationDescription';
 
 type Props = PropsWithChildren<{
   operation: MultisigOperation;
   amount?: OperationAmountValue;
 }>;
+
+type AccountRowProps = {
+  label: string;
+  accountId: AccountId;
+  chain: Chain | undefined;
+};
+
+// `walletNameAs="fallback"`, never `title`: the resolver must reach the account's
+// contact or identity name first; the wallet name only fills in where the stored
+// name would be a Vault derivation path.
+const AccountRow = ({ label, accountId, chain }: AccountRowProps) => (
+  <DetailRow label={label} className="text-text-secondary">
+    <NamedAccount
+      accountId={accountId}
+      chain={chain}
+      walletNameAs="fallback"
+      variant="short"
+      iconSize={DETAIL_ROW_ACCOUNT_ICON_SIZE}
+    />
+  </DetailRow>
+);
 
 export const OperationDetails = ({ operation, amount, children }: Props) => {
   const { t, formatDate } = useI18n();
@@ -46,36 +69,12 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
           <span>{formatDate(date, 'PPp')}</span>
         </DetailRow>
 
-        <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
-          <NamedAccount
-            accountId={operation.depositor}
-            chain={chain}
-            walletNameAs="fallback"
-            variant="short"
-            iconSize={20}
-          />
-        </DetailRow>
+        <AccountRow label={t('operation.details.depositor')} accountId={operation.depositor} chain={chain} />
 
-        <DetailRow label={t('operation.details.multisig')} className="text-text-secondary">
-          <NamedAccount
-            accountId={multisigAccountId}
-            chain={chain}
-            walletNameAs="fallback"
-            variant="short"
-            iconSize={20}
-          />
-        </DetailRow>
+        <AccountRow label={t('operation.details.multisig')} accountId={multisigAccountId} chain={chain} />
 
         {sourceAccountId && (
-          <DetailRow label={t('operation.details.source')} className="text-text-secondary">
-            <NamedAccount
-              accountId={sourceAccountId}
-              chain={chain}
-              walletNameAs="fallback"
-              variant="short"
-              iconSize={20}
-            />
-          </DetailRow>
+          <AccountRow label={t('operation.details.source')} accountId={sourceAccountId} chain={chain} />
         )}
 
         {children}

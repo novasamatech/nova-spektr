@@ -33,7 +33,7 @@ export { Icon } from './Icon/Icon';
 export { LanguageSwitcher } from './LanguageSwitcher/LanguageSwitcher';
 export { Duration } from './Duration/Duration';
 export { Loader } from './Loader/Loader';
-export { DetailRow } from './DetailRow/DetailRow';
+export { DETAIL_ROW_ACCOUNT_ICON_SIZE, DetailRow } from './DetailRow/DetailRow';
 export { FallbackScreen } from './FallbackScreen/FallbackScreen';
 export { Header } from './Header/Header';
 export { ExplorerLink } from './ExplorerLink/ExplorerLink';

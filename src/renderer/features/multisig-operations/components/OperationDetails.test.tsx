@@ -10,16 +10,12 @@ import { OperationDetails } from './OperationDetails';
 
 const stores = vi.hoisted(() => ({
   chainsStore: Symbol('chains'),
-  walletsStore: Symbol('wallets'),
-  accountsStore: Symbol('accounts'),
 }));
 const chainsFixture = vi.hoisted(() => ({ current: { '0x00': { chainId: '0x00', addressPrefix: 0 } } as unknown }));
 
 vi.mock('effector-react', () => ({
   useUnit: (store: symbol) => {
     if (store === stores.chainsStore) return chainsFixture.current;
-    if (store === stores.walletsStore) return testWallets;
-    if (store === stores.accountsStore) return testAccounts;
 
     return undefined;
   },
@@ -33,6 +29,7 @@ vi.mock('@/shared/i18n', () => ({
 }));
 
 vi.mock('@/shared/ui', () => ({
+  DETAIL_ROW_ACCOUNT_ICON_SIZE: 20,
   DetailRow: ({ label, children }: { label: string; children: ReactNode }) => (
     <div data-testid={`row-${label}`}>
       <dt>{label}</dt>
@@ -44,16 +41,11 @@ vi.mock('@/shared/ui', () => ({
 }));
 
 vi.mock('@/domains/network', () => ({
-  accounts: { $list: stores.accountsStore },
   multisigOperationService: { getApprovals: () => [] },
 }));
 
 vi.mock('@/entities/network', () => ({
   networkModel: { $chains: stores.chainsStore },
-}));
-
-vi.mock('@/entities/wallet', () => ({
-  walletModel: { $wallets: stores.walletsStore },
 }));
 
 // The real `@/entities/transaction` barrel drags in QR/camera UI modules that
@@ -91,12 +83,6 @@ vi.mock('./OperationDescription', () => ({ OperationDescription: () => <div>desc
 const depositor = '0xdepositor' as AccountId;
 const multisigId = '0xmultisig' as AccountId;
 const proxiedId = '0xproxied' as AccountId;
-const depositorWalletId = 7;
-
-const testWallets = [{ id: depositorWalletId, name: 'Depositor Keyset', type: 'polkadot_vault', accounts: [] }];
-const testAccounts = [
-  { id: 'depositor-account', name: '//polkadot//0', walletId: depositorWalletId, accountId: depositor },
-];
 
 const baseOperation = {
   id: 'op',
