@@ -16,6 +16,11 @@ export type AccountNameParams = {
   chain?: Chain | null;
   title?: string;
   /**
+   * A name to fall back to (typically the owning wallet's name) when the
+   * account resolves to nothing better than its stored name or short address.
+   */
+  fallbackName?: string;
+  /**
    * The specific account this name is being resolved for, when the caller
    * already knows it (e.g. resolving names for a known list of accounts rather
    * than an arbitrary accountId). Passed through to
@@ -47,7 +52,13 @@ const getNameResolverSource = () => {
   });
 };
 
-export const createAccountNameCacheKey = ({ accountId, chain, title, account }: AccountNameParams): string => {
+export const createAccountNameCacheKey = ({
+  accountId,
+  chain,
+  title,
+  fallbackName,
+  account,
+}: AccountNameParams): string => {
   const chainKey = chain?.chainId ?? 'anyChain';
   const prefixKey = chain ? `${chain.addressPrefix}` : 'defaultPrefix';
   // accountId alone collides when different accounts (e.g. across wallets) share
@@ -55,7 +66,7 @@ export const createAccountNameCacheKey = ({ accountId, chain, title, account }: 
   // gets its own cache slot instead of clobbering one another's resolved name.
   const identityKey = account?.id ?? accountId;
 
-  return `${identityKey}:${chainKey}:${prefixKey}:${title ?? ''}`;
+  return `${identityKey}:${chainKey}:${prefixKey}:${title ?? ''}:${fallbackName ?? ''}`;
 };
 
 export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string => {
@@ -86,6 +97,7 @@ export const accountNameResource = createQueryResource<AccountNameParams>({
           accountId: params.accountId,
           chain: params.chain,
           title: params.title,
+          fallbackName: params.fallbackName,
           account: params.account,
           contacts,
           identities,
@@ -307,6 +319,7 @@ sample({
         accountId: params.accountId,
         chain: params.chain,
         title: params.title,
+        fallbackName: params.fallbackName,
         account: params.account,
         contacts,
         identities,

@@ -19,6 +19,11 @@ type UseAccountNameParams = {
   accountId: AccountId | null | undefined;
   chain?: Chain | null;
   title?: string;
+  /**
+   * Used only when the account resolves to nothing better than its stored name
+   * or short address — see accountService.resolveAccountName.
+   */
+  fallbackName?: string;
 };
 
 export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) => {
@@ -50,8 +55,8 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
   });
 };
 
-export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams) => {
-  const params: AccountNameParams | null = accountId ? { accountId, chain, title } : null;
+export const useAccountName = ({ accountId, chain, title, fallbackName }: UseAccountNameParams) => {
+  const params: AccountNameParams | null = accountId ? { accountId, chain, title, fallbackName } : null;
   const { data } = useResource(accountNameResource, {
     params,
     defaultValue: undefined,

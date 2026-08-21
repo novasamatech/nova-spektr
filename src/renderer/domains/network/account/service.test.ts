@@ -665,6 +665,89 @@ describe('account service', () => {
       expect(result).toBe('Main');
     });
 
+    it('should use fallbackName over a generated stored name', () => {
+      const derivedAccountId = createAccountId('derived');
+      const derivedAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: derivedAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: '//polkadot//0',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: derivedAccountId,
+        chain: polkadotChain,
+        accounts: [derivedAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Adams Keyset');
+    });
+
+    it('should prioritize a backend contact over fallbackName', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'test-uuid-backend',
+          accountId,
+          name: 'FINOPS_DOT_ADAM',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('FINOPS_DOT_ADAM');
+    });
+
+    it('should prioritize a custom account name over fallbackName', () => {
+      const customAccountId = createAccountId('custom-over-fallback');
+      const customAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: customAccountId,
+        nameType: AccountNameType.CUSTOM,
+        name: 'Custom Account Name',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: customAccountId,
+        chain: polkadotChain,
+        accounts: [customAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Custom Account Name');
+    });
+
+    it('should use fallbackName instead of the short address for an unknown account', () => {
+      const unknownAccountId = createAccountId('unknown-with-fallback');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: 'Adams Keyset',
+      });
+
+      expect(result).toBe('Adams Keyset');
+    });
+
     it('should prioritize custom name over local contact', () => {
       const customAccountId = createAccountId('test');
       const customAccount: ChainAccount = {
