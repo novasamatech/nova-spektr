@@ -441,8 +441,9 @@ function resolveAccountName({
   }
 
   // A caller-supplied fallback (e.g. the owning wallet's name) beats a generated
-  // account name such as a Vault derivation path, but never an explicit name.
-  if (fallbackName) {
+  // account name such as a Vault derivation path, but never an explicit name —
+  // and an address-shaped fallback is no better than what follows, so skip it.
+  if (fallbackName && !isGeneratedAccountName(fallbackName)) {
     return fallbackName;
   }
 

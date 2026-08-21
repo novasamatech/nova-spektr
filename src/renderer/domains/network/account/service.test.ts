@@ -9,7 +9,7 @@ import {
   CryptoType,
   SigningType,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import {
   createAccountId,
   createPolkadotWallet,
@@ -746,6 +746,44 @@ describe('account service', () => {
       });
 
       expect(result).toBe('Adams Keyset');
+    });
+
+    it('skips an address-shaped fallback and keeps the stored account name', () => {
+      const multisigAccountId = createAccountId('multisig-with-address-fallback');
+      const multisigAccount: ChainAccount = {
+        ...chainAccount,
+        accountId: multisigAccountId,
+        nameType: AccountNameType.GENERATED,
+        name: 'E2E Multisig',
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId: multisigAccountId,
+        chain: polkadotChain,
+        accounts: [multisigAccount],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: '14N1KQ...deJrHP',
+      });
+
+      expect(result).toBe('E2E Multisig');
+    });
+
+    it('skips an address-shaped fallback and falls through to the short address for an unknown account', () => {
+      const unknownAccountId = createAccountId('unknown-with-address-fallback');
+
+      const result = accountService.resolveAccountName({
+        accountId: unknownAccountId,
+        chain: polkadotChain,
+        accounts: [],
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        fallbackName: '5Grw...utQY',
+      });
+
+      expect(result).toBe(toShortAddress(toAddress(unknownAccountId, { prefix: polkadotChain.addressPrefix }), 5));
     });
 
     it('should prioritize custom name over local contact', () => {
