@@ -24,7 +24,7 @@ import {
 import { useChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard } from '@/entities/signatory';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 
 import { NotifySignersButton } from './NotifySignersButton';
@@ -63,6 +63,7 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
   const chain = useChain(operation.chainId);
 
   const accountsList = useUnit(accounts.$list);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('signatories');
 
@@ -86,6 +87,19 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
 
     return [...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...account.signatories])];
   }, [account.signatories.length, approvals.length, cancellation.length]);
+
+  // Own signatories get their wallet name only as a *fallback* — the address
+  // book still wins, the wallet name just stands in for a Vault derivation path
+  // or a short address.
+  const walletBySignatory = useMemo(() => {
+    return new Map(
+      signatoriesList.map(signatory => {
+        const owned = accountsList.find(a => a.accountId === signatory.accountId);
+
+        return [signatory.accountId, owned ? wallets.find(w => w.id === owned.walletId) : undefined] as const;
+      }),
+    );
+  }, [signatoriesList, accountsList, wallets]);
 
   // Contact-backed external multisigs aren't part of the user's account
   // graph, so the "Open overview" structure view has nothing meaningful to
@@ -190,10 +204,17 @@ export const OperationSignatories = ({ operation, account, deepLink }: Props) =>
               key={signatory.accountId}
               status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
             >
-              {/* No `wallet` / `title`: the resolver must reach the account's contact or
-                  identity name — passing the wallet would short-circuit to the keyset
-                  name, passing `account.name` would show a Vault derivation path. */}
-              <NamedAccount accountId={signatory.accountId} chain={chain ?? undefined} variant="short" iconSize={20} />
+              {/* `walletNameAs="fallback"`, never `title`: the resolver must reach the
+                  account's contact or identity name first; the wallet name only fills in
+                  where the stored name would be a Vault derivation path. */}
+              <NamedAccount
+                accountId={signatory.accountId}
+                chain={chain ?? undefined}
+                wallet={walletBySignatory.get(signatory.accountId)}
+                walletNameAs="fallback"
+                variant="short"
+                iconSize={20}
+              />
             </SignatoryCard>
           ))}
         </ul>

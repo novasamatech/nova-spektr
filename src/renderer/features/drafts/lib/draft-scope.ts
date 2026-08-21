@@ -72,6 +72,11 @@ export const buildDraftSearchRow = (
     if (!accountId || seen.has(accountId)) continue;
     seen.add(accountId);
 
+    // The initiator cell resolves by account with the wallet name as a fallback
+    // (`<NamedAccount walletNameAs="fallback">`), so search matches exactly the
+    // one name it shows.
+    const isInitiator = accountId !== submitterAccountId && accountId === draft.initiatorAccountId;
+
     accounts.push({
       accountId,
       chain,
@@ -80,7 +85,10 @@ export const buildDraftSearchRow = (
           ? // A proxied draft renders through a synthetic wallet named after the
             // proxy contact, which no resolver produces.
             (draft.proxyContact?.name ?? resolveWalletName(accountId, chain))
-          : null,
+          : isInitiator
+            ? resolveWalletName(accountId, chain)
+            : null,
+      ...(isInitiator && { walletNameAs: 'fallback' as const }),
     });
   }
 

@@ -11,6 +11,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { type OperationSearchRow, type SearchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
@@ -362,16 +363,22 @@ describe('operations-filter', () => {
 
     const names: Record<string, string> = { [ALICE_ID]: 'Alice Multisig', [BOB_ID]: 'Adam Initiator' };
     const resolvers: Pick<SearchResolvers, 'resolveAccountName' | 'resolveAddress'> = {
-      resolveAccountName: accountId => names[accountId] ?? '',
+      // Mirrors the real resolver: a known (contact/identity) name wins, the
+      // caller's fallback only fills in when there is none.
+      resolveAccountName: (accountId, _chain, fallbackName) => names[accountId] ?? fallbackName ?? '',
       // Real encoding — the prefix assertions below depend on it.
       resolveAddress: (accountId, chain) => toAddress(accountId, { prefix: chain?.addressPrefix }),
     };
 
     const search = (rows: OperationSearchRow[], query: string) => searchOperationRows(rows, query, resolvers);
 
+    // Initiator wallet-name resolver. Defaults to none so the address /
+    // account-name assertions below are unaffected; the dedicated tests supply one.
+    const noInitiatorWallet = (): string | null => null;
+
     test('returns null for an empty query so no filtering is applied', () => {
       const op = createMockOperation();
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), noInitiatorWallet);
 
       expect(search([row], '')).toBeNull();
       expect(search([row], '   ')).toBeNull();
@@ -379,38 +386,56 @@ describe('operations-filter', () => {
 
     test('matches the resolved wallet name', () => {
       const op = createMockOperation();
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map([[1, 'MyWallet Name']]));
+      const row = buildOperationSearchRow(
+        op,
+        mockMultisigAccount,
+        chains,
+        new Map([[1, 'MyWallet Name']]),
+        noInitiatorWallet,
+      );
 
       expect(search([row], 'MyWallet')).toEqual(new Set(['op-1']));
     });
 
     test('matches the callHash', () => {
       const op = createMockOperation({ callHash: '0xabc123def' });
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), noInitiatorWallet);
 
       expect(search([row], 'abc123')).toEqual(new Set(['op-1']));
     });
 
     test('matches the resolved initiator name', () => {
       const op = createMockOperation({ depositor: BOB_ID });
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), noInitiatorWallet);
 
       expect(search([row], 'Adam')).toEqual(new Set(['op-1']));
     });
 
-    test('does not match the initiator wallet name, even when the depositor belongs to a local wallet', () => {
-      // The Initiator cell and the expanded Depositor row both resolve the
-      // account name only (never a wallet name) since 2831e17b2, so the search
-      // meta must not carry a wallet name for the initiator either.
-      const op = createMockOperation({ depositor: BOB_ID });
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+    test('matches the initiator wallet name when the depositor has no contact of its own', () => {
+      // Charlie has no resolved account name, so the Initiator cell falls back
+      // to the owning wallet's name — search must match exactly that.
+      const op = createMockOperation({ depositor: CHARLIE_ID });
+      const resolveWallet = (accountId: AccountId): string | null =>
+        accountId === CHARLIE_ID ? 'Charlies Keyset' : null;
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), resolveWallet);
 
-      expect(search([row], 'Initiator Vault')).toEqual(new Set());
+      expect(search([row], 'Charlies Keyset')).toEqual(new Set(['op-1']));
+    });
+
+    test('matches the initiator contact name, not the wallet name, when the depositor has a contact', () => {
+      // Bob resolves to a contact name, so the wallet name never reaches the
+      // screen — and must not be searchable either.
+      const op = createMockOperation({ depositor: BOB_ID });
+      const resolveWallet = (accountId: AccountId): string | null => (accountId === BOB_ID ? 'Bobs Keyset' : null);
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), resolveWallet);
+
+      expect(search([row], 'Adam')).toEqual(new Set(['op-1']));
+      expect(search([row], 'Bobs Keyset')).toEqual(new Set());
     });
 
     test('matches the initiator address formatted with the operation chain prefix', () => {
       const op = createMockOperation({ depositor: BOB_ID });
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map());
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map(), noInitiatorWallet);
 
       // Bob at prefix 2 (FoQJpP…), not at the default prefix 0 (14E5nq…).
       expect(search([row], 'FoQJpP')).toEqual(new Set(['op-1']));
@@ -419,7 +444,7 @@ describe('operations-filter', () => {
 
     test('returns an empty set when nothing matches', () => {
       const op = createMockOperation({ callHash: '0xaaa' });
-      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map([[1, 'Wallet']]));
+      const row = buildOperationSearchRow(op, mockMultisigAccount, chains, new Map([[1, 'Wallet']]), noInitiatorWallet);
 
       expect(search([row], 'nomatch')).toEqual(new Set());
     });
@@ -444,14 +469,14 @@ describe('operations-filter', () => {
       const flexibleOperation = createMockOperation({ multisigAccountId: BOB_ID, depositor: CHARLIE_ID });
 
       test('matches the proxied address the row displays', () => {
-        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map());
+        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map(), noInitiatorWallet);
 
         // Alice at the account's chain prefix 2 — the Submitter column's address.
         expect(search([row], 'HNZata')).toEqual(new Set(['op-1']));
       });
 
       test('does not match the underlying multisig address, which the row never shows', () => {
-        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map());
+        const row = buildOperationSearchRow(flexibleOperation, flexibleAccount, chains, new Map(), noInitiatorWallet);
 
         // Bob — operation.multisigAccountId, what the old search matched instead.
         expect(search([row], 'FoQJpP')).toEqual(new Set());
@@ -461,12 +486,18 @@ describe('operations-filter', () => {
       test('a chain-bound account uses its chain prefix, a universal one the default', () => {
         const op = createMockOperation({ depositor: CHARLIE_ID });
 
-        const flexRow = buildOperationSearchRow(op, flexibleAccount, chains, new Map());
+        const flexRow = buildOperationSearchRow(op, flexibleAccount, chains, new Map(), noInitiatorWallet);
         // Alice at prefix 2, not at the default prefix 0.
         expect(search([flexRow], 'HNZata')).toEqual(new Set(['op-1']));
         expect(search([flexRow], '15oF4')).toEqual(new Set());
 
-        const universalRow = buildOperationSearchRow(op, universalMultisigAccount, chains, new Map());
+        const universalRow = buildOperationSearchRow(
+          op,
+          universalMultisigAccount,
+          chains,
+          new Map(),
+          noInitiatorWallet,
+        );
         // Same accountId, chain-agnostic — so the default prefix 0 instead.
         expect(search([universalRow], '15oF4')).toEqual(new Set(['op-1']));
         expect(search([universalRow], 'HNZata')).toEqual(new Set());

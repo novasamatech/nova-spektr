@@ -3,18 +3,20 @@ import userEvent from '@testing-library/user-event';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type MultisigAccount } from '@/shared/core';
+import { type MultisigAccount, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 
 import { OperationSignatories } from './OperationSignatories';
 
 const stores = vi.hoisted(() => ({
+  walletsStore: Symbol('wallets'),
   accountsStore: Symbol('accounts'),
 }));
 
 vi.mock('effector-react', () => ({
   useUnit: (store: symbol) => {
+    if (store === stores.walletsStore) return testWallets;
     if (store === stores.accountsStore) return testAccounts;
     return undefined;
   },
@@ -87,11 +89,22 @@ vi.mock('@/entities/wallet', () => ({
   accountUtils: {
     isFlexibleMultisigAccount: () => false,
   },
+  walletModel: { $wallets: stores.walletsStore },
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
-  NamedAccount: ({ title, accountId, wallet }: { title?: string; accountId: AccountId; wallet?: unknown }) => (
-    <span data-title={title} data-wallet={wallet ? 'yes' : undefined}>
+  NamedAccount: ({
+    title,
+    accountId,
+    wallet,
+    walletNameAs,
+  }: {
+    title?: string;
+    accountId: AccountId;
+    wallet?: unknown;
+    walletNameAs?: string;
+  }) => (
+    <span data-title={title} data-wallet={wallet ? 'yes' : undefined} data-wallet-as={walletNameAs}>
       {title ?? accountId}
     </span>
   ),
@@ -105,8 +118,25 @@ vi.mock('./NotifySignersButton', () => ({ NotifySignersButton: () => null }));
 
 const ownedSignatoryId = '0x01' as AccountId;
 const contactSignatoryId = '0x02' as AccountId;
+const signerWalletId = 1;
 
-const testAccounts: AnyAccount[] = [];
+const testWallets = [
+  {
+    id: signerWalletId,
+    name: 'Signer Wallet',
+    accounts: [],
+    type: 'polkadot_vault',
+  },
+] as unknown as Wallet[];
+
+const testAccounts = [
+  {
+    id: 'owned-signatory',
+    name: 'Alice Signer',
+    walletId: signerWalletId,
+    accountId: ownedSignatoryId,
+  },
+] as unknown as AnyAccount[];
 
 const operation = {
   id: 'operation-id',
@@ -123,12 +153,21 @@ const multisigAccount = {
 } as unknown as MultisigAccount;
 
 describe('OperationSignatories', () => {
-  it('resolves every signatory through NamedAccount without wallet or raw-name overrides', () => {
+  it('resolves every signatory through NamedAccount with the wallet name as a fallback, never as an override', () => {
     render(<OperationSignatories operation={operation} account={multisigAccount} deepLink="https://example.com" />);
 
+    // Own signatory: the wallet is passed, but only as a fallback — so an
+    // address-book name still wins over the keyset name.
     const owned = screen.getByText(ownedSignatoryId);
     expect(owned).not.toHaveAttribute('data-title');
-    expect(owned).not.toHaveAttribute('data-wallet');
+    expect(owned).toHaveAttribute('data-wallet', 'yes');
+    expect(owned).toHaveAttribute('data-wallet-as', 'fallback');
+
+    // A signatory outside the user's wallets simply has no wallet to fall back to.
+    const contact = screen.getByText(contactSignatoryId);
+    expect(contact).not.toHaveAttribute('data-title');
+    expect(contact).not.toHaveAttribute('data-wallet');
+
     expect(screen.queryByText('Signer Wallet')).not.toBeInTheDocument();
     expect(screen.queryByText('Alice Signer')).not.toBeInTheDocument();
   });

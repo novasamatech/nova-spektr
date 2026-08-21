@@ -301,7 +301,7 @@ const $searchMatchedOperationIdsRaw = combine(
 
     const walletNames = new Map(multisigWallets.map(wallet => [wallet.id, wallet.name]));
     const rows = operationsWithAccounts.map(({ operation, account }) =>
-      buildOperationSearchRow(operation, account, chains, walletNames),
+      buildOperationSearchRow(operation, account, chains, walletNames, resolvers.resolveWalletName),
     );
 
     return searchOperationRows(rows, searchQuery, resolvers);

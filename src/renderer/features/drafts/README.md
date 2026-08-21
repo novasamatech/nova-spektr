@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
@@ -50,8 +50,9 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
 - **Submitter** — the draft's source account (the proxied source for a proxy-routed draft, otherwise the multisig),
   resolved to a name.
 - **Initiator** — the draft's assigned signer (`initiatorAccountId`), resolved via address-book contacts the same way
-  the Signing-path panel is (contact name, short-address fallback for unknown accounts). A draft with no assigned
-  initiator stays visible with an explicit **Unassigned** mark. Hidden below 1536px to avoid horizontal scroll.
+  the Signing-path panel is (contact name first, then the name of the wallet the key belongs to, then a short address
+  for unknown accounts). A draft with no assigned initiator stays visible with an explicit **Unassigned** mark. Hidden
+  below 1536px to avoid horizontal scroll.
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
 - **Actions** — one primary control:
 

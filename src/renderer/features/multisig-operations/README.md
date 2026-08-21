@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
@@ -132,7 +132,8 @@ boundaries on hover and while a column is being resized:
 - **Value** — the operation's amount and asset, when one can be extracted from the (core) call.
 - **Submitter** — the multisig account, resolved to its wallet/contact name with an identicon.
 - **Initiator** — the operation's depositor (its first approver — the co-signer others are waiting on), resolved to a
-  name the same way the expanded Depositor detail is. Hidden below 1536px to avoid horizontal scroll.
+  name the same way the expanded Depositor detail is (custom name → contact → identity → the owning wallet's name →
+  stored account name → short address). Hidden below 1536px to avoid horizontal scroll.
 - **Description** — the shared operation note, inline. See [Description in the row](#description-in-the-row). When the
   operation originated from a submitted draft, an uppercase **FROM DRAFT** badge leads the cell; hovering it shows the
   operation's description.
@@ -159,9 +160,10 @@ three panels:
 
 - **Details** — a signer's verification sheet, account-first. Rows in fixed order: **Date & Time**; **Depositor** — the
   individual signatory account that reserved the multisig deposit, resolved like any account (custom name → contact →
-  identity → account name → short address), never its wallet/keyset name; **Multisig** — the multisig account itself
-  (for a flexible multisig, the backing multisig); **Source** — only for proxied operations, the proxied account the
-  call executes from (for a flexible multisig, its pure proxy); then the recognised transaction's specifics (Recipient,
+  identity → the owning wallet's name → stored account name → short address) — the wallet name only ever fills in for a
+  key the address book doesn't know, it never overrides a contact name; **Multisig** — the multisig account itself (for
+  a flexible multisig, the backing multisig); **Source** — only for proxied operations, the proxied account the call
+  executes from (for a flexible multisig, its pure proxy); then the recognised transaction's specifics (Recipient,
   networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
   (verification data, not a title; omitted when the call is unknown); **Amount** when the row's Value cell shows one;
   and the shared **operation description** as full wrapped text under a hairline (descriptions past 620 characters
@@ -203,9 +205,10 @@ events) — styled as one segmented control (the selected tab sits on the grey t
 
 **Signatory list.** A single flat list of all signatories, ordered so the story reads top-to-bottom: a signatory who
 **rejected** is pinned first, then those who **approved** in block order, then everyone still pending. Each signatory is
-resolved as an _account_ — custom name → local/backend contact → identity → stored account name → short, copyable
-address — never as its wallet, so a Vault-derived key shows its address-book name rather than its derivation path. Each
-carries a status chip — **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
+resolved as an _account_ — custom name → local/backend contact → identity → the owning wallet's name → stored account
+name → short, copyable address — so a Vault-derived key shows its address-book name rather than its derivation path, and
+falls back to its keyset name (not the derivation path) when the address book has no entry for it. Each carries a status
+chip — **Signed**, **Rejected**, or **Unsigned** (rejection takes precedence over an earlier approval).
 
 **The Log.** The Log tab shows a chronological activity feed of the operation's on-chain lifecycle inline, grouped by
 day (oldest first). It distinguishes three event kinds:

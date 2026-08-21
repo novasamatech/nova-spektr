@@ -11,18 +11,25 @@ export type AccountNameSources = {
 };
 
 export type SearchResolvers = {
-  resolveAccountName: (accountId: AccountId, chain?: Chain | null) => string;
   /**
-   * Separate from the account name because `resolveAccountName` has no wallet
-   * step, while `<NamedAccount wallet={…}>` passes the wallet name as `title` —
-   * a hard override. Without this, a row showing a wallet name is
-   * unsearchable.
+   * `fallbackName` mirrors `<NamedAccount walletNameAs="fallback">`: the name
+   * only applies when the account resolves to nothing better than its stored
+   * name or short address.
+   */
+  resolveAccountName: (accountId: AccountId, chain?: Chain | null, fallbackName?: string) => string;
+  /**
+   * Separate from the account name for the two ways a row can involve a wallet
+   * name: rows that display it outright (`<NamedAccount wallet={…}>` passes it
+   * as `title`, a hard override) must be searchable by it, and rows using
+   * `walletNameAs="fallback"` need it as the `fallbackName` above. Without
+   * this, a row showing a wallet name is unsearchable.
    */
   resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null;
   resolveAddress: (accountId: AccountId, chain?: Chain | null) => string;
 };
 
-const cacheKey = (accountId: AccountId, chain?: Chain | null) => `${accountId}:${chain?.chainId ?? 'anyChain'}`;
+const cacheKey = (accountId: AccountId, chain?: Chain | null, fallbackName?: string) =>
+  `${accountId}:${chain?.chainId ?? 'anyChain'}:${fallbackName ?? ''}`;
 
 /**
  * Uses the pure services rather than `useAccountName` / `accountNameResource`:
@@ -39,12 +46,12 @@ export const createSearchResolvers = (sources: AccountNameSources, wallets: Wall
   const addressCache = new Map<string, string>();
 
   return {
-    resolveAccountName(accountId, chain) {
-      const key = cacheKey(accountId, chain);
+    resolveAccountName(accountId, chain, fallbackName) {
+      const key = cacheKey(accountId, chain, fallbackName);
       const cached = nameCache.get(key);
       if (cached !== undefined) return cached;
 
-      const name = accountService.resolveAccountName({ accountId, chain, ...sources });
+      const name = accountService.resolveAccountName({ accountId, chain, fallbackName, ...sources });
       nameCache.set(key, name);
 
       return name;

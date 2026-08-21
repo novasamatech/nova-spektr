@@ -1,6 +1,6 @@
 # Operations Search
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
@@ -14,13 +14,13 @@ search resolves them the same way before matching. Typing a name you can see alw
 
 ## What a query matches
 
-| The user types          | Matches against                                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A submitter's name      | The resolved name shown in the Submitter column, and the wallet name displayed over it                                                                                                            |
-| **An initiator's name** | The resolved name of the account assigned to submit a draft / who submitted an operation — plus, for a draft only, the wallet name its details panel shows when that account is local (see below) |
-| An address              | Any account the row shows, formatted with the prefix that row displays it with                                                                                                                    |
-| A note                  | A draft's description                                                                                                                                                                             |
-| A call hash             | An operation's call hash                                                                                                                                                                          |
+| The user types          | Matches against                                                                                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A submitter's name      | The resolved name shown in the Submitter column, and the wallet name displayed over it                                                             |
+| **An initiator's name** | The one name the Initiator column shows: the account's own resolved name, or — when it has none — the name of the wallet it belongs to (see below) |
+| An address              | Any account the row shows, formatted with the prefix that row displays it with                                                                     |
+| A note                  | A draft's description                                                                                                                              |
+| A call hash             | An operation's call hash                                                                                                                           |
 
 A row's searchable accounts are every account it puts on screen, not only the one in the collapsed row: for a draft that
 is **every hop of its signing path** (which is exactly what the details panel lists — so a nested multisig's root hop is
@@ -55,12 +55,16 @@ A draft's assigned initiator is never rewritten, so if a co-signer swaps the sig
 naming the originally assigned account. The two values are matched by the same query but must not be treated as
 interchangeable anywhere else (permission checks read the depositor directly).
 
-Unlike the submitter, an operation's Initiator column and the expanded Depositor row never render the depositor's wallet
-name — both resolve only the account name (custom name → contact → identity → account name → short address), even when
-the depositor belongs to a local wallet. So an operation's initiator entry is searched by resolved account name and
-address only; no wallet name is fed into the search meta for it. A draft's assigned initiator is a separate case (see
-above): its details panel does show a wallet name when the account is local, and that draft-only wallet name is still
-searchable through `resolveWalletName`.
+Unlike the submitter, the Initiator column (and the expanded Depositor row) never lets the wallet name _override_ the
+account's own name. It resolves custom name → contact → identity → **owning wallet's name** → stored account name →
+short address, so an address-book entry for that exact key always wins, and the keyset name only stands in where the
+stored name would be a Vault derivation path or a short address. This holds for both row types.
+
+Search mirrors that exactly: the initiator entry contributes the **one** name the column displays — the wallet name is
+passed to the resolver as a fallback rather than added as a second searchable string. So a key with a contact is found
+by its contact name and _not_ by its keyset name (the keyset name is nowhere on screen for that row), while a key
+without one is found by its keyset name. The submitter is unchanged: it displays the wallet name outright, so both it
+and the resolved account name stay searchable.
 
 ### Addresses are matched as displayed
 

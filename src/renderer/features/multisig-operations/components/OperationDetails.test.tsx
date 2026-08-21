@@ -8,11 +8,21 @@ import { type MultisigOperation } from '@/domains/network';
 
 import { OperationDetails } from './OperationDetails';
 
-const stores = vi.hoisted(() => ({ chainsStore: Symbol('chains') }));
+const stores = vi.hoisted(() => ({
+  chainsStore: Symbol('chains'),
+  walletsStore: Symbol('wallets'),
+  accountsStore: Symbol('accounts'),
+}));
 const chainsFixture = vi.hoisted(() => ({ current: { '0x00': { chainId: '0x00', addressPrefix: 0 } } as unknown }));
 
 vi.mock('effector-react', () => ({
-  useUnit: (store: symbol) => (store === stores.chainsStore ? chainsFixture.current : undefined),
+  useUnit: (store: symbol) => {
+    if (store === stores.chainsStore) return chainsFixture.current;
+    if (store === stores.walletsStore) return testWallets;
+    if (store === stores.accountsStore) return testAccounts;
+
+    return undefined;
+  },
 }));
 
 vi.mock('@/shared/i18n', () => ({
@@ -34,11 +44,16 @@ vi.mock('@/shared/ui', () => ({
 }));
 
 vi.mock('@/domains/network', () => ({
+  accounts: { $list: stores.accountsStore },
   multisigOperationService: { getApprovals: () => [] },
 }));
 
 vi.mock('@/entities/network', () => ({
   networkModel: { $chains: stores.chainsStore },
+}));
+
+vi.mock('@/entities/wallet', () => ({
+  walletModel: { $wallets: stores.walletsStore },
 }));
 
 // The real `@/entities/transaction` barrel drags in QR/camera UI modules that
@@ -50,8 +65,18 @@ vi.mock('@/entities/transaction', () => ({
 }));
 
 vi.mock('@/widgets/NameResolver', () => ({
-  NamedAccount: ({ accountId, title, wallet }: { accountId: AccountId; title?: string; wallet?: unknown }) => (
-    <span data-title={title} data-wallet={wallet ? 'yes' : undefined}>
+  NamedAccount: ({
+    accountId,
+    title,
+    wallet,
+    walletNameAs,
+  }: {
+    accountId: AccountId;
+    title?: string;
+    wallet?: unknown;
+    walletNameAs?: string;
+  }) => (
+    <span data-title={title} data-wallet={wallet ? 'yes' : undefined} data-wallet-as={walletNameAs}>
       {accountId}
     </span>
   ),
@@ -66,6 +91,12 @@ vi.mock('./OperationDescription', () => ({ OperationDescription: () => <div>desc
 const depositor = '0xdepositor' as AccountId;
 const multisigId = '0xmultisig' as AccountId;
 const proxiedId = '0xproxied' as AccountId;
+const depositorWalletId = 7;
+
+const testWallets = [{ id: depositorWalletId, name: 'Depositor Keyset', type: 'polkadot_vault', accounts: [] }];
+const testAccounts = [
+  { id: 'depositor-account', name: '//polkadot//0', walletId: depositorWalletId, accountId: depositor },
+];
 
 const baseOperation = {
   id: 'op',
@@ -80,13 +111,27 @@ const baseOperation = {
 } as unknown as MultisigOperation;
 
 describe('OperationDetails', () => {
-  it('renders the depositor as an account without a wallet name override', () => {
+  it('renders the depositor with its wallet as a fallback name, never as an override', () => {
     render(<OperationDetails operation={baseOperation} />);
 
     const row = screen.getByTestId('row-operation.details.depositor');
     expect(row).toHaveTextContent(depositor);
     expect(row.querySelector('[data-title]')).toBeNull();
-    expect(row.querySelector('[data-wallet]')).toBeNull();
+    expect(row.querySelector('[data-wallet]')).not.toBeNull();
+    expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
+  });
+
+  it('renders the multisig and source rows in fallback mode too, without an owned wallet of their own', () => {
+    render(<OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} />);
+
+    for (const label of ['row-operation.details.multisig', 'row-operation.details.source']) {
+      const row = screen.getByTestId(label);
+      expect(row.querySelector('[data-title]')).toBeNull();
+      // Neither id belongs to a local wallet in this fixture, so there is
+      // nothing to fall back to — but the mode is still the fallback one.
+      expect(row.querySelector('[data-wallet]')).toBeNull();
+      expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
+    }
   });
 
   it('renders Date & Time first, then Depositor, Multisig, slot content, Operation type', () => {

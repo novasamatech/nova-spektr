@@ -11,6 +11,7 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
@@ -205,6 +206,7 @@ export const buildOperationSearchRow = (
   account: MultisigAccount | FlexibleMultisigAccount,
   chains: Record<ChainId, Chain>,
   walletNames: Map<Wallet['id'], string>,
+  resolveWalletName: (accountId: AccountId, chain?: Chain | null) => string | null,
 ): OperationSearchRow => {
   const isFlex = accountUtils.isFlexibleMultisigAccount(account);
   const initiatorChain = chains[operation.chainId] ?? null;
@@ -221,11 +223,12 @@ export const buildOperationSearchRow = (
         walletName: walletNames.get(account.walletId) ?? null,
       },
       {
-        // Initiator (row cell and expanded Depositor row) resolves the account
-        // name only — never the wallet name — so search covers exactly that.
+        // Initiator (row cell and expanded Depositor row) resolves by account
+        // with the wallet name as fallback — search matches exactly that name.
         accountId: operation.depositor,
         chain: initiatorChain,
-        walletName: null,
+        walletName: resolveWalletName(operation.depositor, initiatorChain),
+        walletNameAs: 'fallback',
       },
     ],
     // Rendered, but fetched only for operations that already passed the filter —

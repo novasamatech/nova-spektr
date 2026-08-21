@@ -2,10 +2,12 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { type MultisigOperation, multisigOperationService } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { OperationAmount } from '@/widgets/transaction-amount';
 import { formatPalletCall } from '../lib/format-pallet-call';
@@ -23,6 +25,16 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
+
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
+  // Only feeds `walletNameAs="fallback"`: the address book still wins, the
+  // wallet name just replaces a derivation path / short address for own keys.
+  const findWallet = (accountId: AccountId) => {
+    const owned = allAccounts.find(a => a.accountId === accountId);
+
+    return owned ? wallets.find(w => w.id === owned.walletId) : undefined;
+  };
 
   const approvals = multisigOperationService.getApprovals(operation);
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
@@ -47,16 +59,34 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
         </DetailRow>
 
         <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
-          <NamedAccount accountId={operation.depositor} chain={chain} variant="short" />
+          <NamedAccount
+            accountId={operation.depositor}
+            chain={chain}
+            wallet={findWallet(operation.depositor)}
+            walletNameAs="fallback"
+            variant="short"
+          />
         </DetailRow>
 
         <DetailRow label={t('operation.details.multisig')} className="text-text-secondary">
-          <NamedAccount accountId={multisigAccountId} chain={chain} variant="short" />
+          <NamedAccount
+            accountId={multisigAccountId}
+            chain={chain}
+            wallet={findWallet(multisigAccountId)}
+            walletNameAs="fallback"
+            variant="short"
+          />
         </DetailRow>
 
         {sourceAccountId && (
           <DetailRow label={t('operation.details.source')} className="text-text-secondary">
-            <NamedAccount accountId={sourceAccountId} chain={chain} variant="short" />
+            <NamedAccount
+              accountId={sourceAccountId}
+              chain={chain}
+              wallet={findWallet(sourceAccountId)}
+              walletNameAs="fallback"
+              variant="short"
+            />
           </DetailRow>
         )}
 
