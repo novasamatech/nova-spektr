@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, Loader } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import {
   EMPTY_SECTION_HEIGHT,
   ROW_GAP,
@@ -53,7 +53,6 @@ export const Operations = () => {
   const sectionedOps = useUnit(operationsContextModel.$sectionedOperations);
   const collapsedSections = useUnit(operationsContextModel.$collapsedSections);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
-  const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isTabDataLoading = useUnit(operationsContextModel.$isTabDataLoading);
   const tab = useUnit(operationsContextModel.$tab);
   const baseUrl = useUnit(backendConfigurationModel.$backendUrl);
@@ -198,14 +197,10 @@ export const Operations = () => {
               )}
               {showTable && <OperationsTableHeader />}
 
+              {/* Network sync progress lives in the bottom-right toast (`useChainSyncToast`),
+                  so nothing is drawn between the drafts group and the first operations. */}
               <div ref={aboveListRef}>
                 {showDraftsGroup && <DraftsSection scope={filter} isCollapsed={!!collapsedSections.drafts} />}
-
-                {(isDeferredLoading || isDeepLinkLoading) && (
-                  <div className="mt-4 flex w-full items-center justify-center">
-                    <Loader color="primary" size={25} />
-                  </div>
-                )}
               </div>
 
               {!isDeferredLoading && deferredOps.length === 0 && sectionedOps.length === 0 && (
