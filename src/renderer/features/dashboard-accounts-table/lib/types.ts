@@ -5,7 +5,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type PurposeSplit } from './balancePurpose';
 
-export type WalletTypeBucket = 'vault' | 'multisig' | 'watchOnly' | 'walletConnect' | 'contact' | 'other';
+export type WalletTypeBucket = 'vault' | 'multisig' | 'proxied' | 'watchOnly' | 'walletConnect' | 'contact' | 'other';
 
 export type NumericKey = 'transferable' | 'staked' | 'governance' | 'other' | 'total';
 export type SortKey = 'chain' | NumericKey;
@@ -22,6 +22,7 @@ export type AccountRow = {
   walletTypeBucket: WalletTypeBucket;
   chain: Chain;
   networkName: string; // relay name via chain.parentId, or the chain itself
+  networkChain: Chain; // the chain `networkName` names — the relay, or this chain when it has no parent
   asset: Asset;
   split: PurposeSplit;
   /**
@@ -41,6 +42,4 @@ export type AccountGroup = {
   walletTypeBucket: WalletTypeBucket;
   rows: AccountRow[];
   subtotalFiat: number | null; // null when nothing in the group is priced
-  chainCount: number;
-  assetCount: number;
 };

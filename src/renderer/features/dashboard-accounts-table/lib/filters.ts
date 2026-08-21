@@ -1,12 +1,12 @@
 import { type ChainId } from '@/shared/core';
 
-import { type AccountRow, type WalletTypeBucket } from './types';
+import { type AccountRow } from './types';
 
 export type TableFilters = {
   networks: string[];
   chains: ChainId[];
   accounts: string[]; // groupKeys
-  walletTypes: WalletTypeBucket[];
+  assets: string[]; // asset symbols — one entry covers that token on every chain that carries it
   minTotalFiat: string; // raw user input: '100K', '1M', '2500'
 };
 
@@ -14,7 +14,7 @@ export const EMPTY_FILTERS: TableFilters = {
   networks: [],
   chains: [],
   accounts: [],
-  walletTypes: [],
+  assets: [],
   minTotalFiat: '',
 };
 
@@ -37,7 +37,7 @@ export const applyFilters = (rows: AccountRow[], filters: TableFilters): Account
     if (filters.networks.length > 0 && !filters.networks.includes(row.networkName)) return false;
     if (filters.chains.length > 0 && !filters.chains.includes(row.chain.chainId)) return false;
     if (filters.accounts.length > 0 && !filters.accounts.includes(row.groupKey)) return false;
-    if (filters.walletTypes.length > 0 && !filters.walletTypes.includes(row.walletTypeBucket)) return false;
+    if (filters.assets.length > 0 && !filters.assets.includes(row.asset.symbol)) return false;
     if (min !== null && (row.fiat.total === null || row.fiat.total < min)) return false;
 
     return true;
@@ -51,7 +51,7 @@ export const countActiveFilters = (filters: TableFilters): number => {
     filters.networks.length +
     filters.chains.length +
     filters.accounts.length +
-    filters.walletTypes.length +
+    filters.assets.length +
     (hasMinFilter(filters) ? 1 : 0)
   );
 };
@@ -66,14 +66,14 @@ export type ChipLabels = {
 /** Removes a single occurrence of `value` from `list`, preserving order. */
 const removeValue = <T>(list: readonly T[], value: T): T[] => list.filter((item) => item !== value);
 
-const LIST_FIELDS = ['networks', 'chains', 'accounts', 'walletTypes'] as const;
+const LIST_FIELDS = ['networks', 'chains', 'accounts', 'assets'] as const;
 export type ListField = (typeof LIST_FIELDS)[number];
 
 /**
  * One toggle function per list field, each checked against its own concrete
  * element type (`TableFilters[F][number]` instantiated at the property's own
- * key) — keeps `ChainId` / `WalletTypeBucket` precise without a generic
- * `filters[field]` read, which TS can't narrow to a concrete array type.
+ * key) — keeps `ChainId` precise without a generic `filters[field]` read, which
+ * TS can't narrow to a concrete array type.
  */
 const listFieldToggles: { [F in ListField]: (filters: TableFilters, value: TableFilters[F][number]) => TableFilters } =
   {
@@ -89,11 +89,9 @@ const listFieldToggles: { [F in ListField]: (filters: TableFilters, value: Table
       ...filters,
       accounts: filters.accounts.includes(value) ? removeValue(filters.accounts, value) : [...filters.accounts, value],
     }),
-    walletTypes: (filters, value) => ({
+    assets: (filters, value) => ({
       ...filters,
-      walletTypes: filters.walletTypes.includes(value)
-        ? removeValue(filters.walletTypes, value)
-        : [...filters.walletTypes, value],
+      assets: filters.assets.includes(value) ? removeValue(filters.assets, value) : [...filters.assets, value],
     }),
   };
 

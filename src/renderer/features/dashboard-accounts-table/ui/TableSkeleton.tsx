@@ -1,7 +1,15 @@
 import { cnTw } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
 
-import { GRID_TEMPLATE, GROUP_HEADER_CLASS, NUMERIC_COLUMNS, ROW_CLASS } from './tableLayout';
+import {
+  GRID_TEMPLATE,
+  GROUP_HEADER_CLASS,
+  GROUP_HEADER_SPAN_CLASS,
+  NUMERIC_COLUMNS,
+  ROW_CLASS,
+  TOTAL_CELL_CLASS,
+  WIDE_ONLY_CLASS,
+} from './tableLayout';
 
 const GROUP_COUNT = 4;
 const ROWS_PER_GROUP = 3;
@@ -15,12 +23,15 @@ const NUMERIC_WIDTH: Record<(typeof NUMERIC_COLUMNS)[number], string> = {
 };
 
 const GroupHeaderStub = () => (
-  <div className={cnTw('flex', GROUP_HEADER_CLASS)}>
-    <Skeleton width="12px" height="12px" />
-    <Skeleton circle width="24px" />
-    <Skeleton width="120px" height="14px" />
-    <div className="flex-1" />
-    <Skeleton width="72px" height="14px" />
+  <div className={cnTw(GRID_TEMPLATE, GROUP_HEADER_CLASS)}>
+    <div className={GROUP_HEADER_SPAN_CLASS}>
+      <Skeleton width="12px" height="12px" />
+      <Skeleton circle width="24px" />
+      <Skeleton width="120px" height="14px" />
+    </div>
+    <div className={TOTAL_CELL_CLASS}>
+      <Skeleton width="72px" height="14px" />
+    </div>
   </div>
 );
 
@@ -30,13 +41,17 @@ const RowStub = () => (
         group header's caret column rather than the row's own left edge. */}
     <div className="flex items-center gap-x-2 pl-[18px]">
       <Skeleton circle width="16px" />
-      <Skeleton width="72px" height="14px" />
+      <span className={WIDE_ONLY_CLASS}>
+        <Skeleton width="72px" height="14px" />
+      </span>
     </div>
 
-    <Skeleton width="88px" height="14px" />
+    <span className={WIDE_ONLY_CLASS}>
+      <Skeleton width="88px" height="14px" />
+    </span>
 
     {NUMERIC_COLUMNS.map((key) => (
-      <div key={key} className="flex justify-end">
+      <div key={key} className={key === 'total' ? cnTw(TOTAL_CELL_CLASS, 'justify-center') : 'flex justify-end'}>
         <Skeleton width={NUMERIC_WIDTH[key]} height="14px" />
       </div>
     ))}

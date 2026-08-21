@@ -189,6 +189,7 @@
   },
   "assetBalance": {
     "locked": "Locked",
+    "lessThan": "<{value}",
     "number": "{value, number}",
     "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
@@ -618,39 +619,38 @@
     },
     "accountsTable": {
       "title": "Accounts",
-      "rowCount_one": "{count} row",
-      "rowCount_other": "{count} rows",
       "searchPlaceholder": "Account, address, chain",
       "exportCsv": "Export CSV",
       "exportCsvEmpty": "No rows to export",
-      "groupOrderValue": "Accounts by value",
-      "groupOrderName": "Accounts A → Z",
+      "fullView": "Full view",
+      "fullViewTitle": "All accounts",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
       "subtotal": "Subtotal",
-      "groupMeta_one": "{chains} chains · {assets} asset",
-      "groupMeta_other": "{chains} chains · {assets} assets",
       "activeFilters": "{count} active",
       "clearAll": "Clear all",
       "filters": {
+        "title": "Filters",
         "network": "Network",
         "chain": "Chain",
         "account": "Account",
-        "walletType": "Wallet type",
-        "all": "{label}: All",
-        "one": "{label}: {value}",
-        "many": "{label}: {count} selected",
-        "amountAny": "Amount: Any",
-        "amountMin": "Total ≥ {value}",
+        "asset": "Token",
+        "assetSearch": "Find a token",
+        "assetEmpty": "No tokens match",
         "amountTitle": "Row total, {currency}",
+        "amountMin": "Min {value}",
         "amountPlaceholder": "Minimum, e.g. 100K",
         "presetAny": "Any",
         "presetMin": "≥ {value}",
-        "removeFilter": "Remove {label}"
+        "removeFilter": "Remove {label}",
+        "anyValue": "Any",
+        "selectedCount_one": "{count} selected",
+        "selectedCount_other": "{count} selected"
       },
       "walletTypes": {
         "vault": "Polkadot Vault",
         "multisig": "Multisig",
+        "proxied": "Proxied",
         "watchOnly": "Watch-only",
         "walletConnect": "WalletConnect",
         "contact": "Address book contact",
@@ -668,7 +668,6 @@
         "other": "Other",
         "total": "Total"
       },
-      "inclVested": "incl. {amount} vested",
       "empty": {
         "title": "No rows match your filters",
         "description": "Every account was filtered out. Drop one of the active filters to bring rows back.",
@@ -681,7 +680,7 @@
       },
       "footer": {
         "showing": "Showing {rows} of {total} rows in {accounts} accounts",
-        "note": "Account subtotals are fiat · sorting applies inside every group · \"—\" = not applicable on this chain"
+        "note": "Account subtotals are fiat · the sorted column ranks both accounts and their rows · \"—\" = not applicable on this chain"
       }
     },
     "totalRewards": {

@@ -16,8 +16,6 @@ const makeGroup = (overrides: Partial<AccountGroup> & { key: string }): AccountG
     walletTypeBucket: overrides.walletTypeBucket ?? 'vault',
     rows: overrides.rows ?? [],
     subtotalFiat: overrides.subtotalFiat ?? null,
-    chainCount: overrides.chainCount ?? 0,
-    assetCount: overrides.assetCount ?? 0,
   };
 };
 
@@ -139,24 +137,81 @@ describe('sortRows', () => {
 });
 
 describe('sortGroups', () => {
+  const BY_TOTAL: TableSortState = { key: 'total', dir: 'desc' };
+
   const groupLow = makeGroup({ key: 'low', name: 'Bravo', subtotalFiat: 10 });
   const groupHigh = makeGroup({ key: 'high', name: 'Alpha', subtotalFiat: 100 });
   const groupNull = makeGroup({ key: 'null', name: 'Charlie', subtotalFiat: null });
   const groups = [groupLow, groupNull, groupHigh];
 
   it('sorts by subtotalFiat descending with null last', () => {
-    expect(sortGroups(groups, 'value').map((g) => g.key)).toEqual(['high', 'low', 'null']);
-  });
-
-  it('sorts by name ascending', () => {
-    expect(sortGroups(groups, 'name').map((g) => g.name)).toEqual(['Alpha', 'Bravo', 'Charlie']);
+    expect(sortGroups(groups, BY_TOTAL).map((g) => g.key)).toEqual(['high', 'low', 'null']);
   });
 
   it('does not mutate the input array', () => {
     const original = [...groups];
 
-    sortGroups(groups, 'value');
+    sortGroups(groups, BY_TOTAL);
 
     expect(groups).toEqual(original);
+  });
+
+  describe('ranking by the sorted column', () => {
+    const withGovernance = (key: string, governance: number | null, total: number | null) =>
+      makeGroup({
+        key,
+        name: key,
+        subtotalFiat: total,
+        rows: [
+          makeRow({
+            accountId: ALICE,
+            id: `${key}-row`,
+            fiat: { transferable: null, staked: null, governance, other: null, total },
+          }),
+        ],
+      });
+
+    // The rich account holds nothing in governance; the poor one does — the
+    // point of the feature is that sorting Governance lifts the poor one.
+    const rich = withGovernance('rich', null, 1000);
+    const voter = withGovernance('voter', 5, 20);
+    const column = [rich, voter];
+
+    it('lifts accounts holding a balance in the sorted column', () => {
+      expect(sortGroups(column, { key: 'governance', dir: 'desc' }).map((g) => g.key)).toEqual(['voter', 'rich']);
+    });
+
+    it('follows the sort direction', () => {
+      expect(sortGroups(column, { key: 'governance', dir: 'asc' }).map((g) => g.key)).toEqual(['rich', 'voter']);
+    });
+
+    it('sums the column across the rows of a group', () => {
+      const spread = makeGroup({
+        key: 'spread',
+        name: 'spread',
+        subtotalFiat: 6,
+        rows: [
+          makeRow({
+            accountId: ALICE,
+            id: 'spread-a',
+            fiat: { transferable: null, staked: null, governance: 3, other: null, total: 3 },
+          }),
+          makeRow({
+            accountId: ALICE,
+            id: 'spread-b',
+            fiat: { transferable: null, staked: null, governance: 3, other: null, total: 3 },
+          }),
+        ],
+      });
+
+      expect(sortGroups([voter, spread], { key: 'governance', dir: 'desc' }).map((g) => g.key)).toEqual([
+        'spread',
+        'voter',
+      ]);
+    });
+
+    it('keeps the fiat-subtotal order for the categorical chain column', () => {
+      expect(sortGroups(column, { key: 'chain', dir: 'asc' }).map((g) => g.key)).toEqual(['rich', 'voter']);
+    });
   });
 });

@@ -106,7 +106,7 @@ describe('splitBalanceByPurpose', () => {
     expect(split.other.toString()).toEqual('0');
   });
 
-  it('exposes vested as a display hint capped by other, not a bucket', () => {
+  it('leaves a vesting lock inside other, never as a bucket of its own', () => {
     // legacy: transferable = 1000 − 400 = 600; pot = 1000 − 600 = 400; no
     // staking, no governance locks — vesting lock of 300 rides inside frozen
     const balance = makeBalance({
@@ -118,7 +118,6 @@ describe('splitBalanceByPurpose', () => {
     const split = splitBalanceByPurpose(balance, null, true);
 
     expect(split.other.toString()).toEqual('400');
-    expect(split.vestedHint.toString()).toEqual('300');
     expect(split.staked).toBeNull();
     expect(split.governance?.toString()).toEqual('0');
   });

@@ -39,7 +39,7 @@ export const dashboardStakingSummaryFeature = createFeature({
 dashboardStakingSummaryFeature.inject(
   dashboardWidgetsSlot,
   defineWidget({
-    order: 2,
+    order: 3,
     label: 'dashboard.stakingSummary.title',
     render: StakingSummaryWidget,
     defaultSize: { w: 2, h: 3 },

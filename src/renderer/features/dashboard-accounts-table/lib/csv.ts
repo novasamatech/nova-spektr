@@ -89,7 +89,7 @@ export function accountsCsvFileName(parts: string[], now: Date = new Date()): st
  * - `chains` — `ChainId`s are hex and unusable in a filename, so the filter
  *   contributes a count instead (`2-chains`), not the ids.
  * - `accounts` — group keys are `accountId` hex, same treatment (`3-accounts`).
- * - `walletTypes` — already short slugs (`vault`, `multisig`, …), used as-is.
+ * - `assets` — token symbols (`KSM`, `DED`), short and readable, used as-is.
  * - `minTotalFiat` — the raw user input (`min-100K`), slugged downstream.
  * - `search` — a non-empty query contributes the literal word `search`, never the
  *   query text itself: the query can contain anything (a contact's name, an
@@ -100,7 +100,7 @@ export function buildExportFilterParts(filters: TableFilters, search: string): s
 
   if (filters.chains.length > 0) parts.push(`${filters.chains.length}-chains`);
   if (filters.accounts.length > 0) parts.push(`${filters.accounts.length}-accounts`);
-  parts.push(...filters.walletTypes);
+  parts.push(...filters.assets);
   if (filters.minTotalFiat.trim() !== '') parts.push(`min-${filters.minTotalFiat.trim()}`);
   if (search.trim() !== '') parts.push('search');
 

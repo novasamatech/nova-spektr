@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Balance } from '@/shared/core';
-import { totalAmountBN, transferableAmountBN, vestedLockedAmountBN, votedAmountBN } from '@/shared/lib/utils';
+import { totalAmountBN, transferableAmountBN, votedAmountBN } from '@/shared/lib/utils';
 
 export type PurposeSplit = {
   transferable: BN;
@@ -13,11 +13,6 @@ export type PurposeSplit = {
   /** Null — governance locks cannot exist on this asset; render "—", never 0 */
   governance: BN | null;
   other: BN;
-  /**
-   * Vesting folded into `other`; display-only "incl. X vested" hint, never
-   * summed
-   */
-  vestedHint: BN;
 };
 
 /**
@@ -42,7 +37,5 @@ export const splitBalanceByPurpose = (
   const governance = governanceApplicable ? BN.min(votedAmountBN(balance), afterStaked) : null;
   const other = afterStaked.sub(governance ?? BN_ZERO);
 
-  const vestedHint = BN.min(vestedLockedAmountBN(balance), other);
-
-  return { transferable, staked, governance, other, vestedHint };
+  return { transferable, staked, governance, other };
 };

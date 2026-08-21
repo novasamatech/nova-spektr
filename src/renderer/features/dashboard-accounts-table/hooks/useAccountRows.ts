@@ -133,7 +133,7 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
       const row = buildAccountRow({
         balance,
         chain,
-        networkName: chain.parentId ? (chains[chain.parentId]?.name ?? chain.name) : chain.name,
+        networkChain: (chain.parentId ? chains[chain.parentId] : null) ?? chain,
         asset,
         displayName: nameByAccountId.get(balance.accountId) ?? null,
         wallet,

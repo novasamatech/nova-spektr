@@ -58,11 +58,21 @@ sample({
   target: balanceSubModel.fetchAccountIds,
 });
 
-// Existing overview widgets occupy orders 0–3; leaving a gap up to 10 gives
-// this widget room to split into several without renumbering its neighbors.
+// Order 1 — second in the flow, straight after Portfolio Overview (order 0,
+// two columns wide), which lands this widget at the top of the grid's right
+// column. Every other overview widget moved up one order to make room; their
+// order relative to each other is unchanged, and a stored layout is never
+// re-seeded, so only a first-time (or reset) layout is affected.
+//
+// Half the grid, and exactly Portfolio Overview's six rows: the two things a
+// person opens the dashboard for — the fiat snapshot and where that money
+// actually sits — end up side by side and flush, rather than one card hanging
+// lower than its neighbour. At this width the table drops to its compact column
+// set (see `ui/tableLayout.ts`), which is what makes five purpose columns fit in
+// half a screen.
 dashboardAccountsTableFeature.inject(dashboardWidgetsSlot, {
-  order: 10,
+  order: 1,
   render: AccountsTableWidget,
-  defaultSize: { w: 4, h: 6 },
+  defaultSize: { w: 2, h: 6 },
   minSize: { w: 2, h: 4 },
 });

@@ -1,4 +1,4 @@
-import { type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import {
   type TableFilters,
@@ -40,7 +40,7 @@ describe('applyFilters', () => {
     groupKey: 'alice',
     networkName: 'Polkadot',
     chain: { chainId: '0x91b1' } as unknown as Chain,
-    walletTypeBucket: 'vault',
+    asset: { symbol: 'DOT' } as unknown as Asset,
     fiat: { transferable: null, staked: null, governance: null, other: null, total: 500 },
   });
   const rowKusamaMultisig = makeRow({
@@ -48,7 +48,7 @@ describe('applyFilters', () => {
     groupKey: 'bob',
     networkName: 'Kusama',
     chain: { chainId: '0xb0a8' } as unknown as Chain,
-    walletTypeBucket: 'multisig',
+    asset: { symbol: 'KSM' } as unknown as Asset,
     fiat: { transferable: null, staked: null, governance: null, other: null, total: 100 },
   });
   const rowPolkadotMultisig = makeRow({
@@ -56,7 +56,7 @@ describe('applyFilters', () => {
     groupKey: 'bob',
     networkName: 'Polkadot',
     chain: { chainId: '0x91b1' } as unknown as Chain,
-    walletTypeBucket: 'multisig',
+    asset: { symbol: 'DED' } as unknown as Asset,
     fiat: { transferable: null, staked: null, governance: null, other: null, total: null },
   });
   const rows = [rowPolkadotVault, rowKusamaMultisig, rowPolkadotMultisig];
@@ -71,10 +71,16 @@ describe('applyFilters', () => {
     expect(applyFilters(rows, filters)).toEqual(rows);
   });
 
-  it('intersects across fields (AND between networks and walletTypes)', () => {
-    const filters: TableFilters = { ...EMPTY_FILTERS, networks: ['Polkadot'], walletTypes: ['multisig'] };
+  it('intersects across fields (AND between networks and assets)', () => {
+    const filters: TableFilters = { ...EMPTY_FILTERS, networks: ['Polkadot'], assets: ['DED'] };
 
     expect(applyFilters(rows, filters)).toEqual([rowPolkadotMultisig]);
+  });
+
+  it('filters by token symbol across chains', () => {
+    const filters: TableFilters = { ...EMPTY_FILTERS, assets: ['DOT', 'KSM'] };
+
+    expect(applyFilters(rows, filters)).toEqual([rowPolkadotVault, rowKusamaMultisig]);
   });
 
   it('filters chains by chainId', () => {
@@ -122,7 +128,7 @@ describe('countActiveFilters', () => {
       networks: ['Polkadot', 'Kusama'],
       chains: ['0x91b1'],
       accounts: [],
-      walletTypes: ['vault'],
+      assets: ['DOT'],
       minTotalFiat: '100K',
     };
 
@@ -156,7 +162,7 @@ describe('toggleListFilter', () => {
       ...EMPTY_FILTERS,
       chains: ['0x91b1'],
       accounts: ['alice'],
-      walletTypes: ['vault'],
+      assets: ['DOT'],
       minTotalFiat: '100K',
     };
 
@@ -164,7 +170,7 @@ describe('toggleListFilter', () => {
 
     expect(next.chains).toEqual(filters.chains);
     expect(next.accounts).toEqual(filters.accounts);
-    expect(next.walletTypes).toEqual(filters.walletTypes);
+    expect(next.assets).toEqual(filters.assets);
     expect(next.minTotalFiat).toEqual(filters.minTotalFiat);
   });
 });

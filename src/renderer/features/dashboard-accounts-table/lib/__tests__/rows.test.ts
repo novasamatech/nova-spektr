@@ -22,7 +22,6 @@ const makeSplit = (params: {
   // `== null` deliberately treats undefined and null the same
   governance: params.governance == null ? null : new BN(params.governance),
   other: new BN(params.other ?? 0),
-  vestedHint: BN_ZERO,
 });
 
 describe('buildRowFiat', () => {
@@ -91,7 +90,7 @@ describe('buildAccountRow', () => {
   const makeInput = (overrides: Partial<BuildAccountRowInput> = {}): BuildAccountRowInput => ({
     balance: makeBalance({ free: 50_000_000_000 }),
     chain,
-    networkName: 'Polkadot',
+    networkChain: { chainId: '0xrelay', name: 'Polkadot' } as unknown as Chain,
     asset: dotAsset,
     displayName: 'Alice',
     wallet: null,
@@ -192,7 +191,6 @@ describe('groupRows', () => {
     const groups = groupRows(rows);
 
     expect(groups).toHaveLength(1);
-    expect(groups[0]!.chainCount).toEqual(2);
     expect(groups[0]!.rows).toHaveLength(2);
   });
 
@@ -252,30 +250,5 @@ describe('groupRows', () => {
     const groups = groupRows(rows);
 
     expect(groups[0]!.subtotalFiat).toBeNull();
-  });
-
-  it('counts distinct asset symbols for assetCount', () => {
-    const rows = [
-      makeRow({
-        accountId: ALICE,
-        chain: { chainId: '0x1' } as unknown as Chain,
-        asset: { symbol: 'DOT' } as unknown as Asset,
-      }),
-      makeRow({
-        accountId: ALICE,
-        chain: { chainId: '0x1' } as unknown as Chain,
-        asset: { symbol: 'USDT' } as unknown as Asset,
-      }),
-      makeRow({
-        accountId: ALICE,
-        chain: { chainId: '0x2' } as unknown as Chain,
-        asset: { symbol: 'DOT' } as unknown as Asset,
-      }),
-    ];
-
-    const groups = groupRows(rows);
-
-    expect(groups[0]!.assetCount).toEqual(2);
-    expect(groups[0]!.chainCount).toEqual(2);
   });
 });

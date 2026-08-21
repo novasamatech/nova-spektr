@@ -14,7 +14,13 @@ export const makeRow = (overrides: Partial<AccountRow> & { accountId: AccountId 
   const symbol = overrides.asset?.symbol ?? 'DOT';
 
   const chain = (overrides.chain ?? { chainId, name: 'Polkadot' }) as unknown as Chain;
-  const asset = (overrides.asset ?? { symbol }) as unknown as Asset;
+  // `name`/`icon` are what `AssetIcon` reads — a fixture without them crashes
+  // any component test that renders a token.
+  const asset = (overrides.asset ?? {
+    symbol,
+    name: symbol,
+    icon: { monochrome: '', colored: '' },
+  }) as unknown as Asset;
 
   return {
     id: overrides.id ?? `${overrides.accountId}-${chainId}-${symbol}`,
@@ -27,6 +33,7 @@ export const makeRow = (overrides: Partial<AccountRow> & { accountId: AccountId 
     walletTypeBucket: overrides.walletTypeBucket ?? 'vault',
     chain,
     networkName: overrides.networkName ?? 'Polkadot',
+    networkChain: overrides.networkChain ?? chain,
     asset,
     split: overrides.split ?? ({} as AccountRow['split']),
     totalBN: overrides.totalBN ?? ({} as AccountRow['totalBN']),

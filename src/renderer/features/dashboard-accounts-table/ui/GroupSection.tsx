@@ -1,17 +1,25 @@
 import { type BN } from '@polkadot/util';
-import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
-import { type Asset, type Wallet } from '@/shared/core';
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
-import { AssetBalance, ChainIcon, Identicon, WalletIcon } from '@/shared/ui-entities';
+import { AssetBalance, ChainIcon, RootExplorers } from '@/shared/ui-entities';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type AccountGroup, type AccountRow, type NumericKey } from '../lib/types';
 
-import { GRID_TEMPLATE, GROUP_HEADER_CLASS, NUMERIC_COLUMNS, ROW_CLASS } from './tableLayout';
+import {
+  AMOUNT_CELL_CLASS,
+  GRID_TEMPLATE,
+  GROUP_HEADER_CLASS,
+  GROUP_HEADER_SPAN_CLASS,
+  NUMERIC_COLUMNS,
+  ROW_CLASS,
+  TOTAL_CELL_CLASS,
+  WIDE_ONLY_CLASS,
+} from './tableLayout';
 
 type Props = {
   group: AccountGroup;
@@ -21,53 +29,53 @@ type Props = {
   formatSubtotal: (value: number | null) => string;
 };
 
-/**
- * Plain-text token amount, matching `AssetBalance`'s own formatting — used
- * inside the translated "incl. X vested" hint, where a component can't be
- * interpolated.
- */
-const formatTokenAmount = (value: BN, asset: Asset, t: TFunction): string => {
-  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, asset.precision);
-  const number = t('assetBalance.number', { value: formattedValue, maximumFractionDigits: decimalPlaces });
-
-  return `${number}${suffix} ${asset.symbol}`;
-};
-
-type WalletTypeBadgeProps = {
-  wallet: Wallet | null;
-  label: string;
-};
-
-const WalletTypeBadge = ({ wallet, label }: WalletTypeBadgeProps) => (
-  <span className="shrink-0" title={label}>
-    {wallet ? <WalletIcon type={wallet.type} size={16} /> : <Icon name="addressBook" size={14} />}
-  </span>
-);
-
 type NumericCellProps = {
   value: BN | null;
   asset: Asset;
   fiatVisible: boolean;
-  semibold?: boolean;
-  vestedAmount?: BN;
+  /** Total is the column the eye lands on: heavier, and on the accent surface. */
+  emphasis?: boolean;
 };
 
-const NumericCell = ({ value, asset, fiatVisible, semibold, vestedAmount }: NumericCellProps) => {
-  const { t } = useI18n();
+/**
+ * Thousands are abbreviated here, as they are on the staking KPI cards, even
+ * though the app's default spells them out: a cell in a five-column table has
+ * room for `242.03K DOT`, not `242,026.5241 DOT`, and the exact figure is one
+ * CSV export away.
+ */
+const AMOUNT_SHORTHANDS = { K: true } as const;
 
+/**
+ * Four decimals, and `<0.0001` below that. Five columns of amounts have to fit
+ * a half-width widget side by side; the exact figure, to the last planck, is
+ * what the CSV export is for.
+ */
+const AMOUNT_MAX_DECIMALS = 4;
+
+/**
+ * One purpose bucket: the token amount with its fiat equivalent underneath.
+ *
+ * A zero says "nothing here" and is drawn that way — muted, and without a `$0`
+ * under it. Spelling out the fiat value of nothing is a line of type that can
+ * only ever read `$0`, on the rows a person is scanning past.
+ */
+const NumericCell = ({ value, asset, fiatVisible, emphasis }: NumericCellProps) => {
   if (value === null) {
     return <BodyText className="text-right text-text-tertiary">—</BodyText>;
   }
 
+  const isZero = value.isZero();
+
   return (
-    <div className="flex flex-col items-end">
-      <AssetBalance value={value} asset={asset} className={cnTw(semibold && 'font-semibold')} />
-      {fiatVisible ? <AssetFiatBalance asset={asset} amount={value} /> : null}
-      {vestedAmount && !vestedAmount.isZero() ? (
-        <HelpText className="text-text-tertiary">
-          {t('dashboard.accountsTable.inclVested', { amount: formatTokenAmount(vestedAmount, asset, t) })}
-        </HelpText>
-      ) : null}
+    <div className={AMOUNT_CELL_CLASS}>
+      <AssetBalance
+        value={value}
+        asset={asset}
+        shorthands={AMOUNT_SHORTHANDS}
+        maxDecimals={AMOUNT_MAX_DECIMALS}
+        className={cnTw(isZero && 'text-text-tertiary', emphasis && 'font-semibold')}
+      />
+      {fiatVisible && !isZero ? <AssetFiatBalance asset={asset} amount={value} /> : null}
     </div>
   );
 };
@@ -83,73 +91,89 @@ const DataRow = ({ row, fiatVisible }: DataRowProps) => (
   <div className={cnTw(GRID_TEMPLATE, ROW_CLASS, 'hover:bg-block-background')}>
     {/* 18px = 12px caret glyph + 6px gap, so the chain icon lines up under the
         group header's caret column rather than the row's own left edge. */}
-    <div className="flex min-w-0 items-center gap-x-2 pl-[18px]">
+    <div className="flex min-w-0 items-center gap-x-2 pl-[18px]" title={row.chain.name}>
       <ChainIcon chain={row.chain} size={16} />
-      <FootnoteText className="truncate">{row.chain.name}</FootnoteText>
+      {/* Icon-only below the full width — the title above is what names the
+          chain there, so the icon must never be the only thing on offer. */}
+      <FootnoteText className={cnTw('truncate', WIDE_ONLY_CLASS)}>{row.chain.name}</FootnoteText>
     </div>
 
-    <span className="min-w-0 truncate" title={row.displayAddress}>
+    <span className={cnTw('min-w-0 truncate', WIDE_ONLY_CLASS)} title={row.displayAddress}>
       <FootnoteText className="truncate text-text-secondary">{row.shortAddress}</FootnoteText>
     </span>
 
-    {NUMERIC_COLUMNS.map((key) => (
-      <NumericCell
-        key={key}
-        value={numericValue(row, key)}
-        asset={row.asset}
-        fiatVisible={fiatVisible}
-        semibold={key === 'total'}
-        vestedAmount={key === 'other' ? row.split.vestedHint : undefined}
-      />
-    ))}
+    {NUMERIC_COLUMNS.map((key) =>
+      key === 'total' ? (
+        <div key={key} className={TOTAL_CELL_CLASS}>
+          <NumericCell value={numericValue(row, key)} asset={row.asset} fiatVisible={fiatVisible} emphasis />
+        </div>
+      ) : (
+        <NumericCell key={key} value={numericValue(row, key)} asset={row.asset} fiatVisible={fiatVisible} />
+      ),
+    )}
   </div>
 );
 
 export const GroupSection = memo(({ group, open, onToggle, fiatVisible, formatSubtotal }: Props) => {
   const { t } = useI18n();
 
-  const walletTypeLabel = t(`dashboard.accountsTable.walletTypes.${group.walletTypeBucket}`);
   const handleToggle = () => onToggle(group.key);
 
   return (
     <div>
-      <button type="button" className={cnTw('flex w-full text-left', GROUP_HEADER_CLASS)} onClick={handleToggle}>
-        <Icon name={open ? 'down' : 'right'} size={12} className="shrink-0 text-text-tertiary" />
+      {/* A row, not a button: the explorers popover is a button of its own, and
+          one button may not live inside another. The fold trigger is the account
+          block — caret through address — and the subtotal is left alone. */}
+      <div className={cnTw(GRID_TEMPLATE, GROUP_HEADER_CLASS, 'group hover:bg-block-background-hover')}>
+        <div className={GROUP_HEADER_SPAN_CLASS}>
+          {/* Not `flex-1`: the button ends where the name ends, which is where
+              the explorers icon has to sit. It still shrinks (and the name
+              truncates) when the account block runs out of room. */}
+          <button type="button" className="flex min-w-0 items-center gap-x-2 text-left" onClick={handleToggle}>
+            <Icon name={open ? 'down' : 'right'} size={12} className="shrink-0 text-text-tertiary" />
 
-        <Identicon address={toAddress(group.accountId)} size={24} />
+            {/* Identicon, name and address all come from `NamedAccount` — no
+                hand-assembled trio — so this header renders an account exactly
+                the way every other screen does. Its own explorers button is off:
+                a chain-less account gets `RootExplorers` instead, see below. */}
+            <NamedAccount
+              accountId={group.accountId}
+              chain={null}
+              title={group.name}
+              wallet={group.wallet}
+              variant="short"
+              iconSize={24}
+              hideExplorers
+              titleClass="truncate text-body font-semibold"
+            />
+          </button>
 
-        <div className="min-w-0">
-          <NamedAccount
-            accountId={group.accountId}
-            chain={null}
-            title={group.name}
-            wallet={group.wallet}
-            variant="short"
-            hideIcon
-            hideAddress
-            titleClass="truncate text-body font-semibold"
-          />
+          {/* Generic Subscan / Sub.ID links, as in wallet management: a group is
+              an account across chains, so there is no chain whose explorer to
+              open — `AccountExplorers` with `chain={null}` would offer none.
+              Revealed on hover (and on keyboard focus, which `opacity` alone
+              would strand): ninety of these icons stacked down the table read as
+              a column of noise, while the one on the row under the pointer reads
+              as an offer. The space is reserved either way, so nothing shifts. */}
+          <span className="shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+            <RootExplorers accountId={group.accountId} />
+          </span>
+
+          <div className="flex-1" />
         </div>
 
-        <WalletTypeBadge wallet={group.wallet} label={walletTypeLabel} />
-
-        <FootnoteText className="shrink-0 text-text-tertiary">
-          {t('dashboard.accountsTable.groupMeta', {
-            count: group.assetCount,
-            chains: group.chainCount,
-            assets: group.assetCount,
-          })}
-        </FootnoteText>
-
-        <div className="flex-1" />
-
         {fiatVisible ? (
-          <div className="flex shrink-0 items-center gap-x-1.5">
-            <FootnoteText className="text-text-tertiary">{t('dashboard.accountsTable.subtotal')}</FootnoteText>
+          // Last cell of the same grid, so an account's subtotal lands in the
+          // very track its rows' totals do — at any width, with no number to
+          // keep in sync.
+          <div className={TOTAL_CELL_CLASS}>
             <BodyText className="font-semibold tabular-nums">{formatSubtotal(group.subtotalFiat)}</BodyText>
+            <HelpText className="tracking-wide text-text-tertiary uppercase">
+              {t('dashboard.accountsTable.subtotal')}
+            </HelpText>
           </div>
         ) : null}
-      </button>
+      </div>
 
       {open ? (
         <div>

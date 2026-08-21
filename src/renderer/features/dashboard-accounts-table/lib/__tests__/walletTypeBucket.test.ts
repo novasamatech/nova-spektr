@@ -13,7 +13,8 @@ describe('getWalletTypeBucket', () => {
     [WalletType.WATCH_ONLY, 'watchOnly'],
     [WalletType.WALLET_CONNECT, 'walletConnect'],
     [WalletType.NOVA_WALLET, 'walletConnect'],
-    [WalletType.PROXIED, 'other'],
+    [WalletType.PROXIED, 'proxied'],
+    [WalletType.POLKADOT_EXTENSION, 'other'],
   ] as const)('maps %s to %s', (type, bucket) => {
     expect(getWalletTypeBucket(makeWallet(type))).toBe(bucket);
   });

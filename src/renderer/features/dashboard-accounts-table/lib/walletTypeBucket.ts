@@ -12,6 +12,10 @@ export const getWalletTypeBucket = (wallet: Wallet | null): WalletTypeBucket => 
   if (wallet === null) return 'contact';
   if (walletUtils.isPolkadotVaultGroup(wallet)) return 'vault';
   if (walletUtils.isAnyMultisig(wallet)) return 'multisig';
+  // Proxied wallets are a kind a person filters by on purpose ("show me what I
+  // sign for someone else"), not a leftover — `other` is only the browser
+  // extensions that fit none of the named buckets.
+  if (walletUtils.isProxied(wallet)) return 'proxied';
   if (walletUtils.isWatchOnly(wallet)) return 'watchOnly';
   if (walletUtils.isWalletConnectGroup(wallet)) return 'walletConnect';
 

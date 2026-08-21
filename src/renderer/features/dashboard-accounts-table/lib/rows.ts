@@ -44,10 +44,11 @@ export type BuildAccountRowInput = {
   balance: Balance;
   chain: Chain;
   /**
-   * Relay name via `chain.parentId` — resolved by the caller, who owns the
-   * chains map
+   * The relay this chain belongs to (via `chain.parentId`, resolved by the
+   * caller, who owns the chains map), or the chain itself when it has no parent
+   * — it both names the row's network and gives it an icon.
    */
-  networkName: string;
+  networkChain: Chain;
   asset: Asset;
   /** Resolved display name; null falls back to the short address */
   displayName: string | null;
@@ -68,8 +69,18 @@ export type BuildAccountRowInput = {
  * derivation lives here.
  */
 export const buildAccountRow = (input: BuildAccountRowInput): AccountRow | null => {
-  const { balance, chain, networkName, asset, displayName, wallet, isStakingCell, stakingPending, stakeActive, price } =
-    input;
+  const {
+    balance,
+    chain,
+    networkChain,
+    asset,
+    displayName,
+    wallet,
+    isStakingCell,
+    stakingPending,
+    stakeActive,
+    price,
+  } = input;
 
   if (totalAmountBN(balance).isZero()) return null;
 
@@ -96,7 +107,8 @@ export const buildAccountRow = (input: BuildAccountRowInput): AccountRow | null 
     wallet,
     walletTypeBucket: getWalletTypeBucket(wallet),
     chain,
-    networkName,
+    networkName: networkChain.name,
+    networkChain,
     asset,
     split,
     totalBN: split.transferable
@@ -128,8 +140,6 @@ export const groupRows = (rows: AccountRow[]): AccountGroup[] => {
       walletTypeBucket: firstRow.walletTypeBucket,
       rows: accountRows,
       subtotalFiat: priced.length > 0 ? priced.reduce((a, b) => a + b, 0) : null,
-      chainCount: new Set(accountRows.map((row) => row.chain.chainId)).size,
-      assetCount: new Set(accountRows.map((row) => row.asset.symbol)).size,
     };
   });
 };

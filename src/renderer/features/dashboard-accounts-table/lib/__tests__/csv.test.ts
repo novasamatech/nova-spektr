@@ -38,7 +38,6 @@ const makeSplit = (params: {
   // `== null` deliberately treats undefined and null the same
   governance: params.governance == null ? null : new BN(params.governance),
   other: new BN(params.other ?? '0'),
-  vestedHint: BN_ZERO,
 });
 
 describe('accountsCsvColumns', () => {
@@ -170,10 +169,10 @@ describe('buildExportFilterParts', () => {
     expect(buildExportFilterParts(filters, '')).toEqual(['3-accounts']);
   });
 
-  test('wallet types are used directly', () => {
-    const filters: TableFilters = { ...EMPTY_FILTERS, walletTypes: ['vault', 'multisig'] };
+  test('token symbols are used directly', () => {
+    const filters: TableFilters = { ...EMPTY_FILTERS, assets: ['DOT', 'KSM'] };
 
-    expect(buildExportFilterParts(filters, '')).toEqual(['vault', 'multisig']);
+    expect(buildExportFilterParts(filters, '')).toEqual(['DOT', 'KSM']);
   });
 
   test('a minimum amount contributes the raw input, slugged downstream', () => {
@@ -198,7 +197,7 @@ describe('buildExportFilterParts', () => {
       networks: ['Polkadot'],
       chains: ['0xaaa'] as TableFilters['chains'],
       accounts: ['0x1', '0x2'],
-      walletTypes: ['vault'],
+      assets: ['DOT'],
       minTotalFiat: '1M',
     };
 
@@ -206,7 +205,7 @@ describe('buildExportFilterParts', () => {
       'Polkadot',
       '1-chains',
       '2-accounts',
-      'vault',
+      'DOT',
       'min-1M',
       'search',
     ]);
