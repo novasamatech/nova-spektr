@@ -1,6 +1,6 @@
 # Price Tracker
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
 
 ## Overview
 
