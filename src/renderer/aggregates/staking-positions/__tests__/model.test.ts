@@ -19,6 +19,7 @@ const chainMock = vi.hoisted(() => {
   const ledgers = new Map<string, Callback<Record<string, unknown>>>();
   const nominations = new Map<string, Callback<Record<string, unknown>>>();
   const payees = new Map<string, Callback<Record<string, unknown>>>();
+  const payeePrefixes = new Map<string, number | undefined>();
   const validatorPrefs = new Map<string, Callback<Record<string, unknown>>>();
   const minBonds = new Map<string, Callback<string>>();
   const eras = new Map<string, Callback<number | undefined>>();
@@ -30,6 +31,7 @@ const chainMock = vi.hoisted(() => {
     ledgers.clear();
     nominations.clear();
     payees.clear();
+    payeePrefixes.clear();
     validatorPrefs.clear();
     minBonds.clear();
     eras.clear();
@@ -38,7 +40,18 @@ const chainMock = vi.hoisted(() => {
     for (const key of Object.keys(validators)) delete validators[key];
   };
 
-  return { ledgers, nominations, payees, validatorPrefs, minBonds, eras, exposurePages, validators, reset };
+  return {
+    ledgers,
+    nominations,
+    payees,
+    payeePrefixes,
+    validatorPrefs,
+    minBonds,
+    eras,
+    exposurePages,
+    validators,
+    reset,
+  };
 });
 
 vi.mock('@/domains/staking/staking/service', () => ({
@@ -62,8 +75,9 @@ vi.mock('@/domains/staking/nominations/service', () => ({
 
       return Promise.resolve(() => chainMock.minBonds.delete(api.chainId));
     },
-    subscribePayee: (api: { chainId: string }, _stashes: unknown, callback: never) => {
+    subscribePayee: (api: { chainId: string }, _stashes: unknown, callback: never, addressPrefix?: number) => {
       chainMock.payees.set(api.chainId, callback);
+      chainMock.payeePrefixes.set(api.chainId, addressPrefix);
 
       return Promise.resolve(() => chainMock.payees.delete(api.chainId));
     },
@@ -550,10 +564,14 @@ describe('aggregates/staking-positions', () => {
   });
 
   it('subscribes to reward destinations with the chain address prefix', async () => {
-    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+    // A non-zero prefix, so a hardcoded `0` would not pass for the chain's own.
+    const chain: Chain = { ...polkadotChain, addressPrefix: 42 };
+    await makeScope({ chains: [chain], apis: { [POLKADOT_AH]: polkadotApi } });
 
     expect(chainMock.payees.has(POLKADOT_AH)).toBe(true);
-    expect(scope.getState(nominations.payeeResource.$cache)).toBeDefined();
+    // The prefix is what tells the payee request apart from the nominations
+    // one: the service SS58-encodes the `Account` destination with it.
+    expect(chainMock.payeePrefixes.get(POLKADOT_AH)).toBe(42);
   });
 
   it('threads the reward destination into positions and tells unread from none', async () => {
