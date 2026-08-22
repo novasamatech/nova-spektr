@@ -4,6 +4,7 @@ import { Provider } from 'effector-react';
 
 import { type Wallet, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
@@ -249,5 +250,38 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     expect(chip.querySelector('[data-testid="prefix"]')).not.toBeInTheDocument();
 
     unwatch();
+  });
+
+  test('should show Restaked when rewards are staked', async () => {
+    renderDrawer({ ...row, payee: 'Staked', payeeLoaded: true });
+
+    expect(await screen.findByText('Rewards')).toBeInTheDocument();
+    expect(screen.getByText('Restaked')).toBeInTheDocument();
+  });
+
+  test('should name the stash with its short address when rewards go to the stash', async () => {
+    renderDrawer({ ...row, payee: 'Stash', payeeLoaded: true });
+
+    // The header normally shows the wallet name ("My Vault"); should name
+    // resolution fall back to the account name, "Stash" appears twice.
+    expect((await screen.findAllByText('Stash')).length).toBeGreaterThanOrEqual(1);
+    // The short stash address under the label — the header may render the same
+    // string, so the assertion is "at least the cell", not "exactly once".
+    const shortStash = toShortAddress(toAddress(accountId, { prefix: polkadotAssetHubChain.addressPrefix }));
+    expect(screen.getAllByText(shortStash).length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('should show the legacy Controller destination read-only', async () => {
+    renderDrawer({ ...row, payee: 'Controller', payeeLoaded: true });
+
+    expect(await screen.findByText('Controller')).toBeInTheDocument();
+  });
+
+  test('should shimmer while the destination is unread and never claim Restaked', async () => {
+    renderDrawer({ ...row, payee: null, payeeLoaded: false });
+
+    expect(await screen.findByText('Rewards')).toBeInTheDocument();
+    expect(screen.queryByText('Restaked')).not.toBeInTheDocument();
+    expect(screen.queryByText('Stash')).not.toBeInTheDocument();
   });
 });

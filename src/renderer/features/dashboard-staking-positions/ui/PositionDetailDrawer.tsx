@@ -23,6 +23,7 @@ import { type PositionAction, positionActions } from '../model/position-actions'
 
 import { NominationsTable } from './NominationsTable';
 import { PositionStatusPill } from './PositionStatusPill';
+import { RewardsDestinationCell } from './RewardsDestinationCell';
 import { ValidatorStatsSection } from './ValidatorStatsSection';
 import { toSigningMode } from './signing-mode';
 
@@ -310,6 +311,15 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                         total: row.nominationCount,
                       })}
                 </FootnoteText>
+              </StatCell>
+
+              <StatCell label={t('dashboard.staking.positions.detail.stats.rewards')}>
+                <RewardsDestinationCell
+                  payee={row.payee}
+                  payeeLoaded={row.payeeLoaded}
+                  chain={row.chain}
+                  stash={row.position.stake.stash}
+                />
               </StatCell>
             </div>
 
