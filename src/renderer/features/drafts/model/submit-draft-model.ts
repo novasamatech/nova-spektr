@@ -125,6 +125,12 @@ const $isRiskAcknowledged = createStore(false)
   .on(riskAcknowledgedToggled, (_, checked) => checked)
   .reset([flowStarted, flowFinished]);
 
+const $recipientRiskAccepted = combine(
+  $recipientWarning,
+  $isRiskAcknowledged,
+  (warning, acknowledged) => warning === 'none' || acknowledged,
+);
+
 // --- Late call-data entry (drafts created with the call-data step skipped) ---
 
 const callDataChanged = createEvent<string>();
@@ -568,8 +574,11 @@ sample({
 
 // --- Step transitions ---
 
+// Both `startSigning` consumers are gated on the recipient acknowledgement,
+// so the Sign button's `disabled` is not the only thing standing in the way.
 sample({
   clock: confirmModel.startSigning,
+  filter: $recipientRiskAccepted,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
@@ -644,6 +653,7 @@ const sign = sample({
     chain: $chain,
     signatory: $signatoryStore,
   },
+  filter: $recipientRiskAccepted,
   fn({ wrappedTx, api, chain, signatory }) {
     if (nullable(api) || nullable(wrappedTx) || nullable(chain) || nullable(signatory)) return null;
 
@@ -860,6 +870,7 @@ export const submitDraftModel = {
   $destinationAccountId,
   $recipientWarning,
   $isRiskAcknowledged,
+  $recipientRiskAccepted,
   $savingCallData: submitCallDataFx.pending,
 
   flowStarted,

@@ -673,6 +673,8 @@ describe('Submit Draft — submit & edit flows', () => {
         feature: 'Submit Draft',
         story: 'Unknown recipient gate',
       });
+      // Factory mocks survive `vi.restoreAllMocks`; pin the default so tests don't depend on order.
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(null);
     });
 
     const directPath: PathNode[] = [
@@ -772,6 +774,31 @@ describe('Submit Draft — submit & edit flows', () => {
       await startFlow(draft);
 
       expect(env.getState(submitDraftModel.$recipientWarning)).toBe('unverifiable');
+    });
+
+    it('refuses to start signing until an unknown recipient is acknowledged', async () => {
+      seamSpies();
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+      expect(env.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
+
+      await allSettled(submitDraftModel.confirmModel.startSigning, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      expect(env.getState(submitDraftModel.$recipientRiskAccepted)).toBe(true);
+
+      await allSettled(submitDraftModel.confirmModel.startSigning, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.SIGN);
     });
 
     it('drops the acknowledgement when late-filled call data replaces the draft', async () => {

@@ -5,7 +5,11 @@ import { isHex } from '@/shared/lib/utils';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { findCoreTransaction } from '@/entities/transaction';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { graphModel, pathModel } from '@/features/signing-path';
+import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
+import { getDestinationAccountId } from '../lib/get-destination-account-id';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
@@ -91,6 +95,40 @@ const $description = createStore<string>('')
 const $isRiskAcknowledged = createStore(false)
   .on(riskAcknowledgedToggled, (_, checked) => checked)
   .reset([createDraftRequested, modalClosed, callDataChanged, chainSelected]);
+
+// --- Unknown recipient gate ---
+
+const $api = combine($selectedChain, networkModel.$apis, (chain, apis) =>
+  chain ? (apis[chain.chainId] ?? null) : null,
+);
+
+const $decodedTransaction = combine(
+  { callData: $callData, path: pathModel.$path, api: $api, chain: $selectedChain },
+  ({ callData, path, api, chain }) =>
+    decodeDraftTransaction({ callData, originAccountId: getPathOriginAccountId(path), api, chain }),
+);
+
+const $destinationAccountId = $decodedTransaction.map((transaction) =>
+  getDestinationAccountId(findCoreTransaction(transaction)),
+);
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveWarning,
+  $destinationAccountId,
+  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+);
+
+// "Can't check" is not "nothing to check": with call data on hand but no chain
+// api, the recipient is simply unknown — never silently treated as safe.
+const $isRecipientCheckable = combine(
+  { mode: recipientVerificationModel.$mode, callData: $callData, api: $api },
+  ({ mode, callData, api }) => mode === 'off' || callData.length === 0 || api !== null,
+);
+
+const $recipientRiskAccepted = combine(
+  { warning: $recipientWarning, acknowledged: $isRiskAcknowledged, checkable: $isRecipientCheckable },
+  ({ warning, acknowledged, checkable }) => checkable && (warning === 'none' || acknowledged),
+);
 
 sample({
   clock: createDraftRequested,
@@ -199,6 +237,11 @@ export const createDraftModel = {
   $selectedChain,
   $description,
   $isRiskAcknowledged,
+  $decodedTransaction,
+  $destinationAccountId,
+  $recipientWarning,
+  $isRecipientCheckable,
+  $recipientRiskAccepted,
   $callDataErrorKey,
   $isDescriptionTooLong,
   $isDirty,

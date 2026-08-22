@@ -1,14 +1,24 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type Scope, allSettled, fork } from 'effector';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { type DecodedTransaction, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { authModel, connectionHistoryModel } from '@/aggregates/backend';
 import { pathModel } from '@/features/signing-path';
+import type * as DecodeDraft from '../lib/decode-draft-transaction';
+import { decodeDraftTransaction } from '../lib/decode-draft-transaction';
 
 import { type DraftSeed, DESCRIPTION_MAX_LENGTH, STEPS_ORDER, createDraftModel } from './create-draft-model';
+
+vi.mock('../lib/decode-draft-transaction', async (importOriginal) => ({
+  ...(await importOriginal<typeof DecodeDraft>()),
+  decodeDraftTransaction: vi.fn(() => null),
+}));
 
 const acc = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
 const signer = (accountId: AccountId): PathNode => ({ kind: 'signer', accountId });
@@ -336,5 +346,76 @@ describe('createDraftModel · unknown recipient acknowledgement', () => {
     await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
     await open(scope, { chainId: CHAIN_A, callData: VALID_CALL_DATA, path: COMPLETE_PATH });
     expect(scope.getState(createDraftModel.$isRiskAcknowledged)).toBe(false);
+  });
+});
+
+describe('createDraftModel · unknown recipient gate', () => {
+  const STRANGER = acc(9);
+  const transferToStranger = {
+    type: TransactionType.TRANSFER,
+    section: 'balances',
+    method: 'transferKeepAlive',
+    chainId: CHAIN_A,
+    address: '',
+    args: { dest: STRANGER, value: '1' },
+  } as unknown as DecodedTransaction;
+  const healthyBook = { accountId: acc(8), accountName: 'Backend user', permissions: [] };
+  const seed: DraftSeed = { chainId: CHAIN_A, callData: VALID_CALL_DATA, path: COMPLETE_PATH };
+
+  const forkConnected = (withApi: boolean) =>
+    fork({
+      values: new Map()
+        .set(networkModel.$chains, { [CHAIN_A]: chainA })
+        .set(networkModel.$apis, withApi ? { [CHAIN_A]: {} as ApiPromise } : {})
+        .set(connectionHistoryModel.$hasEverConnected, true)
+        .set(authModel.$authState, healthyBook),
+    });
+
+  beforeEach(() => {
+    vi.mocked(decodeDraftTransaction).mockReset();
+    vi.mocked(decodeDraftTransaction).mockReturnValue(null);
+  });
+
+  it('blocks Create for an unknown recipient until acknowledged', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferToStranger);
+    const scope = forkConnected(true);
+    await open(scope, seed);
+
+    expect(scope.getState(createDraftModel.$destinationAccountId)).toBe(STRANGER);
+    expect(scope.getState(createDraftModel.$recipientWarning)).toBe('unknown');
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(false);
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
+  });
+
+  it('accepts a draft with no recipient to check', async () => {
+    const scope = forkConnected(true);
+    await open(scope, seed);
+
+    expect(scope.getState(createDraftModel.$destinationAccountId)).toBeNull();
+    expect(scope.getState(createDraftModel.$recipientWarning)).toBe('none');
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
+  });
+
+  it('never treats "cannot check yet" as safe: no chain api + call data blocks Create even when ticked', async () => {
+    const scope = forkConnected(false);
+    await open(scope, seed);
+
+    expect(scope.getState(createDraftModel.$isRecipientCheckable)).toBe(false);
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(false);
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(false);
+  });
+
+  it('does not require the chain api while recipient verification is off', async () => {
+    const scope = fork({
+      values: new Map().set(networkModel.$chains, { [CHAIN_A]: chainA }).set(networkModel.$apis, {}),
+    });
+    await open(scope, seed);
+
+    expect(scope.getState(createDraftModel.$isRecipientCheckable)).toBe(true);
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
   });
 });

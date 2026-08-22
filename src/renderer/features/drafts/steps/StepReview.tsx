@@ -29,6 +29,11 @@ type Props = {
   operationIcon: IconNames | null;
   destinationAccountId: AccountId | null;
   recipientWarning: RecipientWarning;
+  /**
+   * Call data is on hand but the chain api isn't — the recipient can't be
+   * checked yet.
+   */
+  recipientCheckPending: boolean;
   riskAcknowledged: boolean;
   onRiskAcknowledgedChange: (checked: boolean) => void;
   description: string;
@@ -49,6 +54,7 @@ export const StepReview = ({
   operationIcon,
   destinationAccountId,
   recipientWarning,
+  recipientCheckPending,
   riskAcknowledged,
   onRiskAcknowledgedChange,
   description,
@@ -127,6 +133,12 @@ export const StepReview = ({
         checked={riskAcknowledged}
         onToggle={onRiskAcknowledgedChange}
       />
+
+      {recipientCheckPending && (
+        <FootnoteText className="text-center text-text-tertiary">
+          {t('operations.drafts.recipientCheckPending')}
+        </FootnoteText>
+      )}
 
       {!callData && (
         <FootnoteText className="text-center text-text-tertiary">

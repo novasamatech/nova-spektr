@@ -22,7 +22,7 @@ import { Address, TransactionValidationError, UnknownRecipientAckBox, WalletIcon
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
-import { transactionService } from '@/domains/network';
+import { accounts, transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -146,6 +146,8 @@ const ConfirmStep = () => {
   const destinationAccountId = useUnit(submitDraftModel.$destinationAccountId);
   const recipientWarning = useUnit(submitDraftModel.$recipientWarning);
   const isRiskAcknowledged = useUnit(submitDraftModel.$isRiskAcknowledged);
+  const isRecipientRiskAccepted = useUnit(submitDraftModel.$recipientRiskAccepted);
+  const allAccounts = useUnit(accounts.$list);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -287,7 +289,9 @@ const ConfirmStep = () => {
   };
 
   const signingPath = draft?.signingPath ?? [];
-  const isRecipientRiskAccepted = recipientWarning === 'none' || isRiskAcknowledged;
+  // A recipient that is one of the user's own accounts resolves to its wallet name.
+  const destinationAccount = allAccounts.find((account) => account.accountId === destinationAccountId);
+  const destinationWallet = destinationAccount ? walletUtils.getWalletById(wallets, destinationAccount.walletId) : null;
 
   return (
     <>
@@ -361,7 +365,7 @@ const ConfirmStep = () => {
           </DetailRow>
           {destinationAccountId && (
             <DetailRow label={t('operation.details.recipient')}>
-              <NamedAccount variant="short" accountId={destinationAccountId} chain={chain} />
+              <NamedAccount variant="short" accountId={destinationAccountId} chain={chain} wallet={destinationWallet} />
             </DetailRow>
           )}
           <Separator className="border-filter-border" />

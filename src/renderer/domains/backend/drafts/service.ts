@@ -2,7 +2,7 @@ import { type HexString } from '@polkadot/util/types';
 import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
-import { type ChainId } from '@/shared/core';
+import { type CallData, type ChainId } from '@/shared/core';
 import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -43,7 +43,10 @@ const backendDraftSchema = z.object({
   proxyAccountId: accountIdStringSchema.nullable().optional(),
   proxyContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
   chainId: chainIdStringSchema,
-  callData: z.string().nullable(),
+  callData: z
+    .string()
+    .nullable()
+    .transform(v => v as CallData | null),
   decodedCallData: z.unknown().optional(),
   description: z.string().nullable(),
   createdBy: z.string(),
