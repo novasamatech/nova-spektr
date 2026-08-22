@@ -397,14 +397,15 @@ The list is split into three tabs, and an operation belongs to exactly one:
 The view opens on **Pending**; a deep link switches to the tab holding the focused operation; unhiding the last hidden
 operation switches back to Pending.
 
-**Merged scope.** When any **non-search filter** is active (status, network, type, proxy type, or date range), the tabs
-collapse into a single **"All operations"** pill showing the total matching count (drafts rows included when the drafts
-section is in scope), and the filter applies across all statuses at once — pending and resolved results appear together,
-each under its status section. Activating such a filter also normalizes the underlying tab to Pending, regardless of
-which tab was active beforehand — so the merged scope always includes the drafts section (subject to the Status filter,
-below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they then appear under
-a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search alone does not merge
-the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on Pending.
+**Merged scope.** When any **non-search filter** is active (Needs my signature, status, network, type, proxy type, or
+date range), the tabs collapse into a single **"All operations"** pill showing the total matching count (drafts rows
+included when the drafts section is in scope), and the filter applies across all statuses at once — pending and resolved
+results appear together, each under its status section. Activating such a filter also normalizes the underlying tab to
+Pending, regardless of which tab was active beforehand — so the merged scope always includes the drafts section (subject
+to the Status filter, below). Hidden operations join the merged scope only when the Status filter selects **Hidden** —
+they then appear under a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab.
+Search alone does not merge the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on
+Pending.
 
 ### Sections, sorting, and navigation
 
@@ -431,8 +432,14 @@ never toggles a sort.
   accounts, the contact name for contact-backed multisigs, with a short-address fallback.
 
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
-The list can be narrowed by **search** and five **filters**:
+The list can be narrowed by **search** and six **filters**:
 
+- **Needs my signature** — a checkbox, first in the filter bar. Keeps only operations still collecting approvals that a
+  local signatory can still act on — approve, or add the call data the final signing is waiting for. An operation every
+  local signatory has already signed (the row shows **Signed**), one awaiting its on-chain outcome, a contact-backed
+  multisig (no local keys), and any resolved operation never match. It is the same rule that shows the row's **Approve**
+  button, so the filter and the row can never disagree. Like every other non-search filter it merges the tabs into **All
+  operations**, is cleared by **Clear filters**, and is not remembered across app restarts.
 - **Search** — matches the names and addresses the row displays: the submitter (as shown in the Submitter column,
   resolved through custom name → contact → identity, not the raw stored name), the **initiator** — who submitted an
   operation, or who is assigned to submit a draft — and the call hash. Addresses are matched with the prefix the row
@@ -447,7 +454,8 @@ The list can be narrowed by **search** and five **filters**:
   the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (submitter,
   initiator, description or address) — while an active transaction-type or proxy-type filter puts every draft out of
   scope (a draft's call may be absent or undecoded), so the drafts section and the merged "All operations" count stay
-  consistent with the filtered list.
+  consistent with the filtered list. With **Needs my signature** on, the drafts section keeps only drafts whose assigned
+  initiator is a local account that can sign — a draft nobody local can initiate is not "mine".
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.
