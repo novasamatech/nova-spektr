@@ -74,6 +74,8 @@ const row: PositionRow = {
   activeValidatorCount: 0,
   nominationCount: 0,
   draftCount: 0,
+  payee: 'Staked',
+  payeeLoaded: true,
 };
 
 const renderDrawer = (drawerRow: PositionRow = row, wiredActions: PositionAction[] = ['changeValidators']) => {
