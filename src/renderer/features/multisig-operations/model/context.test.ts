@@ -661,6 +661,12 @@ describe('operations context model', () => {
 
       expect(scope.getState(operationsContextModel.$isFiltersSelected)).toBe(true);
     });
+
+    it('should start with the needs-my-signature toggle off', () => {
+      const scope = fork();
+
+      expect(scope.getState(operationsContextModel.$filter).needsMySignature).toBe(false);
+    });
   });
 
   describe('Sectioned operations', () => {

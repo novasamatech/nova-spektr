@@ -52,6 +52,7 @@ interface SelectedFilters {
   status: StatusFilterValue[];
   dateRange?: DateRange;
   searchQuery: string;
+  needsMySignature: boolean;
 }
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
@@ -73,6 +74,7 @@ const initialFilter: SelectedFilters = {
   status: [],
   dateRange: undefined,
   searchQuery: '',
+  needsMySignature: false,
 };
 
 const setFilter = createEvent<Partial<SelectedFilters>>();
@@ -333,6 +335,7 @@ const $filteredOperations = combine(
         tab,
         hiddenIds,
         searchMatchedIds,
+        needsMySignatureIds: null,
         isScopeMerged,
       }),
     );
