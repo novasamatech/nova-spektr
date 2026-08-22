@@ -34,6 +34,7 @@ import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
+import { resolveSubmitDraftScreen } from '../lib/submit-draft-screen';
 import { submitDraftModel } from '../model/submit-draft-model';
 
 type Props = {
@@ -232,14 +233,20 @@ const ConfirmStep = () => {
   }, [draft, wallets]);
 
   const showSignatorySelect = signatories.length > 1;
-  // A path we can't follow is the more specific problem, and it usually *causes*
-  // the empty signatory list (the wallet holds no account for the path's leaf).
-  // Reporting "this wallet has no accounts" instead would send the user to add
-  // an account without saying which one.
-  const noSignatories = signatories.length === 0 && !wrappedTxError;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
-  if (noSignatories) {
+  // The order of these screens is a rule of its own — see `resolveSubmitDraftScreen`.
+  const screen = resolveSubmitDraftScreen({
+    hasConfirm: nonNullable(confirm),
+    signatoryCount: signatories.length,
+    hasError: wrappedTxError,
+    showError: showWrappedTxError,
+    errorKind: wrappedTxErrorKind,
+    missingAccountId,
+    hasChain: nonNullable(missingAccountChain),
+  });
+
+  if (screen.kind === 'no-signatories') {
     return (
       <>
         <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
@@ -266,61 +273,54 @@ const ConfirmStep = () => {
     );
   }
 
-  if (!confirm) {
-    if (showWrappedTxError) {
-      // Name the account the path needs: "add this one and the draft becomes
-      // submittable" is actionable, "the path is unresolvable" is not. Falls
-      // back to the generic copy when the resolver couldn't point at a node
-      // (e.g. the whole path is malformed).
-      if (wrappedTxErrorKind === 'signing-path-unresolved' && missingAccountId && missingAccountChain) {
-        return (
-          <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-            <Icon className="text-icon-negative" name="warnCutout" size={60} />
-            <Box gap={2} horizontalAlign="center">
-              <FootnoteText align="center" className="text-text-primary">
-                {t('operations.drafts.signingPathAccountMissing')}
-              </FootnoteText>
-              <NamedAccount variant="short" accountId={missingAccountId} chain={missingAccountChain} />
-              <FootnoteText align="center" className="text-text-tertiary">
-                {t('operations.drafts.signingPathAccountMissingHint')}
-              </FootnoteText>
-            </Box>
-          </Box>
-        );
-      }
-
-      // A draft saved without a signing path can't be submitted at all: there
-      // is no route to follow and discovering one would sign through a path
-      // nobody agreed on. Nothing to fix locally — say so and offer the exit.
-      if (wrappedTxErrorKind === 'signing-path-missing') {
-        return (
-          <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-            <Icon className="text-icon-negative" name="warnCutout" size={60} />
-            <Box gap={2} horizontalAlign="center">
-              <FootnoteText align="center" className="text-text-primary">
-                {t('operations.drafts.signingPathMissing')}
-              </FootnoteText>
-              <FootnoteText align="center" className="text-text-tertiary">
-                {t('operations.drafts.signingPathMissingHint')}
-              </FootnoteText>
-            </Box>
-          </Box>
-        );
-      }
-
-      const messageKey =
-        wrappedTxErrorKind === 'signing-path-unresolved'
-          ? 'operations.drafts.signingPathUnresolved'
-          : 'operations.drafts.extrinsicError';
-
-      return (
-        <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
-          <Icon className="text-icon-negative" name="warnCutout" size={60} />
-          <FootnoteText className="text-text-tertiary">{t(messageKey)}</FootnoteText>
+  // Name the account the path needs: "add this one and the draft becomes
+  // submittable" is actionable, "the path is unresolvable" is not.
+  if (screen.kind === 'missing-account' && missingAccountChain) {
+    return (
+      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <Box gap={2} horizontalAlign="center">
+          <FootnoteText align="center" className="text-text-primary">
+            {t('operations.drafts.signingPathAccountMissing')}
+          </FootnoteText>
+          <NamedAccount variant="short" accountId={screen.accountId} chain={missingAccountChain} />
+          <FootnoteText align="center" className="text-text-tertiary">
+            {t('operations.drafts.signingPathAccountMissingHint')}
+          </FootnoteText>
         </Box>
-      );
-    }
+      </Box>
+    );
+  }
 
+  // A draft saved without a signing path can't be submitted at all: there is no
+  // route to follow and discovering one would sign through a path nobody agreed
+  // on. Nothing to fix locally — say so and point at the way out.
+  if (screen.kind === 'missing-path') {
+    return (
+      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <Box gap={2} horizontalAlign="center">
+          <FootnoteText align="center" className="text-text-primary">
+            {t('operations.drafts.signingPathMissing')}
+          </FootnoteText>
+          <FootnoteText align="center" className="text-text-tertiary">
+            {t('operations.drafts.signingPathMissingHint')}
+          </FootnoteText>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (screen.kind === 'error') {
+    return (
+      <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <FootnoteText className="text-text-tertiary">{t(screen.messageKey)}</FootnoteText>
+      </Box>
+    );
+  }
+
+  if (screen.kind === 'loading' || !confirm) {
     return (
       <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />

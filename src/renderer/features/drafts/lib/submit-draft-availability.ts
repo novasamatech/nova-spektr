@@ -1,16 +1,17 @@
 import { type Draft } from '@/domains/backend';
+import { isUsablePath } from '@/features/signing-path';
 
 export type DraftSubmitGate = { canSubmit: true; reasonKey: null } | { canSubmit: false; reasonKey: string };
 
 /**
  * A draft is submittable only along the route it was authored with, so it needs
- * a saved path of at least two nodes (a source and a signer). Legacy drafts
- * predate the field and drafts with a truncated path were never completable —
- * both used to fall back to automatic route discovery, which is exactly the
- * silent re-routing the path is there to prevent.
+ * a path that can be followed. Legacy drafts predate the field and drafts with
+ * a truncated path were never completable — both used to fall back to automatic
+ * route discovery, which is exactly the silent re-routing the path is there to
+ * prevent. What counts as followable is `signing-path`'s rule, not ours.
  */
 export function hasSigningPath(draft: Pick<Draft, 'signingPath'>): boolean {
-  return Array.isArray(draft.signingPath) && draft.signingPath.length >= 2;
+  return isUsablePath(draft.signingPath);
 }
 
 export function getDraftSubmitGate(

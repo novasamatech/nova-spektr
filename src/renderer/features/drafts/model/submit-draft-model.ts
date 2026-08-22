@@ -43,9 +43,11 @@ import { recipientVerificationModel } from '@/aggregates/recipient-verification'
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
-import { createPathResolutionStore } from '@/features/signing-path';
+import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
 import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
+import { preserveSigningPath } from '../lib/preserve-signing-path';
+import { type SubmitDraftErrorKind } from '../lib/submit-draft-screen';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
@@ -175,20 +177,11 @@ sample({
 
 // Replace $draft with the server-confirmed version so $transaction picks up
 // the new callData and the rest of the flow proceeds as if it were never
-// missing. The saved path is carried over when the PATCH response doesn't echo
-// one: `signingPath` parses with a `[]` default, and an empty path now means
-// "unsubmittable", so a trimmed response would brick the draft the user is in
-// the middle of completing.
-const withPreservedPath = (updated: Draft, current: Draft | null): Draft => {
-  if (updated.signingPath.length > 0 || nullable(current) || current.signingPath.length === 0) return updated;
-
-  return { ...updated, signingPath: current.signingPath };
-};
-
+// missing — keeping the saved path if the response doesn't echo one.
 sample({
   clock: submitCallDataFx.doneData,
   source: $draft,
-  fn: (current, updated) => withPreservedPath(updated, current),
+  fn: (current, updated) => preserveSigningPath(updated, current),
   target: [$draft, draftsResource.draftUpdated],
 });
 
@@ -232,7 +225,7 @@ const $initiator = combine(
 // drafts are not submittable (`hasSigningPath` gates the row's button too).
 const $pathMissingError = combine(
   { draft: $draft, saved: $draftSigningPath },
-  ({ draft, saved }) => nonNullable(draft) && saved.length < 2,
+  ({ draft, saved }) => nonNullable(draft) && !isUsablePath(saved),
 );
 
 // Draft has a non-trivial saved path but it can't be resolved against the
@@ -243,7 +236,8 @@ const $pathMissingError = combine(
 // ever surfaces a non-null route before chain settles.
 const $pathUnresolvedError = combine(
   { saved: $draftSigningPath, resolved: $pathRoute, chain: $chain },
-  ({ saved, resolved, chain }) => chain !== null && saved.length >= 2 && (resolved === null || resolved.length < 2),
+  ({ saved, resolved, chain }) =>
+    chain !== null && isUsablePath(saved) && (resolved === null || resolved.length < MIN_PATH_LENGTH),
 );
 
 const $pathResolutionError = combine(
@@ -273,7 +267,7 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
-type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved' | 'signing-path-missing';
+type WrappedTxErrorKind = SubmitDraftErrorKind;
 const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStarted);
 // Derived so it always reflects the current path-resolution and extrinsic
 // state. A sample-based "set once" store would stick after a transient init

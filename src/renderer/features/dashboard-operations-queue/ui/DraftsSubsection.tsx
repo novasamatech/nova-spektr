@@ -97,15 +97,20 @@ const DraftQueueRow = ({ draft, chain, wallet, gate, onSubmit }: DraftQueueRowPr
       action={
         <Tooltip open={gate.canSubmit ? false : undefined}>
           <Tooltip.Trigger>
-            <Button
-              size="sm"
-              variant="fill"
-              className="w-[104px]"
-              disabled={!gate.canSubmit}
-              onClick={() => onSubmit(draft)}
-            >
-              {t('operations.drafts.submitButton')}
-            </Button>
+            {/* A disabled button emits no pointer events, so the tooltip needs a
+                wrapper to hang the trigger on — otherwise the reason the action
+                is unavailable never reaches the user. */}
+            <div>
+              <Button
+                size="sm"
+                variant="fill"
+                className="w-[104px]"
+                disabled={!gate.canSubmit}
+                onClick={() => onSubmit(draft)}
+              >
+                {t('operations.drafts.submitButton')}
+              </Button>
+            </div>
           </Tooltip.Trigger>
           <Tooltip.Content>{gate.reasonKey ? t(gate.reasonKey) : ''}</Tooltip.Content>
         </Tooltip>

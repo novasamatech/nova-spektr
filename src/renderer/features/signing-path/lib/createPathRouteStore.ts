@@ -7,6 +7,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { createSyntheticProxiedAccount, scopeProxiedAccount } from './path-account-resolution';
+import { isUsablePath } from './path-validation';
 
 /**
  * A flex multisig answers to two accountIds — `accountId` is the pure-proxy
@@ -87,8 +88,8 @@ export type PathResolution = {
   route: AnyAccount[] | null;
   /**
    * The first node with no matching local account. Non-null only when the path
-   * itself is resolvable in principle (length >= 2) but an account is missing,
-   * so callers can name the account the user has to add.
+   * itself is usable (see `isUsablePath`) but an account is missing, so callers
+   * can name the account the user has to add.
    */
   missingNode: PathNode | null;
 };
@@ -105,7 +106,7 @@ export const createPathResolutionStore = (
   combine(
     { path: signingPath, allAccounts: accounts.$list, chainValue: chain },
     ({ path, allAccounts, chainValue }): PathResolution => {
-      if (nullable(chainValue) || path.length < 2) return { route: null, missingNode: null };
+      if (nullable(chainValue) || !isUsablePath(path)) return { route: null, missingNode: null };
 
       const chainAccounts = accountService.filterAccountsOnChain(allAccounts, chainValue);
 
@@ -139,8 +140,10 @@ export const createPathResolutionStore = (
 
 /**
  * Resolves `$signingPath` to `AnyAccount[]` for `createComplexTxStore`'s
- * `routeOverride`. Returns null for trivial paths or unresolvable nodes — the
- * tx store falls back to its BFS route in that case.
+ * `routeOverride`. Returns null for trivial paths or unresolvable nodes; what
+ * happens then is the caller's call — operation forms fall back to their BFS
+ * route, draft submission blocks instead (a draft may only be signed along the
+ * route its authors agreed on).
  */
 export const createPathRouteStore = (
   signingPath: Store<PathNode[]>,

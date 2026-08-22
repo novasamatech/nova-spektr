@@ -306,6 +306,14 @@ function buildSources(
   //    `multisigAccountId`, so the path it produces is `proxied → multisig →
   //    signer` (same shape as pure proxy + multisig). $multisigByAccountId
   //    already keys the inner multisig; here we register the facade itself.
+  // A flex multisig is keyed in `multisigByAccountId` under its *inner*
+  // multisig, so without the `isFlexInnerOnly` skip below it would also be
+  // offered as a stand-alone multisig source — the same wallet twice, under two
+  // addresses. Picking that entry builds a `multisig(inner) → signer` path that
+  // resolves to nothing (the local account is the facade, not the inner
+  // multisig), leaving a draft that can never be submitted. It stays offered
+  // when the inner multisig also exists as a multisig of its own: then it is a
+  // real, separate origin.
   const flexInnerMultisigIds = new Set<AccountId>();
   for (const account of accountList) {
     if (!accountUtils.isFlexibleMultisigAccount(account)) continue;
@@ -323,16 +331,12 @@ function buildSources(
     });
   }
 
-  // A flex multisig is keyed in `multisigByAccountId` under its *inner*
-  // multisig, so without this it would also be offered as a stand-alone
-  // multisig source — the same wallet twice, under two addresses. Picking that
-  // entry builds a `multisig(inner) → signer` path that resolves to nothing
-  // (the local account is the facade, not the inner multisig), leaving a draft
-  // that can never be submitted. It stays offered when the inner multisig also
-  // exists as a multisig of its own: then it is a real, separate origin.
-  const standaloneMultisigIds = new Set(
-    accountList.filter(accountUtils.isMultisigAccount).map((account) => account.accountId),
-  );
+  // Only worth a second pass over the accounts when a flex multisig is actually
+  // in play — most wallets have none.
+  const standaloneMultisigIds =
+    flexInnerMultisigIds.size > 0
+      ? new Set(accountList.filter(accountUtils.isMultisigAccount).map((account) => account.accountId))
+      : new Set<AccountId>();
   const isFlexInnerOnly = (accountId: AccountId) =>
     flexInnerMultisigIds.has(accountId) && !standaloneMultisigIds.has(accountId);
 

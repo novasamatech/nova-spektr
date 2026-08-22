@@ -1,6 +1,6 @@
 # Signing path
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 

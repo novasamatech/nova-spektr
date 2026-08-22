@@ -49,6 +49,7 @@ type DraftRowProps = {
   onDelete: (id: string) => void;
   onEdit: (draft: Draft) => void;
   onSubmit: (draft: Draft) => void;
+  onRecreate: (draft: Draft) => void;
 };
 
 const DraftDescription = ({ description }: { description: string | null | undefined }) => {
@@ -82,6 +83,7 @@ export const DraftRow = ({
   onDelete,
   onEdit,
   onSubmit,
+  onRecreate,
 }: DraftRowProps) => {
   const { t, formatDate } = useI18n();
   const isAuthenticated = useUnit(authModel.$isAuthenticated);
@@ -254,8 +256,9 @@ export const DraftRow = ({
                       </CaptionText>
                     </div>
                   ) : !hasSigningPath(draft) ? (
-                    // Terminal state: no route to follow and no fallback, so the
-                    // button is disabled here rather than in the submit dialog.
+                    // Terminal state: there is no route to follow and no fallback,
+                    // so submitting is off the table — the only way forward is a
+                    // new draft seeded from this one.
                     <Tooltip>
                       <Tooltip.Trigger>
                         <div>
@@ -263,28 +266,37 @@ export const DraftRow = ({
                             size="sm"
                             variant="fill"
                             className="w-full min-w-0 truncate whitespace-nowrap"
-                            disabled
+                            disabled={!canWrite}
+                            onClick={() => onRecreate(draft)}
                           >
-                            {t('operations.drafts.submitButton')}
+                            {t('operations.drafts.recreateButton')}
                           </Button>
                         </div>
                       </Tooltip.Trigger>
-                      <Tooltip.Content>{t('operations.drafts.signingPathMissingTooltip')}</Tooltip.Content>
+                      <Tooltip.Content>
+                        {canWrite
+                          ? t('operations.drafts.signingPathMissingTooltip')
+                          : t('operations.drafts.noWritePermission')}
+                      </Tooltip.Content>
                     </Tooltip>
                   ) : !hasInitiator ? (
                     <WalletPairingOperationTrigger tooltipContent={t('operation.addWalletTooltipMultisig')} />
                   ) : !draft.callData ? (
                     <Tooltip open={canWrite && isAuthenticated ? false : undefined}>
                       <Tooltip.Trigger>
-                        <Button
-                          size="sm"
-                          variant="fill"
-                          className="w-full min-w-0 truncate whitespace-nowrap"
-                          disabled={!isAuthenticated || !canWrite}
-                          onClick={() => onSubmit(draft)}
-                        >
-                          {t('operations.drafts.addCallDataButton')}
-                        </Button>
+                        {/* A disabled button emits no pointer events, so the
+                            tooltip needs a wrapper to hang the trigger on. */}
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="fill"
+                            className="w-full min-w-0 truncate whitespace-nowrap"
+                            disabled={!isAuthenticated || !canWrite}
+                            onClick={() => onSubmit(draft)}
+                          >
+                            {t('operations.drafts.addCallDataButton')}
+                          </Button>
+                        </div>
                       </Tooltip.Trigger>
                       <Tooltip.Content>
                         {!isAuthenticated
@@ -295,15 +307,17 @@ export const DraftRow = ({
                   ) : (
                     <Tooltip open={isAuthenticated ? false : undefined}>
                       <Tooltip.Trigger>
-                        <Button
-                          size="sm"
-                          variant="fill"
-                          className="w-full min-w-0 truncate whitespace-nowrap"
-                          disabled={!isAuthenticated}
-                          onClick={() => onSubmit(draft)}
-                        >
-                          {t('operations.drafts.submitButton')}
-                        </Button>
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="fill"
+                            className="w-full min-w-0 truncate whitespace-nowrap"
+                            disabled={!isAuthenticated}
+                            onClick={() => onSubmit(draft)}
+                          >
+                            {t('operations.drafts.submitButton')}
+                          </Button>
+                        </div>
                       </Tooltip.Trigger>
                       <Tooltip.Content>{t('operations.drafts.connectToSubmit')}</Tooltip.Content>
                     </Tooltip>

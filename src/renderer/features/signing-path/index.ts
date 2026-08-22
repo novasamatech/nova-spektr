@@ -7,9 +7,11 @@ export { pathToTxWrappers } from './lib/pathToTxWrappers';
 export { collectSignerAccountIds, isSignerAccount } from './lib/signer-accounts';
 export {
   MAX_PATH_DEPTH,
+  MIN_PATH_LENGTH,
   deriveInitiatorAccountId,
   deriveMultisigAccountId,
   isCycleFreeAppend,
+  isUsablePath,
   isValidPath,
 } from './lib/path-validation';
 export { StepPath } from './ui/StepPath';

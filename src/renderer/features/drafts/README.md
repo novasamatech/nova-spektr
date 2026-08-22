@@ -58,13 +58,13 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
 - **Actions** — one primary control:
 
-  | Primary control       | When                                                                                           |
-  | --------------------- | ---------------------------------------------------------------------------------------------- |
-  | **Submitted** badge   | The draft was just submitted in this session (it disappears from the list on the next refresh) |
-  | **Submit** (disabled) | The draft has no saved signing path — permanently unsubmittable, with the reason in a tooltip  |
-  | **Add wallet**        | No local account matches the draft's source — a pairing prompt instead of a submit button      |
-  | **Add call data**     | The draft has no call data yet — opens the submit flow at the call-data step                   |
-  | **Submit**            | Call data present and a local source account exists; disabled with a tooltip when signed out   |
+  | Primary control     | When                                                                                                                                                                    |
+  | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Submitted** badge | The draft was just submitted in this session (it disappears from the list on the next refresh)                                                                          |
+  | **Recreate**        | The draft has no saved signing path — it can never be submitted, so the action starts a new draft seeded with its chain, call data and note (write permission required) |
+  | **Add wallet**      | No local account matches the draft's source — a pairing prompt instead of a submit button                                                                               |
+  | **Add call data**   | The draft has no call data yet — opens the submit flow at the call-data step                                                                                            |
+  | **Submit**          | Call data present and a local source account exists; disabled with a tooltip when signed out                                                                            |
 
 Like an operation row, a draft row **expands** into three panels; the secondary actions live in their headers:
 
@@ -151,10 +151,10 @@ operation every co-signer then sees in the operations table.
   draft's description. A **Submitted** badge shows until the backend confirms.
 
 Submission is gated: the user must be signed in to the backend, the draft must carry a **saved signing path** (without
-one it is not submittable at all) and valid **call data** (otherwise the primary action is _Add call data_), and a local
-account matching the draft's source must exist (otherwise a wallet pairing prompt is shown). Whether the wallet also
-holds a usable signatory on the path is a separate, later check inside the submit flow (see
-[States / scenarios](#states--scenarios)).
+one it is not submittable at all — the row offers _Recreate_ instead) and valid **call data** (otherwise the primary
+action is _Add call data_), and a local account matching the draft's source must exist (otherwise a wallet pairing
+prompt is shown). Whether the wallet also holds a usable signatory on the path is a separate, later check inside the
+submit flow (see [States / scenarios](#states--scenarios)).
 
 ## Unknown recipient warnings
 
@@ -183,7 +183,7 @@ with no multisig hop) are covered the same way as multisig ones.
 
 | State                           | When it appears                                                                                                                      | What the user sees                                                                                                                                                                                                |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No signing path                 | The draft was saved without a usable path (legacy draft, or fewer than two nodes)                                                    | Submit is **disabled in the row**; opening the flow from a stale surface shows "this draft has no signing path — recreate it"                                                                                     |
+| No signing path                 | The draft was saved without a usable path (legacy draft, or fewer than two nodes)                                                    | The row offers **Recreate** instead of Submit — a new draft seeded from this one, where the author picks the signing path. Reaching the submit flow from a stale surface explains the same thing                  |
 | Path unresolvable               | Any account on the saved path has no local counterpart (a wallet on the route was removed, or the draft was authored by a co-signer) | The flow is **blocked**: the submitter is shown _which_ account is missing — name and address — and told to add it to submit along this path. The transaction is never built, so there is no Sign button to press |
 | Extrinsic build failure         | Wrapping the call fails                                                                                                              | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)                                                                                                                             |
 | No signatories                  | The wallet holds no account that can sign                                                                                            | An empty-account warning, with an add-account affordance for Polkadot Vault                                                                                                                                       |
