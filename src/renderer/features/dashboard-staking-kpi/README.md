@@ -160,9 +160,16 @@ per combination. Only the **period** changes a request, because it changes which
 
 ### The period tabs
 
-`7d / 30d / All time` sit on the rewards drill-down and move **two** things: the earned attribution window (the donut
-and the Earned column), and the CSV export. They deliberately do **not** filter the claim: a payout expires by **era**,
-not by date, and hiding part of what is still claimable behind a date filter hides money.
+`7d / 30d / All time / Custom` sit on the rewards drill-down and move **two** things: the earned attribution window (the
+donut and the Earned column), and the CSV export. They deliberately do **not** filter the claim: a payout expires by
+**era**, not by date, and hiding part of what is still claimable behind a date filter hides money.
+
+**Custom** opens a date-range picker, and only then — a date field sitting next to "30d" invites the user to set both
+and wonder which one won. Both ends of the range are inclusive of the whole day, so 1 Jul – 31 Jul is 31 days, and a
+half-picked or not-yet-picked range is a real state: nothing is fetched or reported until both ends land — the table
+gives way to a "Pick dates" hint and the export is disabled — because an open-ended window would quietly read as "all
+time" behind a tab that says "custom". A range that ends in the past still costs the eras since it **started** — eras
+are counted backwards from the active one, so a July window looked at in September replays September's eras too.
 
 There is deliberately **no "received in period" figure** next to the tabs. Received (actual payouts, on the indexer's
 timestamps) and earned (the eras' arithmetic) are different facts on different clocks — old eras claimed inside the
