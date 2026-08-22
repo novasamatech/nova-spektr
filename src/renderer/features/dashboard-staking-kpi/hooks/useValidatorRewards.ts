@@ -12,7 +12,7 @@ import {
   rewardsService,
 } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { type RewardWindow, erasInWindow } from '../lib/reward-period';
+import { type RewardWindow, windowEraRange } from '../lib/reward-period';
 
 import { useChainEras, useEraDurations } from './useChainEras';
 import { useResourcePool } from './useResourcePool';
@@ -77,17 +77,19 @@ export const useValidatorRewards = (positions: StakingPosition[], window: Reward
         continue;
       }
 
-      // The active era has not paid anything yet — its arithmetic is not final.
-      const eraTo = activeEra - 1;
-      const eraFrom = Math.max(0, eraTo - erasInWindow(window, eraDurations[chainId] ?? null, historyDepth) + 1);
-      if (eraTo < eraFrom) continue;
+      const eraRange = windowEraRange(window, {
+        activeEra,
+        eraDurationMs: eraDurations[chainId] ?? null,
+        historyDepth,
+      });
+      // Nothing closed inside the window — or nothing of it is still on chain.
+      if (!eraRange) continue;
 
       byChain.set(chainId, {
         chainId,
         api,
         stashes: [position.stake.stash],
-        eraFrom,
-        eraTo,
+        ...eraRange,
         rewardSources: rewardsService.collectChainRewardSources(chain, chains, 'staking-chain'),
       });
     }

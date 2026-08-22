@@ -133,9 +133,9 @@ export function erasInPeriod(period: RewardPeriod, eraDurationMs: number | null,
 /**
  * Same, for a window that may be a custom range.
  *
- * A range that ends in the past still has to be replayed from **now** back to
- * its start — eras are counted backwards from the active one, so a July window
- * looked at in September costs the eras since July, not the eras inside it.
+ * Counted from **now** back to the range's start — eras are numbered from the
+ * active one, so a July window looked at in September reaches back over the
+ * eras since July. `windowEraRange` trims the ones after its end off again.
  */
 export function erasInWindow(
   window: RewardWindow,
@@ -158,4 +158,54 @@ export function erasInWindow(
   if (days === null) return historyDepth;
 
   return Math.min(historyDepth, getErasInDays(days, eraDurationMs));
+}
+
+/** The eras a window is attributed over — both bounds inclusive. */
+export type EraRange = { eraFrom: number; eraTo: number };
+
+type ChainEraFacts = {
+  activeEra: number;
+  eraDurationMs: number | null;
+  historyDepth: number;
+};
+
+/**
+ * The closed eras of a chain that fall inside the window, `null` when none
+ * does.
+ *
+ * The active era is never part of it: it has not paid anything yet, so its
+ * arithmetic is not final. A preset therefore ends at the last closed era and
+ * reaches back `erasInWindow`; a custom range is trimmed on **both** sides —
+ * 1–31 Jul looked at on 22 Aug must not carry August's eras into a figure
+ * captioned "over the period". Era boundaries are only known to the day, so an
+ * era straddling either end is kept rather than dropped.
+ */
+export function windowEraRange(window: RewardWindow, chain: ChainEraFacts, now = Date.now()): EraRange | null {
+  const { activeEra, eraDurationMs, historyDepth } = chain;
+  const lastClosed = activeEra - 1;
+
+  const eraFrom = Math.max(0, lastClosed - erasInWindow(window, eraDurationMs, historyDepth, now) + 1);
+  const eraTo = lastClosed - erasSinceWindowEnd(window, eraDurationMs, now);
+
+  return eraTo < eraFrom ? null : { eraFrom, eraTo };
+}
+
+/**
+ * How many closed eras lie wholly after the window — the ones that closed
+ * between its end and now. Zero for every window that reaches now, which is
+ * every preset and a custom range whose end is today or still unpicked.
+ */
+function erasSinceWindowEnd(window: RewardWindow, eraDurationMs: number | null, now: number): number {
+  if (window.period !== 'custom' || !eraDurationMs || eraDurationMs <= 0) return 0;
+
+  const to = window.range?.to;
+  if (!to) return 0;
+
+  // The day after the last picked one, at midnight — the instant the window closed.
+  const elapsed = now - (startOfDayMs(to) + DAY_MS);
+  if (elapsed <= 0) return 0;
+
+  // The era the end falls into may still hold the window's last hours; only
+  // the eras entirely past it are dropped.
+  return Math.max(0, Math.ceil(elapsed / eraDurationMs) - 1);
 }
