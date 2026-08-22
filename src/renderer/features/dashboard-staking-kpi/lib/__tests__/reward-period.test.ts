@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { type RewardWindow, erasInPeriod, periodStart, windowEraRange } from '../reward-period';
+import {
+  type RewardWindow,
+  DEFAULT_REWARD_WINDOW,
+  erasInPeriod,
+  erasInWindow,
+  isWindowReady,
+  periodStart,
+  windowBounds,
+  windowDays,
+  windowEraRange,
+  windowSlug,
+} from '../reward-period';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HISTORY_DEPTH = 84;
@@ -16,6 +27,8 @@ const AUGUST_22 = new Date(2026, 7, 22);
 const NOW = new Date(2026, 7, 22, 12).getTime();
 
 const july: RewardWindow = { period: 'custom', range: { from: JULY_1, to: JULY_31 } };
+const halfPicked: RewardWindow = { period: 'custom', range: { from: JULY_1, to: undefined } };
+const emptyCustom: RewardWindow = { period: 'custom', range: null };
 const preset = (period: RewardWindow['period']): RewardWindow => ({ period, range: null });
 
 const polkadot = { activeEra: 100, eraDurationMs: DAY_MS, historyDepth: HISTORY_DEPTH };
@@ -112,5 +125,120 @@ describe('windowEraRange', () => {
 
   it('falls back to the whole depth when the era duration is unknown', () => {
     expect(windowEraRange(july, { ...polkadot, eraDurationMs: null }, NOW)).toEqual({ eraFrom: 16, eraTo: 99 });
+  });
+});
+
+describe('windowBounds', () => {
+  it('covers both picked days in full, in unix seconds', () => {
+    const { from, to } = windowBounds(july);
+
+    expect(from).toBe(Math.floor(JULY_1.getTime() / 1000));
+    expect(to).toBe(Math.floor((JULY_31.getTime() + DAY_MS - 1) / 1000));
+  });
+
+  it('keeps a half-picked range open-ended on the missing side', () => {
+    expect(windowBounds(halfPicked)).toEqual({ from: Math.floor(JULY_1.getTime() / 1000), to: null });
+    expect(windowBounds(emptyCustom)).toEqual({ from: null, to: null });
+  });
+
+  it('delegates presets to periodStart and never bounds them from above', () => {
+    const now = new Date('2026-07-31T12:00:00Z');
+
+    expect(windowBounds(preset('7d'), now)).toEqual({ from: periodStart('7d', now), to: null });
+    expect(windowBounds(preset('all'), now)).toEqual({ from: null, to: null });
+  });
+});
+
+describe('windowDays', () => {
+  it('counts both end days, so 1 Jul – 31 Jul is 31 days', () => {
+    expect(windowDays(july)).toBe(31);
+  });
+
+  it('counts a single-day range as one day', () => {
+    expect(windowDays({ period: 'custom', range: { from: JULY_1, to: JULY_1 } })).toBe(1);
+  });
+
+  it('has no length until both ends are picked', () => {
+    expect(windowDays(halfPicked)).toBeNull();
+    expect(windowDays(emptyCustom)).toBeNull();
+  });
+
+  it('keeps the preset lengths', () => {
+    expect(windowDays(preset('7d'))).toBe(7);
+    expect(windowDays(preset('30d'))).toBe(30);
+    expect(windowDays(preset('all'))).toBeNull();
+  });
+});
+
+describe('isWindowReady', () => {
+  it('is true for every preset, the default included', () => {
+    expect(isWindowReady(DEFAULT_REWARD_WINDOW)).toBe(true);
+    expect(isWindowReady(preset('7d'))).toBe(true);
+    expect(isWindowReady(preset('all'))).toBe(true);
+  });
+
+  it('is false for a custom window until both ends land', () => {
+    expect(isWindowReady(emptyCustom)).toBe(false);
+    expect(isWindowReady(halfPicked)).toBe(false);
+    expect(isWindowReady(july)).toBe(true);
+  });
+});
+
+describe('windowSlug', () => {
+  it('names presets by their period', () => {
+    expect(windowSlug(preset('30d'))).toBe('30d');
+    expect(windowSlug(preset('all'))).toBe('all');
+  });
+
+  it('names a full custom range by its local days', () => {
+    expect(windowSlug(july)).toBe('2026-07-01_2026-07-31');
+  });
+
+  it('falls back to "custom" while the range is incomplete', () => {
+    expect(windowSlug(halfPicked)).toBe('custom');
+    expect(windowSlug(emptyCustom)).toBe('custom');
+  });
+});
+
+describe('erasInWindow', () => {
+  // Local midnights ten days apart, no DST change in between.
+  const AUGUST_21_MIDNIGHT = new Date(2026, 7, 21).getTime();
+  const AUG_11 = new Date(2026, 7, 11);
+  const AUG_15 = new Date(2026, 7, 15);
+
+  it('replays the eras since a past window started, not only those inside it', () => {
+    const pastWindow: RewardWindow = { period: 'custom', range: { from: AUG_11, to: AUG_15 } };
+
+    expect(erasInWindow(pastWindow, DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(10);
+    expect(erasInWindow(pastWindow, DAY_MS / 4, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(40);
+  });
+
+  it('costs at least one era for a window that starts today', () => {
+    const today = new Date(2026, 7, 21);
+
+    expect(
+      erasInWindow({ period: 'custom', range: { from: today, to: today } }, DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT),
+    ).toBe(1);
+  });
+
+  it('asks for the full depth when the start is not picked yet', () => {
+    expect(erasInWindow(emptyCustom, DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
+  });
+
+  it('never asks for more history than the chain keeps', () => {
+    const longAgo: RewardWindow = { period: 'custom', range: { from: new Date(2025, 0, 1), to: AUG_15 } };
+
+    expect(erasInWindow(longAgo, DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
+  });
+
+  it('falls back to the full depth when the era duration is unknown', () => {
+    expect(erasInWindow(july, null, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
+  });
+
+  it('matches erasInPeriod for presets', () => {
+    expect(erasInWindow(preset('7d'), DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(
+      erasInPeriod('7d', DAY_MS, HISTORY_DEPTH),
+    );
+    expect(erasInWindow(preset('all'), DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
   });
 });
