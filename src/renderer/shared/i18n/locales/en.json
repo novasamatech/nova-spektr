@@ -3154,6 +3154,7 @@
       "clearFilters": "Clear filters",
       "dateRangePlaceholder": "Date range",
       "multisigStatusPlaceholder": "Status",
+      "needsMySignature": "Needs my signature",
       "networkPlaceholder": "Networks",
       "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
