@@ -967,7 +967,9 @@
           "period": {
             "7d": "7d",
             "30d": "30d",
-            "all": "All time"
+            "all": "All time",
+            "custom": "Custom",
+            "pickDates": "Pick dates"
           }
         },
         "positions": {
