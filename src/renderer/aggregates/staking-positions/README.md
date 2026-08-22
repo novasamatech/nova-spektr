@@ -102,16 +102,16 @@ position never carries a status reason. The era-scoped facts (self stake, total 
 
 ## What it exposes
 
-| Store                  | What it answers                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------------------------------- |
-| `$stakingChains`       | Which staking chains this installation has, in a stable order                                   |
-| `$chainAccounts`       | Which of the selected accounts are eligible on each of them                                     |
-| `$selectedAccountIds`  | The dashboard selection, set by `selectAccountIds`, released when the last consumer leaves      |
-| `$positions`           | Every position of the selection, across all chains                                              |
-| `$summary`             | Per-chain and overall totals: staked, redeemable, unbonding, active validators, position counts |
-| `$minNominatorBond`    | The minimum bond required to nominate, per chain                                                |
-| `$nominatedValidators` | The union of validators nominated on each chain — also what the exposure reads are scoped to    |
-| `$pending`             | Whether the first load is still in flight                                                       |
+| Store                  | What it answers                                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$stakingChains`       | Which staking chains this installation has, in a stable order                                                                                     |
+| `$chainAccounts`       | Which of the selected accounts are eligible on each of them                                                                                       |
+| `$selectedAccountIds`  | The dashboard selection, set by `selectAccountIds`, released when the last consumer leaves                                                        |
+| `$positions`           | Every position of the selection, across all chains, each carrying its reward destination (`payee`) and whether that has been read (`payeeLoaded`) |
+| `$summary`             | Per-chain and overall totals: staked, redeemable, unbonding, active validators, position counts                                                   |
+| `$minNominatorBond`    | The minimum bond required to nominate, per chain                                                                                                  |
+| `$nominatedValidators` | The union of validators nominated on each chain — also what the exposure reads are scoped to                                                      |
+| `$pending`             | Whether the first load is still in flight                                                                                                         |
 
 Planck amounts in `$summary` are **per chain, in that chain's asset**, and are never summed across chains — fiat
 conversion is the caller's job. The overall figures are the ones that survive mixing assets: position counts and the
@@ -145,6 +145,11 @@ which `positionsService` tells apart, and the Status cell shimmers while the res
 `{}` was the bug: it reads as "no validator backs this stash", so every nominating position wore a red `Inactive` pill
 for the seconds in between.
 
+The reward destination does not join the wait either. It is read for every stash the ledger is read for, but a table
+without it is complete — only the drawer's Rewards cell needs it, and that cell shimmers until the answer lands. A
+position therefore carries `payeeLoaded` alongside `payee`, so "not read yet" and "no destination on chain" stay
+distinguishable.
+
 Two things deliberately do **not** hold the dashboard hostage: a chain whose connection is disabled, and a chain whose
 connection has errored. Both keep `$pending` false, because neither will ever produce data and a permanent spinner is
 worse than a chain that is simply missing from the table.
@@ -173,8 +178,9 @@ flowchart TD
     F --> G
 ```
 
-- **(chain, accounts)** starts the ledger, nominations and validator-prefs subscriptions, the minimum bond, and the
-  active-era subscription — only for chains that have a connected api and at least one eligible account.
+- **(chain, accounts)** starts the ledger, nominations, validator-prefs and reward-destination subscriptions, the
+  minimum bond, and the active-era subscription — only for chains that have a connected api and at least one eligible
+  account.
 - **(chain, era)** starts the era's exposure overviews, the era validator set (needed to explain _why_ an idle position
   earns nothing) and the era anchor that turns unbonding eras into dates.
 - **(chain, era, nominated validators)** reads the exposure pages of exactly the validators the selection nominates —
