@@ -25,7 +25,10 @@ export const PeriodTabs = ({ value, onChange }: Props) => {
                 ? 'bg-white text-text-primary shadow-card-shadow'
                 : 'text-text-secondary hover:text-text-primary',
             )}
-            onClick={() => onChange({ period, range: period === 'custom' ? value.range : null })}
+            // The range rides along under the presets, which ignore it, so that
+            // Custom comes back to the dates it was left at rather than to
+            // "Pick dates"; only the picker's own Reset clears them.
+            onClick={() => onChange({ ...value, period })}
           >
             {t(`dashboard.staking.kpi.rewards.period.${period}`)}
           </button>
