@@ -72,6 +72,8 @@ function createPosition(accountId: AccountId): StakingPosition {
     unbonding: [],
     redeemable: '1000000000',
     totalUnbonding: '0',
+    payee: null,
+    payeeLoaded: false,
   };
 }
 

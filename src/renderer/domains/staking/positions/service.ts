@@ -129,7 +129,19 @@ function deriveValidatorStatus(eraValidator: EraValidator | null, validators: Er
 }
 
 function derivePosition(input: DerivePositionInput): StakingPosition {
-  const { accountId, chainId, stake, nomination, validatorPrefs, exposures, validators, activeEra, eraAnchor } = input;
+  const {
+    accountId,
+    chainId,
+    stake,
+    nomination,
+    validatorPrefs,
+    exposures,
+    validators,
+    activeEra,
+    eraAnchor,
+    payee,
+    payeeLoaded,
+  } = input;
 
   const targets = nomination?.targets ?? [];
   const chunks = deriveUnbondingChunks(stake.unlocking, activeEra, eraAnchor);
@@ -169,6 +181,8 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
       unbonding,
       redeemable,
       totalUnbonding,
+      payee,
+      payeeLoaded,
     };
   }
 
@@ -209,6 +223,8 @@ function derivePosition(input: DerivePositionInput): StakingPosition {
     unbonding,
     redeemable,
     totalUnbonding,
+    payee,
+    payeeLoaded,
   };
 }
 

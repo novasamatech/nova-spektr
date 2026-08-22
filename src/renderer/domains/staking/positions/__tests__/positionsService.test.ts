@@ -88,6 +88,8 @@ function createInput(overrides: Partial<DerivePositionInput> = {}): DerivePositi
     validators: null,
     activeEra: ACTIVE_ERA,
     eraAnchor: null,
+    payee: null,
+    payeeLoaded: false,
     ...overrides,
   };
 }
@@ -636,5 +638,23 @@ describe('positionsService', () => {
 
     expect(position.stake).toBe(stake);
     expect(stake.unlocking).toEqual([{ value: '500', era: (ACTIVE_ERA + 1).toString() }]);
+  });
+
+  describe('reward destination', () => {
+    test('should carry the payee and its loaded flag through untouched', () => {
+      const position = positionsService.derivePosition(
+        createInput({ payee: { Account: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' }, payeeLoaded: true }),
+      );
+
+      expect(position.payee).toEqual({ Account: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty' });
+      expect(position.payeeLoaded).toBe(true);
+    });
+
+    test('should carry an unread payee as null and not loaded', () => {
+      const position = positionsService.derivePosition(createInput());
+
+      expect(position.payee).toBeNull();
+      expect(position.payeeLoaded).toBe(false);
+    });
   });
 });

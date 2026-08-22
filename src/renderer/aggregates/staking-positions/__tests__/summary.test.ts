@@ -25,6 +25,8 @@ function makePosition({
   redeemable = '0',
   totalUnbonding = '0',
   statusReason = null,
+  payee = null,
+  payeeLoaded = false,
 }: PositionOverrides = {}): StakingPosition {
   return {
     accountId,
@@ -38,6 +40,8 @@ function makePosition({
     unbonding,
     redeemable,
     totalUnbonding,
+    payee,
+    payeeLoaded,
     stake: { accountId, chainId, controller: accountId, stash: accountId, active: total, total, unlocking: [] },
   };
 }

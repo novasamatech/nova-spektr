@@ -199,6 +199,8 @@ const position = (redeemable = REDEEMABLE): StakingPosition => ({
   unbonding: [],
   redeemable,
   totalUnbonding: '0',
+  payee: null,
+  payeeLoaded: false,
 });
 
 const validator = (id: AccountId): Validator => ({ accountId: id, chainId: CHAIN_ID }) as unknown as Validator;

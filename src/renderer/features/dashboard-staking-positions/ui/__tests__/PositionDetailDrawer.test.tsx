@@ -36,6 +36,8 @@ const position: StakingPosition = {
   unbonding: [],
   redeemable: '0',
   totalUnbonding: '0',
+  payee: 'Staked',
+  payeeLoaded: true,
 };
 
 /** The wallet behind the base row — `direct` means a local wallet holds it. */

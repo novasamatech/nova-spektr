@@ -151,6 +151,8 @@ const position = (active: string, unbondingChunks = 0): StakingPosition => ({
   })),
   redeemable: '0',
   totalUnbonding: '0',
+  payee: null,
+  payeeLoaded: false,
 });
 
 const target = (active = dot(1000), unbondingChunks = 0) => ({

@@ -467,6 +467,10 @@ const $positions = combine(
           validators: chainValidators,
           activeEra,
           eraAnchor,
+          // Not wired yet: the reward destination subscription lands with the
+          // payee flow, until then every position reads as unread.
+          payee: null,
+          payeeLoaded: false,
         });
       }
     }
