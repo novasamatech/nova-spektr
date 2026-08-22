@@ -2,6 +2,18 @@ import { type PathNode } from '@/domains/backend';
 
 export const MAX_PATH_DEPTH = 6;
 
+/**
+ * The shortest path that can actually be followed: a source and the signer it
+ * ends at. The empty path is legal in the grammar (a regular account signs for
+ * itself) and a one-node path is a half-picked draft — neither can be executed
+ * as a route, so both are "no usable path" rather than "path with a problem".
+ */
+export const MIN_PATH_LENGTH = 2;
+
+export function isUsablePath(path: PathNode[] | undefined | null): boolean {
+  return Array.isArray(path) && path.length >= MIN_PATH_LENGTH;
+}
+
 type ValidationResult = { ok: true } | { ok: false; reason: string };
 
 export function isValidPath(path: PathNode[]): ValidationResult {

@@ -1,6 +1,6 @@
 # Signing path
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 
@@ -90,7 +90,7 @@ flowchart TD
 | Proxy verification badge | The hop is a delegate of a pure proxy                                                                                  | Verified / pending verification / not verified, so an unverified delegation is not mistaken for a safe one                     |
 | Hop in error             | The form's validation blames an account on the route — it cannot cover the fee or the deposit                          | That hop is marked on the path itself, so the problem is attached to the account causing it rather than to the form as a whole |
 | Dead end                 | A hop has nothing beneath it                                                                                           | "No options available for this hop"                                                                                            |
-| Unresolvable path        | A saved draft's path no longer matches the user's accounts (a wallet was removed)                                      | The draft says so, and cannot be submitted along its original route                                                            |
+| Unresolvable path        | A saved draft's path has a node with no local account (a wallet was removed, or it was never added)                    | Resolution names the first such node, so the draft can say _which_ account to add rather than that the route is unusable       |
 
 ## Lifecycle
 

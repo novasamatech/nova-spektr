@@ -23,6 +23,7 @@ import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { accounts, transactionService } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -33,6 +34,7 @@ import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
+import { resolveSubmitDraftScreen } from '../lib/submit-draft-screen';
 import { submitDraftModel } from '../model/submit-draft-model';
 
 type Props = {
@@ -136,6 +138,8 @@ const ConfirmStep = () => {
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
   const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
+  const missingAccountId = useUnit(submitDraftModel.$pathMissingAccountId);
+  const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
@@ -165,6 +169,10 @@ const ConfirmStep = () => {
   }, [wrappedTxError]);
 
   const confirm = confirms.at(0) ?? null;
+
+  // `confirm` is null on the blocked-path screen, so the chain comes from the
+  // draft rather than from the confirm payload.
+  const missingAccountChain = draft ? (chains[draft.chainId] ?? null) : null;
 
   const wrappedArgs = useMemo(() => {
     if (!wrappedExtrinsic || !confirm?.chain) return null;
@@ -225,10 +233,20 @@ const ConfirmStep = () => {
   }, [draft, wallets]);
 
   const showSignatorySelect = signatories.length > 1;
-  const noSignatories = signatories.length === 0;
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
-  if (noSignatories) {
+  // The order of these screens is a rule of its own — see `resolveSubmitDraftScreen`.
+  const screen = resolveSubmitDraftScreen({
+    hasConfirm: nonNullable(confirm),
+    signatoryCount: signatories.length,
+    hasError: wrappedTxError,
+    showError: showWrappedTxError,
+    errorKind: wrappedTxErrorKind,
+    missingAccountId,
+    hasChain: nonNullable(missingAccountChain),
+  });
+
+  if (screen.kind === 'no-signatories') {
     return (
       <>
         <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
@@ -255,21 +273,54 @@ const ConfirmStep = () => {
     );
   }
 
-  if (!confirm) {
-    if (showWrappedTxError) {
-      const messageKey =
-        wrappedTxErrorKind === 'signing-path-unresolved'
-          ? 'operations.drafts.signingPathUnresolved'
-          : 'operations.drafts.extrinsicError';
-
-      return (
-        <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
-          <Icon className="text-icon-negative" name="warnCutout" size={60} />
-          <FootnoteText className="text-text-tertiary">{t(messageKey)}</FootnoteText>
+  // Name the account the path needs: "add this one and the draft becomes
+  // submittable" is actionable, "the path is unresolvable" is not.
+  if (screen.kind === 'missing-account' && missingAccountChain) {
+    return (
+      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <Box gap={2} horizontalAlign="center">
+          <FootnoteText align="center" className="text-text-primary">
+            {t('operations.drafts.signingPathAccountMissing')}
+          </FootnoteText>
+          <NamedAccount variant="short" accountId={screen.accountId} chain={missingAccountChain} />
+          <FootnoteText align="center" className="text-text-tertiary">
+            {t('operations.drafts.signingPathAccountMissingHint')}
+          </FootnoteText>
         </Box>
-      );
-    }
+      </Box>
+    );
+  }
 
+  // A draft saved without a signing path can't be submitted at all: there is no
+  // route to follow and discovering one would sign through a path nobody agreed
+  // on. Nothing to fix locally — say so and point at the way out.
+  if (screen.kind === 'missing-path') {
+    return (
+      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <Box gap={2} horizontalAlign="center">
+          <FootnoteText align="center" className="text-text-primary">
+            {t('operations.drafts.signingPathMissing')}
+          </FootnoteText>
+          <FootnoteText align="center" className="text-text-tertiary">
+            {t('operations.drafts.signingPathMissingHint')}
+          </FootnoteText>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (screen.kind === 'error') {
+    return (
+      <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
+        <Icon className="text-icon-negative" name="warnCutout" size={60} />
+        <FootnoteText className="text-text-tertiary">{t(screen.messageKey)}</FootnoteText>
+      </Box>
+    );
+  }
+
+  if (screen.kind === 'loading' || !confirm) {
     return (
       <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />

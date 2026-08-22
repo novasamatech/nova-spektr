@@ -58,12 +58,13 @@ Drafts are listed flat, **newest first**, each row column-aligned with the opera
 - **Description** — the draft's note inline (an italic "No description" placeholder when absent).
 - **Actions** — one primary control:
 
-  | Primary control     | When                                                                                           |
-  | ------------------- | ---------------------------------------------------------------------------------------------- |
-  | **Submitted** badge | The draft was just submitted in this session (it disappears from the list on the next refresh) |
-  | **Add wallet**      | No local account matches the draft's source — a pairing prompt instead of a submit button      |
-  | **Add call data**   | The draft has no call data yet — opens the submit flow at the call-data step                   |
-  | **Submit**          | Call data present and a local source account exists; disabled with a tooltip when signed out   |
+  | Primary control     | When                                                                                                                                                                    |
+  | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Submitted** badge | The draft was just submitted in this session (it disappears from the list on the next refresh)                                                                          |
+  | **Recreate**        | The draft has no saved signing path — it can never be submitted, so the action starts a new draft seeded with its chain, call data and note (write permission required) |
+  | **Add wallet**      | No local account matches the draft's source — a pairing prompt instead of a submit button                                                                               |
+  | **Add call data**   | The draft has no call data yet — opens the submit flow at the call-data step                                                                                            |
+  | **Submit**          | Call data present and a local source account exists; disabled with a tooltip when signed out                                                                            |
 
 Like an operation row, a draft row **expands** into three panels; the secondary actions live in their headers:
 
@@ -92,8 +93,9 @@ transaction can be reachable by multiple routes, and signing through the wrong r
 
 At submit time the saved path is resolved back into concrete accounts and **strictly followed** — the flow never
 silently re-routes. The route drives extrinsic wrapping, the multisig threshold/deposit, and which account balances get
-validated. **Legacy drafts** with an empty saved path fall back to automatic route discovery from initiator to a chosen
-signatory — but only when no saved path exists.
+validated. There is **no fallback route**: a draft without a usable saved path (a legacy draft from before the field
+existed, or a truncated one) cannot be submitted at all — its Submit button is disabled with the reason, because
+discovering a route would mean signing along one the draft's authors never agreed on.
 
 > **Two things are called "initiator".** The path runs outermost-first: it starts at the **source** account that
 > executes the call and ends at the account that **signs** it.
@@ -142,14 +144,17 @@ operation every co-signer then sees in the operations table.
   **multisig deposit** when the route contains a multisig, and **validation errors** from a balance-aware validator that
   checks every account that must pay along the route. The Sign button stays disabled until the wrapped extrinsic and fee
   are ready, validation passes, and the initiator is available.
-- **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. On success it shows a success
-  toast and records a backend operation description linking the draft to the resulting on-chain operation, so the
-  multisig operation inherits the draft's description. A **Submitted** badge shows until the backend confirms.
+- **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. A draft is only ever signed
+  along a **fully resolved** path: every node of the saved path must map to a local account before a transaction is
+  built at all (see [States / scenarios](#states--scenarios)). On success it shows a success toast and records a backend
+  operation description linking the draft to the resulting on-chain operation, so the multisig operation inherits the
+  draft's description. A **Submitted** badge shows until the backend confirms.
 
-Submission is gated: the user must be signed in to the backend, the draft must carry valid **call data** (otherwise the
-primary action is _Add call data_), and a local account matching the draft's source must exist (otherwise a wallet
-pairing prompt is shown). Whether the wallet also holds a usable signatory on the path is a separate, later check inside
-the submit flow (see [States / scenarios](#states--scenarios)).
+Submission is gated: the user must be signed in to the backend, the draft must carry a **saved signing path** (without
+one it is not submittable at all — the row offers _Recreate_ instead) and valid **call data** (otherwise the primary
+action is _Add call data_), and a local account matching the draft's source must exist (otherwise a wallet pairing
+prompt is shown). Whether the wallet also holds a usable signatory on the path is a separate, later check inside the
+submit flow (see [States / scenarios](#states--scenarios)).
 
 ## Unknown recipient warnings
 
@@ -176,15 +181,16 @@ with no multisig hop) are covered the same way as multisig ones.
 
 ## States / scenarios
 
-| State                           | When it appears                                                                                          | What the user sees                                                                         |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Path unresolvable               | The saved path can't be re-resolved against the current wallets (e.g. a wallet on the route was removed) | The flow is **blocked** with a signing-path-unresolved error — never wrapped to the raw tx |
-| Extrinsic build failure         | Wrapping the call fails                                                                                  | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)      |
-| No signatories                  | The wallet holds no account that can sign                                                                | An empty-account warning, with an add-account affordance for Polkadot Vault                |
-| Initiator unavailable           | The draft's stored initiator can no longer sign                                                          | A banner asking the user to pick a replacement signatory; signing disabled until they do   |
-| Undecodable / missing call data | Bad or absent call data at create or submit entry                                                        | Blocked with a clear hint                                                                  |
-| Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch           | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)      |
-| Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                             | A toast with a **Retry** action; the draft stays visible and retryable                     |
+| State                           | When it appears                                                                                                                      | What the user sees                                                                                                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No signing path                 | The draft was saved without a usable path (legacy draft, or fewer than two nodes)                                                    | The row offers **Recreate** instead of Submit — a new draft seeded from this one, where the author picks the signing path. Reaching the submit flow from a stale surface explains the same thing                  |
+| Path unresolvable               | Any account on the saved path has no local counterpart (a wallet on the route was removed, or the draft was authored by a co-signer) | The flow is **blocked**: the submitter is shown _which_ account is missing — name and address — and told to add it to submit along this path. The transaction is never built, so there is no Sign button to press |
+| Extrinsic build failure         | Wrapping the call fails                                                                                                              | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)                                                                                                                             |
+| No signatories                  | The wallet holds no account that can sign                                                                                            | An empty-account warning, with an add-account affordance for Polkadot Vault                                                                                                                                       |
+| Initiator unavailable           | The draft's stored initiator can no longer sign                                                                                      | A banner asking the user to pick a replacement signatory; signing disabled until they do                                                                                                                          |
+| Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
+| Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
+| Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                                                         | A toast with a **Retry** action; the draft stays visible and retryable                                                                                                                                            |
 
 ## Sync & reconnect
 

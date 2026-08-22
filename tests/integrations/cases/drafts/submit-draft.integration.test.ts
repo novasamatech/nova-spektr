@@ -447,6 +447,54 @@ describe('Submit Draft — submit & edit flows', () => {
     });
   });
 
+  describe('call-data completion keeps the draft submittable', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Filling in missing call data never drops the saved signing path',
+      });
+    });
+
+    it('preserves the saved path when the update response comes back without one', async () => {
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(backendConfigurationModel.$backendUrl, BASE_URL)
+          .withStoreValue(authModel.$authState, authState),
+      );
+
+      const path: PathNode[] = [
+        { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+        { kind: 'signer', accountId: SIGNER_ID },
+      ];
+      const draft = makeDraft(path, {
+        multisigAccountId: MULTISIG_TOP_ID,
+        initiatorAccountId: SIGNER_ID,
+        callData: null,
+      });
+
+      await allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigDirect, chain: polkadotChain },
+      });
+
+      // `signingPath` parses with a `[]` default, and an empty path now means
+      // "unsubmittable" — a trimmed PATCH response must not brick the draft
+      // the user is in the middle of completing.
+      const updateDraft = vi
+        .spyOn(draftsService, 'updateDraft')
+        .mockResolvedValue({ ...draft, callData: CALL_DATA, signingPath: [] });
+
+      await allSettled(submitDraftModel.callDataChanged, { scope: env.scope, params: CALL_DATA });
+      await allSettled(submitDraftModel.callDataConfirmRequested, { scope: env.scope });
+
+      expect(updateDraft).toHaveBeenCalledTimes(1);
+      expect(env.getState(submitDraftModel.$draft)?.signingPath).toEqual(path);
+      expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).not.toBe('signing-path-missing');
+    });
+  });
+
   describe('submit gate (dashboard queue preconditions)', () => {
     beforeEach(async () => {
       await allureMetadata({
@@ -455,6 +503,13 @@ describe('Submit Draft — submit & edit flows', () => {
         story: 'Each missing precondition gates the Submit action',
       });
     });
+
+    // Every precondition below is tested against a draft that *does* carry a
+    // signing path — without one the path gate fires first and masks them.
+    const gatePath: PathNode[] = [
+      { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+      { kind: 'signer', accountId: SIGNER_ID },
+    ];
 
     // Mirrors DraftsSubsection: `useMultisigByAccountId` keyed lookup + Boolean(account).
     const hasLocalMultisig = (draft: Draft) =>
@@ -465,16 +520,25 @@ describe('Submit Draft — submit & edit flows', () => {
     it('gates with connect-to-submit when there is no active backend session', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, null));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'operations.drafts.connectToSubmit' });
     });
 
-    it('gates with add-call-data when the draft has no call data', async () => {
+    it('gates a legacy draft with no signing path — before every other precondition', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
       const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID, callData: null });
+      const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
+
+      expect(gate).toEqual({ canSubmit: false, reasonKey: 'operations.drafts.signingPathMissingTooltip' });
+    });
+
+    it('gates with add-call-data when the draft has no call data', async () => {
+      env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
+
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID, callData: null });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'dashboard.operationsQueue.submitNeedsCallData' });
@@ -484,7 +548,7 @@ describe('Submit Draft — submit & edit flows', () => {
       // Only a plain signer locally — the draft's multisig lives elsewhere.
       env = await buildEnv([signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: false, reasonKey: 'dashboard.operationsQueue.submitUnavailable' });
@@ -493,7 +557,7 @@ describe('Submit Draft — submit & edit flows', () => {
     it('opens the gate when session, call data and a matching local multisig are all present', async () => {
       env = await buildEnv([multisigDirect, signerAccount], (b) => b.withStoreValue(authModel.$authState, authState));
 
-      const draft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID });
+      const draft = makeDraft(gatePath, { multisigAccountId: MULTISIG_TOP_ID });
       const gate = getDraftSubmitGate(draft, env.getState(authModel.$isAuthenticated), hasLocalMultisig(draft));
 
       expect(gate).toEqual({ canSubmit: true, reasonKey: null });

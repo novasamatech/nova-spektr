@@ -1,6 +1,6 @@
 # Operations Queue
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 
@@ -57,8 +57,11 @@ flowchart TD
 ```
 
 Each draft row offers a **Submit** button, disabled with a tooltip explaining the block: not signed in to the backend,
-the draft carries no call data, or the multisig account is not in this wallet. The reason is always stated — a dead
-button with no explanation is the state this gating exists to avoid.
+the draft has no saved signing path (it can never be submitted — the Operations page offers _Recreate_ instead), it
+carries no call data, or the multisig account is not in this wallet. The reason is always stated — a dead button with no
+explanation is the state this gating exists to avoid, which is why the tooltip hangs on a wrapper around the button
+rather than the button itself: a disabled control emits no pointer events, so anchoring the tooltip on it would leave
+exactly the unexplained dead button this rule forbids.
 
 ### Which operations await signature
 

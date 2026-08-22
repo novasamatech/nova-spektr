@@ -127,6 +127,19 @@ export const DraftsSection = ({ scope, isCollapsed }: Props) => {
     }
   };
 
+  // A draft without a signing path can't be submitted, so the way forward is a
+  // new one seeded from it: same chain, same call, same note — the author only
+  // re-picks how it gets signed.
+  const handleRecreateDraft = (draft: Draft) => {
+    createDraftModel.createDraftRequested({
+      chainId: draft.chainId,
+      callData: draft.callData ?? undefined,
+      description: draft.description ?? undefined,
+      inputMode: 'paste',
+      source: 'drafts-recreate',
+    });
+  };
+
   const handleEditDraft = (draft: Draft) => {
     setEditingDraft(draft);
     setEditDescription(draft.description ?? '');
@@ -235,6 +248,7 @@ export const DraftsSection = ({ scope, isCollapsed }: Props) => {
                     onDelete={handleDeleteDraft}
                     onEdit={handleEditDraft}
                     onSubmit={submitDraft}
+                    onRecreate={handleRecreateDraft}
                   />
                 ))}
 
