@@ -19,6 +19,7 @@ import {
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow';
+import { type PayeeFlowTarget } from '@/features/staking-payee-flow';
 import {
   type ResolutionSources,
   groupRequestsByChain,
@@ -58,6 +59,7 @@ export type StakingDashboardActionsDeps = {
     claimRequested: Event<ClaimPayload>;
     addStakeRequested: Event<PositionActionPayload>;
     unbondRequested: Event<PositionActionPayload>;
+    changeRewardDestinationRequested: Event<PositionActionPayload>;
     nominationsChangeRequested: Event<NominationsChangePayload>;
     startStakingRequested: Event<void>;
     actionsWired: EventCallable<PositionAction[]>;
@@ -84,6 +86,11 @@ export type StakingDashboardActionsDeps = {
     /** Takes nothing: the button carries no account and the flow asks itself. */
     newPositionRequested: EventCallable<void>;
     /** Behind the same `staking` flag as the other two flows. */
+    $enabled: Store<boolean>;
+  };
+  payeeFlow: {
+    changeRewardDestinationRequested: EventCallable<PayeeFlowTarget>;
+    /** Behind the same `staking` flag as the other flows. */
     $enabled: Store<boolean>;
   };
 };
@@ -128,6 +135,7 @@ export const createStakingDashboardActions = ({
   amountFlow,
   confirmFlow,
   newPositionFlow,
+  payeeFlow,
 }: StakingDashboardActionsDeps) => {
   /** Fired once by the host, so gating is observable inside a forked scope. */
   const wire = createEvent();
@@ -290,6 +298,14 @@ export const createStakingDashboardActions = ({
 
   sample({ clock: kpiRedeemTarget, target: confirmFlow.redeemRequested });
 
+  // --- payee flow ----------------------------------------------------------
+  //
+  // `PositionActionPayload` is a structural superset of `PayeeFlowTarget`, so
+  // the drawer's chip needs no mapping — and the drawer's signing mode travels
+  // with it, which is what opens a contact position in draft mode.
+
+  sample({ clock: positions.changeRewardDestinationRequested, target: payeeFlow.changeRewardDestinationRequested });
+
   // --- start staking -------------------------------------------------------
   //
   // Assembled here like everything else. This used to navigate to the Staking
@@ -361,6 +377,17 @@ export const createStakingDashboardActions = ({
   sample({
     clock: newPositionFlowReady,
     fn: (): PositionAction[] => ['startStaking'],
+    target: positions.actionsWired,
+  });
+
+  const payeeFlowReady = sample({
+    clock: [wire, payeeFlow.$enabled],
+    source: payeeFlow.$enabled,
+  }).filter({ fn: (enabled) => enabled });
+
+  sample({
+    clock: payeeFlowReady,
+    fn: (): PositionAction[] => ['changeRewardDestination'],
     target: positions.actionsWired,
   });
 
