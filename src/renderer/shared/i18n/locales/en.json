@@ -851,6 +851,7 @@
           "newPosition": "New position {amount}",
           "unbond": "Unbond {amount}",
           "addStake": "Add stake {amount}",
+          "changeRewardDestination": "Change reward destination",
           "changeValidators": "Change validators",
           "redeem": "Redeem {amount}"
         }
@@ -1074,7 +1075,8 @@
             "share": "Share of chain",
             "unclaimed": "Unclaimed",
             "validators": "Validators",
-            "nominators": "Nominators"
+            "nominators": "Nominators",
+            "rewards": "Rewards"
           },
           "unbonding": "Unbonding",
           "unbondingLeft": "{duration} left",
@@ -1088,6 +1090,7 @@
             "addStake": "Add stake",
             "unbond": "Unbond",
             "changeValidators": "Change validators",
+            "changeRewardDestination": "Change reward destination",
             "notWired": "This action is not connected to a transaction flow yet.",
             "nothingInPeriod": "No rewards attributed in this window.",
             "scanningPayouts": "Checking what is still unclaimed…",
@@ -1099,6 +1102,11 @@
             "watchOnly": "Watch-only account — this wallet holds no key to sign with.",
             "noDraftRoute": "This address is not one of your accounts, and it has no multisig or proxy that could sign for it.",
             "draftsNotConnected": "Connect an external address book to prepare operations for this account as drafts."
+          },
+          "rewardsDestination": {
+            "controller": "Controller",
+            "restaked": "Restaked",
+            "stash": "Stash"
           },
           "validator": {
             "title": "Validator",
@@ -4069,6 +4077,19 @@
       "noSignerTitle": "No account to sign with",
       "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
       "nothingToRedeemTitle": "Nothing left to redeem"
+    },
+    "payeeFlow": {
+      "accountOption": "Transferable to account",
+      "cancelButton": "Cancel",
+      "confirm": {
+        "destination": "New destination",
+        "restaked": "Restaked"
+      },
+      "continueButton": "Continue",
+      "hint": "Applies from the next payout. Rewards already paid out are not moved.",
+      "recipientHint": "Rewards will be paid to this address on every payout — make sure it is the right one.",
+      "title": "Change reward destination",
+      "unchangedHint": "This is already the current reward destination."
     },
     "payout": {
       "confirmTitle": "Claim Rewards",
