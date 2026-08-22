@@ -5,6 +5,7 @@ import {
   DEFAULT_REWARD_WINDOW,
   erasInPeriod,
   erasInWindow,
+  isCustomWindowPending,
   isWindowReady,
   periodStart,
   windowBounds,
@@ -181,6 +182,20 @@ describe('isWindowReady', () => {
     expect(isWindowReady(emptyCustom)).toBe(false);
     expect(isWindowReady(halfPicked)).toBe(false);
     expect(isWindowReady(july)).toBe(true);
+  });
+});
+
+describe('isCustomWindowPending', () => {
+  it('is pending only for a custom window without both dates', () => {
+    expect(isCustomWindowPending(emptyCustom)).toBe(true);
+    expect(isCustomWindowPending(halfPicked)).toBe(true);
+    expect(isCustomWindowPending(july)).toBe(false);
+  });
+
+  it('never holds a preset back, the default included', () => {
+    expect(isCustomWindowPending(DEFAULT_REWARD_WINDOW)).toBe(false);
+    expect(isCustomWindowPending(preset('7d'))).toBe(false);
+    expect(isCustomWindowPending(preset('all'))).toBe(false);
   });
 });
 

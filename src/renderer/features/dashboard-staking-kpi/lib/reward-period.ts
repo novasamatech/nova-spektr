@@ -82,6 +82,14 @@ export function isWindowReady(window: RewardWindow): boolean {
   return window.period !== 'custom' || Boolean(window.range?.from && window.range.to);
 }
 
+/**
+ * A custom window still waiting for its dates. The drill-down reports nothing
+ * for it — falling back to "all time" would answer a question nobody asked.
+ */
+export function isCustomWindowPending(window: RewardWindow): boolean {
+  return window.period === 'custom' && !isWindowReady(window);
+}
+
 /** Short label for a file name: `30d`, `all`, or `2026-07-01_2026-07-31`. */
 export function windowSlug(window: RewardWindow): string {
   if (window.period !== 'custom') return window.period;
