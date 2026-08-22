@@ -38,6 +38,10 @@ function createHarness() {
   const $confirmInitiatedDraft = createStore(false);
   const $confirmMode = createStore<DraftToastOperation | null>('redeem');
 
+  const payeeSaveAsDraftRequested = createEvent();
+  const payeeFlowStarted = createEvent();
+  const $payeeInitiatedDraft = createStore(false);
+
   const draftCreated = createEvent();
   const rewardsClaimed = createEvent();
 
@@ -76,6 +80,19 @@ function createHarness() {
         $initiator: createStore<AnyAccount | null>(account(1)),
         $draftSigningPath: createStore(path(1)),
       },
+      {
+        // Bound the way `model/instance.ts` binds the payee flow: one constant
+        // operation, and `set_payee` moves nothing.
+        saveAsDraftRequested: payeeSaveAsDraftRequested,
+        flowStarted: payeeFlowStarted,
+        $initiatedDraft: $payeeInitiatedDraft,
+        $operation: createStore<DraftToastOperation | null>('changeRewardDestination'),
+        $chain: createStore<Chain | null>(chain()),
+        $asset: createStore<Asset | null>(asset()),
+        $amount: createStore('0'),
+        $initiator: createStore<AnyAccount | null>(account(2)),
+        $draftSigningPath: createStore(path(2)),
+      },
     ],
     $accounts: createStore([account(1), account(2)]),
     $wallets: createStore([wallet(1), wallet(2)]),
@@ -88,6 +105,7 @@ function createHarness() {
     $amountInitiatedDraft,
     $confirmInitiatedDraft,
     $confirmMode,
+    $payeeInitiatedDraft,
     events: {
       claimSaveAsDraftRequested,
       claimRequested,
@@ -95,6 +113,8 @@ function createHarness() {
       amountFlowStarted,
       confirmSaveAsDraftRequested,
       confirmFlowStarted,
+      payeeSaveAsDraftRequested,
+      payeeFlowStarted,
       draftCreated,
       rewardsClaimed,
     },
@@ -160,6 +180,34 @@ describe('draft-confirmation toast', () => {
     await allSettled(harness.events.draftCreated, { scope, params: undefined });
 
     expect(scope.getState(harness.model.$toast)).toMatchObject({ operation: 'changeValidators' });
+  });
+
+  it('announces a reward destination change, naming its signer and network', async () => {
+    const harness = createHarness();
+    const scope = fork({ values: [[harness.$payeeInitiatedDraft, true]] });
+
+    await allSettled(harness.events.payeeSaveAsDraftRequested, { scope, params: undefined });
+    await allSettled(harness.events.draftCreated, { scope, params: undefined });
+
+    expect(scope.getState(harness.model.$toast)).toEqual({
+      operation: 'changeRewardDestination',
+      chain: expect.objectContaining({ name: 'Polkadot AH' }),
+      asset: expect.objectContaining({ symbol: 'DOT' }),
+      amount: '0',
+      signerAccountId: accountId(2),
+      signerWallet: expect.objectContaining({ name: 'Cold storage 2' }),
+    });
+  });
+
+  it('forgets a reward destination save when that flow reopens', async () => {
+    const harness = createHarness();
+    const scope = fork({ values: [[harness.$payeeInitiatedDraft, true]] });
+
+    await allSettled(harness.events.payeeSaveAsDraftRequested, { scope, params: undefined });
+    await allSettled(harness.events.payeeFlowStarted, { scope, params: undefined });
+    await allSettled(harness.events.draftCreated, { scope, params: undefined });
+
+    expect(scope.getState(harness.model.$toast)).toBeNull();
   });
 
   it('stays silent for a signed submission', async () => {
