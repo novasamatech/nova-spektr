@@ -5,7 +5,11 @@ import { isHex } from '@/shared/lib/utils';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { findCoreTransaction } from '@/entities/transaction';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { graphModel, pathModel } from '@/features/signing-path';
+import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
+import { getDestinationAccountId } from '../lib/get-destination-account-id';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
@@ -51,6 +55,7 @@ const callDataChanged = createEvent<string>();
 const inputModeChanged = createEvent<'paste' | 'build'>();
 const chainSelected = createEvent<Chain | null>();
 const descriptionChanged = createEvent<string>();
+const riskAcknowledgedToggled = createEvent<boolean>();
 
 const advance = (s: Step) => STEPS_ORDER[Math.min(STEPS_ORDER.indexOf(s) + 1, STEPS_ORDER.length - 1)] ?? s;
 const revert = (s: Step) => STEPS_ORDER[Math.max(STEPS_ORDER.indexOf(s) - 1, 0)] ?? s;
@@ -83,6 +88,47 @@ const $selectedChain = createStore<Chain | null>(null)
 const $description = createStore<string>('')
   .on(descriptionChanged, (_, d) => d)
   .reset(modalClosed);
+
+// Unknown-recipient acknowledgement for the confirm step. Anything that can
+// change the recipient — new call data, another chain, a new flow — clears it
+// so a tick never silently carries over to a different address.
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([createDraftRequested, modalClosed, callDataChanged, chainSelected]);
+
+// --- Unknown recipient gate ---
+
+const $api = combine($selectedChain, networkModel.$apis, (chain, apis) =>
+  chain ? (apis[chain.chainId] ?? null) : null,
+);
+
+const $decodedTransaction = combine(
+  { callData: $callData, path: pathModel.$path, api: $api, chain: $selectedChain },
+  ({ callData, path, api, chain }) =>
+    decodeDraftTransaction({ callData, originAccountId: getPathOriginAccountId(path), api, chain }),
+);
+
+const $destinationAccountId = $decodedTransaction.map((transaction) =>
+  getDestinationAccountId(findCoreTransaction(transaction)),
+);
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveWarning,
+  $destinationAccountId,
+  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+);
+
+// "Can't check" is not "nothing to check": with call data on hand but no chain
+// api, the recipient is simply unknown — never silently treated as safe.
+const $isRecipientCheckable = combine(
+  { mode: recipientVerificationModel.$mode, callData: $callData, api: $api },
+  ({ mode, callData, api }) => mode === 'off' || callData.length === 0 || api !== null,
+);
+
+const $recipientRiskAccepted = combine(
+  { warning: $recipientWarning, acknowledged: $isRiskAcknowledged, checkable: $isRecipientCheckable },
+  ({ warning, acknowledged, checkable }) => checkable && (warning === 'none' || acknowledged),
+);
 
 sample({
   clock: createDraftRequested,
@@ -183,12 +229,19 @@ export const createDraftModel = {
   inputModeChanged,
   chainSelected,
   descriptionChanged,
+  riskAcknowledgedToggled,
   $isOpen,
   $activeStep,
   $callData,
   $inputMode,
   $selectedChain,
   $description,
+  $isRiskAcknowledged,
+  $decodedTransaction,
+  $destinationAccountId,
+  $recipientWarning,
+  $isRecipientCheckable,
+  $recipientRiskAccepted,
   $callDataErrorKey,
   $isDescriptionTooLong,
   $isDirty,

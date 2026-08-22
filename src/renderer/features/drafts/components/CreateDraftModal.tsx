@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type ReactElement, useDeferredValue, useMemo, useState } from 'react';
 
-import { type CallData, type ChainId, type DecodedTransaction } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getNativeAssetId, isHex, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatSectionAndMethod, isHex, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
@@ -12,7 +12,7 @@ import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
 import { draftsResource, draftsService } from '@/domains/backend';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
-import { decodeCallData, findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import {
@@ -26,7 +26,6 @@ import {
   pathModel,
 } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { getDestinationAccountId } from '../lib/get-destination-account-id';
 import { createDraftModel } from '../model/create-draft-model';
 import { StepReview } from '../steps/StepReview';
 import { StepTransaction } from '../steps/StepTransaction';
@@ -51,6 +50,12 @@ export const CreateDraftModal = () => {
   const isDirty = useUnit(createDraftModel.$isDirty);
   const canContinue = useUnit(createDraftModel.$canContinue);
   const canSkip = useUnit(createDraftModel.$canSkip);
+  const isRiskAcknowledged = useUnit(createDraftModel.$isRiskAcknowledged);
+  const decodedTransaction = useUnit(createDraftModel.$decodedTransaction);
+  const destinationAccountId = useUnit(createDraftModel.$destinationAccountId);
+  const recipientWarning = useUnit(createDraftModel.$recipientWarning);
+  const isRecipientCheckable = useUnit(createDraftModel.$isRecipientCheckable);
+  const isRecipientRiskAccepted = useUnit(createDraftModel.$recipientRiskAccepted);
 
   const path = useUnit(pathModel.$path);
   const resolveName = useUnit(graphModel.$nameResolver);
@@ -91,19 +96,6 @@ export const CreateDraftModal = () => {
 
   const multisigHopAccountId = useMemo(() => deriveMultisigAccountId(path), [path]);
 
-  const decodedTransaction = useMemo<DecodedTransaction | null>(() => {
-    if (!deferredCallData || !isHex(deferredCallData) || !api || !selectedChain || !multisigHopAccountId) {
-      return null;
-    }
-    try {
-      const nativeAssetId = getNativeAssetId(selectedChain.assets);
-
-      return decodeCallData(api, multisigHopAccountId as never, deferredCallData as CallData, nativeAssetId);
-    } catch {
-      return null;
-    }
-  }, [deferredCallData, api, selectedChain, multisigHopAccountId]);
-
   const decodedCallData = useMemo(
     () => tryDecodeCallData(deferredCallData, api, selectedChain),
     [deferredCallData, api, selectedChain],
@@ -123,7 +115,6 @@ export const CreateDraftModal = () => {
   const canAdvanceCallData = activeStep === 'call-data' ? canContinue && !isCallDataUndecodable : canContinue;
 
   const coreTx = findCoreTransaction(decodedTransaction);
-  const destinationAccountId = useMemo(() => getDestinationAccountId(coreTx), [coreTx]);
   const txAsset = useTransactionAsset(coreTx, selectedChain?.chainId ?? ('0x00' as ChainId));
 
   const externalTitle = useTransformer(operationTitleTransformer, {
@@ -179,7 +170,7 @@ export const CreateDraftModal = () => {
   };
 
   const handleCreateDraft = async () => {
-    if (!backendUrl || !selectedChain) return;
+    if (!backendUrl || !selectedChain || !isRecipientRiskAccepted) return;
 
     const validation = isValidPath(path);
     if (!validation.ok) {
@@ -281,9 +272,13 @@ export const CreateDraftModal = () => {
                 titleData={titleData}
                 operationIcon={operationIcon ?? null}
                 destinationAccountId={destinationAccountId}
+                recipientWarning={recipientWarning}
+                recipientCheckPending={!isRecipientCheckable}
+                riskAcknowledged={isRiskAcknowledged}
                 description={description}
                 multisigName={multisigName}
                 multisigAccountId={multisigHopAccountId as AccountId | undefined}
+                onRiskAcknowledgedChange={createDraftModel.riskAcknowledgedToggled}
                 onDescriptionChanged={createDraftModel.descriptionChanged}
               />
             )}
@@ -312,7 +307,7 @@ export const CreateDraftModal = () => {
               </Tooltip>
             )}
             <Button
-              disabled={!canAdvanceCallData}
+              disabled={!canAdvanceCallData || (activeStep === 'confirm' && !isRecipientRiskAccepted)}
               isLoading={isSubmitting}
               onClick={activeStep === 'confirm' ? handleCreateDraft : () => createDraftModel.stepAdvanced()}
             >

@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 
@@ -116,7 +116,8 @@ The creation modal walks three steps — **Call data → Signing path → Confir
 2. **Signing path** — pick how the operation will be executed: which multisig, through which proxy (if any), and which
    signatory initiates. Drafts restrict sources and multisig hops to **address-book (backend contact) entries only**.
 3. **Confirm** — review the decoded call and signing path, and write the **description** (required, up to 500
-   characters) explaining the operation's intent to co-signers.
+   characters) explaining the operation's intent to co-signers. A transfer to a recipient that is not in the address
+   book must be acknowledged here first (see [Unknown recipient warnings](#unknown-recipient-warnings)).
 
 The wizard can **jump ahead** from a seed: chain + valid call data + complete path opens straight to _Confirm_; chain +
 call data only opens to _Signing path_. Drafts can also be started **from an operation form**: transfer, staking,
@@ -136,10 +137,11 @@ operation every co-signer then sees in the operations table.
 - **Call data** (only if the draft was saved without it) — the submitter pastes call data, sees a decoded preview, and
   confirms; this patches the draft on the backend, then advances to confirm.
 - **Confirm** — shows the signing path as a breadcrumb (plus a review popover for paths of length ≥ 2), a signatory
-  selector when more than one valid signatory exists, wallet/account/signatory details, description, an external decode
-  link, expandable call args, the **fee**, the **multisig deposit** when the route contains a multisig, and **validation
-  errors** from a balance-aware validator that checks every account that must pay along the route. The Sign button stays
-  disabled until the wrapped extrinsic and fee are ready, validation passes, and the initiator is available.
+  selector when more than one valid signatory exists, wallet/account/signatory details, the **recipient** of a transfer
+  call (when one can be decoded), description, an external decode link, expandable call args, the **fee**, the
+  **multisig deposit** when the route contains a multisig, and **validation errors** from a balance-aware validator that
+  checks every account that must pay along the route. The Sign button stays disabled until the wrapped extrinsic and fee
+  are ready, validation passes, and the initiator is available.
 - **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. On success it shows a success
   toast and records a backend operation description linking the draft to the resulting on-chain operation, so the
   multisig operation inherits the draft's description. A **Submitted** badge shows until the backend confirms.
@@ -148,6 +150,29 @@ Submission is gated: the user must be signed in to the backend, the draft must c
 primary action is _Add call data_), and a local account matching the draft's source must exist (otherwise a wallet
 pairing prompt is shown). Whether the wallet also holds a usable signatory on the path is a separate, later check inside
 the submit flow (see [States / scenarios](#states--scenarios)).
+
+## Unknown recipient warnings
+
+Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md), which is itself gated on the
+external address book connection — a user who never connected it sees nothing here. Only drafts whose call data decodes
+to a transfer (or XCM transfer) have a recipient; every other draft is unaffected. Proxy-only drafts (a proxied source
+with no multisig hop) are covered the same way as multisig ones.
+
+- **Create → Confirm.** When the decoded recipient is not known (`unknown`) or cannot be checked (`unverifiable`), an
+  amber acknowledgement box appears below the transaction card, above the "This does not sign yet" note. **Create
+  draft** stays disabled until its checkbox is ticked. The tick is cleared by anything that can change the recipient —
+  new call data, another chain, closing the modal, or opening a new one — so it never carries over to a different
+  address. This is where the transfer form's _draft mode_ hands off: the form skips its own gate when saving as a draft
+  and relies on this step instead.
+- **"Can't check" is not "nothing to check".** While the chain's api is not connected the call data can't be decoded, so
+  the recipient is unknown-unknown: **Create draft** stays disabled with a "waiting for the network connection" note
+  until the api is up. (With the address book never connected there is nothing to check, and the api is not required.)
+- **Submit → Confirm.** The same box (with the multisig-signing copy — submitting is the first approval) appears above
+  the Sign button; **Sign** is disabled until ticked, and the signing step refuses to start without the tick. The
+  acknowledgement resets on every flow start and finish, and when late-filled call data replaces the draft.
+- **Recipient row.** Whenever the call data decodes to a transfer, the submit confirm shows its recipient as a
+  **Recipient** row in the details (own accounts resolve to their wallet name) — the warning never points at an address
+  the user can't see.
 
 ## States / scenarios
 
@@ -158,6 +183,7 @@ the submit flow (see [States / scenarios](#states--scenarios)).
 | No signatories                  | The wallet holds no account that can sign                                                                | An empty-account warning, with an add-account affordance for Polkadot Vault                |
 | Initiator unavailable           | The draft's stored initiator can no longer sign                                                          | A banner asking the user to pick a replacement signatory; signing disabled until they do   |
 | Undecodable / missing call data | Bad or absent call data at create or submit entry                                                        | Blocked with a clear hint                                                                  |
+| Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch           | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)      |
 | Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                             | A toast with a **Retry** action; the draft stays visible and retryable                     |
 
 ## Sync & reconnect

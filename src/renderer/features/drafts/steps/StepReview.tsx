@@ -1,5 +1,6 @@
 import { type Chain, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type IconNames,
@@ -11,6 +12,7 @@ import {
   Separator,
   SmallTitleText,
 } from '@/shared/ui';
+import { UnknownRecipientAckBox } from '@/shared/ui-entities';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type PathNode } from '@/domains/backend';
 import { type OperationTitle } from '@/features/multisig-operations';
@@ -26,6 +28,14 @@ type Props = {
   titleData: OperationTitle | null;
   operationIcon: IconNames | null;
   destinationAccountId: AccountId | null;
+  recipientWarning: RecipientWarning;
+  /**
+   * Call data is on hand but the chain api isn't — the recipient can't be
+   * checked yet.
+   */
+  recipientCheckPending: boolean;
+  riskAcknowledged: boolean;
+  onRiskAcknowledgedChange: (checked: boolean) => void;
   description: string;
   onDescriptionChanged: (v: string) => void;
   // Legacy-shape props for DraftSummary — required while DraftSummary hasn't been updated yet:
@@ -43,6 +53,10 @@ export const StepReview = ({
   titleData,
   operationIcon,
   destinationAccountId,
+  recipientWarning,
+  recipientCheckPending,
+  riskAcknowledged,
+  onRiskAcknowledgedChange,
   description,
   onDescriptionChanged,
   multisigName,
@@ -112,6 +126,19 @@ export const StepReview = ({
           />
         </div>
       </div>
+
+      <UnknownRecipientAckBox
+        warning={recipientWarning}
+        context="draftCreate"
+        checked={riskAcknowledged}
+        onToggle={onRiskAcknowledgedChange}
+      />
+
+      {recipientCheckPending && (
+        <FootnoteText className="text-center text-text-tertiary">
+          {t('operations.drafts.recipientCheckPending')}
+        </FootnoteText>
+      )}
 
       {!callData && (
         <FootnoteText className="text-center text-text-tertiary">

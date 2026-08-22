@@ -39,11 +39,13 @@ import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
+import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { createPathRouteStore } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
@@ -104,6 +106,31 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
   };
 });
 
+// --- Unknown recipient gate ---
+
+const $destinationAccountId = combine({ draft: $draft, api: $api, chain: $chain }, ({ draft, api, chain }) =>
+  getDraftDestinationAccountId(draft, api, chain),
+);
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveWarning,
+  $destinationAccountId,
+  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+);
+
+const riskAcknowledgedToggled = createEvent<boolean>();
+
+// A fresh flow never inherits a previous acknowledgement.
+const $isRiskAcknowledged = createStore(false)
+  .on(riskAcknowledgedToggled, (_, checked) => checked)
+  .reset([flowStarted, flowFinished]);
+
+const $recipientRiskAccepted = combine(
+  $recipientWarning,
+  $isRiskAcknowledged,
+  (warning, acknowledged) => warning === 'none' || acknowledged,
+);
+
 // --- Late call-data entry (drafts created with the call-data step skipped) ---
 
 const callDataChanged = createEvent<string>();
@@ -129,6 +156,9 @@ const $canConfirmCallData = $pendingCallDataDecoded.map(nonNullable);
 const submitCallDataFx = createEffect(({ id, callData, baseUrl }: { id: string; callData: string; baseUrl: string }) =>
   draftsService.updateDraft(baseUrl, id, { callData }),
 );
+
+// Late-filled call data replaces the draft, and with it the recipient.
+$isRiskAcknowledged.reset(submitCallDataFx.doneData);
 
 sample({
   clock: callDataConfirmRequested,
@@ -544,8 +574,11 @@ sample({
 
 // --- Step transitions ---
 
+// Both `startSigning` consumers are gated on the recipient acknowledgement,
+// so the Sign button's `disabled` is not the only thing standing in the way.
 sample({
   clock: confirmModel.startSigning,
+  filter: $recipientRiskAccepted,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
@@ -620,6 +653,7 @@ const sign = sample({
     chain: $chain,
     signatory: $signatoryStore,
   },
+  filter: $recipientRiskAccepted,
   fn({ wrappedTx, api, chain, signatory }) {
     if (nullable(api) || nullable(wrappedTx) || nullable(chain) || nullable(signatory)) return null;
 
@@ -833,6 +867,10 @@ export const submitDraftModel = {
   $pendingCallDataDecoded,
   $pendingCallDataError,
   $canConfirmCallData,
+  $destinationAccountId,
+  $recipientWarning,
+  $isRiskAcknowledged,
+  $recipientRiskAccepted,
   $savingCallData: submitCallDataFx.pending,
 
   flowStarted,
@@ -840,6 +878,7 @@ export const submitDraftModel = {
   signatoryChanged: $signatory,
   callDataChanged,
   callDataConfirmRequested,
+  riskAcknowledgedToggled,
 
   confirmModel,
 

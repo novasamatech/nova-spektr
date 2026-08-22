@@ -21,9 +21,11 @@ import { type AnyAccount, type Extrinsic, accounts, transactionService } from '@
 import { contactModel } from '@/entities/contact';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { authModel, backendConfigurationModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { findRouteMultisigAccountId } from '@/aggregates/multisig-operation-description/lib/findRouteMultisigAccountId';
+import type * as DestinationHelper from '@/features/drafts/lib/get-destination-account-id';
+import { getDraftDestinationAccountId } from '@/features/drafts/lib/get-destination-account-id';
 import { getDraftSubmitGate } from '@/features/drafts/lib/submit-draft-availability';
 import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { signModel } from '@/features/operations/OperationSign';
@@ -36,6 +38,13 @@ import {
   allureMetadata,
   seedAccountHandlers,
 } from '../../utils/index';
+
+// The api double can't decode real call data, so the recipient resolution is
+// stubbed: `null` by default (no recipient), overridden per test.
+vi.mock('@/features/drafts/lib/get-destination-account-id', async (importOriginal) => ({
+  ...(await importOriginal<typeof DestinationHelper>()),
+  getDraftDestinationAccountId: vi.fn(() => null),
+}));
 
 const BASE_URL = 'https://backend.test';
 // Lowercase hex — `tryDecodeCallData` requires the decoded call to round-trip
@@ -53,6 +62,7 @@ const CONTACT_MULTISIG_ID: AccountId = createAccountId('contact-multisig');
 const CONTACT_PROXY_ID: AccountId = createAccountId('contact-pure-proxy');
 const CONTACT_PLAIN_ID: AccountId = createAccountId('contact-plain');
 const EXTERNAL_SIGNER_ID: AccountId = createAccountId('external-signer');
+const STRANGER_ID: AccountId = createAccountId('stranger-recipient');
 
 const signerAccount: AnyAccount = {
   id: 'signer-1',
@@ -653,6 +663,166 @@ describe('Submit Draft — submit & edit flows', () => {
       await allSettled(submitDraftModel.callDataConfirmRequested, { scope: env.scope });
       expect(updateSpy).not.toHaveBeenCalled();
       expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CALL_DATA);
+    });
+  });
+
+  describe('unknown recipient acknowledgement', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Drafts',
+        feature: 'Submit Draft',
+        story: 'Unknown recipient gate',
+      });
+      // Factory mocks survive `vi.restoreAllMocks`; pin the default so tests don't depend on order.
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(null);
+    });
+
+    const directPath: PathNode[] = [
+      { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+      { kind: 'signer', accountId: SIGNER_ID },
+    ];
+
+    const startFlow = (draft: Draft) =>
+      allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator: multisigDirect, chain: polkadotChain },
+      });
+
+    it('follows the toggle and resets on flow start and flow finish', async () => {
+      seamSpies();
+      env = await buildEnv([multisigDirect, signerAccount], (b) => b.withApi(polkadotChainId, fakeApi));
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(true);
+
+      await allSettled(submitDraftModel.flowFinished, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+    });
+
+    it('carries no warning while the call data yields no destination', async () => {
+      seamSpies();
+      // The api double has no `tx`, so decoding throws → destination null → nothing
+      // to warn about, even with the address book connected and healthy.
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+
+      expect(env.getState(submitDraftModel.$destinationAccountId)).toBeNull();
+      expect(env.getState(submitDraftModel.$recipientWarning)).toBe('none');
+    });
+
+    it('warns about a recipient that is neither a contact nor an own account while the book is healthy', async () => {
+      seamSpies();
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+
+      expect(env.getState(submitDraftModel.$destinationAccountId)).toBe(STRANGER_ID);
+      expect(env.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
+    });
+
+    it('stays quiet for a recipient that is an address-book contact', async () => {
+      seamSpies();
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true)
+          .withStoreValue(contactModel.$backendContacts, [makeBackendContact(STRANGER_ID, 'known-recipient')]),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+
+      expect(env.getState(submitDraftModel.$recipientWarning)).toBe('none');
+    });
+
+    it('warns about every recipient while the book was connected before but is unhealthy now', async () => {
+      seamSpies();
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, null)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true)
+          .withStoreValue(contactModel.$backendContacts, [makeBackendContact(STRANGER_ID, 'known-recipient')]),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+
+      expect(env.getState(submitDraftModel.$recipientWarning)).toBe('unverifiable');
+    });
+
+    it('refuses to start signing until an unknown recipient is acknowledged', async () => {
+      seamSpies();
+      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b
+          .withApi(polkadotChainId, fakeApi)
+          .withStoreValue(authModel.$authState, authState)
+          .withStoreValue(connectionHistoryModel.$hasEverConnected, true),
+      );
+      const draft = makeDraft(directPath, { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+      await startFlow(draft);
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+      expect(env.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
+
+      await allSettled(submitDraftModel.confirmModel.startSigning, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      expect(env.getState(submitDraftModel.$recipientRiskAccepted)).toBe(true);
+
+      await allSettled(submitDraftModel.confirmModel.startSigning, { scope: env.scope });
+      expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.SIGN);
+    });
+
+    it('drops the acknowledgement when late-filled call data replaces the draft', async () => {
+      seamSpies();
+      const draft = makeDraft(directPath, {
+        multisigAccountId: MULTISIG_TOP_ID,
+        initiatorAccountId: SIGNER_ID,
+        callData: null,
+      });
+      const serverDraft: Draft = { ...draft, callData: CALL_DATA, updatedAt: '2026-01-02T00:00:00Z' };
+      vi.spyOn(draftsService, 'updateDraft').mockResolvedValue(serverDraft);
+      env = await buildEnv([multisigDirect, signerAccount], (b) =>
+        b.withApi(polkadotChainId, fakeApi).withStoreValue(backendConfigurationModel.$backendUrl, BASE_URL),
+      );
+
+      await startFlow(draft);
+      await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope: env.scope, params: true });
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(true);
+
+      await allSettled(submitDraftModel.callDataChanged, { scope: env.scope, params: CALL_DATA });
+      await allSettled(submitDraftModel.callDataConfirmRequested, { scope: env.scope });
+
+      expect(env.getState(submitDraftModel.$draft)).toEqual(serverDraft);
+      expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
     });
   });
 });

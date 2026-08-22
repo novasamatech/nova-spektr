@@ -3076,6 +3076,7 @@
       "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
       "submitSuccess": "Draft submitted",
       "initiatorUnavailable": "The initiator is no longer a signatory of this multisig. Please pick another.",
+      "recipientCheckPending": "Waiting for the network connection to check the recipient before the draft can be created.",
       "submittedBadge": "Submitted",
       "stepMultisig": "Account",
       "stepCallData": "Call data",
@@ -3419,6 +3420,11 @@
       "title": "Recipient is not in your address book",
       "body": "Your signature moves this transfer closer to execution. Confirm you have verified the recipient before approving.",
       "ackLabel": "I have verified the recipient address and approve this transfer"
+    },
+    "draftCreate": {
+      "title": "Recipient is not in your address book",
+      "body": "Co-signers will rely on this draft. Confirm you have verified the recipient address before saving it.",
+      "ackLabel": "I have verified the recipient address and want to save this draft"
     },
     "unverifiable": {
       "title": "Recipient can't be verified",

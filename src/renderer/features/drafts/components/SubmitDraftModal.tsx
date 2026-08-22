@@ -18,11 +18,11 @@ import {
   Separator,
   SmallTitleText,
 } from '@/shared/ui';
-import { Address, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import { Address, TransactionValidationError, UnknownRecipientAckBox, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
-import { transactionService } from '@/domains/network';
+import { accounts, transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -143,6 +143,11 @@ const ConfirmStep = () => {
   const validationErrors = useUnit(submitDraftModel.$validationErrors);
   const validationValid = useUnit(submitDraftModel.$validationValid);
   const validationPending = useUnit(submitDraftModel.$validationPending);
+  const destinationAccountId = useUnit(submitDraftModel.$destinationAccountId);
+  const recipientWarning = useUnit(submitDraftModel.$recipientWarning);
+  const isRiskAcknowledged = useUnit(submitDraftModel.$isRiskAcknowledged);
+  const isRecipientRiskAccepted = useUnit(submitDraftModel.$recipientRiskAccepted);
+  const allAccounts = useUnit(accounts.$list);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -284,6 +289,9 @@ const ConfirmStep = () => {
   };
 
   const signingPath = draft?.signingPath ?? [];
+  // A recipient that is one of the user's own accounts resolves to its wallet name.
+  const destinationAccount = allAccounts.find((account) => account.accountId === destinationAccountId);
+  const destinationWallet = destinationAccount ? walletUtils.getWalletById(wallets, destinationAccount.walletId) : null;
 
   return (
     <>
@@ -355,6 +363,11 @@ const ConfirmStep = () => {
               <NamedAccount variant="short" accountId={initiator.accountId} chain={chain} />
             )}
           </DetailRow>
+          {destinationAccountId && (
+            <DetailRow label={t('operation.details.recipient')}>
+              <NamedAccount variant="short" accountId={destinationAccountId} chain={chain} wallet={destinationWallet} />
+            </DetailRow>
+          )}
           <Separator className="border-filter-border" />
           <DetailRow label={t('transaction.details.sinatoryWallet')}>
             <div className="flex items-center gap-x-2">
@@ -405,6 +418,15 @@ const ConfirmStep = () => {
         </dl>
       </Box>
 
+      <div className="mx-5 mb-3 empty:hidden">
+        <UnknownRecipientAckBox
+          warning={recipientWarning}
+          context="multisigSign"
+          checked={isRiskAcknowledged}
+          onToggle={submitDraftModel.riskAcknowledgedToggled}
+        />
+      </div>
+
       {validationErrors.length > 0 && (
         <div className="mx-5 mb-3">
           <TransactionValidationError errors={validationErrors} wallets={wallets} />
@@ -415,7 +437,12 @@ const ConfirmStep = () => {
         <div />
         <SignButton
           disabled={
-            initiatorUnavailable || nullable(wrappedExtrinsic) || nullable(fee) || validationPending || !validationValid
+            initiatorUnavailable ||
+            nullable(wrappedExtrinsic) ||
+            nullable(fee) ||
+            validationPending ||
+            !validationValid ||
+            !isRecipientRiskAccepted
           }
           isDefault={initiatorUnavailable}
           type={confirm.signatoryWallet.type}
