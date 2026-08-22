@@ -168,8 +168,10 @@ donut and the Earned column), and the CSV export. They deliberately do **not** f
 and wonder which one won. Both ends of the range are inclusive of the whole day, so 1 Jul – 31 Jul is 31 days, and a
 half-picked or not-yet-picked range is a real state: nothing is fetched or reported until both ends land — the table
 gives way to a "Pick dates" hint and the export is disabled — because an open-ended window would quietly read as "all
-time" behind a tab that says "custom". A range that ends in the past still costs the eras since it **started** — eras
-are counted backwards from the active one, so a July window looked at in September replays September's eras too.
+time" behind a tab that says "custom". A range that ends in the past is attributed over the closed eras inside it
+**only** — eras are numbered from the active one, so a July window looked at in September still reaches back over the
+eras since July, but the ones that closed after 31 Jul are neither fetched nor counted; an era straddling either end is
+kept, since era boundaries are only known to the day.
 
 There is deliberately **no "received in period" figure** next to the tabs. Received (actual payouts, on the indexer's
 timestamps) and earned (the eras' arithmetic) are different facts on different clocks — old eras claimed inside the
