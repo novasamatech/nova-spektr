@@ -70,14 +70,14 @@ const resolvers: SearchResolvers = {
 };
 
 /** Mirrors what useVisibleDrafts does: resolve names, then filter. */
-const filterWithSearch = (drafts: Draft[], scope: DraftListScope) => {
+const filterWithSearch = (drafts: Draft[], scope: DraftListScope, localSignerIds = new Set<string>()) => {
   const searchMatchedIds = searchOperationRows(
     drafts.map((draft) => buildDraftSearchRow(draft, chains, resolvers.resolveWalletName)),
     scope.searchQuery,
     resolvers,
   );
 
-  return filterDraftsByScope(drafts, scope, searchMatchedIds);
+  return filterDraftsByScope(drafts, scope, searchMatchedIds, localSignerIds);
 };
 
 describe('filterDraftsByScope', () => {
@@ -295,6 +295,35 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
         'draft-nested',
       ]);
+    });
+  });
+
+  describe('needs my signature', () => {
+    // Bob is a local account that can sign; Charlie is not local.
+    const localSignerIds = new Set<string>([BOB_ACCOUNT_ID]);
+    const mineDraft = createMockDraft({ id: 'draft-mine', initiatorAccountId: BOB_ACCOUNT_ID });
+    const foreignDraft = createMockDraft({ id: 'draft-foreign', initiatorAccountId: CHARLIE_ACCOUNT_ID });
+    const unassignedDraft = createMockDraft({ id: 'draft-unassigned', initiatorAccountId: null });
+
+    test('off: keeps every draft whoever the initiator is', () => {
+      const result = filterWithSearch([mineDraft, foreignDraft, unassignedDraft], emptyScope, localSignerIds);
+      expect(result.map((d) => d.id)).toEqual(['draft-mine', 'draft-foreign', 'draft-unassigned']);
+    });
+
+    test('on: keeps only drafts assigned to a local signer', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      const result = filterWithSearch([mineDraft, foreignDraft, unassignedDraft], scope, localSignerIds);
+      expect(result.map((d) => d.id)).toEqual(['draft-mine']);
+    });
+
+    test('on: a draft nobody local can initiate is not mine', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      expect(filterWithSearch([foreignDraft, unassignedDraft], scope, localSignerIds)).toEqual([]);
+    });
+
+    test('on: combines with the other scope filters', () => {
+      const scope = { ...emptyScope, needsMySignature: true, network: [KUSAMA_CHAIN_ID] };
+      expect(filterWithSearch([mineDraft], scope, localSignerIds)).toEqual([]);
     });
   });
 });

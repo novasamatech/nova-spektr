@@ -1,6 +1,7 @@
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
@@ -18,6 +19,11 @@ export type DraftListScope = {
   proxyType: string[];
   dateRange?: DateRange;
   searchQuery: string;
+  /**
+   * "Needs my signature": keep only drafts whose assigned initiator is a local
+   * account that can sign (see `filterDraftsByScope`'s `localSignerIds`).
+   */
+  needsMySignature?: boolean;
 };
 
 const matchesNetwork = (draft: Draft, networkIds: string[]): boolean => {
@@ -37,6 +43,12 @@ const matchesDateRange = (draft: Draft, dateRange: DateRange | undefined): boole
     return isAfter(createdDate, startOfDay(from)) || createdDate.getTime() === startOfDay(from).getTime();
   }
   return true;
+};
+
+// A draft is "mine" when the account assigned to submit it is one the user can
+// sign with — the same rule submit-draft-model uses to enable Submit.
+const hasLocalInitiator = (draft: Draft, localSignerIds: Set<string>): boolean => {
+  return nonNullable(draft.initiatorAccountId) && localSignerIds.has(draft.initiatorAccountId);
 };
 
 /**
@@ -110,12 +122,15 @@ export const buildDraftSearchRow = (
  * (drafts match only the dedicated `drafts` status).
  *
  * `searchMatchedIds` comes from the caller because it needs resolved display
- * names; `null` means no query.
+ * names; `null` means no query. `localSignerIds` — account ids of the local
+ * accounts allowed to sign — is consulted only when `scope.needsMySignature` is
+ * set.
  */
 export const filterDraftsByScope = (
   drafts: Draft[],
   scope: DraftListScope,
   searchMatchedIds: Set<string> | null,
+  localSignerIds: Set<string>,
 ): Draft[] => {
   if (scope.type.length > 0 || scope.proxyType.length > 0) return [];
 
@@ -123,6 +138,7 @@ export const filterDraftsByScope = (
     (draft) =>
       matchesNetwork(draft, scope.network) &&
       matchesDateRange(draft, scope.dateRange) &&
-      (searchMatchedIds === null || searchMatchedIds.has(draft.id)),
+      (searchMatchedIds === null || searchMatchedIds.has(draft.id)) &&
+      (!scope.needsMySignature || hasLocalInitiator(draft, localSignerIds)),
   );
 };
