@@ -9,12 +9,14 @@ vi.mock('../components/Operation', () => ({
 import { type MultisigAccount, AccountType, ProxyVariant, WalletType } from '@/shared/core';
 import { createAccountId, kusamaChainId, polkadotChainId } from '@/shared/mocks';
 import { accounts, multisigOperation } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { draftDeepLinkModel } from '@/features/drafts';
 
 import { operationsContextModel } from './context';
 import { deepLinkModel } from './deep-link';
 import './draft-deep-link-expand';
+import { TEST_CHAIN_ID, aId, createMultisigAccount, seedDiHandlers, testChain, vaultAccount } from './test-helpers';
 
 describe('operations context model', () => {
   const mockAccountId = createAccountId(1);
@@ -666,6 +668,97 @@ describe('operations context model', () => {
       const scope = fork();
 
       expect(scope.getState(operationsContextModel.$filter).needsMySignature).toBe(false);
+    });
+  });
+
+  describe('Needs my signature', () => {
+    const signerId = aId(1);
+    const otherSignerId = aId(2);
+    const multisigId = aId(3);
+    // The user holds signer 1 only; signer 2 belongs to someone else.
+    const multisig = createMultisigAccount(multisigId, [signerId, otherSignerId]);
+    const signer = vaultAccount(signerId);
+
+    const approveEvent = (accountId: typeof signerId) => ({
+      id: `approve-${accountId}`,
+      accountId,
+      status: 'approve',
+      blockCreated: 100,
+      indexCreated: 0,
+      timestamp: 0,
+    });
+
+    const createTestOperation = (callHash: string, events: ReturnType<typeof approveEvent>[] = []) => ({
+      ...createMockOperation('pending', callHash),
+      chainId: TEST_CHAIN_ID,
+      multisigAccountId: multisigId,
+      events,
+    });
+
+    const createScope = async (operations: unknown[]) => {
+      const scope = fork({
+        values: new Map()
+          .set(multisigOperation.__test.$cachedOperations, operations)
+          .set(networkModel.$chains, { [TEST_CHAIN_ID]: testChain })
+          .set(operationsContextModel.$tab, 'pending')
+          .set(accounts.__test.$populated, true),
+      });
+      await seedDiHandlers(scope);
+      await populateAccounts(scope, [multisig, signer]);
+
+      return scope;
+    };
+
+    it('should compute no ids while the toggle is off', async () => {
+      const scope = await createScope([createTestOperation('0xmine')]);
+
+      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toBeNull();
+      expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(1);
+    });
+
+    it('should keep only operations a local signatory can still act on', async () => {
+      const needsMe = createTestOperation('0xmine');
+      const signedByMe = createTestOperation('0xsigned', [approveEvent(signerId)]);
+      const awaiting = { ...createTestOperation('0xawaiting'), awaitingOutcome: true };
+      const scope = await createScope([needsMe, signedByMe, awaiting]);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+
+      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toEqual(new Set([needsMe.id]));
+      expect(scope.getState(operationsContextModel.$filteredOperations).map(o => o.operation.id)).toEqual([needsMe.id]);
+    });
+
+    it('should merge the scope and normalize the tab to pending', async () => {
+      const scope = await createScope([]);
+      await allSettled(operationsContextModel.setTab, { scope, params: 'history' });
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+
+      expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(true);
+      expect(scope.getState(operationsContextModel.$isFiltersSelected)).toBe(true);
+      expect(scope.getState(operationsContextModel.$tab)).toBe('pending');
+    });
+
+    it('should drop resolved operations from the merged scope', async () => {
+      const executed = { ...createTestOperation('0xdone'), status: 'executed' };
+      const scope = await createScope([createTestOperation('0xmine'), executed]);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+
+      expect(scope.getState(operationsContextModel.$filteredOperations).map(o => o.operation.status)).toEqual([
+        'pending',
+      ]);
+    });
+
+    it('should clear the toggle on resetFilters', async () => {
+      const scope = await createScope([createTestOperation('0xmine')]);
+      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+
+      await allSettled(operationsContextModel.resetFilters, { scope });
+
+      expect(scope.getState(operationsContextModel.$filter).needsMySignature).toBe(false);
+      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toBeNull();
+      expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(false);
     });
   });
 
