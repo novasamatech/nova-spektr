@@ -18,6 +18,7 @@ const chainMock = vi.hoisted(() => {
 
   const ledgers = new Map<string, Callback<Record<string, unknown>>>();
   const nominations = new Map<string, Callback<Record<string, unknown>>>();
+  const payees = new Map<string, Callback<Record<string, unknown>>>();
   const validatorPrefs = new Map<string, Callback<Record<string, unknown>>>();
   const minBonds = new Map<string, Callback<string>>();
   const eras = new Map<string, Callback<number | undefined>>();
@@ -28,6 +29,7 @@ const chainMock = vi.hoisted(() => {
   const reset = () => {
     ledgers.clear();
     nominations.clear();
+    payees.clear();
     validatorPrefs.clear();
     minBonds.clear();
     eras.clear();
@@ -36,7 +38,7 @@ const chainMock = vi.hoisted(() => {
     for (const key of Object.keys(validators)) delete validators[key];
   };
 
-  return { ledgers, nominations, validatorPrefs, minBonds, eras, exposurePages, validators, reset };
+  return { ledgers, nominations, payees, validatorPrefs, minBonds, eras, exposurePages, validators, reset };
 });
 
 vi.mock('@/domains/staking/staking/service', () => ({
@@ -60,7 +62,11 @@ vi.mock('@/domains/staking/nominations/service', () => ({
 
       return Promise.resolve(() => chainMock.minBonds.delete(api.chainId));
     },
-    subscribePayee: () => Promise.resolve(() => {}),
+    subscribePayee: (api: { chainId: string }, _stashes: unknown, callback: never) => {
+      chainMock.payees.set(api.chainId, callback);
+
+      return Promise.resolve(() => chainMock.payees.delete(api.chainId));
+    },
   },
 }));
 
@@ -266,6 +272,11 @@ async function emitNominations(scope: Scope, chainId: ChainId, value: Record<str
 
 async function emitPrefs(scope: Scope, chainId: ChainId, value: Record<string, unknown>) {
   chainMock.validatorPrefs.get(chainId)?.(value);
+  await allSettled(scope);
+}
+
+async function emitPayees(scope: Scope, chainId: ChainId, value: Record<string, unknown>) {
+  chainMock.payees.get(chainId)?.(value);
   await allSettled(scope);
 }
 
@@ -538,6 +549,46 @@ describe('aggregates/staking-positions', () => {
     expect(scope.getState(stakingPositions.$pending)).toBe(false);
   });
 
+  it('subscribes to reward destinations with the chain address prefix', async () => {
+    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+
+    expect(chainMock.payees.has(POLKADOT_AH)).toBe(true);
+    expect(scope.getState(nominations.payeeResource.$cache)).toBeDefined();
+  });
+
+  it('threads the reward destination into positions and tells unread from none', async () => {
+    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+
+    await emitEra(scope, POLKADOT_AH, 420);
+    await emitLedger(scope, POLKADOT_AH, {
+      [accountA.accountId]: createStake(accountA.accountId, POLKADOT_AH, '1000', '1000'),
+      [accountB.accountId]: createStake(accountB.accountId, POLKADOT_AH, '500', '500'),
+    });
+    await emitNominations(scope, POLKADOT_AH, { [accountA.accountId]: null, [accountB.accountId]: null });
+    await emitPrefs(scope, POLKADOT_AH, { [accountA.accountId]: null, [accountB.accountId]: null });
+
+    // Nothing has answered about the payee yet: not loaded, no destination.
+    const before = scope.getState(stakingPositions.$positions);
+    expect(before.map(position => position.payeeLoaded)).toEqual([false, false]);
+    expect(before.map(position => position.payee)).toEqual([null, null]);
+
+    // The payee does not hold the dashboard — ledger, nominations and prefs
+    // have answered, and that is all `$pending` waits for.
+    expect(scope.getState(stakingPositions.$pending)).toBe(false);
+
+    await emitPayees(scope, POLKADOT_AH, { [accountA.accountId]: 'Staked', [accountB.accountId]: null });
+
+    const after = scope.getState(stakingPositions.$positions);
+    const positionA = after.find(position => position.accountId === accountA.accountId);
+    const positionB = after.find(position => position.accountId === accountB.accountId);
+
+    expect(positionA?.payee).toBe('Staked');
+    expect(positionA?.payeeLoaded).toBe(true);
+    // `null` from the chain is an answer ("None"), not an unfinished read.
+    expect(positionB?.payee).toBeNull();
+    expect(positionB?.payeeLoaded).toBe(true);
+  });
+
   it('stops every started resource key on reset', async () => {
     const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
 
@@ -547,6 +598,7 @@ describe('aggregates/staking-positions', () => {
     expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(true);
     expect(chainMock.nominations.has(POLKADOT_AH)).toBe(true);
     expect(chainMock.minBonds.has(POLKADOT_AH)).toBe(true);
+    expect(chainMock.payees.has(POLKADOT_AH)).toBe(true);
 
     const stopped: string[] = [];
     createWatch({ unit: exposures.exposuresResource.stop, scope, fn: key => stopped.push(key) });
@@ -558,6 +610,7 @@ describe('aggregates/staking-positions', () => {
     expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.nominations.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.minBonds.has(POLKADOT_AH)).toBe(false);
+    expect(chainMock.payees.has(POLKADOT_AH)).toBe(false);
     expect(stopped).toEqual([
       exposures.exposuresResource.createKey({ chainId: POLKADOT_AH, api: polkadotApi, era: 500 }),
     ]);
