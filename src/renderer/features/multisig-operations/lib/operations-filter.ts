@@ -34,6 +34,7 @@ export interface OperationsFilterCriteria {
   status: StatusFilterValue[];
   dateRange?: DateRange;
   searchQuery: string;
+  needsMySignature: boolean;
 }
 
 export type OperationsFilterTab = 'pending' | 'history' | 'hidden';
@@ -46,6 +47,10 @@ export interface OperationsFilterContext {
   // once for the whole list (see `buildOperationSearchRow`) rather than per
   // operation, because resolving display names is shared work.
   searchMatchedIds: Set<string> | null;
+  // Ids of operations a local signatory can still act on, or `null` when the
+  // "Needs my signature" toggle is off. Computed once for the whole list (see
+  // `operationNeedsMySignature`) so `filterOperation` needs no wallets/chains.
+  needsMySignatureIds: Set<string> | null;
   // Any non-search filter active → tabs collapse to "All operations".
   isScopeMerged: boolean;
 }
@@ -173,14 +178,15 @@ export const operationNeedsMySignature = (
 };
 
 /**
- * Whether the filter narrows the list in any way: a search query, a
- * network/type/proxy-type selection, a date range, or a status selection other
- * than `in_progress`. Selecting only `in_progress` matches the default view, so
- * it narrows nothing.
+ * Whether the filter narrows the list in any way: a search query, the
+ * needs-my-signature toggle, a network/type/proxy-type selection, a date range,
+ * or a status selection other than `in_progress`. Selecting only `in_progress`
+ * matches the default view, so it narrows nothing.
  */
 export const hasNarrowingFilter = (filters: OperationsFilterCriteria): boolean => {
   return (
     filters.searchQuery.trim().length > 0 ||
+    filters.needsMySignature ||
     filters.network.length > 0 ||
     filters.type.length > 0 ||
     filters.proxyType.length > 0 ||
@@ -275,7 +281,7 @@ export const filterOperation = (
   account: MultisigAccount | FlexibleMultisigAccount,
   context: OperationsFilterContext,
 ) => {
-  const { filters, tab, hiddenIds, searchMatchedIds } = context;
+  const { filters, tab, hiddenIds, searchMatchedIds, needsMySignatureIds } = context;
 
   if (context.isScopeMerged) {
     const isHidden = hiddenIds.includes(operation.id);
@@ -295,6 +301,7 @@ export const filterOperation = (
   if (!matchesProxyType(filters.proxyType, account)) return false;
   if (!matchesDateRange(operation, filters.dateRange)) return false;
   if (searchMatchedIds !== null && !searchMatchedIds.has(operation.id)) return false;
+  if (needsMySignatureIds !== null && !needsMySignatureIds.has(operation.id)) return false;
 
   return true;
 };
