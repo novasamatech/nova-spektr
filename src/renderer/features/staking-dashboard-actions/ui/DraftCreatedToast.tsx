@@ -17,6 +17,7 @@ const OPERATION_KEY: Record<DraftToastOperation, string> = {
   unbond: 'dashboard.staking.draftToast.operation.unbond',
   addStake: 'dashboard.staking.draftToast.operation.addStake',
   changeValidators: 'dashboard.staking.draftToast.operation.changeValidators',
+  changeRewardDestination: 'dashboard.staking.draftToast.operation.changeRewardDestination',
   redeem: 'dashboard.staking.draftToast.operation.redeem',
 };
 
