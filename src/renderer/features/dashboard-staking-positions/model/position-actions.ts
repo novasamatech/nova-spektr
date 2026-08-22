@@ -35,11 +35,18 @@ export type NominationsChangePayload = PositionActionPayload & {
 const claimRequested = createEvent<ClaimPayload>();
 const addStakeRequested = createEvent<PositionActionPayload>();
 const unbondRequested = createEvent<PositionActionPayload>();
+const changeRewardDestinationRequested = createEvent<PositionActionPayload>();
 const nominationsChangeRequested = createEvent<NominationsChangePayload>();
 const startStakingRequested = createEvent();
 
 /** One per chip that hands off. `changeValidators` covers the picker's submit. */
-export type PositionAction = 'claim' | 'addStake' | 'unbond' | 'changeValidators' | 'startStaking';
+export type PositionAction =
+  | 'claim'
+  | 'addStake'
+  | 'unbond'
+  | 'changeValidators'
+  | 'changeRewardDestination'
+  | 'startStaking';
 
 /**
  * Which of the events above a host has taken responsibility for.
@@ -132,6 +139,7 @@ export const positionActions = {
     claimRequested,
     addStakeRequested,
     unbondRequested,
+    changeRewardDestinationRequested,
     nominationsChangeRequested,
     startStakingRequested,
     changeValidatorsRequested,

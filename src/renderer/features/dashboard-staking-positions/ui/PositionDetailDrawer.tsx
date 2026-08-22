@@ -381,6 +381,15 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 unbondBlockedHint,
               )}
 
+              {/* Nominator and validator alike: every stash has a payee. */}
+              {renderAction(
+                'changeRewardDestination',
+                t('dashboard.staking.positions.detail.actions.changeRewardDestination'),
+                () => positionActions.events.changeRewardDestinationRequested(actionPayload),
+                false,
+                accessBlockedHint,
+              )}
+
               {/*
                * Absent, not disabled, on a validator position: a validator has
                * no nominations to change, so the chip would be answering a

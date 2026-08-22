@@ -284,4 +284,50 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     expect(screen.queryByText('Restaked')).not.toBeInTheDocument();
     expect(screen.queryByText('Stash')).not.toBeInTheDocument();
   });
+
+  test('should offer Change reward destination on a nominator position', async () => {
+    renderDrawer(row);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeInTheDocument();
+  });
+
+  test('should offer Change reward destination on a validator position too', async () => {
+    renderDrawer(validatorRow);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeInTheDocument();
+  });
+
+  test('should not offer Change reward destination on a watch-only position', async () => {
+    const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
+
+    renderDrawer({ ...row, wallet, accessMode: 'watchOnly' });
+
+    expect(await screen.findByText('view only')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Change reward destination' })).not.toBeInTheDocument();
+  });
+
+  test('should stay disabled until the reward-destination flow is wired', async () => {
+    renderDrawer(row, ['changeValidators']);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeDisabled();
+  });
+
+  test('should emit changeRewardDestinationRequested with the position payload', async () => {
+    const requested: unknown[] = [];
+    const unwatch = createWatch({
+      unit: positionActions.events.changeRewardDestinationRequested,
+      fn: (payload) => requested.push(payload),
+    });
+
+    renderDrawer(row, ['changeRewardDestination']);
+
+    const chip = await screen.findByRole('button', { name: 'Change reward destination' });
+    expect(chip).toBeEnabled();
+    fireEvent.click(chip);
+
+    expect(requested).toHaveLength(1);
+    expect(requested[0]).toMatchObject({ chain: polkadotAssetHubChain, account: localAccount, signingMode: 'local' });
+
+    unwatch();
+  });
 });
