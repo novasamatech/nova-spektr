@@ -1,6 +1,6 @@
 # Staking Dashboard Actions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-12
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -147,6 +147,9 @@ payloads keep the mode the drawer computed; a KPI-resolved target derives it her
 account that holds no key → `watchOnly`, otherwise `local`). Claims are the exception: the payer's mode wins — the
 drawer may say `draft` for a contact position, but the substituted payer can sign, so the claim request goes out
 `local`.
+
+A `blocked` verdict never reaches here at all: the chip that would have dispatched it is disabled, and the mapping sends
+it to `watchOnly` as a defensive floor rather than guessing a mode for a row that should not have been actionable.
 
 ## Related
 

@@ -1,6 +1,6 @@
 # Signing path
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -67,6 +67,12 @@ is worse than no screen at all. **Drafts are the exception**: a draft may be fin
 machine, so branches that _this_ user cannot complete are still offered, and the sources come from the address book
 instead of the wallet.
 
+**Which accounts may be a source is a delegation question, not an ownership one.** Only multisigs, and proxied accounts
+whose delegation reaches a multisig, are offered: everywhere else the operation runs from a specific account and the
+path merely says how a signature reaches it, so a plain key is no source at all. A **permissionless** call inverts that
+— a staking payout names the validator and may be submitted by anybody — and there, and only there, a caller may ask for
+the keys this installation holds to be offered as roots too. The claim confirm is the one screen that does.
+
 ```mermaid
 flowchart TD
     START["Form opens with a source account"] --> Q1{"Multisig or proxied?"}
@@ -82,6 +88,7 @@ flowchart TD
 | State                    | When it appears                                                                                                        | What the user sees                                                                                                             |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | No path                  | Source is a regular account                                                                                            | Nothing. It signs directly                                                                                                     |
+| Own keys as sources      | The caller asked for them, for a permissionless call                                                                   | The accounts this installation can sign with, offered as path roots alongside the delegating ones                              |
 | Default path             | Source is multisig/proxied and some branch ends at an account the user can sign with                                   | The route, as a breadcrumb of hops, chosen for them                                                                            |
 | Step-by-step chooser     | "Edit signing path" opened                                                                                             | One hop at a time — "Select a source account", then "Pick a wallet to sign via" / "Pick an initiator" — until "Path complete"  |
 | User-overridden path     | A hop was picked by hand                                                                                               | Their path, kept as-is; the automatic default no longer overwrites it until the form resets                                    |

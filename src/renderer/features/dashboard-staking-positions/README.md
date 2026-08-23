@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -25,25 +25,87 @@ never grows past what the user is looking at.
 ## Who can use it / when it applies
 
 Visible whenever the `dashboard` feature flag is on, the wallet has at least one account, and the user has not hidden
-the widget. What the user may _do_ with a row depends on how the account can be signed for:
+the widget.
 
-| Access mode | When                                                                                                                                  | What the row and drawer show                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `direct`    | A local, signable account                                                                                                             | Full action set                                                                |
-| `multisig`  | A multisig with at least one signatory key in this installation                                                                       | Full action set, plus a `2/3` chip                                             |
-| `draft`     | A multisig with no local signatory, a proxied account whose proxy is not local, or an address book entry with no local account at all | Full action set, plus a pencil glyph — the operation can only leave as a draft |
-| `watchOnly` | A watch-only wallet, or an account imported as watch-only                                                                             | `view only` in the row; the drawer replaces the action chips with a note       |
+What the user may _do_ with a row follows one rule: **a row offers an action only when there is a real, completable way
+to perform it.** Everything else renders the chip disabled and says, in the tooltip, exactly why. There are three ways
+to perform a staking action, in order of preference:
 
-Watch-only is not "the buttons are greyed out". The chips are **absent**, and the drawer says so in words: actions are
-unavailable by design, not broken. A disabled control invites the user to keep trying.
+1. **Sign it here** — this installation holds a key on the route (directly, through a multisig signatory, or through a
+   proxy we hold).
+2. **Hand it over as a draft** — we hold no key, but the account is a legitimate draft _source_ and the external address
+   book will accept a draft from this user.
+3. **Substitute a payer** — for a permissionless operation only. Today that is the payout and nothing else;
+   `bond_extra`, `unbond`, `nominate` and `withdraw_unbonded` are all origin-bound to the stash.
+
+```mermaid
+flowchart TD
+  START["Position row"] --> LOCAL{"Local account behind<br/>this address?"}
+  LOCAL -- "no" --> DRAFTQ
+  LOCAL -- "yes" --> KIND{"Multisig or proxied?"}
+  KIND -- "multisig" --> HASSIG{"Do we hold one<br/>of its signatories?"}
+  HASSIG -- "yes" --> MULTISIG["multisig"]
+  HASSIG -- "no" --> DRAFTQ
+  KIND -- "proxied" --> HASPROXY{"Do we hold one<br/>of its proxies?"}
+  HASPROXY -- "yes" --> DIRECT["direct"]
+  HASPROXY -- "no" --> DRAFTQ
+  KIND -- "neither" --> WO{"Watch-only account?"}
+  WO -- "yes" --> BWO["blocked · watchOnly"]
+  WO -- "no" --> DIRECT
+
+  DRAFTQ{"Is this address a valid<br/>draft source on this chain?"}
+  DRAFTQ -- "no" --> BROUTE["blocked · noDraftRoute"]
+  DRAFTQ -- "yes" --> AVAIL{"Drafts available<br/>to this user?"}
+  AVAIL -- "never connected" --> BNC["blocked · draftsNotConnected"]
+  AVAIL -- "no write permission" --> BNP["blocked · draftsNoPermission"]
+  AVAIL -- "ready, or merely offline" --> DRAFT["draft"]
+```
+
+| Access                         | When                                                                        | What the row and drawer show                                                                    |
+| ------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `direct`                       | A local, signable account, or a proxied account whose proxy we hold         | Full action set                                                                                 |
+| `multisig`                     | A multisig with at least one signatory key in this installation             | Full action set, plus a `2/3` chip                                                              |
+| `draft`                        | No local key, but the address can carry a draft and this user may write one | Full action set, plus a pencil glyph — the operation leaves as a draft, pinned to this position |
+| `blocked · watchOnly`          | A local account this installation holds no key for                          | `view only` in the row; every chip disabled with its reason                                     |
+| `blocked · noDraftRoute`       | Not ours, and no multisig or proxy could sign for it                        | same                                                                                            |
+| `blocked · draftsNotConnected` | Could carry a draft, but no external address book was ever connected        | same                                                                                            |
+| `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | same                                                                                            |
+
+Three rules behind that table are easy to get wrong, and each was a bug before it was a rule.
+
+**Account kind is decided before the key.** A delegating account never holds one of its own — a proxied account is
+stamped watch-only at every creation site — so a signer check placed first swallows the whole category and reports a
+proxied position as watch-only, hiding every action from a user who holds the proxy.
+
+**A valid draft source is not "any address in the address book".** A draft has to terminate at somebody's key, so the
+signing-path graph only offers multisigs, and proxied accounts that reach a multisig, as sources. An ordinary stash
+address kept as a contact is not a draft source and never will be — it is blocked with a reason, not offered a draft it
+could never complete. One rule with one owner: `features/drafts` publishes the source set, and both this widget and the
+in-flow picker read it.
+
+**An address book that is merely unreachable is not a blocker.** It was connected before, the draft card carries its own
+reconnect prompt, and refusing at the dashboard would hide the one control that fixes it.
+
+**Blocked rows keep their chips.** A blocked position keeps its row and its drawer — the numbers are the point of
+tracking a watch-only or address-book address in the first place — and every chip renders disabled with a tooltip naming
+the reason, instead of disappearing. This reverses an earlier decision here ("the chips are absent, not greyed out — a
+disabled control invites the user to keep trying"). The reversal is deliberate: the reasons are now specific and two of
+them are actionable ("ask your admin", "connect an address book"), and a control that vanishes cannot carry that
+sentence.
+
+**Claim is the exception to all of it.** A payout call names the _validator_, is permissionless, and pays each
+nominator's own payee whoever submits it. So the Claim chip is gated by whether anyone here can sign on the network, not
+by whether we hold this position's account — a blocked row still claims, through a payer this installation substitutes,
+and the user may re-point that payer on the confirm screen.
 
 The drawer badge next to the account name states provenance, not signability: `Local wallet` (green) when a local wallet
 holds the account, `Address book` (gray) when none does — a contact position must not claim to be a local wallet. A
 watch-only account keeps its own `view only` badge; whether an operation leaves as a signature or a draft stays the
 pencil glyph's business.
 
-`getAccessMode` is exported from the feature barrel — the KPI and rewards-chart widgets classify accounts the same way
-rather than each inventing their own rule.
+`getPositionAccess` is exported from the feature barrel — the KPI and rewards-chart widgets classify accounts the same
+way rather than each inventing their own rule — and so is `useDraftPolicy`, which resolves the draft half of it once per
+surface instead of once per row.
 
 ## States / scenarios
 
@@ -128,8 +190,9 @@ the only thing actually known.
 #### The Claim chip
 
 Claiming is gated by _who can sign on the network_, not by who owns the position: a payout is permissionless, so a
-contact's position is claimable as long as **any account of any of the installation's wallets** can sign on that chain —
-the same rule the Rewards modal applies to its Claim button. The chip's states, in order of precedence:
+contact's position is claimable as long as **any account of this installation** can sign on that chain — the same rule
+the Rewards modal applies to its Claim button. It is therefore the one chip a `blocked` row still offers. The chip's
+states, in order of precedence:
 
 - **No signer on the chain** — disabled, with "None of your wallets can sign on {network}". This wins over everything
   else: whatever the payout scan finds, nobody here could sign the claim.
@@ -140,6 +203,11 @@ the same rule the Rewards modal applies to its Claim button. The chip's states, 
 (As with every chip, disabling still falls back to the "not connected yet" tooltip when the action is unwired — but a
 `blockedHint` above wins the tooltip text whenever both apply, so an unwired _and_ blocked chip explains the block, not
 the wiring gap.)
+
+Who pays is then the user's to change on the claim confirm, from the accounts this installation can actually sign with,
+with the fee and validations following the account they pick. That control is the only place in the app where a plain
+signing key is offered as a path _source_ — everywhere else the source is fixed by the operation, and the path only says
+how a signature reaches it.
 
 ## Lifecycle
 
@@ -179,8 +247,12 @@ which turns it into a `nominate` transaction.
   it unlocks; redeeming is requested from the KPI drill-down, which is where the approved design puts it.
 - **A draft row's actions rely on the flows' own draft mode.** An address-book position renders with the pencil glyph
   and its chips enabled; turning the hand-off into a draft is the flow's job, and the toast that confirms it belongs to
-  the wiring feature. Claim is the deliberate exception: a payout is permissionless, so a contact position's claim is
-  signed by a substituted payer of ours rather than saved as a draft.
+  the wiring feature. This widget's part is to promise no more than the flow can keep — hence the draft-source and
+  permission checks above. Claim is the deliberate exception: a payout is permissionless, so a contact position's claim
+  is signed by a substituted payer of ours rather than saved as a draft.
+- **A blocked row is judged one level deep.** A multisig whose only signatory is itself a foreign multisig reads as
+  blocked, even though the signing-path graph could route through it. Nested reachability lives in the graph; a table
+  row does not re-derive it, and guessing would be worse than the occasional false negative.
 
 ## Related
 
@@ -191,5 +263,6 @@ which turns it into a `nominate` transaction.
 - [`staking-confirm-flow`](../staking-confirm-flow/README.md) — signs the picked set the picker submits.
 - [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) — the host that consumes the events above and
   announces which chips are live.
-- `features/drafts` — where the pending-draft counts come from.
+- `features/drafts` — where the pending-draft counts come from, and the owner of both halves of the draft rule this
+  widget gates on: `useDraftAvailability` (connection and `operation-draft:write`) and the draft source set.
 - `features/dashboard-portfolio-overview` — the same card pattern on the overview tab.

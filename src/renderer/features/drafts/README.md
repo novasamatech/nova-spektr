@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -40,6 +40,21 @@ Everything about drafts is backend data, gated by the address-book connection an
   control is absent.
 - **Submitting** additionally requires an active backend session, the draft's call data, and a local account matching
   the draft's source (see [Submitting](#submitting)).
+
+Two of these are published for surfaces that only _predict_ whether a draft is possible — a dashboard row deciding
+whether to offer an action at all:
+
+- **Availability** — `ready`, `offline`, `notConnected` or `noPermission`. The last two are terminal and nothing the
+  user does on that screen fixes them; `offline` is not, because reconnecting is a click away and the draft card carries
+  the prompt itself, so a caller should let the user in rather than turn them away.
+- **The source set** — which addresses a draft on a given chain may start from. Narrower than "any address in the
+  address book" twice over: the signing-path graph only routes from multisigs and from proxied accounts that reach one,
+  because a draft has to terminate at somebody's key; and a source must be an address-book entry, because a co-signer
+  opening the draft elsewhere has to see the same account. An ordinary stash address kept as a contact is therefore not
+  a draft source and never will be.
+
+Published rather than re-derived per screen: a caller that judged this differently would send the user into a form whose
+draft toggle renders nothing, or whose source list is empty.
 
 ## The drafts section
 
@@ -125,6 +140,12 @@ The wizard can **jump ahead** from a seed: chain + valid call data + complete pa
 call data only opens to _Signing path_. Drafts can also be started **from an operation form**: transfer, staking,
 governance, proxy, and other operation flows offer a _draft mode_ ("Save as draft", via `createDraftModeBinding`) that
 seeds the modal with the form's call data, chain, and signing path.
+
+A flow opened for one **specific account** — a staking position, say — pins the draft's source to it: the first hop is
+decided, the source list collapses to that one entry, and the user picks only the hops after it. A draft records the
+exact route it will be submitted along and executes from the path's first node, so a draft authored for one position but
+sourced at another address fails at submission for want of rights — after it has been reviewed and co-signed. Pinning
+removes the class of mistake rather than validating against it.
 
 **Editing** an existing draft is limited to its description (with the decoded call and signing summary shown for
 context); closing with unsaved changes asks for confirmation.

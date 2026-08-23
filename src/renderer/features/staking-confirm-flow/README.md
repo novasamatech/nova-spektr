@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -37,6 +37,14 @@ feature is its sibling for the actions that need no amount.
 - **Both calls act on the origin's own ledger.** Unlike a payout, nobody can nominate or withdraw on another stash's
   behalf, so the transaction is always built from the position's own account — never from the signatory.
 - **Without a local signer**, the operation can still leave as a **draft** for somebody else to sign — see _Drafts_.
+  This screen is the flow's _first_ screen, so a position nobody here can sign for arrives straight on it with no local
+  account at all and draft mode already on. It therefore renders without one: the account and cost rows step aside —
+  there is no signatory to name and no fee of ours to quote — and what the operation does is carried over on its own.
+  Bailing on the missing account instead opened the modal, painted its title and left the body blank, discarding the
+  validator set the user had just picked and hiding the draft affordance built for exactly this case.
+- **A draft from here is pinned to the position** the flow was opened for; the user chooses the hops after it, never the
+  account it runs from. The submission executes from the path's first node, and any other origin has no rights over this
+  stash.
 - Watch-only accounts can do neither, and the dashboard does not offer them the actions in the first place.
 
 ## States / scenarios

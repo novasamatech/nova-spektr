@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -56,8 +56,11 @@ not have falls back to the first staking chain, and a minimum looked up under th
 
 **"Stake from" follows the active wallet.** The field seeds itself with the selected wallet's account (falling back to
 the first candidate the chain can hold), and a wallet switch — mid-form or between opens — re-seeds it the same way, so
-`Available` always quotes the wallet the user just switched to. The switch is deliberate and wins over a hand-picked
-account; re-selecting the already-active wallet changes nothing.
+`Available` always quotes the wallet the user just switched to. **Opening the flow re-seeds too**, not only a change in
+the candidate list: closing clears the field, and by the second open the wallets and accounts settled long ago and never
+emit again — a form that waited for them would reopen with no source, no path to draw, an available balance of zero and
+a Continue button that could never light up. The switch is deliberate and wins over a hand-picked account; re-selecting
+the already-active wallet changes nothing.
 
 **A picked account nobody can sign for blocks, and says why.** Once an account is chosen, the resolved signing route is
 checked for an actual signer at its end. When there is none — the account is watch-only — `Continue` refuses and a red
