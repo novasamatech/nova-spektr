@@ -38,6 +38,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const chain = useUnit(confirmFlowModel.$chain);
   const asset = useUnit(confirmFlowModel.$asset);
   const initiator = useUnit(confirmFlowModel.$initiator);
+  const position = useUnit(confirmFlowModel.$position);
   const signatory = useUnit(confirmFlowModel.$signatory);
   const signingPath = useUnit(confirmFlowModel.$signingPath);
   const validators = useUnit(confirmFlowModel.$validators);
@@ -124,9 +125,14 @@ export const Confirmation = ({ onGoBack }: Props) => {
         <Box padding={[0, 5]} gap={4}>
           <DraftModeCard isOn={isDraftMode} onToggle={confirmFlowModel.toggleDraftMode} />
           {isDraftMode && (
+            /* The draft runs from the position the user opened, never from an
+               account they happen to pick in the source list: the submission
+               executes from the path's first node, and any other origin has no
+               rights over this stash. */
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={position?.accountId ?? null}
               $draftPath={confirmFlowModel.$draftSigningPath}
               draftPathCommitted={confirmFlowModel.draftPathCommitted}
               draftPathEditStarted={confirmFlowModel.draftPathEditStarted}
