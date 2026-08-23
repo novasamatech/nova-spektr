@@ -25,7 +25,7 @@ import {
  * sign: a watch-only account self-routes to itself but holds no key.
  * `$noRouteSigner` names that state and `$canContinue` blocks on it, instead of
  * a dead button or a reachable sign step without a key. Unlike its siblings the
- * flow opens without an account — no initiator picked yet is not this error.
+ * flow picks its own account — and having none to pick is not this error.
  *
  * @group integration
  * @group staking
@@ -102,8 +102,25 @@ describe('Staking New Position Flow - Route Signer Guard', () => {
     expect(env.getState(newPositionFlowModel.$noRouteSigner)).toBe(false);
   });
 
-  it('should stay silent while no account is picked', async () => {
+  it('should seed "Stake from" on open, and again on reopen', async () => {
     await buildEnv([stakingAccountA]);
+
+    await env.executeEventVoid(newPositionFlowModel.newPositionRequested);
+    expect(env.getState(newPositionFlowModel.$initiator)).toEqual(stakingAccountA);
+
+    // The reopen is the case worth pinning. Closing clears the field, and by the
+    // second open the accounts settled long ago and never emit again — a flow
+    // that waited for them would reopen with no source, no path to draw and a
+    // Continue button that could never light up.
+    await env.executeEventVoid(newPositionFlowModel.flowClosed);
+    expect(env.getState(newPositionFlowModel.$initiator)).toBeNull();
+
+    await env.executeEventVoid(newPositionFlowModel.newPositionRequested);
+    expect(env.getState(newPositionFlowModel.$initiator)).toEqual(stakingAccountA);
+  });
+
+  it('should stay silent when there is no account to pick', async () => {
+    await buildEnv([]);
 
     await env.executeEventVoid(newPositionFlowModel.newPositionRequested);
 
