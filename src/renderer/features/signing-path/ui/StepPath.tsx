@@ -22,6 +22,11 @@ type Props = {
   filterNextOption?: (option: PathNextOption) => boolean;
   lockedSourceCount?: number;
   restrictToOwnAccounts?: boolean;
+  /**
+   * Also offer the user's own plain signing keys as sources — see
+   * `GraphOptions`.
+   */
+  includeOwnSigners?: boolean;
   allowedProxyTypes?: readonly string[];
   disabledProxyReason?: string;
   /**
@@ -45,6 +50,7 @@ export const StepPath = ({
   filterNextOption,
   lockedSourceCount = 0,
   restrictToOwnAccounts = false,
+  includeOwnSigners = false,
   allowedProxyTypes,
   disabledProxyReason,
   getOptionBalance,
@@ -62,8 +68,9 @@ export const StepPath = ({
   const [sourceQuery, setSourceQuery] = useState('');
 
   const sourcesStore = useMemo(
-    () => graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts, allowedProxyTypes }),
-    [chainId, restrictToOwnAccounts, allowedProxyTypes],
+    () =>
+      graphModel.$sourcesFor(chainId, { restrictToOwn: restrictToOwnAccounts, includeOwnSigners, allowedProxyTypes }),
+    [chainId, restrictToOwnAccounts, includeOwnSigners, allowedProxyTypes],
   );
   const internalSources = useUnit(sourcesStore);
   const sources = externalSources ?? internalSources;

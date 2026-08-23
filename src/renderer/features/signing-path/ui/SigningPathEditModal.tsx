@@ -42,6 +42,11 @@ type Props = {
    * address-book filter governs which hops are reachable.
    */
   restrictToOwnAccounts?: boolean;
+  /**
+   * Also offer the user's own plain signing keys as sources — see
+   * `GraphOptions`.
+   */
+  includeOwnSigners?: boolean;
   onSave: (path: PathNode[]) => void;
   onClose: () => void;
 };
@@ -59,6 +64,7 @@ export const SigningPathEditModal = ({
   sources,
   filterNextOption,
   restrictToOwnAccounts = true,
+  includeOwnSigners = false,
   onSave,
   onClose,
 }: Props) => {
@@ -101,6 +107,7 @@ export const SigningPathEditModal = ({
             chainId={chainId}
             lockedSourceCount={editableInitiator ? 0 : 1}
             restrictToOwnAccounts={restrictToOwnAccounts}
+            includeOwnSigners={includeOwnSigners}
             sources={sources}
             filterNextOption={filterNextOption}
             allowedProxyTypes={allowedProxyTypes}

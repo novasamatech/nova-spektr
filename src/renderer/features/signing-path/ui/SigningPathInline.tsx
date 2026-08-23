@@ -56,6 +56,11 @@ type Props = {
   filterNextOption?: (option: PathNextOption) => boolean;
   restrictToOwnAccounts?: boolean;
   /**
+   * Also offer the user's own plain signing keys as sources — see
+   * `GraphOptions`.
+   */
+  includeOwnSigners?: boolean;
+  /**
    * Fires when the edit modal is opened/closed. Draft mode uses this to gate
    * its auto-commit sample — pathModel changes inside the modal must not
    * overwrite the committed draft path until the user explicitly saves.
@@ -78,6 +83,7 @@ export const SigningPathInline = ({
   sources,
   filterNextOption,
   restrictToOwnAccounts,
+  includeOwnSigners,
   onEditOpenChange,
   onChange,
 }: Props) => {
@@ -209,6 +215,7 @@ export const SigningPathInline = ({
         sources={sources}
         filterNextOption={filterNextOption}
         restrictToOwnAccounts={restrictToOwnAccounts}
+        includeOwnSigners={includeOwnSigners}
         onSave={handleSave}
         onClose={closeModal}
       />

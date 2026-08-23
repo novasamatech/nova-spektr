@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 import { type ChainId, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
+import { accounts } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
@@ -75,7 +76,13 @@ const EMPTY_ACCOUNT_IDS: AccountId[] = [];
 export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const { positions: allPositions, pending } = useStakingPositions();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$availableAccounts);
+  // The account domain's own list, not `walletModel.$availableAccounts`: the
+  // accounts hanging off a wallet are a deprecated mirror of it, and the
+  // positions table resolves rows from the domain. A hidden wallet's account is
+  // still filtered out — not here, but where it belongs, by the wallet lookup
+  // inside `getPositionAccess`, which is the same rule the positions table
+  // applies.
+  const allAccounts = useUnit(accounts.$list);
   const { byChain: assets, chains, currency, fiatFlag, toFiat } = useStakingChainAssets();
   const eras = useChainEras();
   const eraDurations = useEraDurations();
@@ -98,15 +105,17 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const unclaimed = useUnclaimedPayoutsByPosition(positions);
 
   const accountByAccountId = useMemo(() => {
-    const map = new Map<string, (typeof accounts)[number]>();
-    for (const account of accounts) {
+    const map = new Map<string, (typeof allAccounts)[number]>();
+    for (const account of allAccounts) {
+      // First writer wins: a wallet account is a better answer than a virtual
+      // signatory placeholder created for the same key.
       if (!map.has(account.accountId)) {
         map.set(account.accountId, account);
       }
     }
 
     return map;
-  }, [accounts]);
+  }, [allAccounts]);
 
   const walletByAccount = useMemo(() => {
     const result: Record<string, Wallet | null> = {};
