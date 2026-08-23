@@ -4,10 +4,13 @@ export type {
   NominationCounts,
   NominationRow,
   NominationStatus,
+  PositionAccess,
   PositionAccessMode,
+  PositionBlockedReason,
   PositionRow,
 } from './types';
-export { canAct, getAccessMode, getMultisigThreshold } from './position-access';
+export { type DraftPolicy, canAct, getMultisigThreshold, getPositionAccess } from './position-access';
+export { getBlockedReasonKey } from './blocked-reason';
 export {
   EXPIRY_CRITICAL_DAYS,
   EXPIRY_WARNING_DAYS,

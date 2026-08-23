@@ -1,23 +1,14 @@
-import { type EventCallable, type Store, createStore } from 'effector';
+import { type EventCallable, type Store } from 'effector';
 import { useUnit } from 'effector-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import { type Asset, type ChainId } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { type PathNode } from '@/domains/backend';
-import { contactModel } from '@/entities/contact';
-import {
-  type PathNextOption,
-  type PathSource,
-  SigningPathInline,
-  StepPath,
-  graphModel,
-  pathModel,
-} from '@/features/signing-path';
+import { SigningPathInline, StepPath, pathModel } from '@/features/signing-path';
+import { useDraftSources } from '../lib/useDraftSources';
 
 const DRAFT_INLINE_HOLD_MS = 500;
-
-const $emptySources = createStore<PathSource[]>([]);
 
 type Props = {
   chainId: ChainId | null;
@@ -52,27 +43,11 @@ export const DraftSigningPath = memo(
     const isPathComplete = useUnit(pathModel.$isComplete);
     const draftPath = useUnit($draftPath);
 
-    const sourcesStore = useMemo(
-      () => (chainId ? graphModel.$sourcesFor(chainId, { allowedProxyTypes }) : $emptySources),
-      [chainId, allowedProxyTypes],
-    );
-    const allSources = useUnit(sourcesStore);
-    const backendContacts = useUnit(contactModel.$backendContacts);
-
-    // Drafts restrict sources to External Address-Book entries (same policy
-    // CreateDraftModal applies). Multisig hops past the source must also be
-    // address-book entries; signers (leaves of a multisig) are left unfiltered.
-    const addressBookIds = useMemo(() => new Set(backendContacts.map((c) => c.accountId)), [backendContacts]);
-
-    const draftSources = useMemo<PathSource[]>(
-      () => allSources.filter((s) => addressBookIds.has(s.accountId)),
-      [allSources, addressBookIds],
-    );
-
-    const filterNextOption = useMemo<(option: PathNextOption) => boolean>(
-      () => (option) => option.kind !== 'multisig' || addressBookIds.has(option.accountId),
-      [addressBookIds],
-    );
+    // Which sources a draft may start from is the drafts feature's own rule —
+    // address-book entries that the signing-path graph can actually route from.
+    // Shared with whoever decides *whether* to open this picker in the first
+    // place, so the two cannot disagree about an empty list.
+    const { sources: draftSources, filterNextOption } = useDraftSources(chainId, allowedProxyTypes);
 
     // Hold the StepPath "Path complete" success card for a beat after the user
     // finishes picking, then crossfade to the editable inline view. Gives the

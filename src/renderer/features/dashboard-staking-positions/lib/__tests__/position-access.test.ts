@@ -4,7 +4,7 @@ import { type ChainId, type Wallet, AccountType, CryptoType, SigningType, Wallet
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { collectSignerAccountIds } from '@/features/signing-path';
-import { canAct, getAccessMode, getMultisigThreshold } from '../position-access';
+import { type DraftPolicy, canAct, getMultisigThreshold, getPositionAccess } from '../position-access';
 
 const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(16).padStart(64, '0')}`);
 
@@ -78,12 +78,34 @@ function signersOf(wallets: Wallet[]) {
   return collectSignerAccountIds(wallets.flatMap((wallet) => wallet.accounts));
 }
 
-describe('getAccessMode', () => {
+/** Drafts are possible and every address could carry one — the happy policy. */
+const DRAFTS_READY: DraftPolicy = { availability: 'ready', isDraftSource: () => true };
+
+/**
+ * `getPositionAccess` needs the row's address and chain even when there is no
+ * local account for them, because whether a draft can start there is a fact
+ * about the address on that network. The fixtures pass the account's own id
+ * unless the case is specifically about an address we hold nothing for.
+ */
+function access(
+  account: AccountFixture | null,
+  wallets: Wallet[],
+  policy: DraftPolicy = DRAFTS_READY,
+  accountId: AccountId = account?.accountId ?? CAROL,
+) {
+  return getPositionAccess(account, accountId, CHAIN, wallets, signersOf(wallets), policy);
+}
+
+const DIRECT = { mode: 'direct', reason: null };
+const MULTISIG_ACCESS = { mode: 'multisig', reason: null };
+const DRAFT = { mode: 'draft', reason: null };
+
+describe('getPositionAccess', () => {
   it('reports a signable local account as direct', () => {
     const account = baseAccount();
     const wallets = [makeWallet(1, WalletType.POLKADOT_VAULT, [account])];
 
-    expect(getAccessMode(account, wallets, signersOf(wallets))).toEqual('direct');
+    expect(access(account, wallets)).toEqual(DIRECT);
   });
 
   it('reports a watch-only wallet as watchOnly', () => {
@@ -93,7 +115,7 @@ describe('getAccessMode', () => {
     });
     const wallets = [makeWallet(1, WalletType.WATCH_ONLY, [account])];
 
-    expect(getAccessMode(account, wallets, signersOf(wallets))).toEqual('watchOnly');
+    expect(access(account, wallets)).toEqual({ mode: 'blocked', reason: 'watchOnly' });
   });
 
   it('reports a multisig with a local signatory as multisig', () => {
@@ -105,14 +127,14 @@ describe('getAccessMode', () => {
       makeWallet(2, WalletType.POLKADOT_VAULT, [signatory]),
     ];
 
-    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('multisig');
+    expect(access(multisig, wallets)).toEqual(MULTISIG_ACCESS);
   });
 
   it('reports a multisig without a local signatory as draft', () => {
     const multisig = multisigAccount();
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig])];
 
-    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('draft');
+    expect(access(multisig, wallets)).toEqual(DRAFT);
   });
 
   it('does not count a watch-only key as a signatory', () => {
@@ -127,7 +149,7 @@ describe('getAccessMode', () => {
 
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig]), makeWallet(2, WalletType.WATCH_ONLY, [watched])];
 
-    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('draft');
+    expect(access(multisig, wallets)).toEqual(DRAFT);
   });
 
   // The rule that decides this lives in the signing-path graph, and the graph
@@ -148,13 +170,13 @@ describe('getAccessMode', () => {
     const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig]), makeWallet(2, WalletType.WATCH_ONLY, [signer])];
 
     // As a signatory of someone else's multisig …
-    expect(getAccessMode(multisig, wallets, signersOf(wallets))).toEqual('multisig');
+    expect(access(multisig, wallets)).toEqual(MULTISIG_ACCESS);
     // … and as a position of its own.
-    expect(getAccessMode(signer, wallets, signersOf(wallets))).toEqual('direct');
+    expect(access(signer, wallets)).toEqual(DIRECT);
   });
 
   it('reports an address with no local account as draft', () => {
-    expect(getAccessMode(null, [], signersOf([]))).toEqual('draft');
+    expect(access(null, [])).toEqual(DRAFT);
   });
 
   it('lands an address-book position on draft, with its actions still offered', () => {
@@ -166,17 +188,87 @@ describe('getAccessMode', () => {
 
     expect(rowAccount).toBeNull();
 
-    const mode = getAccessMode(rowAccount, wallets, signersOf(wallets));
+    const verdict = access(rowAccount, wallets, DRAFTS_READY, CAROL);
 
-    expect(mode).toEqual('draft');
-    expect(canAct(mode)).toBe(true);
+    expect(verdict).toEqual(DRAFT);
+    expect(canAct(verdict)).toBe(true);
+  });
+
+  describe('when a draft is the only way through', () => {
+    const NO_ROUTE: DraftPolicy = { availability: 'ready', isDraftSource: () => false };
+
+    it('blocks an address the signing-path graph cannot route from', () => {
+      // A plain contact — no multisig, no proxy. Nothing about the address book
+      // or the user's permissions can make it a draft source, so this reason
+      // outranks the other two: telling the user to connect or to ask an admin
+      // would send them after a fix that changes nothing.
+      expect(access(null, [], NO_ROUTE)).toEqual({ mode: 'blocked', reason: 'noDraftRoute' });
+    });
+
+    it('blocks when no external address book was ever connected', () => {
+      const policy: DraftPolicy = { availability: 'notConnected', isDraftSource: () => true };
+
+      expect(access(null, [], policy)).toEqual({ mode: 'blocked', reason: 'draftsNotConnected' });
+    });
+
+    it('blocks when the user may not create drafts', () => {
+      const policy: DraftPolicy = { availability: 'noPermission', isDraftSource: () => true };
+
+      expect(access(null, [], policy)).toEqual({ mode: 'blocked', reason: 'draftsNoPermission' });
+    });
+
+    it('still offers the draft while the address book is merely unreachable', () => {
+      // Recoverable: the draft card carries its own reconnect prompt, and
+      // refusing here would hide the one control that fixes it.
+      const policy: DraftPolicy = { availability: 'offline', isDraftSource: () => true };
+
+      expect(access(null, [], policy)).toEqual(DRAFT);
+    });
+
+    it('blocks a foreign multisig the same way as a bare address', () => {
+      const multisig = multisigAccount();
+      const wallets = [makeWallet(1, WalletType.MULTISIG, [multisig])];
+
+      expect(access(multisig, wallets, NO_ROUTE)).toEqual({ mode: 'blocked', reason: 'noDraftRoute' });
+    });
+
+    it('never offers a draft for a watch-only account of ours', () => {
+      // It is one of ours, so there is nobody to hand it to — no permission and
+      // no connection would change that, and the reason has to say so.
+      const account = baseAccount({
+        accountType: AccountType.WATCH_ONLY,
+        signingType: SigningType.WATCH_ONLY,
+      });
+      const wallets = [makeWallet(1, WalletType.WATCH_ONLY, [account])];
+
+      expect(access(account, wallets, { availability: 'ready', isDraftSource: () => true })).toEqual({
+        mode: 'blocked',
+        reason: 'watchOnly',
+      });
+    });
+
+    it('asks the draft rule about the row’s own address and chain', () => {
+      const seen: [AccountId, ChainId][] = [];
+      const policy: DraftPolicy = {
+        availability: 'ready',
+        isDraftSource: (id, chainId) => {
+          seen.push([id, chainId]);
+
+          return true;
+        },
+      };
+
+      access(null, [], policy, CAROL);
+
+      expect(seen).toEqual([[CAROL, CHAIN]]);
+    });
   });
 
   it('reports a contact multisig (sentinel wallet id) as draft', () => {
     const contactMultisig = multisigAccount({ walletId: -1 });
     const wallets = [makeWallet(2, WalletType.POLKADOT_VAULT, [baseAccount({ walletId: 2, accountId: BOB })])];
 
-    expect(getAccessMode(contactMultisig, wallets, signersOf(wallets))).toEqual('draft');
+    expect(access(contactMultisig, wallets)).toEqual(DRAFT);
   });
 
   it('follows the proxy: a proxied account is direct only when the proxy is local', () => {
@@ -196,8 +288,8 @@ describe('getAccessMode', () => {
     const withProxy = [makeWallet(1, WalletType.PROXIED, [proxied]), makeWallet(2, WalletType.POLKADOT_VAULT, [proxy])];
     const withoutProxy = [makeWallet(1, WalletType.PROXIED, [proxied])];
 
-    expect(getAccessMode(proxied, withProxy, signersOf(withProxy))).toEqual('direct');
-    expect(getAccessMode(proxied, withoutProxy, signersOf(withoutProxy))).toEqual('draft');
+    expect(access(proxied, withProxy)).toEqual(DIRECT);
+    expect(access(proxied, withoutProxy)).toEqual(DRAFT);
   });
 });
 

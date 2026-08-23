@@ -82,10 +82,13 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
 
       asset: (row) => <UnclaimedCell row={row} />,
 
-      accessMode: (row) => (
+      // A glyph for "this one leaves as a draft", a word for "this one does
+      // nothing". Why a row is blocked is the drawer's business — the grid says
+      // only that it is, and one caption per state keeps the column at 4%.
+      access: (row) => (
         <div className="flex items-center justify-end gap-x-1.5">
-          {row.accessMode === 'draft' ? <Icon name="edit" size={14} className="text-text-tertiary" /> : null}
-          {row.accessMode === 'watchOnly' ? (
+          {row.access.mode === 'draft' ? <Icon name="edit" size={14} className="text-text-tertiary" /> : null}
+          {row.access.mode === 'blocked' ? (
             <CaptionText className="text-text-tertiary">{t('dashboard.staking.positions.viewOnly')}</CaptionText>
           ) : null}
           <Icon name="right" size={14} className="text-text-tertiary" />

@@ -10,6 +10,8 @@ export { DraftsSection } from './components/DraftsSectionLazy';
 export { draftAccountsOverviewSlot } from './lib/draft-row-slot';
 export { type DraftNetworkStore, createDraftModeBinding } from './lib/createDraftModeBinding';
 export { useCanCreateDraft } from './lib/useCanCreateDraft';
+export { type DraftAvailability, canStartDraft, useDraftAvailability } from './lib/useDraftAvailability';
+export { type DraftSources, useDraftSourceLookup, useDraftSources } from './lib/useDraftSources';
 export { wireDraftCloseRedirect } from './lib/wireDraftCloseRedirect';
 export { wireDraftSourceBalance } from './lib/wireDraftSourceBalance';
 export { type DraftSeed, createDraftModel } from './model/create-draft-model';

@@ -9,12 +9,33 @@ import { type NominationStatus, type PositionStatus, type StakingPosition } from
  * - `direct` — a local, signable account; the flow goes straight to sign;
  * - `multisig` — a multisig whose signatory set contains a key of this
  *   installation, so the operation can be started here and co-signed later;
- * - `draft` — no local signer reaches the account (a foreign multisig, an address
- *   that only exists in the address book); the operation can only leave as a
- *   draft for someone else to sign;
- * - `watchOnly` — nothing can ever be signed; the row is data only.
+ * - `draft` — no local signer reaches the account, but a draft can be authored
+ *   for it and handed to whoever can;
+ * - `blocked` — none of the above; the row is data only, and `reason` says why.
  */
-export type PositionAccessMode = 'direct' | 'multisig' | 'draft' | 'watchOnly';
+export type PositionAccessMode = 'direct' | 'multisig' | 'draft' | 'blocked';
+
+/**
+ * Why a position offers no actions. Each maps to its own tooltip, because the
+ * four are not equally final and the user's next move differs: two are facts
+ * about the address, one asks them to connect something, one to ask an admin.
+ *
+ * - `watchOnly` — a local account this installation holds no key for;
+ * - `noDraftRoute` — not ours, and no multisig or proxy could sign for it, so
+ *   there is no draft to author either;
+ * - `draftsNotConnected` — it could be a draft source, but no external address
+ *   book was ever connected, and drafts live in one;
+ * - `draftsNoPermission` — it could be a draft source, but this account is not
+ *   allowed to create drafts.
+ */
+export type PositionBlockedReason = 'watchOnly' | 'noDraftRoute' | 'draftsNotConnected' | 'draftsNoPermission';
+
+/** The verdict for one position: what may be done, and why not when nothing may. */
+export type PositionAccess = {
+  mode: PositionAccessMode;
+  /** Set exactly when `mode` is `blocked`. */
+  reason: PositionBlockedReason | null;
+};
 
 /** `2 of 3` chip data of a multisig account. */
 export type MultisigThreshold = {
@@ -37,7 +58,7 @@ export type PositionRow = {
   account: AnyAccount | null;
   /** Wallet the account belongs to, `null` for a foreign / contact account. */
   wallet: Wallet | null;
-  accessMode: PositionAccessMode;
+  access: PositionAccess;
   multisig: MultisigThreshold | null;
   /** Mirrors `position.status` — the table needs it as a sortable column key. */
   status: PositionStatus;

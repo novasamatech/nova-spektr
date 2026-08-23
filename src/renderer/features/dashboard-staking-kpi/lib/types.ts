@@ -2,7 +2,7 @@ import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type NetworkAvgRate, type UnbondingChunk, type UnclaimedPayout } from '@/domains/staking';
 
-import { type AccessMode } from './access';
+import { type Access } from './access';
 
 /** One (account × chain) line of the claim drill-down. */
 export type ClaimRow = {
@@ -28,7 +28,7 @@ export type ClaimRow = {
   /** Eras with something unclaimed, ascending. */
   eras: number[];
   payouts: UnclaimedPayout[];
-  accessMode: AccessMode;
+  access: Access;
 };
 
 /** One (account × chain) line of the positions / unbonding drill-down. */
@@ -44,7 +44,7 @@ export type PositionRow = {
   unbonding: UnbondingChunk[];
   totalUnbonding: string;
   redeemable: string;
-  accessMode: AccessMode;
+  access: Access;
 };
 
 /** One row of the APY / nominations breakdown. */

@@ -12,7 +12,13 @@ import { AssetFiatBalance } from '@/widgets/price';
 import { useChainHasSigner } from '../hooks/useChainHasSigner';
 import { useNominationRows } from '../hooks/useNominationRows';
 import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
-import { type PositionRow, getCountdownParts, getExpiryLabelKey, getUnbondingCountdown } from '../lib';
+import {
+  type PositionRow,
+  getBlockedReasonKey,
+  getCountdownParts,
+  getExpiryLabelKey,
+  getUnbondingCountdown,
+} from '../lib';
 import { type PositionAction, positionActions } from '../model/position-actions';
 
 import { NominationsTable } from './NominationsTable';
@@ -62,7 +68,17 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const nowMs = useMemo(() => Date.now(), [row?.id]);
 
   const isOpen = row !== null;
-  const watchOnly = row?.accessMode === 'watchOnly';
+  const watchOnly = row?.access.reason === 'watchOnly';
+  /**
+   * Why this position offers no origin-bound actions, `null` when it does.
+   *
+   * Blocked rows keep their chips and say why, rather than dropping the strip:
+   * the reasons are specific and two of them are things the user can go and fix
+   * — connect an address book, ask an admin — and a control that vanishes
+   * cannot carry that sentence.
+   */
+  const accessBlockedReasonKey = row === null ? null : getBlockedReasonKey(row.access);
+  const accessBlockedHint = accessBlockedReasonKey === null ? undefined : t(accessBlockedReasonKey);
   // The badge states a fact about provenance, and `wallet` is that fact: an
   // address-book contact (or a contact multisig) has no local wallet behind it,
   // and wearing "Local wallet" there is a lie. A local wallet that merely
@@ -100,7 +116,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
         asset: row.asset,
         account: row.account,
         wallet: row.wallet,
-        signingMode: toSigningMode(row.accessMode),
+        signingMode: toSigningMode(row.access),
       }
     : null;
 
@@ -310,49 +326,59 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
             ) : null}
 
             {/* --- actions --- */}
-            {watchOnly ? (
-              <div className="rounded-lg bg-block-background px-4 py-3">
-                <FootnoteText className="text-text-tertiary">
-                  {t('dashboard.staking.positions.detail.watchOnlyNote')}
-                </FootnoteText>
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                {renderAction(
-                  'claim',
-                  hasUnclaimed
-                    ? t('dashboard.staking.positions.detail.actions.claim', { amount: claimLabelAmount })
-                    : t('dashboard.staking.positions.detail.actions.claimEmpty'),
-                  () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
-                  true,
-                  claimBlockedHint,
-                )}
+            <div className="flex flex-wrap items-center gap-2">
+              {/*
+               * Claim is the one action a blocked position may still take. A
+               * payout call names the *validator* and is permissionless, so the
+               * reward reaches this position's payee whoever submits it — the
+               * dashboard substitutes a payer of ours. What gates it is
+               * therefore whether anyone here can sign on the network, not
+               * whether we hold this particular account.
+               */}
+              {renderAction(
+                'claim',
+                hasUnclaimed
+                  ? t('dashboard.staking.positions.detail.actions.claim', { amount: claimLabelAmount })
+                  : t('dashboard.staking.positions.detail.actions.claimEmpty'),
+                () => positionActions.events.claimRequested({ ...actionPayload, amount: unclaimed.total }),
+                true,
+                claimBlockedHint,
+              )}
 
-                {renderAction('addStake', t('dashboard.staking.positions.detail.actions.addStake'), () =>
-                  positionActions.events.addStakeRequested(actionPayload),
-                )}
+              {renderAction(
+                'addStake',
+                t('dashboard.staking.positions.detail.actions.addStake'),
+                () => positionActions.events.addStakeRequested(actionPayload),
+                false,
+                accessBlockedHint,
+              )}
 
-                {renderAction('unbond', t('dashboard.staking.positions.detail.actions.unbond'), () =>
-                  positionActions.events.unbondRequested(actionPayload),
-                )}
+              {renderAction(
+                'unbond',
+                t('dashboard.staking.positions.detail.actions.unbond'),
+                () => positionActions.events.unbondRequested(actionPayload),
+                false,
+                accessBlockedHint,
+              )}
 
-                {/*
-                 * Gated like the rest: the picker itself works, but nothing yet
-                 * turns the chosen set into a `nominate` transaction, so opening
-                 * it would end on a submit that goes nowhere.
-                 */}
-                {isValidatorPosition
-                  ? null
-                  : renderAction(
-                      'changeValidators',
-                      t('dashboard.staking.positions.detail.actions.changeValidators'),
-                      () =>
-                        openWithLoader('changeValidators', () =>
-                          positionActions.events.changeValidatorsRequested(actionPayload),
-                        ),
-                    )}
-              </div>
-            )}
+              {/*
+               * Absent, not disabled, on a validator position: a validator has
+               * no nominations to change, so the chip would be answering a
+               * question the row never asks.
+               */}
+              {isValidatorPosition
+                ? null
+                : renderAction(
+                    'changeValidators',
+                    t('dashboard.staking.positions.detail.actions.changeValidators'),
+                    () =>
+                      openWithLoader('changeValidators', () =>
+                        positionActions.events.changeValidatorsRequested(actionPayload),
+                      ),
+                    false,
+                    accessBlockedHint,
+                  )}
+            </div>
 
             {/* --- nominations / validator stats --- */}
             {isValidatorPosition && row.position.validator ? (

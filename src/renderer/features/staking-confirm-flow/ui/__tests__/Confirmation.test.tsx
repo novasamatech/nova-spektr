@@ -3,6 +3,7 @@ import { allSettled, fork } from 'effector';
 import { Provider } from 'effector-react';
 import { describe, expect, it } from 'vitest';
 
+import { type Validator } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -37,6 +38,19 @@ const position: StakingPosition = {
   totalUnbonding: '0',
 };
 
+const validator: Validator = {
+  accountId,
+  chainId: polkadotAssetHubChain.chainId,
+  ownStake: '0',
+  totalStake: '0',
+  commission: 0,
+  blocked: false,
+  slashed: false,
+  apy: 0,
+  avgApy: 0,
+  nominators: [],
+};
+
 const renderConfirmation = (scope: ReturnType<typeof fork>) =>
   render(
     <Provider value={scope}>
@@ -68,7 +82,7 @@ describe('staking-confirm-flow · Confirmation', () => {
         account: null,
         wallet: null,
         signingMode: 'draft',
-        validators: [{ accountId, address: 'address-1' }],
+        validators: [validator],
       },
     });
 

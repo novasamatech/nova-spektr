@@ -1,18 +1,57 @@
-import { type Wallet } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
+import { type DraftAvailability, canStartDraft } from '@/features/drafts';
 import { isSignerAccount } from '@/features/signing-path';
 
-import { type MultisigThreshold, type PositionAccessMode } from './types';
+import { type MultisigThreshold, type PositionAccess, type PositionBlockedReason } from './types';
 
 /**
- * Which of the four ways the user can act on `account`.
+ * What this installation could do with a draft for the address in question.
  *
- * The order below is the order of certainty, not of preference: a missing
- * account and a key we cannot sign with are facts, while "this multisig is
- * ours" depends on the rest of the installation and is therefore decided last.
+ * Resolved once per surface and handed in, rather than read here: it is the
+ * same answer for every row, and this runs once per row of a table and once per
+ * account of the KPI selection. It also has to come from the drafts feature
+ * itself — `useDraftAvailability` and `useDraftSources` — so that a row and the
+ * flow it opens cannot disagree about whether a draft is possible.
+ */
+export type DraftPolicy = {
+  availability: DraftAvailability;
+  /** Whether a draft may start at this address on this chain at all. */
+  isDraftSource: (accountId: AccountId, chainId: ChainId) => boolean;
+};
+
+const blocked = (reason: PositionBlockedReason): PositionAccess => ({ mode: 'blocked', reason });
+const allowed = (mode: 'direct' | 'multisig' | 'draft'): PositionAccess => ({ mode, reason: null });
+
+/**
+ * Whether the operation could leave as a draft, and what to say when it cannot.
+ *
+ * Two independent facts, and the address one comes first: a plain contact with
+ * no multisig and no proxy can never be a draft source, so connecting an
+ * address book or being granted a permission would change nothing for it. Only
+ * once the address _could_ carry a draft is it worth telling the user about a
+ * connection or a permission they might go and fix.
+ */
+function resolveDraftAccess(accountId: AccountId, chainId: ChainId, policy: DraftPolicy): PositionAccess {
+  if (!policy.isDraftSource(accountId, chainId)) return blocked('noDraftRoute');
+
+  // `canStartDraft` rather than a second reading of the same states: it is the
+  // drafts feature's own answer, and `DraftModeCard` hides itself by exactly
+  // this rule. `offline` passes it — the address book was connected before, the
+  // card carries its own reconnect prompt, and refusing at the dashboard would
+  // hide the one control that fixes it.
+  if (!canStartDraft(policy.availability)) {
+    return blocked(policy.availability === 'noPermission' ? 'draftsNoPermission' : 'draftsNotConnected');
+  }
+
+  return allowed('draft');
+}
+
+/**
+ * What the user may do with `account`, and why not when the answer is nothing.
  *
  * Both the row's own account and the accounts it may be signed through are
  * judged by `isSignerAccount`, the signing-path graph's own definition, rather
@@ -22,53 +61,59 @@ import { type MultisigThreshold, type PositionAccessMode } from './types';
  * happened with the wallet-level watch-only guard this file used to carry — no
  * button for an operation the flow would have completed.
  *
+ * **The order of the checks below is load-bearing.** Account kind is decided
+ * before the key, because a delegating account never holds one of its own: a
+ * proxied account is stamped `SigningType.WATCH_ONLY` at every creation site,
+ * so a signer check placed first swallows the whole category and reports a
+ * proxied position as watch-only — hiding every action from a user who holds
+ * the proxy.
+ *
  * A multisig is resolved one level deep — a signatory that is itself a foreign
  * multisig does not make the parent signable here. Nested multisig reachability
  * lives in the signing-path graph; a dashboard row does not need to re-derive
  * it, and pretending otherwise would be a guess.
  *
- * `signerAccountIds` is passed in rather than derived here, for two reasons. It
- * is the same set for every row, and this runs once per row of a table and once
- * per account of the KPI selection — rebuilding it inside would make the work
- * quadratic in the size of the wallet. And it has to come from the account
- * domain's own list: the accounts hanging off `Wallet` are a deprecated mirror
- * of it, and `useChainHasSigner` — the rule this one has to agree with — reads
- * the domain list. Two signer sets from two sources is the drift this whole
- * file exists to avoid. Build it with `collectSignerAccountIds`.
+ * `signerAccountIds` is passed in rather than derived here, for the same reason
+ * `draftPolicy` is: it is the same set for every row, and it has to come from
+ * the account domain's own list — the accounts hanging off `Wallet` are a
+ * deprecated mirror of it, and `useChainHasSigner`, the rule this one has to
+ * agree with, reads the domain list. Build it with `collectSignerAccountIds`.
  */
-export function getAccessMode(
+export function getPositionAccess(
   account: AnyAccount | null | undefined,
+  accountId: AccountId,
+  chainId: ChainId,
   wallets: Wallet[],
   signerAccountIds: ReadonlySet<AccountId>,
-): PositionAccessMode {
+  draftPolicy: DraftPolicy,
+): PositionAccess {
   // No local account at all — the address is known only from the address book.
-  if (nullable(account)) return 'draft';
+  if (nullable(account)) return resolveDraftAccess(accountId, chainId, draftPolicy);
 
   // Contact multisigs carry a sentinel wallet id, so the lookup misses by
   // design and lands here rather than pretending the wallet went missing.
   const wallet = walletUtils.getWalletById(wallets, account.walletId);
-  if (nullable(wallet)) return 'draft';
+  if (nullable(wallet)) return resolveDraftAccess(accountId, chainId, draftPolicy);
 
-  // Account kind is decided before the key, and the order is load-bearing.
-  // A delegating account never holds a key of its own — a proxied account is
-  // stamped `SigningType.WATCH_ONLY` at every creation site — so a signer check
-  // placed first swallows the whole category and reports a proxied position as
-  // watch-only, hiding every action from a user who holds the proxy.
   if (accountUtils.isAnyMultisigAccount(account)) {
-    return account.signatories.some((signatory) => signerAccountIds.has(signatory.accountId)) ? 'multisig' : 'draft';
+    const hasLocalSignatory = account.signatories.some((signatory) => signerAccountIds.has(signatory.accountId));
+
+    return hasLocalSignatory ? allowed('multisig') : resolveDraftAccess(accountId, chainId, draftPolicy);
   }
 
   if (accountUtils.isProxiedAccount(account)) {
     // A proxied account is only as signable as the proxies it delegates to.
-    return account.connections.some((connection) => signerAccountIds.has(connection.proxyAccountId))
-      ? 'direct'
-      : 'draft';
+    const hasLocalProxy = account.connections.some((connection) => signerAccountIds.has(connection.proxyAccountId));
+
+    return hasLocalProxy ? allowed('direct') : resolveDraftAccess(accountId, chainId, draftPolicy);
   }
 
-  // What is left holds its own key, or holds none at all.
-  if (!isSignerAccount(account)) return 'watchOnly';
+  // What is left holds its own key, or holds none at all. A watch-only account
+  // is the end of the road: it is one of ours, so there is no draft to hand to
+  // anybody, and no permission or connection would change that.
+  if (!isSignerAccount(account)) return blocked('watchOnly');
 
-  return 'direct';
+  return allowed('direct');
 }
 
 /** `2 of 3` chip data, `null` for anything that is not a multisig. */
@@ -79,6 +124,6 @@ export function getMultisigThreshold(account: AnyAccount | null | undefined): Mu
 }
 
 /** Whether the account may be offered signing actions at all. */
-export function canAct(mode: PositionAccessMode): boolean {
-  return mode !== 'watchOnly';
+export function canAct(access: PositionAccess): boolean {
+  return access.mode !== 'blocked';
 }

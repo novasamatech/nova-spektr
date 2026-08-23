@@ -1,16 +1,16 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { type Wallet } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import { type StakingSummary, summarizePositions, useStakingPositions } from '@/aggregates/staking-positions';
-import { getAccessMode, useSignerAccountIds } from '@/features/dashboard-staking-positions';
-import { type AccessMode } from '../lib/access';
+import { getPositionAccess, useDraftPolicy, useSignerAccountIds } from '@/features/dashboard-staking-positions';
+import { type Access } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
 import { type NetworkAvgBlend } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
@@ -24,13 +24,6 @@ import { useChainEras, useChainHistoryDepths, useEraDurations } from './useChain
 import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './useRewardsWindow';
 import { useStakingChainAssets } from './useStakingChainAssets';
 import { unclaimedKey, useUnclaimedPayoutsByPosition } from './useUnclaimedPayouts';
-
-/**
- * A position whose account is not local at all — an address-book row. That is
- * the same verdict `getAccessMode(null, wallets)` gives the positions table, so
- * the two surfaces never disagree about what can be done with the row.
- */
-const DEFAULT_ACCESS_MODE: AccessMode = 'draft';
 
 export type StakingKpiData = {
   positions: StakingPosition[];
@@ -124,18 +117,33 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     return result;
   }, [accountByAccountId, wallets]);
 
-  // Built once for the whole selection rather than inside `getAccessMode`: the
-  // loop below runs per account, and the set is the same for all of them.
+  // Built once for the whole selection rather than inside `getPositionAccess`:
+  // the loops below run per row, and both are the same for all of them.
   const signerAccountIds = useSignerAccountIds();
+  const positionChainIds = useMemo(() => [...new Set(positions.map((p) => p.chainId))], [positions]);
+  const draftPolicy = useDraftPolicy(positionChainIds);
 
-  const accessByAccount = useMemo(() => {
-    const result: Record<string, AccessMode> = {};
-    for (const [accountId, account] of accountByAccountId) {
-      result[accountId] = getAccessMode(account, wallets, signerAccountIds);
-    }
-
-    return result;
-  }, [accountByAccountId, wallets, signerAccountIds]);
+  /**
+   * The verdict for one row, which is a position — an account _on a chain_.
+   *
+   * Not cached per account: a proxy edge exists on one network and not on
+   * another, so the same address can be a draft source on Polkadot and a dead
+   * end on Kusama. An account absent from the wallet map is an address-book
+   * entry, and `getPositionAccess(null, …)` is exactly the verdict the
+   * positions table gives it — the two surfaces cannot disagree.
+   */
+  const accessFor = useCallback(
+    (accountId: AccountId, chainId: ChainId): Access =>
+      getPositionAccess(
+        accountByAccountId.get(accountId) ?? null,
+        accountId,
+        chainId,
+        wallets,
+        signerAccountIds,
+        draftPolicy,
+      ),
+    [accountByAccountId, wallets, signerAccountIds, draftPolicy],
+  );
 
   // --- Total staked -------------------------------------------------------
 
@@ -214,12 +222,12 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unclaimedFiat: toFiat(position.chainId, entry?.total ?? '0'),
         eras,
         payouts,
-        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
+        access: accessFor(position.accountId, position.chainId),
       });
     }
 
     return rows;
-  }, [positions, assets, unclaimed, rewardsByChain, toFiat, accessByAccount]);
+  }, [positions, assets, unclaimed, rewardsByChain, toFiat, accessFor]);
 
   const unclaimedFooter = useMemo(() => {
     const byAsset = new Map<string, AssetAmount>();
@@ -278,12 +286,12 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unbonding: position.unbonding,
         totalUnbonding: position.totalUnbonding,
         redeemable: position.redeemable,
-        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
+        access: accessFor(position.accountId, position.chainId),
       });
     }
 
     return rows.sort((a, b) => new BigNumber(b.stakedFiat).comparedTo(a.stakedFiat) ?? 0);
-  }, [positions, assets, toFiat, accessByAccount]);
+  }, [positions, assets, toFiat, accessFor]);
 
   const nominationRows = useMemo(() => {
     const chainNames: Record<string, string> = {};
