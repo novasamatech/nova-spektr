@@ -144,11 +144,22 @@ export const createNewPositionFlowModel = () => {
    * Switching chain can also strip the current account of its key scheme or its
    * own binding, and a stale initiator would silently build a transaction for
    * an account that cannot hold it.
+   *
+   * Opening the flow is a clock in its own right, not only a change in the
+   * account list. `flowClosed` clears the initiator, and by the second open the
+   * wallets and accounts settled long ago and will never emit again — so a
+   * re-seed that waited for the list to change would leave the reopened form
+   * with no source, no path to render, an available balance of zero and a
+   * Continue button that can never light up.
    */
   sample({
-    clock: $availableAccounts,
-    source: { initiator: $initiator, selectedWalletId: walletSelect.$selectedWalletId },
-    fn: ({ initiator, selectedWalletId }, available) => {
+    clock: [$availableAccounts, newPositionRequested],
+    source: {
+      available: $availableAccounts,
+      initiator: $initiator,
+      selectedWalletId: walletSelect.$selectedWalletId,
+    },
+    fn: ({ available, initiator, selectedWalletId }) => {
       const stillAvailable = initiator && available.some((account) => account.id === initiator.id);
       if (stillAvailable) return initiator;
 

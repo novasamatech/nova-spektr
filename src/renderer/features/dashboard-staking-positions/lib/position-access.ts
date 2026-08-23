@@ -49,8 +49,11 @@ export function getAccessMode(
   const wallet = walletUtils.getWalletById(wallets, account.walletId);
   if (nullable(wallet)) return 'draft';
 
-  if (!isSignerAccount(account)) return 'watchOnly';
-
+  // Account kind is decided before the key, and the order is load-bearing.
+  // A delegating account never holds a key of its own — a proxied account is
+  // stamped `SigningType.WATCH_ONLY` at every creation site — so a signer check
+  // placed first swallows the whole category and reports a proxied position as
+  // watch-only, hiding every action from a user who holds the proxy.
   if (accountUtils.isAnyMultisigAccount(account)) {
     return account.signatories.some((signatory) => signerAccountIds.has(signatory.accountId)) ? 'multisig' : 'draft';
   }
@@ -61,6 +64,9 @@ export function getAccessMode(
       ? 'direct'
       : 'draft';
   }
+
+  // What is left holds its own key, or holds none at all.
+  if (!isSignerAccount(account)) return 'watchOnly';
 
   return 'direct';
 }

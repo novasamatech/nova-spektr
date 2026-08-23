@@ -185,6 +185,11 @@ describe('getAccessMode', () => {
       id: 'proxied',
       accountId: PROXIED,
       accountType: AccountType.PROXIED,
+      // Every creation site stamps a proxied account WATCH_ONLY — it holds no
+      // key of its own, the proxy does. `features/proxies/model/proxies-model.ts`,
+      // `features/account-sync/model/sync.ts`, and the synthetic account built by
+      // `features/signing-path/lib/path-account-resolution.ts` all agree on this.
+      signingType: SigningType.WATCH_ONLY,
       connections: [{ proxyAccountId: BOB, delay: 0, proxyType: 'Any' }],
     });
 
