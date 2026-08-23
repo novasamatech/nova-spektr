@@ -53,12 +53,12 @@ flowchart TD
   WO -- "yes" --> BWO["blocked · watchOnly"]
   WO -- "no" --> DIRECT
 
-  DRAFTQ{"Is this address a valid<br/>draft source on this chain?"}
-  DRAFTQ -- "no" --> BROUTE["blocked · noDraftRoute"]
-  DRAFTQ -- "yes" --> AVAIL{"Drafts available<br/>to this user?"}
-  AVAIL -- "never connected" --> BNC["blocked · draftsNotConnected"]
-  AVAIL -- "no write permission" --> BNP["blocked · draftsNoPermission"]
-  AVAIL -- "ready, or merely offline" --> DRAFT["draft"]
+  DRAFTQ{"Drafts available<br/>to this user?"}
+  DRAFTQ -- "never connected" --> BNC["blocked · draftsNotConnected"]
+  DRAFTQ -- "no write permission" --> BNP["blocked · draftsNoPermission"]
+  DRAFTQ -- "ready, or merely offline" --> SRC{"Is this address a valid<br/>draft source on this chain?"}
+  SRC -- "no" --> BROUTE["blocked · noDraftRoute"]
+  SRC -- "yes" --> DRAFT["draft"]
 ```
 
 | Access                         | When                                                                        | What the row and drawer show                                                                    |
@@ -82,6 +82,12 @@ signing-path graph only offers multisigs, and proxied accounts that reach a mult
 address kept as a contact is not a draft source and never will be — it is blocked with a reason, not offered a draft it
 could never complete. One rule with one owner: `features/drafts` publishes the source set, and both this widget and the
 in-flow picker read it.
+
+**But availability is answered before the address.** The source set is those graph roots intersected with the address
+book, so with no address book connected it is empty for every address alike. Reading that emptiness as a fact about the
+address told a never-connected user that their contact "has no multisig or proxy that could sign for it" — untrue, and
+pointing at nothing they could do. Whether an address could carry a draft is unknowable until there is a book to look it
+up in.
 
 **An address book that is merely unreachable is not a blocker.** It was connected before, the draft card carries its own
 reconnect prompt, and refusing at the dashboard would hide the one control that fixes it.

@@ -198,10 +198,8 @@ describe('getPositionAccess', () => {
     const NO_ROUTE: DraftPolicy = { availability: 'ready', isDraftSource: () => false };
 
     it('blocks an address the signing-path graph cannot route from', () => {
-      // A plain contact — no multisig, no proxy. Nothing about the address book
-      // or the user's permissions can make it a draft source, so this reason
-      // outranks the other two: telling the user to connect or to ask an admin
-      // would send them after a fix that changes nothing.
+      // A plain contact — no multisig, no proxy — with a working address book:
+      // the only case where the address itself is the answer.
       expect(access(null, [], NO_ROUTE)).toEqual({ mode: 'blocked', reason: 'noDraftRoute' });
     });
 
@@ -215,6 +213,22 @@ describe('getPositionAccess', () => {
       const policy: DraftPolicy = { availability: 'noPermission', isDraftSource: () => true };
 
       expect(access(null, [], policy)).toEqual({ mode: 'blocked', reason: 'draftsNoPermission' });
+    });
+
+    /**
+     * The source set is the graph's roots intersected with the address book, so
+     * with no address book it is empty for every address alike. Reading that as
+     * a fact about the address told a never-connected user their contact "has
+     * no multisig or proxy that could sign for it" — untrue, and pointing at
+     * nothing they could do. Caught by driving the real app on a
+     * never-connected profile.
+     */
+    it('says which fix is available when neither the book nor the address would do', () => {
+      const notConnected: DraftPolicy = { availability: 'notConnected', isDraftSource: () => false };
+      const noPermission: DraftPolicy = { availability: 'noPermission', isDraftSource: () => false };
+
+      expect(access(null, [], notConnected)).toEqual({ mode: 'blocked', reason: 'draftsNotConnected' });
+      expect(access(null, [], noPermission)).toEqual({ mode: 'blocked', reason: 'draftsNoPermission' });
     });
 
     it('still offers the draft while the address book is merely unreachable', () => {

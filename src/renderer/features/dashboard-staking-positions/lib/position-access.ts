@@ -29,23 +29,28 @@ const allowed = (mode: 'direct' | 'multisig' | 'draft'): PositionAccess => ({ mo
 /**
  * Whether the operation could leave as a draft, and what to say when it cannot.
  *
- * Two independent facts, and the address one comes first: a plain contact with
- * no multisig and no proxy can never be a draft source, so connecting an
- * address book or being granted a permission would change nothing for it. Only
- * once the address _could_ carry a draft is it worth telling the user about a
- * connection or a permission they might go and fix.
+ * **Availability is answered before the address**, and the order matters more
+ * than it looks. The source set is the graph's roots intersected with the
+ * external address book, so with no address book connected it is empty for
+ * every address alike — and reading that emptiness as a fact about the address
+ * told a never-connected user that their contact "has no multisig or proxy that
+ * could sign for it", which is untrue and points them at nothing they can do.
+ * Whether an address could carry a draft is simply unknowable until there is a
+ * book to look it up in, so the connection and the permission are reported
+ * first.
+ *
+ * `canStartDraft` rather than a second reading of the same states: it is the
+ * drafts feature's own answer, and `DraftModeCard` hides itself by exactly this
+ * rule. `offline` passes it — the address book was connected before, its
+ * contacts are still cached, the card carries its own reconnect prompt, and
+ * refusing at the dashboard would hide the one control that fixes it.
  */
 function resolveDraftAccess(accountId: AccountId, chainId: ChainId, policy: DraftPolicy): PositionAccess {
-  if (!policy.isDraftSource(accountId, chainId)) return blocked('noDraftRoute');
-
-  // `canStartDraft` rather than a second reading of the same states: it is the
-  // drafts feature's own answer, and `DraftModeCard` hides itself by exactly
-  // this rule. `offline` passes it — the address book was connected before, the
-  // card carries its own reconnect prompt, and refusing at the dashboard would
-  // hide the one control that fixes it.
   if (!canStartDraft(policy.availability)) {
     return blocked(policy.availability === 'noPermission' ? 'draftsNoPermission' : 'draftsNotConnected');
   }
+
+  if (!policy.isDraftSource(accountId, chainId)) return blocked('noDraftRoute');
 
   return allowed('draft');
 }
