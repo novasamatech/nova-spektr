@@ -7,7 +7,7 @@ import { type TableSort, Tooltip } from '@/shared/ui-kit';
 import { ValidatorSelectionModal } from '@/features/validator-selection';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { usePositionRows } from '../hooks/usePositionRows';
-import { useTrackedAddressBookAccounts } from '../hooks/useTrackedAddressBookAccounts';
+import { useStakingAccountSelection } from '../hooks/useStakingAccountSelection';
 import { type PositionRow, DEFAULT_SORT, isSortColumn, sortPositionRows } from '../lib';
 import { positionActions } from '../model/position-actions';
 
@@ -33,7 +33,7 @@ type Props = {
  */
 export const PositionsWidget = ({ accountIds }: Props) => {
   const { t } = useI18n();
-  useTrackedAddressBookAccounts(accountIds);
+  useStakingAccountSelection(accountIds);
   const { rows, pending } = usePositionRows(accountIds);
   const wiredActions = useUnit(positionActions.$wiredActions);
   const changeValidatorsTarget = useUnit(positionActions.$changeValidatorsTarget);

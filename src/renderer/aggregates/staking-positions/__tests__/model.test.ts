@@ -8,7 +8,6 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { AssetHubChains, era, exposures, nominations, staking } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { stakingPositions } from '../model';
 
 // The staking domain talks to the chain through six service modules. Mocking
@@ -149,6 +148,8 @@ function createAccount(id: string): AnyAccount {
 
 const accountA = createAccount('account-a');
 const accountB = createAccount('account-b');
+// An account of a different wallet: the selection spans every wallet.
+const accountC: AnyAccount = { ...createAccount('account-c'), walletId: 2 };
 
 // Address book entries — an address with no local account behind it.
 const contactOne = createAccountId('contact-one');
@@ -166,6 +167,11 @@ const wallet: Wallet = {
   type: WalletType.WALLET_CONNECT,
   accounts: [],
 };
+
+/** The aggregate keeps the selection sorted, whatever order it was given in. */
+function sorted(accountIds: AccountId[]): AccountId[] {
+  return [...accountIds].sort();
+}
 
 function createStake(accountId: AccountId, chainId: ChainId, total: string, active: string): Stake {
   return {
@@ -195,7 +201,8 @@ type SetupParams = {
   chains?: Chain[];
   apis?: Record<ChainId, ApiPromise>;
   accountList?: AnyAccount[];
-  trackedAccountIds?: AccountId[];
+  /** The dashboard selection; defaults to both wallet accounts. */
+  selectedAccountIds?: AccountId[];
   /** Whether a wallet account is allowed on a chain at all. */
   availableOnChain?: boolean;
   /** Keep the apis back so a test can watch the very first start of a key. */
@@ -212,7 +219,7 @@ async function setup({
   chains = [polkadotChain, kusamaChain],
   apis = { [POLKADOT_AH]: polkadotApi, [KUSAMA_AH]: kusamaApi },
   accountList = [accountA, accountB],
-  trackedAccountIds,
+  selectedAccountIds = [accountA.accountId, accountB.accountId],
   availableOnChain = true,
   deferApis = false,
 }: SetupParams = {}): Promise<Scope> {
@@ -220,8 +227,7 @@ async function setup({
     values: new Map()
       .set(networkModel.$chains, Object.fromEntries(chains.map(chain => [chain.chainId, chain])))
       .set(walletModel.__test.$rawWallets, [wallet])
-      .set(accounts.__test.$list, accountList)
-      .set(walletSelect.__test.$selectedWalletId, wallet.id),
+      .set(accounts.__test.$list, accountList),
   });
 
   // anyOf registries resolve through the scoped store - an unscoped
@@ -231,11 +237,10 @@ async function setup({
     params: { body: () => availableOnChain, available: () => true },
   });
 
-  // Tracked before the apis land: the account list is part of every ledger and
-  // nominations key, so seeding it first keeps the first start the only start.
-  if (trackedAccountIds) {
-    await allSettled(stakingPositions.trackAccountIds, { scope, params: trackedAccountIds });
-  }
+  // Selected before the apis land: the account list is part of every ledger
+  // and nominations key, so seeding it first keeps the first start the only
+  // start.
+  await allSettled(stakingPositions.selectAccountIds, { scope, params: selectedAccountIds });
 
   if (!deferApis) {
     await landApis(scope, apis);
@@ -605,12 +610,20 @@ describe('aggregates/staking-positions', () => {
     expect(started).toHaveLength(2);
   });
 
-  it('derives a position for a tracked address-book id on every staking chain', async () => {
-    const scope = await makeScope({ trackedAccountIds: [contactOne] });
+  it('derives a position for a selected address-book id on every staking chain', async () => {
+    const scope = await makeScope({ selectedAccountIds: [accountA.accountId, accountB.accountId, contactOne] });
 
     expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
-      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: [accountA.accountId, accountB.accountId, contactOne] },
-      { chain: kusamaChain, chainId: KUSAMA_AH, accountIds: [accountA.accountId, accountB.accountId, contactOne] },
+      {
+        chain: polkadotChain,
+        chainId: POLKADOT_AH,
+        accountIds: sorted([accountA.accountId, accountB.accountId, contactOne]),
+      },
+      {
+        chain: kusamaChain,
+        chainId: KUSAMA_AH,
+        accountIds: sorted([accountA.accountId, accountB.accountId, contactOne]),
+      },
     ]);
 
     chainMock.exposurePages[POLKADOT_AH] = { [validatorOne]: createExposure(contactOne, '700') };
@@ -640,10 +653,29 @@ describe('aggregates/staking-positions', () => {
     expect(scope.getState(stakingPositions.$summary).positionCount).toBe(2);
   });
 
-  it('does not run the wallet chain-availability filter over tracked ids', async () => {
-    // Every wallet account is rejected by the availability check; a tracked id
-    // is a bare address, so there is nothing to reject and it stays.
-    const scope = await makeScope({ availableOnChain: false, trackedAccountIds: [contactOne] });
+  it('answers for the selection alone - accounts of several wallets, unselected ones left out', async () => {
+    const scope = await makeScope({
+      chains: [polkadotChain],
+      apis: { [POLKADOT_AH]: polkadotApi },
+      accountList: [accountA, accountB, accountC],
+      selectedAccountIds: [accountC.accountId, accountA.accountId],
+    });
+
+    // `accountB` belongs to the same wallet as `accountA` and is still not
+    // asked about: the wallet is not the unit of selection, the account is.
+    expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
+      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: sorted([accountA.accountId, accountC.accountId]) },
+    ]);
+  });
+
+  it('does not run the wallet chain-availability filter over address-book ids', async () => {
+    // Every wallet account is rejected by the availability check; an
+    // address-book id is a bare address, so there is nothing to reject and it
+    // stays.
+    const scope = await makeScope({
+      availableOnChain: false,
+      selectedAccountIds: [accountA.accountId, accountB.accountId, contactOne],
+    });
 
     expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
       { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: [contactOne] },
@@ -651,24 +683,34 @@ describe('aggregates/staking-positions', () => {
     ]);
   });
 
-  it('drops a tracked id whose key scheme the chain cannot hold', async () => {
+  it('drops a selected id whose key scheme the chain cannot hold', async () => {
     // `staking.bonded.multi` rejects the whole batch when one key is
     // unencodable, and the failure lands as an empty ledger map for the chain -
     // so a single EVM address book row used to keep every account of every
     // staking chain in a permanent skeleton.
-    const scope = await makeScope({ trackedAccountIds: [contactOne, ethereumContact] });
+    const scope = await makeScope({
+      selectedAccountIds: [accountA.accountId, accountB.accountId, contactOne, ethereumContact],
+    });
 
     expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
-      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: [accountA.accountId, accountB.accountId, contactOne] },
-      { chain: kusamaChain, chainId: KUSAMA_AH, accountIds: [accountA.accountId, accountB.accountId, contactOne] },
+      {
+        chain: polkadotChain,
+        chainId: POLKADOT_AH,
+        accountIds: sorted([accountA.accountId, accountB.accountId, contactOne]),
+      },
+      {
+        chain: kusamaChain,
+        chainId: KUSAMA_AH,
+        accountIds: sorted([accountA.accountId, accountB.accountId, contactOne]),
+      },
     ]);
   });
 
-  it('subscribes once for an address that is both a wallet account and tracked', async () => {
+  it('subscribes once for an address selected twice', async () => {
     const scope = await makeScope({
       chains: [polkadotChain],
       apis: { [POLKADOT_AH]: polkadotApi },
-      trackedAccountIds: [accountA.accountId],
+      selectedAccountIds: [accountA.accountId, accountB.accountId, accountA.accountId],
       deferApis: true,
     });
 
@@ -685,24 +727,24 @@ describe('aggregates/staking-positions', () => {
     await landApis(scope, { [POLKADOT_AH]: polkadotApi });
 
     expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
-      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: [accountA.accountId, accountB.accountId] },
+      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: sorted([accountA.accountId, accountB.accountId]) },
     ]);
 
     expect(started).toEqual([
       staking.stakingResource.createKey({
         chainId: POLKADOT_AH,
         api: polkadotApi,
-        accounts: [accountA.accountId, accountB.accountId],
+        accounts: sorted([accountA.accountId, accountB.accountId]),
       }),
     ]);
     expect(stopped).toEqual([]);
   });
 
-  it('stops the old keys and starts the new ones when the tracked set changes', async () => {
+  it('stops the old keys and starts the new ones when the selection changes', async () => {
     const scope = await makeScope({
       chains: [polkadotChain],
       apis: { [POLKADOT_AH]: polkadotApi },
-      trackedAccountIds: [contactOne],
+      selectedAccountIds: [accountA.accountId, accountB.accountId, contactOne],
     });
 
     const started: string[] = [];
@@ -715,28 +757,33 @@ describe('aggregates/staking-positions', () => {
     });
     createWatch({ unit: nominations.nominationsResource.stop, scope, fn: key => stopped.push(key) });
 
-    await allSettled(stakingPositions.trackAccountIds, { scope, params: [contactTwo] });
+    await allSettled(stakingPositions.selectAccountIds, {
+      scope,
+      params: [accountA.accountId, accountB.accountId, contactTwo],
+    });
 
     const stashesWith = (tracked: AccountId) => ({
       chainId: POLKADOT_AH,
       api: polkadotApi,
-      stashes: [accountA.accountId, accountB.accountId, tracked],
+      stashes: sorted([accountA.accountId, accountB.accountId, tracked]),
     });
 
     expect(started).toEqual([nominations.nominationsResource.createKey(stashesWith(contactTwo))]);
     expect(stopped).toEqual([nominations.nominationsResource.createKey(stashesWith(contactOne))]);
   });
 
-  it('clears the tracked ids on reset and releases their subscriptions', async () => {
+  it('clears the selection on reset and releases its subscriptions', async () => {
     const scope = await makeScope({
       chains: [polkadotChain],
       apis: { [POLKADOT_AH]: polkadotApi },
-      trackedAccountIds: [contactOne],
+      selectedAccountIds: [accountA.accountId, accountB.accountId, contactOne],
     });
 
     await emitEra(scope, POLKADOT_AH, 800);
 
-    expect(scope.getState(stakingPositions.$trackedAccountIds)).toEqual([contactOne]);
+    expect(scope.getState(stakingPositions.$selectedAccountIds)).toEqual(
+      sorted([accountA.accountId, accountB.accountId, contactOne]),
+    );
     expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(true);
     expect(chainMock.nominations.has(POLKADOT_AH)).toBe(true);
 
@@ -746,20 +793,20 @@ describe('aggregates/staking-positions', () => {
     await allSettled(stakingPositions.reset, { scope });
     activeScope = null;
 
-    expect(scope.getState(stakingPositions.$trackedAccountIds)).toEqual([]);
+    expect(scope.getState(stakingPositions.$selectedAccountIds)).toEqual([]);
     expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([]);
     expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.nominations.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.eras.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.minBonds.has(POLKADOT_AH)).toBe(false);
 
-    // The tracked id was part of the ledger key, so exactly the key that was
+    // The selection was part of the ledger key, so exactly the key that was
     // started is the key that gets released - no second, stale stop.
     expect(stopped).toEqual([
       staking.stakingResource.createKey({
         chainId: POLKADOT_AH,
         api: polkadotApi,
-        accounts: [accountA.accountId, accountB.accountId, contactOne],
+        accounts: sorted([accountA.accountId, accountB.accountId, contactOne]),
       }),
     ]);
   });
@@ -771,7 +818,7 @@ describe('aggregates/staking-positions', () => {
       {
         chain: polkadotChain,
         chainId: POLKADOT_AH,
-        accountIds: [accountA.accountId, accountB.accountId],
+        accountIds: sorted([accountA.accountId, accountB.accountId]),
       },
     ]);
 

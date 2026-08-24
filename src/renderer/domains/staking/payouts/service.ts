@@ -6,6 +6,7 @@ import { type EraIndex } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type EraStorage } from '../era-storage';
 import { exposureKey } from '../exposure-key';
 import { type RewardSource } from '../types';
 
@@ -27,6 +28,12 @@ type GetUnclaimedPayoutsParams = {
   activeEra: EraIndex;
   historyDepth: number;
   rewardSources: RewardSource[];
+  /**
+   * Where the era-scoped reads come from. The resource hands over the chain's
+   * memoised era reads: a scan runs per stash, and fifty stashes of one
+   * selection walk the very same past eras and validator pages.
+   */
+  storage?: EraStorage;
 };
 
 type ResolvedPayout = {
@@ -104,12 +111,12 @@ async function getClaimedPages(
  * `pageCount` of the given eras, keyed by `(era, validator)`. One storage walk
  * per era instead of one request per validator.
  */
-async function getExposureMetadata(api: ApiPromise, eras: EraIndex[]) {
+async function getExposureMetadata(api: ApiPromise, eras: EraIndex[], storage: EraStorage) {
   const metadata = new Map<string, { total: BN; own: BN; pageCount: number }>();
 
   const responses = await Promise.all(
     eras.map(era =>
-      stakingPallet.storage
+      storage
         .erasStakersOverview(api, era)
         .then(items => ({ era, items }))
         .catch((error: unknown) => {
@@ -144,6 +151,7 @@ async function collectChainExposures(
   stash: AccountId,
   eraFrom: EraIndex,
   eraTo: EraIndex,
+  storage: EraStorage,
 ): Promise<EraValidatorExposure[]> {
   try {
     const [nominator] = await stakingPallet.storage.nominators(api, [stash]);
@@ -157,7 +165,7 @@ async function collectChainExposures(
       eras.push(era);
     }
 
-    const metadata = await getExposureMetadata(api, eras);
+    const metadata = await getExposureMetadata(api, eras, storage);
 
     const exposures: EraValidatorExposure[] = [];
     for (const era of eras) {
@@ -191,6 +199,7 @@ async function resolvePayoutPages(
   stash: AccountId,
   exposures: EraValidatorExposure[],
   claimed: Map<string, readonly number[]>,
+  storage: EraStorage,
 ): Promise<ResolvedPayout[]> {
   const selfPayouts: ResolvedPayout[] = [];
   const withClaimedPages: EraValidatorExposure[] = [];
@@ -223,7 +232,7 @@ async function resolvePayoutPages(
 
   // Validators with every page already paid out need no page lookup at all.
   if (withClaimedPages.length > 0) {
-    const metadata = await getExposureMetadata(api, uniq(withClaimedPages.map(exposure => exposure.era)));
+    const metadata = await getExposureMetadata(api, uniq(withClaimedPages.map(exposure => exposure.era)), storage);
 
     for (const exposure of withClaimedPages) {
       const key = exposureKey(exposure.era, exposure.validator);
@@ -238,13 +247,11 @@ async function resolvePayoutPages(
 
   const paged = await Promise.all(
     needsPageLookup.map(async exposure => {
-      const pages = await stakingPallet.storage
-        .erasStakersPaged(api, exposure.era, exposure.validator)
-        .catch((error: unknown) => {
-          console.warn('Staking payouts: erasStakersPaged failed for', exposure.era, exposure.validator, error);
+      const pages = await storage.erasStakersPaged(api, exposure.era, exposure.validator).catch((error: unknown) => {
+        console.warn('Staking payouts: erasStakersPaged failed for', exposure.era, exposure.validator, error);
 
-          return [];
-        });
+        return [];
+      });
 
       for (const { page, exposure: pageExposure } of pages) {
         const own = pageExposure.others.find(other => other.who === stash);
@@ -273,12 +280,13 @@ async function resolvePayoutPages(
 async function calculatePayouts(
   api: ApiPromise,
   resolved: ResolvedPayout[],
+  storage: EraStorage,
 ): Promise<{ total: string; payouts: UnclaimedPayout[] }> {
   const eras = uniq(resolved.map(item => item.era));
 
   const [eraRewards, eraPoints, eraPrefs] = await Promise.all([
     stakingPallet.storage.erasValidatorReward(api, eras),
-    Promise.all(eras.map(era => stakingPallet.storage.erasRewardPoints(api, era).then(points => ({ era, points })))),
+    Promise.all(eras.map(era => storage.erasRewardPoints(api, era).then(points => ({ era, points })))),
     stakingPallet.storage.erasValidatorPrefsFor(
       api,
       resolved.map(({ era, validator }) => ({ era, validator })),
@@ -337,6 +345,7 @@ export async function getUnclaimedPayouts({
   activeEra,
   historyDepth,
   rewardSources,
+  storage = stakingPallet.storage,
 }: GetUnclaimedPayoutsParams): Promise<UnclaimedPayouts> {
   const eraFrom = Math.max(0, activeEra - historyDepth);
   const eraTo = activeEra - 1;
@@ -351,7 +360,7 @@ export async function getUnclaimedPayouts({
   // to claim over the full history" — fall through to the bounded chain scan
   // rather than telling the user their rewards do not exist.
   const indexed = hasIndexer ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo }) : null;
-  const exposures = indexed ?? (await collectChainExposures(api, stash, eraFrom, eraTo));
+  const exposures = indexed ?? (await collectChainExposures(api, stash, eraFrom, eraTo, storage));
 
   const source: PayoutSource = indexed !== null ? 'subquery' : exposures.length > 0 ? 'chain' : 'unavailable';
   if (source === 'unavailable') return EMPTY_PAYOUTS;
@@ -366,10 +375,10 @@ export async function getUnclaimedPayouts({
     unknown.size === 0 ? candidates : candidates.filter(e => !unknown.has(exposureKey(e.era, e.validator)));
   if (answered.length === 0) return emptyResult(source);
 
-  const resolved = await resolvePayoutPages(api, stash, answered, claimed);
+  const resolved = await resolvePayoutPages(api, stash, answered, claimed, storage);
   if (resolved.length === 0) return emptyResult(source);
 
-  const { total, payouts } = await calculatePayouts(api, resolved);
+  const { total, payouts } = await calculatePayouts(api, resolved, storage);
 
   return { total, payouts, source };
 }

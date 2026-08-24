@@ -247,13 +247,11 @@ is safe to double-register: `balanceSubModel` keys live chain subscriptions by `
 already exists, so having two overview features register the same accounts never opens a second live subscription — only
 the one-shot fetch effect runs twice, which is cheap.
 
-The widget also calls `stakingPositions.trackAccountIds` (`hooks/useTrackedContacts.ts`) so address-book entries in the
-dashboard selection — which have no wallet account and would otherwise never produce a staking position — get one.
-`features/dashboard-staking-positions` tracks the same contact ids from the Staking tab for the same reason. Both derive
-their tracked set from the same dashboard selection and push it wholesale into the same aggregate store, which dedupes
-and sorts through an `updateFilter`, so the two features cannot fight over the tracked set — but they must stay in
-lockstep: if either hook's derivation of "which ids are contacts, not wallet accounts" ever diverges from the other's,
-that divergence needs a comment explaining why.
+The widget also hands the dashboard selection to `stakingPositions.selectAccountIds`
+(`hooks/useStakingAccountSelection.ts`) so every selected account — whichever wallet it belongs to, address-book entries
+included — gets a staking position and therefore a Staked amount. `features/dashboard-staking-positions` pushes the same
+selection from the Staking tab for the same reason. Both push it wholesale into the same aggregate store, which dedupes
+and sorts through an `updateFilter`, so the two features cannot fight over the selection.
 
 ## Known gaps / deferred
 

@@ -22,8 +22,9 @@ either fiat (`$29.6M`) or a list (`5.38M DOT + 60K KSM`). Anything else would in
 ## Who can use it / when it applies
 
 - Gated by the **`dashboard`** feature flag.
-- Scoped twice: the underlying positions belong to the **selected wallet**, and the cards additionally follow the
-  **dashboard's own account picker**. An account the user unticks disappears from every figure and every drill-down row.
+- Scoped by the **dashboard's own account picker** and nothing else — the positions aggregate answers for the picked
+  accounts across every wallet, and the wallet selected in wallet management plays no part. An account the user unticks
+  disappears from every figure and every drill-down row.
 - With no accounts selected each card keeps its shape and shows an em dash over "No accounts selected", and stops being
   clickable. A quarter-width card has no room for the two-line block the full-width widgets use, and zeroes would claim
   a fact nobody established.

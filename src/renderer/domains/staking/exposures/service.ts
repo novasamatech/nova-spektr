@@ -4,6 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { type EraIndex } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type EraStorage } from '../era-storage';
 
 import { type Exposure, type ExposureMap, type ExposureOverview, type ExposureOverviewMap } from './types';
 
@@ -44,15 +45,20 @@ async function getEraOverviews(api: ApiPromise, era: EraIndex): Promise<Exposure
  * `overviews` is optional: when the era overviews are already cached they are
  * merged in, otherwise the overview fields are derived from the pages
  * themselves (`own` is not derivable and stays `'0'`).
+ *
+ * `storage` is where the pages are read from - the resource hands over the
+ * chain's memoised era reads, so a validator already read for this era is not
+ * read again when the selection widens.
  */
 async function getExposurePages(
   api: ApiPromise,
   era: EraIndex,
   validators: AccountId[],
   overviews: ExposureOverviewMap = {},
+  storage: Pick<EraStorage, 'erasStakersPaged'> = stakingPallet.storage,
 ): Promise<ExposureMap> {
   const exposures = await Promise.all(
-    validators.map(validator => getValidatorExposure(api, era, validator, overviews[validator])),
+    validators.map(validator => getValidatorExposure(api, era, validator, overviews[validator], storage)),
   );
 
   const result: ExposureMap = {};
@@ -70,9 +76,10 @@ async function getValidatorExposure(
   api: ApiPromise,
   era: EraIndex,
   validator: AccountId,
-  overview?: ExposureOverview,
+  overview: ExposureOverview | undefined,
+  storage: Pick<EraStorage, 'erasStakersPaged'>,
 ): Promise<Exposure> {
-  const pages = await stakingPallet.storage.erasStakersPaged(api, era, validator);
+  const pages = await storage.erasStakersPaged(api, era, validator);
   const sortedPages = [...pages].sort((a, b) => a.page - b.page);
 
   const others = sortedPages.flatMap(({ exposure }) =>

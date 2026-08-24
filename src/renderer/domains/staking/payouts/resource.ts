@@ -4,6 +4,7 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { getEraStorage } from '../era-storage';
 import { type RewardSource } from '../types';
 
 import { getUnclaimedPayouts } from './service';
@@ -32,8 +33,15 @@ export const payoutsResource = createQueryResource<PayoutsResourceParams>({
   key: ({ chainId, stash, activeEra }) => [chainId, stash, activeEra],
 })
   .name('unclaimed-payouts')
-  .request<UnclaimedPayouts>(({ api, stash, activeEra, historyDepth, rewardSources }) => {
-    return getUnclaimedPayouts({ api, stash, activeEra, historyDepth, rewardSources });
+  .request<UnclaimedPayouts>(({ chainId, api, stash, activeEra, historyDepth, rewardSources }) => {
+    return getUnclaimedPayouts({
+      api,
+      stash,
+      activeEra,
+      historyDepth,
+      rewardSources,
+      storage: getEraStorage(chainId),
+    });
   })
   .cache({
     store: $payoutsCache,

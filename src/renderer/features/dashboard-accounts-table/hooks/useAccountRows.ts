@@ -31,8 +31,8 @@ export type AccountRowsResult = {
  * The single join hook of the accounts table: every non-zero balance record of
  * the dashboard's selected accountIds, split by purpose and priced, as flat
  * rows. Nothing here starts a subscription — balance fetching is wired in the
- * feature's `index.ts`, staking tracking in `useTrackedContacts`; this only
- * joins the caches they fill and hands each record to `buildAccountRow`.
+ * feature's `index.ts`, staking selection in `useStakingAccountSelection`; this
+ * only joins the caches they fill and hands each record to `buildAccountRow`.
  * Sorting/filtering happen downstream; the output order is merely stable
  * (groupKey → chainId → assetId).
  */
