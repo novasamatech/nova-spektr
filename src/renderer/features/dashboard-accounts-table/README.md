@@ -1,6 +1,6 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
 
 ## Overview
 
@@ -247,11 +247,11 @@ is safe to double-register: `balanceSubModel` keys live chain subscriptions by `
 already exists, so having two overview features register the same accounts never opens a second live subscription — only
 the one-shot fetch effect runs twice, which is cheap.
 
-The widget also hands the dashboard selection to `stakingPositions.selectAccountIds`
-(`hooks/useStakingAccountSelection.ts`) so every selected account — whichever wallet it belongs to, address-book entries
-included — gets a staking position and therefore a Staked amount. `features/dashboard-staking-positions` pushes the same
-selection from the Staking tab for the same reason. Both push it wholesale into the same aggregate store, which dedupes
-and sorts through an `updateFilter`, so the two features cannot fight over the selection.
+The widget also hands the dashboard selection to the positions aggregate through its `useStakingAccountSelection` hook,
+so every selected account — whichever wallet it belongs to, address-book entries included — gets a staking position and
+therefore a Staked amount. `features/dashboard-staking-positions` does the same from the Staking tab. Dashboard tabs
+stay mounted once visited, so both hold the selection at once: the aggregate counts its consumers and releases the
+selection only when the last one unmounts, so hiding this widget never blanks the Staking tab.
 
 ## Known gaps / deferred
 

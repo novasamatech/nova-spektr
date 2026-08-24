@@ -88,8 +88,8 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const eraDurations = useEraDurations();
   const historyDepths = useChainHistoryDepths();
 
-  // The aggregate answers for the selected wallet; the dashboard's own account
-  // picker scopes it further.
+  // The aggregate answers for the dashboard selection; the KPI row narrows it
+  // to the ids it was handed.
   const positions = useMemo(() => filterPositionsByAccounts(allPositions, accountIds), [allPositions, accountIds]);
   const summary = useMemo(() => summarizePositions(positions), [positions]);
 

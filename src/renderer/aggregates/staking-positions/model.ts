@@ -53,6 +53,15 @@ const reset = createEvent();
  */
 const selectAccountIds = createEvent<AccountId[]>();
 
+/**
+ * Consumers of the selection announce themselves. The dashboard keeps its tabs
+ * mounted once visited, so the Overview accounts table and the Staking tab both
+ * hold the selection at the same time - and hiding one widget must not blank
+ * the other. The selection is released only when the last consumer leaves.
+ */
+const retainSelection = createEvent();
+const releaseSelection = createEvent();
+
 // --- Resource pools ---
 //
 // The `shared/query` resources are ref-counted pools: every `start` must be
@@ -153,7 +162,18 @@ const $selectedAccountIds = createStore<AccountId[]>([], {
 });
 
 $selectedAccountIds.on(selectAccountIds, (_, accountIds) => [...new Set(accountIds)].sort());
-$selectedAccountIds.reset(reset);
+
+const $selectionConsumers = createStore(0)
+  .on(retainSelection, count => count + 1)
+  .on(releaseSelection, count => Math.max(0, count - 1));
+
+const lastConsumerLeft = sample({
+  clock: releaseSelection,
+  source: $selectionConsumers,
+  filter: count => count === 0,
+});
+
+$selectedAccountIds.reset(reset, lastConsumerLeft);
 
 /**
  * `reset` means "this aggregate wants nothing", which empties every request
@@ -554,6 +574,8 @@ export const stakingPositions = {
   $pending,
 
   selectAccountIds,
+  retainSelection,
+  releaseSelection,
   reset,
 };
 

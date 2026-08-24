@@ -6,6 +6,7 @@ import { buildCsv, downloadCsv } from '@/shared/lib/csv';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { type CurrencyItem } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
+import { useStakingAccountSelection } from '@/aggregates/staking-positions';
 import { accountsCsvColumns, accountsCsvFileName, buildExportFilterParts } from '../lib/csv';
 import {
   type ChipLabels,
@@ -21,7 +22,6 @@ import { type AccountGroup, type AccountRow, type SortKey, type TableSortState }
 import { buildVisibleGroups, collectVisibleRows } from '../lib/visibleRows';
 
 import { useAccountRows } from './useAccountRows';
-import { useStakingAccountSelection } from './useStakingAccountSelection';
 
 /**
  * Fiat amount with the active currency symbol/code, matching

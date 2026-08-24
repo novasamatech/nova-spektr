@@ -1,10 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId } from '@/shared/core';
-import { stakingPallet } from '@/shared/pallet/staking';
 import { createAccountId } from '@/shared/mocks';
-
-import { getEraStorage } from '../era-storage';
+import { stakingPallet } from '@/shared/pallet/staking';
+import { __test, getEraStorage } from '../era-storage';
 
 vi.mock('@/shared/pallet/staking', () => ({
   stakingPallet: {
@@ -23,6 +22,7 @@ const validator = createAccountId('validator');
 describe('domains/staking/era-storage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    __test.reset();
   });
 
   it('reads a validator page set once per (era, validator) and shares the in-flight read', async () => {
@@ -49,6 +49,28 @@ describe('domains/staking/era-storage', () => {
     await getEraStorage('0x03' as ChainId).erasRewardPoints(api, 5);
 
     expect(storage.erasRewardPoints).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a newer read when an older one for the same key fails late', async () => {
+    let rejectFirst = (_error: Error) => {};
+    storage.erasStakersOverview
+      .mockImplementationOnce(() => new Promise((_, reject) => (rejectFirst = reject)))
+      .mockResolvedValue([]);
+    const eraStorage = getEraStorage('0x05' as ChainId);
+
+    const first = eraStorage.erasStakersOverview(api, 1).catch(() => 'failed');
+    // Evict era 1 by filling the overview memo, then re-read it.
+    for (let era = 2; era < 2 + 128; era++) {
+      await eraStorage.erasStakersOverview(api, era);
+    }
+    const second = eraStorage.erasStakersOverview(api, 1);
+
+    rejectFirst(new Error('late failure'));
+    expect(await first).toBe('failed');
+    expect(await second).toEqual([]);
+    // Era 1 is still memoised by the second read - no third request.
+    await eraStorage.erasStakersOverview(api, 1);
+    expect(storage.erasStakersOverview).toHaveBeenCalledTimes(2 + 128);
   });
 
   it('drops a failed read so the next caller retries', async () => {

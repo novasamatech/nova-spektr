@@ -28,8 +28,8 @@ export const exposuresResource = createQueryResource<ExposuresResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('exposures')
-  .request<ExposureOverviewMap>(({ api, era }) => {
-    return exposureService.getEraOverviews(api, era);
+  .request<ExposureOverviewMap>(({ chainId, api, era }) => {
+    return exposureService.getEraOverviews(api, era, getEraStorage(chainId));
   })
   // The overview walk is the single biggest read of the staking stack and
   // everything downstream (positions, validators) waits on it — one rate-limited

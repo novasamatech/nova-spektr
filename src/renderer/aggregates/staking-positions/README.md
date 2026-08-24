@@ -105,7 +105,7 @@ position never carries a status reason. The era-scoped facts (self stake, total 
 | ---------------------- | ----------------------------------------------------------------------------------------------- |
 | `$stakingChains`       | Which staking chains this installation has, in a stable order                                   |
 | `$chainAccounts`       | Which of the selected accounts are eligible on each of them                                     |
-| `$selectedAccountIds`  | The dashboard selection, set by `selectAccountIds`                                              |
+| `$selectedAccountIds`  | The dashboard selection, set by `selectAccountIds`, released when the last consumer leaves      |
 | `$positions`           | Every position of the selection, across all chains                                              |
 | `$summary`             | Per-chain and overall totals: staked, redeemable, unbonding, active validators, position counts |
 | `$minNominatorBond`    | The minimum bond required to nominate, per chain                                                |
@@ -214,5 +214,7 @@ live in `domains/staking` (`positionsService`) and are not duplicated here.
 - `domains/network` (`accounts.$list`), `entities/network` — the installation's account objects the selection is
   resolved against, and the connected apis everything above is keyed by. `aggregates/wallet-select` is deliberately
   **not** a dependency.
-- `features/dashboard-staking-positions`, `features/dashboard-accounts-table` — the callers of `selectAccountIds`: each
-  pushes the dashboard selection once for its tab, and the other staking widgets read the resulting positions.
+- `features/dashboard-staking-positions`, `features/dashboard-accounts-table` — the callers of
+  `useStakingAccountSelection`: each pushes the dashboard selection once for its tab, and the other staking widgets read
+  the resulting positions. The hook retains the selection per consumer; dashboard tabs stay mounted once visited, so
+  both hold it at once and the aggregate releases it only when the last consumer unmounts.

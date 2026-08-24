@@ -762,14 +762,33 @@ describe('aggregates/staking-positions', () => {
       params: [accountA.accountId, accountB.accountId, contactTwo],
     });
 
-    const stashesWith = (tracked: AccountId) => ({
+    const stashesWith = (contact: AccountId) => ({
       chainId: POLKADOT_AH,
       api: polkadotApi,
-      stashes: sorted([accountA.accountId, accountB.accountId, tracked]),
+      stashes: sorted([accountA.accountId, accountB.accountId, contact]),
     });
 
     expect(started).toEqual([nominations.nominationsResource.createKey(stashesWith(contactTwo))]);
     expect(stopped).toEqual([nominations.nominationsResource.createKey(stashesWith(contactOne))]);
+  });
+
+  it('keeps the selection until the last consumer releases it', async () => {
+    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+
+    await allSettled(stakingPositions.retainSelection, { scope });
+    await allSettled(stakingPositions.retainSelection, { scope });
+
+    // The Overview accounts table and the Staking tab hold the selection at the
+    // same time - hiding one of them must not blank the other.
+    await allSettled(stakingPositions.releaseSelection, { scope });
+    expect(scope.getState(stakingPositions.$selectedAccountIds)).toEqual(
+      sorted([accountA.accountId, accountB.accountId]),
+    );
+    expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(true);
+
+    await allSettled(stakingPositions.releaseSelection, { scope });
+    expect(scope.getState(stakingPositions.$selectedAccountIds)).toEqual([]);
+    expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(false);
   });
 
   it('clears the selection on reset and releases its subscriptions', async () => {

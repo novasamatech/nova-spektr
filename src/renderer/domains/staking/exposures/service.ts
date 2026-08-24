@@ -17,10 +17,15 @@ export const exposureService = {
  * Exposure overviews of every elected validator in the era.
  *
  * A single prefix read over `erasStakersOverview` (~600 entries) - this is the
- * only exposure read that is allowed to scan the whole era.
+ * only exposure read that is allowed to scan the whole era. `storage` lets the
+ * resource share the read with the payout scan through the chain's era memo.
  */
-async function getEraOverviews(api: ApiPromise, era: EraIndex): Promise<ExposureOverviewMap> {
-  const entries = await stakingPallet.storage.erasStakersOverview(api, era);
+async function getEraOverviews(
+  api: ApiPromise,
+  era: EraIndex,
+  storage: Pick<EraStorage, 'erasStakersOverview'> = stakingPallet.storage,
+): Promise<ExposureOverviewMap> {
+  const entries = await storage.erasStakersOverview(api, era);
 
   const result: ExposureOverviewMap = {};
   for (const { validator, overview } of entries) {
