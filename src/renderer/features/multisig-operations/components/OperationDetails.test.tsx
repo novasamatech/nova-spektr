@@ -117,7 +117,7 @@ describe('OperationDetails', () => {
     }
   });
 
-  it('renders Date & Time first, then Depositor, Multisig, slot content, Operation type', () => {
+  it('renders Date & Time first, then Depositor, Multisig, Source, slot content, Operation type', () => {
     render(
       <OperationDetails operation={baseOperation}>
         <div data-testid="row-slot">recipient</div>
@@ -129,6 +129,7 @@ describe('OperationDetails', () => {
       'row-operation.details.dateTime',
       'row-operation.details.depositor',
       'row-operation.details.multisig',
+      'row-operation.details.source',
       'row-slot',
       'row-operation.details.operationType',
     ]);
@@ -136,9 +137,13 @@ describe('OperationDetails', () => {
     expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent('Balances · TransferKeepAlive');
   });
 
-  it('omits the Source row for a non-proxied operation', () => {
+  it('shows the Source row with the multisig account for a non-proxied operation', () => {
     render(<OperationDetails operation={baseOperation} />);
-    expect(screen.queryByTestId('row-operation.details.source')).toBeNull();
+
+    const row = screen.getByTestId('row-operation.details.source');
+    expect(row).toHaveTextContent(multisigId);
+    expect(row.querySelector('[data-title]')).toBeNull();
+    expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
   });
 
   it('shows the Multisig row from multisigAccountId and the Source row from proxiedAccountId', () => {

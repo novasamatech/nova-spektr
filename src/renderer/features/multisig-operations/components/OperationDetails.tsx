@@ -51,9 +51,11 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
   const initEvent = approvals.find(e => e.accountId === operation.depositor);
   const date = new Date(operation.timestamp || initEvent?.timestamp || Date.now());
 
-  // Both ids are recorded on the operation at ingest; a Source exists only when the call really is proxied.
+  // Source is the account the call executes from — the proxied account when the call is
+  // proxied, otherwise the multisig itself (shown even though it repeats the Multisig row,
+  // so that the origin of funds is always stated, never inferred).
   const multisigAccountId = operation.multisigAccountId;
-  const sourceAccountId = operation.proxiedAccountId;
+  const sourceAccountId = operation.proxiedAccountId ?? multisigAccountId;
 
   // Proxy wrappers are unwrapped so the chip names the call a signer is actually
   // authorising; the raw section/method fallback covers undecoded operations.
@@ -73,9 +75,7 @@ export const OperationDetails = ({ operation, amount, children }: Props) => {
 
         <AccountRow label={t('operation.details.multisig')} accountId={multisigAccountId} chain={chain} />
 
-        {sourceAccountId && (
-          <AccountRow label={t('operation.details.source')} accountId={sourceAccountId} chain={chain} />
-        )}
+        <AccountRow label={t('operation.details.source')} accountId={sourceAccountId} chain={chain} />
 
         {children}
 

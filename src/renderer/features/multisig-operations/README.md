@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
 
 ## Overview
 
@@ -172,9 +172,10 @@ three panels:
   individual signatory account that reserved the multisig deposit, resolved like any account (custom name → contact →
   identity → the owning wallet's name → stored account name → short address) — the wallet name only ever fills in for a
   key the address book doesn't know, it never overrides a contact name; **Multisig** — the multisig account itself (for
-  a flexible multisig, the backing multisig); **Source** — only for proxied operations, the proxied account the call
-  executes from (for a flexible multisig, its pure proxy); then the recognised transaction's specifics (Recipient,
-  networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
+  a flexible multisig, the backing multisig); **Source** — the account the call executes from: for a proxied operation
+  the proxied account (for a flexible multisig, its pure proxy), otherwise the multisig itself — always shown, so the
+  origin of funds is stated even when it repeats the Multisig row; then the recognised transaction's specifics
+  (Recipient, networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
   (verification data, not a title; omitted when the call is unknown); **Amount** when the row's Value cell shows one;
   and the shared **operation description** as full wrapped text under a hairline (descriptions past 620 characters
   collapse behind _Show more_), with an Edit action when editing is allowed. Special shapes render their bespoke details
