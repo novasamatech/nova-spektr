@@ -125,7 +125,7 @@ account the draft will not spend from.
 
 The confirm carries the same secondary **"Add to basket"** button every old staking flow has: instead of signing now,
 the built `bond` + `nominate` batch is stored in the basket for this wallet to sign later, a success toast confirms it
-and the flow closes.
+and the flow closes. The toast closes on its own after the shared basket-result timeout every staking flow uses.
 
 The basket signs the stored core call directly by its initiator — no multisig/proxy wrapping happens in the basket
 context — so the button only appears when the staking account's own wallet is one the basket can sign with (Polkadot
