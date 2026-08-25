@@ -141,6 +141,11 @@ A request whose `signingMode` is `draft` — an address-book position, where the
 **opens with the toggle already on**: the user should not have to discover it. The toggle stays a toggle; switching it
 off returns to normal mode, where the no-route-signer guard takes over.
 
+The source picker under the toggle is the drafts feature's own, with its states: nothing while the address book is
+offline (the toggle card carries Reconnect), an explanation with **Open address book** when the pinned position has no
+draft route — that button closes this flow before it navigates, since the modal would otherwise outlive the page — and a
+notice when the user may not write drafts. See [`drafts`](../drafts/README.md).
+
 **Signing and draft creation never share a confirmation.** Draft mode ends at the amount screen: it has its own button
 and its own gate, `Continue` is disabled while it is on, and a created draft closes the flow. This mirrors every other
 operation form in the app.
