@@ -52,7 +52,17 @@ export type EraThresholdsResourceParams = {
   depth: number;
 };
 
-type EraThresholdsCache = Record<ChainId, { era: EraIndex; depth: number } & EraThresholdWindow>;
+/**
+ * Keyed by chain **and** depth: the KPI card (7 eras) and its drill-down (any
+ * range) read the same chain at the same time, and one entry per chain would
+ * let the two overwrite each other — the loser then waits for an answer that
+ * already arrived.
+ */
+type EraThresholdsCache = Record<string, { era: EraIndex } & EraThresholdWindow>;
+
+export function eraThresholdsKey(chainId: ChainId, depth: number): string {
+  return `${chainId}_${depth}`;
+}
 
 const $eraThresholdsCache = createStore<EraThresholdsCache>({});
 
@@ -87,7 +97,10 @@ export const eraThresholdsResource = createQueryResource<EraThresholdsResourcePa
   })
   .cache({
     store: $eraThresholdsCache,
-    map: (state, window, { chainId, era, depth }) => ({ ...state, [chainId]: { era, depth, ...window } }),
+    map: (state, window, { chainId, era, depth }) => ({
+      ...state,
+      [eraThresholdsKey(chainId, depth)]: { era, ...window },
+    }),
     staleAfter: window => (window.failedEras.length > 0 ? INCOMPLETE_WINDOW_STALE_MS : Number.POSITIVE_INFINITY),
   })
   .build();
