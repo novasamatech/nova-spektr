@@ -7,6 +7,7 @@ import { ZERO_BALANCE, nonNullable, nullable } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  MULTISIG_DEPOSIT_ACTION,
   createComplexTxStore,
   createRouteSignerStore,
   createTxValidationStore,
@@ -310,7 +311,7 @@ export const createConfirmFlowModel = () => {
   );
 
   const $multisigDeposit = $balanceValidationResults.map((results) =>
-    getActionRequiredAmount(results, 'multisig deposit').reduce(
+    getActionRequiredAmount(results, MULTISIG_DEPOSIT_ACTION).reduce(
       (deposit, action) => deposit.add(action.required),
       BN_ZERO,
     ),

@@ -2,8 +2,10 @@ import { BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
+import { type Transaction } from '@/shared/core';
 import { nonNullable, nullable, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import {
+  MULTISIG_DEPOSIT_ACTION,
   createComplexTxStore,
   createRouteSignerStore,
   createTxValidationStore,
@@ -260,7 +262,7 @@ export const createPayeeFlowModel = () => {
   );
 
   const $multisigDeposit = $balanceValidationResults.map((results) =>
-    getActionRequiredAmount(results, 'multisig deposit').reduce(
+    getActionRequiredAmount(results, MULTISIG_DEPOSIT_ACTION).reduce(
       (deposit, action) => deposit.add(action.required),
       BN_ZERO,
     ),
@@ -274,26 +276,34 @@ export const createPayeeFlowModel = () => {
   // --- draft transaction ---------------------------------------------------
 
   /**
-   * Draft-mode call, built from the path's own source rather than from the
-   * connected wallet — the whole point of a draft is that nobody here can sign
-   * it, and `set_payee` acts on whichever ledger the signer owns.
+   * Draft-mode call. Its origin is pinned to the position's own account: the
+   * draft executes from the path's first node, and `set_payee` acts on that
+   * node's own ledger — any other source has no rights over this stash. The UI
+   * pins the source picker the same way; the model refuses a mismatch
+   * regardless, so a stale or hand-built path cannot produce a call for the
+   * wrong stash.
    */
   const $draftCoreTx = combine(
     {
       chain: $chain,
+      position: $position,
       selection: $selection,
       valid: $isAddressValid,
       path: draftMode.$draftSigningPath,
       isPathComplete: draftMode.$isDraftPathComplete,
     },
-    ({ chain, selection, valid, path, isPathComplete }) => {
-      if (nullable(chain) || !isPathComplete) return null;
+    ({ chain, position, selection, valid, path, isPathComplete }) => {
+      if (nullable(chain) || nullable(position) || !isPathComplete) return null;
       if (selection.option === 'account' && !valid) return null;
 
-      const accountId = path[0]?.accountId;
-      if (nullable(accountId)) return null;
+      const source = path[0]?.accountId;
+      if (nullable(source) || source !== position.accountId) return null;
 
-      return transactionBuilder.buildSetPayee({ chain, accountId, destination: toDestination(selection) });
+      return transactionBuilder.buildSetPayee({
+        chain,
+        accountId: position.accountId,
+        destination: toDestination(selection),
+      });
     },
   );
 
@@ -385,15 +395,16 @@ export const createPayeeFlowModel = () => {
   const basketSaved = sample({
     clock: txSaved,
     source: { canUseBasket: $canUseBasket, coreTx: $coreTx, route: $route },
-    filter: ({ canUseBasket, coreTx }) => canUseBasket && nonNullable(coreTx),
+    filter: (source): source is typeof source & { coreTx: Transaction } =>
+      source.canUseBasket && nonNullable(source.coreTx),
   });
 
   sample({
     clock: basketSaved,
     fn: ({ coreTx, route }) => [
       {
-        initiatorAccountId: coreTx!.accountId,
-        coreTx: coreTx!,
+        initiatorAccountId: coreTx.accountId,
+        coreTx,
         route,
         createdAt: Date.now(),
       },
@@ -435,11 +446,16 @@ export const createPayeeFlowModel = () => {
     },
   );
 
-  sample({
+  const confirmReady = sample({
     clock: [stepChanged, $tx],
     source: { draft: $confirmDraft, step: $step },
-    filter: ({ draft, step }) => nonNullable(draft) && step === Step.CONFIRM,
-    fn: ({ draft }) => [draft!],
+    filter: (source): source is typeof source & { draft: PayeeFlowConfirm } =>
+      nonNullable(source.draft) && source.step === Step.CONFIRM,
+  });
+
+  sample({
+    clock: confirmReady,
+    fn: ({ draft }) => [draft],
     target: confirmModel.init,
   });
 

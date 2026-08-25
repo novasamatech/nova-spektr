@@ -3,9 +3,10 @@ import { useI18n } from '@/shared/i18n';
 import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, FootnoteText } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
 import { type Payee } from '@/domains/staking';
 import { NamedAccount } from '@/widgets/NameResolver';
+
+import { StatCellSkeleton } from './StatCellSkeleton';
 
 type Props = {
   payee: Payee | null;
@@ -27,7 +28,7 @@ export const RewardsDestinationCell = ({ payee, payeeLoaded, chain, stash }: Pro
   const { t } = useI18n();
 
   if (!payeeLoaded) {
-    return <Skeleton width="72px" height="14px" />;
+    return <StatCellSkeleton />;
   }
 
   if (payee === null) {

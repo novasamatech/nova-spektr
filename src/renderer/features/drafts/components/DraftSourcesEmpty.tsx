@@ -19,7 +19,8 @@ type Props = {
   /**
    * Closes the host flow before the address book opens. Flows mounted in the
    * global modals slot survive navigation, so without it the modal would stay
-   * on top of the page it just sent the user to.
+   * on top of the page it just sent the user to — which is why the "Open
+   * address book" button is only offered when the host provides this.
    */
   onLeaveFlow?: () => void;
 };
@@ -29,14 +30,17 @@ type Props = {
  *
  * Three reasons, three different next moves: no permission and no connection
  * are told as they are — nothing on this screen fixes them — while an address
- * book that simply lacks a usable source gets a way to go and add one.
+ * book that simply lacks a usable source gets a way to go and add one. That way
+ * is offered only to hosts that can close themselves first: a modal that
+ * outlives navigation would otherwise sit on top of the address book it
+ * opened.
  */
 export const DraftSourcesEmpty = ({ availability, pinnedAddress, chainName, onLeaveFlow }: Props) => {
   const { t } = useI18n();
 
   if (availability === 'noPermission') {
     return (
-      <Alert active variant="warn" title={t('operations.drafts.noWritePermission')}>
+      <Alert active variant="warn" title={t('operations.drafts.noPermissionTitle')}>
         <FootnoteText className="text-text-secondary">
           {pinnedAddress
             ? t('operations.drafts.noPermissionForAccount', { address: pinnedAddress })
@@ -59,13 +63,13 @@ export const DraftSourcesEmpty = ({ availability, pinnedAddress, chainName, onLe
       <Graphics name="emptyList" size={64} />
       <div className="flex flex-col items-center gap-2">
         <SmallTitleText>{t('operations.drafts.noSourcesTitle')}</SmallTitleText>
-        <FootnoteText className="max-w-[340px] break-words text-text-tertiary">
+        <FootnoteText className="break-words text-text-tertiary">
           {pinnedAddress
             ? t('operations.drafts.noSourcesPinnedHint', { address: pinnedAddress })
             : t('operations.drafts.noSourcesHint', { chain: chainName })}
         </FootnoteText>
       </div>
-      <OpenAddressBookButton onLeaveFlow={onLeaveFlow} />
+      {onLeaveFlow && <OpenAddressBookButton onLeaveFlow={onLeaveFlow} />}
     </div>
   );
 };
@@ -75,12 +79,12 @@ export const DraftSourcesEmpty = ({ availability, pinnedAddress, chainName, onLe
  * navigates: the notices above render in hosts that are tested outside a
  * router, and would otherwise throw for a button they never show.
  */
-const OpenAddressBookButton = ({ onLeaveFlow }: Pick<Props, 'onLeaveFlow'>) => {
+const OpenAddressBookButton = ({ onLeaveFlow }: { onLeaveFlow: () => void }) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   const openAddressBook = () => {
-    onLeaveFlow?.();
+    onLeaveFlow();
     navigate(Paths.ADDRESS_BOOK);
   };
 

@@ -1,4 +1,4 @@
-import { type ComponentProps, useEffect, useState } from 'react';
+import { type ComponentProps, useState } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -21,13 +21,14 @@ type Props = Omit<ComboboxProps, 'children' | 'onInput'> & {
  * `useRecipientOptions` builds. Owns the search query; the host owns the
  * value.
  */
-export const RecipientCombobox = ({ chain, excludeAccountId, onInput, ...comboboxProps }: Props) => {
-  const [query, setQuery] = useState('');
+export const RecipientCombobox = (props: Props) => {
+  // A recipient typed for one chain means nothing on another — keying by the
+  // chain remounts the body with a fresh query instead of resetting in an effect.
+  return <RecipientComboboxBody key={props.chain?.chainId} {...props} />;
+};
 
-  // A recipient typed for one chain means nothing on another.
-  useEffect(() => {
-    setQuery('');
-  }, [chain]);
+const RecipientComboboxBody = ({ chain, excludeAccountId, onInput, ...comboboxProps }: Props) => {
+  const [query, setQuery] = useState('');
 
   const groups = useRecipientOptions({ chain, query, excludeAccountId });
 

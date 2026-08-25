@@ -28,8 +28,11 @@ scheme-compatible chain. The relaxed scheme-match rule applies only to accounts 
 the picker defers to the owning wallet feature's availability rule — offering such an address on a chain where it is not
 controlled would send funds into the void. The rule itself is `accountService.canReceiveOnChain`.
 
-Search runs over what each row shows — the resolved account name and the displayed address — never the raw stored name,
-so a contact renamed in the address book is found by the name on screen.
+Search runs over what each row shows, never the raw stored fields: own accounts match by their resolved account name,
+the resolved name of the owning wallet and the address as displayed with the chain's prefix
+(`accountService.searchAccounts`); contacts match by their name and the same chain-prefixed address — not the prefix-42
+address the address book stores. A contact renamed in the address book is found by the name on screen, and a pasted
+address finds the row that shows it.
 
 ## Related
 

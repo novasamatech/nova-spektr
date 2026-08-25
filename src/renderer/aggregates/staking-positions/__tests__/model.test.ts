@@ -607,6 +607,31 @@ describe('aggregates/staking-positions', () => {
     expect(positionB?.payeeLoaded).toBe(true);
   });
 
+  it('keeps the reward destination unread when the subscription answers with nothing', async () => {
+    // The known gap: a `payee.multi` that rejects, or decodes to an empty map,
+    // marks no stash in the cache. The aggregate has no error signal to turn
+    // that into an answer, so the position must keep reporting "not read yet"
+    // — the Rewards cell shimmers — rather than pretend the chain said "None".
+    const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
+
+    await emitEra(scope, POLKADOT_AH, 420);
+    await emitLedger(scope, POLKADOT_AH, {
+      [accountA.accountId]: createStake(accountA.accountId, POLKADOT_AH, '1000', '1000'),
+      [accountB.accountId]: createStake(accountB.accountId, POLKADOT_AH, '500', '500'),
+    });
+    await emitNominations(scope, POLKADOT_AH, { [accountA.accountId]: null, [accountB.accountId]: null });
+    await emitPrefs(scope, POLKADOT_AH, { [accountA.accountId]: null, [accountB.accountId]: null });
+
+    await emitPayees(scope, POLKADOT_AH, {});
+
+    const positions = scope.getState(stakingPositions.$positions);
+    expect(positions).toHaveLength(2);
+    expect(positions.map(position => position.payeeLoaded)).toEqual([false, false]);
+    expect(positions.map(position => position.payee)).toEqual([null, null]);
+    // Still not part of the dashboard's wait — the table stays usable.
+    expect(scope.getState(stakingPositions.$pending)).toBe(false);
+  });
+
   it('stops every started resource key on reset', async () => {
     const scope = await makeScope({ chains: [polkadotChain], apis: { [POLKADOT_AH]: polkadotApi } });
 

@@ -245,6 +245,12 @@ function convertTransaction(transaction: Transaction | AnyTransaction, api: ApiP
   }
 }
 
+/**
+ * The `action` a balance-validation result carries when a multisig deposit is
+ * what cannot be covered.
+ */
+export const MULTISIG_DEPOSIT_ACTION = 'multisig deposit';
+
 export function getActionRequiredAmount(
   results: TransactionValidationBalanceError[],
   action: string,

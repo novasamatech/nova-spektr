@@ -41,8 +41,11 @@ export type PayeeFlowTarget = {
   asset: Asset;
   /** The local account behind the position, `null` when there is none. */
   account: AnyAccount | null;
-  /** Wallet the account belongs to — drives the account chip's badge and name. */
-  wallet?: Wallet | null;
+  /**
+   * Wallet the account belongs to — drives the account chip's badge and name;
+   * `null` with no local account.
+   */
+  wallet: Wallet | null;
   /**
    * How the caller expects this to be signed. `draft` opens the flow with draft
    * mode already on — the user should not have to discover the toggle for a

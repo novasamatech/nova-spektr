@@ -1,18 +1,10 @@
 import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  type Asset,
-  type Chain,
-  type ChainId,
-  type Wallet,
-  ConnectionStatus,
-  CryptoType,
-  SigningType,
-  TransactionType,
-} from '@/shared/core';
+import { type Wallet, ConnectionStatus, CryptoType, SigningType, TransactionType } from '@/shared/core';
 import { type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { createPolkadotWallet, dotAsset, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Payee, type StakingPosition } from '@/domains/staking';
 import { Step } from '../../types';
@@ -27,9 +19,15 @@ import { Step } from '../../types';
  * that keep the graph honest: the tx store passes the core transaction straight
  * through, so every assertion below is made against the call this model built.
  */
+// The validation verdict is a writable store so a test can turn it off.
+const { validationMock } = vi.hoisted(() => ({ validationMock: { $valid: null as unknown } }));
+
 vi.mock('@/shared/transactions', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   const { createStore, sample } = await import('effector');
+
+  const $valid = createStore(true);
+  validationMock.$valid = $valid;
 
   return {
     ...actual,
@@ -52,7 +50,7 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
       $balanceValidationResults: createStore<unknown[]>([]),
       $pending: createStore(false),
       $validationDone: createStore(true),
-      $valid: createStore(true),
+      $valid,
       $failed: createStore(false),
       $available: createStore<unknown[]>([]),
     }),
@@ -69,6 +67,17 @@ vi.mock('@/aggregates/recipient-verification', async () => {
   resolveWarningMock.$store = $resolveWarning;
 
   return { recipientVerificationModel: { $resolveWarning, $mode: createStore('off') } };
+});
+
+// The basket writes to storage; here it only has to be observable.
+vi.mock('@/aggregates/basket-operations', async (importOriginal) => {
+  const actual = await importOriginal<{ basketOperations: Record<string, unknown> }>();
+  const { createEffect } = await import('effector');
+
+  return {
+    ...actual,
+    basketOperations: { ...actual.basketOperations, addTransactions: createEffect(() => []) },
+  };
 });
 
 // Contacts feed the picker only; the picker is not under test here. Only the
@@ -99,6 +108,8 @@ const { payeeFlowModel } = await import('../payee-flow');
 const { networkModel } = await import('@/entities/network');
 const { createDraftModel } = await import('@/features/drafts');
 const { signModel } = await import('@/features/operations/OperationSign');
+const { ExtrinsicResult, submitModel } = await import('@/features/operations/OperationSubmit');
+const { basketOperations } = await import('@/aggregates/basket-operations');
 
 // --- fixtures ----------------------------------------------------------------
 
@@ -106,19 +117,9 @@ const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(
 
 const ALICE = accountId(1);
 const BOB = accountId(2);
-const CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as ChainId;
-
-const ASSET = { assetId: 0, symbol: 'DOT', precision: 10, name: 'Polkadot' } as unknown as Asset;
-
-const CHAIN = {
-  chainId: CHAIN_ID,
-  name: 'Polkadot',
-  assets: [ASSET],
-  addressPrefix: 0,
-  nodes: [],
-  icon: '',
-  options: [],
-} as unknown as Chain;
+const CHAIN_ID = polkadotChainId;
+const ASSET = dotAsset;
+const CHAIN = polkadotChain;
 
 const aliceAddress = toAddress(ALICE, { prefix: 0 });
 const bobAddress = toAddress(BOB, { prefix: 0 });
@@ -161,6 +162,9 @@ const position = (payee: Payee | null = 'Staked', payeeLoaded = true): StakingPo
   payeeLoaded,
 });
 
+/** A wallet the basket can sign with — Polkadot Vault. */
+const WALLET = createPolkadotWallet(ACCOUNT.walletId, { rootAccountId: ALICE, name: 'Alice vault' });
+
 const target = (payee: Payee | null = 'Staked') => ({
   position: position(payee),
   chain: CHAIN,
@@ -172,6 +176,8 @@ const target = (payee: Payee | null = 'Staked') => ({
 
 const $resolveWarning = () =>
   resolveWarningMock.$store as StoreWritable<(accountId: AccountId | null) => RecipientWarning>;
+
+const $txValid = () => validationMock.$valid as StoreWritable<boolean>;
 
 /** `$coreTx` is gated on the chain being connected — most tests want it open. */
 const connected = (values = new Map()) =>
@@ -419,17 +425,20 @@ describe('staking-payee-flow · draft branch', () => {
     }
   });
 
-  it('builds the draft call for the path’s own source account', async () => {
+  it('refuses a draft whose source is not the position account', async () => {
     const scope = fork();
     await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
     await allSettled(payeeFlowModel.toggleDraftMode, { scope, params: true });
-    await pickAccount(scope, aliceAddress);
+    await pickAccount(scope, bobAddress);
+    // A complete path that starts somewhere else has no rights over this stash.
     await allSettled(payeeFlowModel.draftPathCommitted, {
       scope,
       params: [{ kind: 'signer' as const, accountId: BOB }],
     });
 
-    expect(scope.getState(payeeFlowModel.$draftCoreTx)?.accountId).toBe(BOB);
+    expect(scope.getState(payeeFlowModel.$isDraftPathComplete)).toBe(true);
+    expect(scope.getState(payeeFlowModel.$draftCoreTx)).toBeNull();
+    expect(scope.getState(payeeFlowModel.$canSaveAsDraft)).toBe(false);
   });
 
   it('cannot save a draft while nothing changed', async () => {
@@ -451,5 +460,171 @@ describe('staking-payee-flow · draft branch', () => {
     await allSettled(createDraftModel.draftCreated, { scope });
 
     expect(scope.getState(payeeFlowModel.$step)).toBe(Step.NONE);
+  });
+});
+
+describe('staking-payee-flow · gates', () => {
+  it('blocks Continue when nobody on the route can sign', async () => {
+    const scope = fork({ values: connected() });
+    // A position with no local account behind it, opened in signed mode.
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, {
+      scope,
+      params: { ...target('Staked'), account: null },
+    });
+    await pickAccount(scope, bobAddress);
+
+    expect(scope.getState(payeeFlowModel.$noRouteSigner)).toBe(true);
+    expect(scope.getState(payeeFlowModel.$canContinue)).toBe(false);
+
+    await allSettled(payeeFlowModel.continueRequested, { scope });
+    expect(scope.getState(payeeFlowModel.$step)).toBe(Step.INIT);
+  });
+
+  it('blocks Continue while the transaction fails validation', async () => {
+    const scope = fork({ values: connected().set($txValid(), false) });
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await pickAccount(scope, bobAddress);
+
+    expect(scope.getState(payeeFlowModel.$isSelectionValid)).toBe(true);
+    expect(scope.getState(payeeFlowModel.$canContinue)).toBe(false);
+
+    await allSettled(payeeFlowModel.continueRequested, { scope });
+    expect(scope.getState(payeeFlowModel.$step)).toBe(Step.INIT);
+  });
+
+  it('refuses to sign an unacknowledged unknown recipient, even from the confirm', async () => {
+    const scope = fork({ values: withUnknownRecipient() });
+    const signSpy = vi.fn();
+
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await pickAccount(scope, bobAddress);
+    await allSettled(payeeFlowModel.continueRequested, { scope });
+    expect(scope.getState(payeeFlowModel.$step)).toBe(Step.CONFIRM);
+
+    const unsubscribe = createWatch({ unit: signModel.events.formInitiated, fn: signSpy, scope });
+    try {
+      await allSettled(payeeFlowModel.startSigning, { scope });
+
+      expect(scope.getState(payeeFlowModel.$step)).toBe(Step.CONFIRM);
+      expect(signSpy).not.toHaveBeenCalled();
+
+      // The same click walks on once the box is ticked. (The signing payload
+      // itself needs a live confirm store — an api — so only the step is asserted.)
+      await allSettled(payeeFlowModel.riskAcknowledgedToggled, { scope, params: true });
+      await allSettled(payeeFlowModel.startSigning, { scope });
+
+      expect(scope.getState(payeeFlowModel.$step)).toBe(Step.SIGN);
+    } finally {
+      unsubscribe();
+    }
+  });
+});
+
+describe('staking-payee-flow · basket', () => {
+  it('stores the core call in the basket and shows the basket result', async () => {
+    const scope = fork({ values: connected() });
+    const basketSpy = vi.fn();
+
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, {
+      scope,
+      params: { ...target('Staked'), wallet: WALLET },
+    });
+    await pickAccount(scope, bobAddress);
+    await allSettled(payeeFlowModel.continueRequested, { scope });
+
+    expect(scope.getState(payeeFlowModel.$canUseBasket)).toBe(true);
+
+    const unsubscribe = createWatch({ unit: basketOperations.addTransactions, fn: basketSpy, scope });
+    try {
+      await allSettled(payeeFlowModel.txSaved, { scope });
+
+      const coreTx = scope.getState(payeeFlowModel.$coreTx);
+      expect(basketSpy).toHaveBeenCalledTimes(1);
+      expect(basketSpy.mock.calls[0]?.[0]).toEqual([
+        expect.objectContaining({ initiatorAccountId: ALICE, coreTx, route: [ACCOUNT] }),
+      ]);
+      expect(scope.getState(payeeFlowModel.$step)).toBe(Step.BASKET);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('offers no basket without a wallet the basket can sign with', async () => {
+    const scope = fork({ values: connected() });
+    const basketSpy = vi.fn();
+
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await pickAccount(scope, bobAddress);
+
+    expect(scope.getState(payeeFlowModel.$canUseBasket)).toBe(false);
+
+    const unsubscribe = createWatch({ unit: basketOperations.addTransactions, fn: basketSpy, scope });
+    try {
+      await allSettled(payeeFlowModel.txSaved, { scope });
+
+      expect(basketSpy).not.toHaveBeenCalled();
+      expect(scope.getState(payeeFlowModel.$step)).toBe(Step.INIT);
+    } finally {
+      unsubscribe();
+    }
+  });
+});
+
+describe('staking-payee-flow · completion', () => {
+  type SubmitResult = NonNullable<Parameters<typeof submitModel.done>[0]>[number];
+
+  // Only `result` is read by the flow; the extrinsic params are the node's business.
+  const success = { id: 0, result: ExtrinsicResult.SUCCESS, params: {} } as unknown as SubmitResult;
+  const failure = { id: 0, result: ExtrinsicResult.ERROR, params: 'boom' } as unknown as SubmitResult;
+
+  const watchCompleted = (scope: ReturnType<typeof fork>) => {
+    const spy = vi.fn();
+    const unsubscribe = createWatch({ unit: payeeFlowModel.flowCompleted, fn: spy, scope });
+
+    return { spy, unsubscribe };
+  };
+
+  it('completes on a successful extrinsic at the submit step', async () => {
+    const scope = fork({ values: connected() });
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await allSettled(payeeFlowModel.stepChanged, { scope, params: Step.SUBMIT });
+
+    const { spy, unsubscribe } = watchCompleted(scope);
+    try {
+      await allSettled(submitModel.done, { scope, params: [success] });
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('does not complete on a failed extrinsic', async () => {
+    const scope = fork({ values: connected() });
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await allSettled(payeeFlowModel.stepChanged, { scope, params: Step.SUBMIT });
+
+    const { spy, unsubscribe } = watchCompleted(scope);
+    try {
+      await allSettled(submitModel.done, { scope, params: [failure] });
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('ignores a submission that lands while the flow is not at the submit step', async () => {
+    const scope = fork({ values: connected() });
+    await allSettled(payeeFlowModel.changeRewardDestinationRequested, { scope, params: target('Staked') });
+    await pickAccount(scope, bobAddress);
+    await allSettled(payeeFlowModel.continueRequested, { scope });
+
+    const { spy, unsubscribe } = watchCompleted(scope);
+    try {
+      // Another operation's submission — `submitModel` is app-wide.
+      await allSettled(submitModel.done, { scope, params: [success] });
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 });

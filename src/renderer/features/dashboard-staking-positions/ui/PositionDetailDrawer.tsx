@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { AssetBalance, ChainIcon } from '@/shared/ui-entities';
-import { Drawer, Label, Skeleton, Tooltip } from '@/shared/ui-kit';
+import { Drawer, Label, Tooltip } from '@/shared/ui-kit';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { useChainHasSigner } from '../hooks/useChainHasSigner';
@@ -24,6 +24,7 @@ import { type PositionAction, positionActions } from '../model/position-actions'
 import { NominationsTable } from './NominationsTable';
 import { PositionStatusPill } from './PositionStatusPill';
 import { RewardsDestinationCell } from './RewardsDestinationCell';
+import { StatCellSkeleton } from './StatCellSkeleton';
 import { ValidatorStatsSection } from './ValidatorStatsSection';
 import { toSigningMode } from './signing-mode';
 
@@ -265,7 +266,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
 
               <StatCell label={t('dashboard.staking.positions.detail.stats.unclaimed')}>
                 {unclaimedPending ? (
-                  <Skeleton width="72px" height="14px" />
+                  <StatCellSkeleton />
                 ) : hasUnclaimed ? (
                   <div className="flex items-center gap-x-2">
                     <AssetBalance value={unclaimed.total} asset={row.asset} className="text-footnote" />

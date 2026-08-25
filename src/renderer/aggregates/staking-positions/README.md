@@ -157,9 +157,11 @@ worse than a chain that is simply missing from the table.
 **A subscription that fails still does hold it, and that is a known gap.** A connected chain whose ledger — or
 nominations, or validator-prefs — subscription cannot be set up looks identical to one that has not answered yet: the
 pooled resources carry no error state, only a cache entry that never arrives. `$pending` therefore cannot tell "failed"
-from "loading" and shows a skeleton forever. Closing that needs an error signal in `shared/query`, not a change here;
-until then, anything that can make a chain read throw is a permanent-skeleton bug, which is why the requests sent to a
-chain must be valid by construction.
+from "loading" and shows a skeleton forever. The reward destination has the same gap on its own, smaller stage: if
+`staking.payee.multi` rejects, or its answer decodes to an empty map, no stash is ever marked in the payee cache, so
+`payeeLoaded` stays false and the drawer's Rewards cell shimmers forever rather than admitting the read failed. Closing
+that needs an error signal in `shared/query`, not a change here; until then, anything that can make a chain read throw
+is a permanent-skeleton bug, which is why the requests sent to a chain must be valid by construction.
 
 ## Resource lifecycle
 
@@ -168,7 +170,7 @@ component never starts a subscription.
 
 ```mermaid
 flowchart TD
-    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + validator prefs + min bond + active era"]
+    A["chains ∩ staking chains, accounts, connected api"] --> B["ledger + nominations + validator prefs + reward destination + min bond + active era"]
     B --> C["active era known"]
     C --> D["era exposures + era validators + era anchor"]
     B --> E["nominated validator union"]

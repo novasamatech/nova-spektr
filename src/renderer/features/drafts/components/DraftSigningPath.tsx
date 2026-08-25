@@ -34,8 +34,10 @@ type Props = {
   pinnedSourceAccountId?: AccountId | null;
   /**
    * Closes the host flow when the empty state sends the user to the address
-   * book. Required by flows mounted in the global modals slot — they outlive
-   * navigation; page-bound forms unmount with the page and may leave it off.
+   * book. The "Open address book" button is rendered only when this is given:
+   * flows mounted in the global modals slot outlive navigation and would stay
+   * on top of the page they sent the user to. Hosts that leave it off get the
+   * explanation without a navigating control.
    */
   onLeaveFlow?: () => void;
 };

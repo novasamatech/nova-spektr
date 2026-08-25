@@ -141,8 +141,8 @@ const DestinationField = () => {
                 canCopy={false}
               />
             }
-            // Free entry: what is typed is the address until an option is picked.
-            onInput={payeeFlowModel.addressChanged}
+            // Free entry and picks alike arrive through `onChange`; the combobox
+            // already emits every keystroke there.
             onChange={payeeFlowModel.addressChanged}
           />
 

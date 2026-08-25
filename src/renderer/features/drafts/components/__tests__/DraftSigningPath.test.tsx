@@ -49,7 +49,12 @@ const bookValues = (book: Book) => {
   return values.set(authModel.$authState, { accountId: SIGNATORY, accountName: 'Backend user', permissions });
 };
 
-const renderPicker = async (pinnedSourceAccountId: AccountId | null, book: Book = 'ready') => {
+type RenderOptions = { book?: Book; onLeaveFlow?: () => void };
+
+const renderPicker = async (
+  pinnedSourceAccountId: AccountId | null,
+  { book = 'ready', onLeaveFlow }: RenderOptions = {},
+) => {
   const scope = fork({ values: bookValues(book) });
 
   // Drafts are shared through the external address book, so the graph only
@@ -72,6 +77,7 @@ const renderPicker = async (pinnedSourceAccountId: AccountId | null, book: Book 
               draftPathCommitted={noop}
               draftPathEditStarted={noopVoid}
               draftPathEditEnded={noopVoid}
+              onLeaveFlow={onLeaveFlow}
             />
           </MemoryRouter>
         </ThemeProvider>
@@ -106,7 +112,7 @@ describe('features/drafts/components/DraftSigningPath', () => {
     // A plain contact — no multisig, no proxy. Rather than quietly falling back
     // to some other account the user never asked about, the picker says so and
     // points at the address book, where the fix lives.
-    await renderPicker(SIGNATORY);
+    await renderPicker(SIGNATORY, { onLeaveFlow: () => {} });
 
     expect(await screen.findByText('No account available to create this draft')).toBeInTheDocument();
     expect(
@@ -117,10 +123,20 @@ describe('features/drafts/components/DraftSigningPath', () => {
     expect(screen.queryByText('Other multisig')).not.toBeInTheDocument();
   });
 
+  it('withholds the address-book button from a host that cannot close itself', async () => {
+    // Most hosts are modals in the global slot: they outlive navigation, so a
+    // button that sends the user to the address book would leave the modal on
+    // top of it. Without `onLeaveFlow` the explanation stands alone.
+    await renderPicker(SIGNATORY);
+
+    expect(await screen.findByText('No account available to create this draft')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open address book' })).not.toBeInTheDocument();
+  });
+
   it('renders nothing while the address book is offline', async () => {
     // The mode card above carries the Reconnect prompt; a dead list under it
     // would only contradict it.
-    await renderPicker(null, 'offline');
+    await renderPicker(null, { book: 'offline' });
 
     expect(screen.queryByText('Source account')).not.toBeInTheDocument();
     expect(screen.queryByText('Team multisig')).not.toBeInTheDocument();
@@ -128,11 +144,10 @@ describe('features/drafts/components/DraftSigningPath', () => {
   });
 
   it('says the user may not write drafts instead of offering sources', async () => {
-    await renderPicker(TEAM_MULTISIG, 'noPermission');
+    await renderPicker(TEAM_MULTISIG, { book: 'noPermission' });
 
-    expect(
-      await screen.findByText(/You have no permission to create drafts, so nothing can be prepared from/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Drafts cannot be prepared here')).toBeInTheDocument();
+    expect(screen.getByText(/Nothing can be prepared from/)).toBeInTheDocument();
     expect(screen.queryByText('Team multisig')).not.toBeInTheDocument();
   });
 });

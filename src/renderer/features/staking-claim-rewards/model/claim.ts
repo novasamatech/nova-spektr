@@ -9,6 +9,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type ValidationResult,
+  MULTISIG_DEPOSIT_ACTION,
   createComplexTxStore,
   createRouteSignerStore,
   createTxValidationStore,
@@ -233,7 +234,7 @@ const {
 const $hasMultisigAccount = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
 
 const $multisigDeposit = $balanceValidationResults.map((results) =>
-  getActionRequiredAmount(results, 'multisig deposit').reduce(
+  getActionRequiredAmount(results, MULTISIG_DEPOSIT_ACTION).reduce(
     (deposit, action) => deposit.add(action.required),
     BN_ZERO,
   ),

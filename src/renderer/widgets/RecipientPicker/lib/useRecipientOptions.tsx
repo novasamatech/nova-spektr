@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
-import { type ReactNode, memo, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { type Address as AddressType, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -8,7 +8,7 @@ import { entries, nullable, performSearch, toAccountId, toAddress, validateAddre
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { useAccountName, useAccountsNames } from '@/domains/network';
+import { useAccountsNames, useWalletsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -16,6 +16,15 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { filterRecipientAccounts } from './recipient-accounts';
 
 const { services, constants } = walletSelectFeature;
+
+export const RECIPIENT_GROUP_IDS = {
+  CONTACTS: 'contacts',
+  TYPED_ADDRESS: 'typed-address',
+} as const;
+
+// Contact name is what the user most likely types; the address matters mostly
+// for pasted values.
+const CONTACT_SEARCH_WEIGHTS = { name: 1, displayAddress: 0.5 };
 
 export type RecipientOption = {
   id: string;
@@ -37,14 +46,6 @@ type Params = {
   excludeAccountId?: AccountId | null;
 };
 
-const AccountAddressItem = memo(
-  ({ accountId, chain, address }: { accountId: AccountId; chain: Chain; address: AddressType }) => {
-    const resolvedName = useAccountName({ accountId, chain });
-
-    return <Address showIcon title={resolvedName} address={address} />;
-  },
-);
-
 /**
  * The three recipient groups every address field offers — see the README.
  *
@@ -62,19 +63,18 @@ export const useRecipientOptions = ({ chain, query, excludeAccountId }: Params):
   const accountsList = useUnit(walletModel.$availableAccounts);
 
   const resolvedAccounts = useAccountsNames(accountsList, chain);
-
-  const filteredContacts = useMemo(() => {
-    return performSearch({
-      query,
-      records: contacts,
-      weights: { name: 1, address: 0.5 },
-    });
-  }, [query, contacts]);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const walletsOptions = useMemo<RecipientGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = filterRecipientAccounts({ accounts: resolvedAccounts, chain, query, excludeAccountId });
+    const filteredAccounts = filterRecipientAccounts({
+      accounts: resolvedAccounts,
+      wallets: resolvedWallets,
+      chain,
+      query,
+      excludeAccountId,
+    });
     const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
 
     const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, uniqueAccounts);
@@ -91,7 +91,8 @@ export const useRecipientOptions = ({ chain, query, excludeAccountId }: Params):
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <AccountAddressItem accountId={account.accountId} chain={chain} address={address} />,
+          // `account.name` is already the resolved name (`useAccountsNames`).
+          label: <Address showIcon title={account.name} address={address} />,
         });
       }
 
@@ -110,35 +111,41 @@ export const useRecipientOptions = ({ chain, query, excludeAccountId }: Params):
     }
 
     return ownAccountOptions;
-  }, [query, chain, resolvedAccounts, wallets, excludeAccountId, t]);
+  }, [query, chain, resolvedAccounts, resolvedWallets, wallets, excludeAccountId, t]);
+
+  // Contacts valid on the chain, keyed by the address the row displays — the
+  // search must run over that string, not the stored (prefix 42) one.
+  const chainContacts = useMemo(() => {
+    const result: { id: string; name: string; displayAddress: AddressType }[] = [];
+
+    for (const contact of contacts) {
+      const displayAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
+      if (!validateAddress(displayAddress, chain ?? undefined)) continue;
+
+      result.push({ id: contact.id.toString(), name: contact.name, displayAddress });
+    }
+
+    return result;
+  }, [contacts, chain]);
 
   const contactOptions = useMemo<RecipientGroup[]>(() => {
     if (validateAddress(query, chain ?? undefined)) return [];
 
-    const addressOptions: RecipientOption[] = [];
-    for (const contact of filteredContacts) {
-      const displayedAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
-      const isValidAddress = validateAddress(displayedAddress, chain ?? undefined);
-
-      if (!isValidAddress) continue;
-
-      addressOptions.push({
-        id: contact.id.toString(),
-        label: <Address showIcon title={contact.name} address={displayedAddress} />,
-        value: { address: displayedAddress },
-      });
-    }
-
-    if (addressOptions.length === 0) return [];
+    const filteredContacts = performSearch({ records: chainContacts, query, weights: CONTACT_SEARCH_WEIGHTS });
+    if (filteredContacts.length === 0) return [];
 
     return [
       {
-        id: 'contacts',
-        label: t('createMultisigAccount.contactsGroup'),
-        items: addressOptions,
+        id: RECIPIENT_GROUP_IDS.CONTACTS,
+        label: t('recipientPicker.contactsGroup'),
+        items: filteredContacts.map((contact) => ({
+          id: contact.id,
+          label: <Address showIcon title={contact.name} address={contact.displayAddress} />,
+          value: { address: contact.displayAddress },
+        })),
       },
     ];
-  }, [query, chain, filteredContacts, t]);
+  }, [query, chain, chainContacts, t]);
 
   return useMemo(() => {
     const options = [...walletsOptions, ...contactOptions];
@@ -154,8 +161,8 @@ export const useRecipientOptions = ({ chain, query, excludeAccountId }: Params):
     if (isAlreadyListed) return options;
 
     const typedAddressGroup: RecipientGroup = {
-      id: 'typed-address',
-      label: t('transfer.recipientPlaceholder'),
+      id: RECIPIENT_GROUP_IDS.TYPED_ADDRESS,
+      label: t('recipientPicker.typedAddressGroup'),
       items: [{ id: trimmed, value: { address: trimmed }, label: <Address showIcon address={trimmed} /> }],
     };
 

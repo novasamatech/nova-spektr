@@ -2,13 +2,12 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Separator } from '@/shared/ui';
 import { TransactionDetails, TransactionValidationError, UnknownRecipientAckBox } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
+import { MultisigOperationDescriptionField } from '@/features/operations';
 import { SigningPathSection } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -76,15 +75,21 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           >
             <DetailRow label={t('staking.payeeFlow.confirm.destination')}>
               {isRestake ? (
-                <FootnoteText className="text-text-secondary">{t('staking.payeeFlow.confirm.restaked')}</FootnoteText>
-              ) : (
+                <FootnoteText className="text-text-secondary">
+                  {t('dashboard.staking.positions.detail.rewardsDestination.restaked')}
+                </FootnoteText>
+              ) : destinationAccountId ? (
                 <NamedAccount
-                  accountId={destinationAccountId ?? toAccountId(selection.address)}
+                  accountId={destinationAccountId}
                   chain={chain}
                   walletNameAs="fallback"
                   variant="short"
                   iconSize={20}
                 />
+              ) : (
+                // Unreachable through `Continue`, which needs a valid address —
+                // but never dress an unparsable string up as an identity.
+                <FootnoteText className="text-text-secondary">{selection.address}</FootnoteText>
               )}
             </DetailRow>
             <Separator className="border-filter-border" />
@@ -110,7 +115,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           <Box padding={[2, 5]}>
             <UnknownRecipientAckBox
               warning={recipientWarning}
-              context="transfer"
+              context="payee"
               checked={isRiskAcknowledged}
               onToggle={payeeFlowModel.riskAcknowledgedToggled}
             />

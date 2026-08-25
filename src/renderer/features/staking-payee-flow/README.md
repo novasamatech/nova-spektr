@@ -62,10 +62,10 @@ read yet lets any selection through; refusing to submit over a value nobody has 
 ### Unknown payout address
 
 Rewards will land on the chosen address on every payout from now on, so an address the address book does not know gets
-the same acknowledgement a transfer asks for: the confirm shows the warning and `Sign` stays disabled until the user
-ticks that they have verified it. A new address forgets the previous tick. _Restake_ never warns — there is no
-recipient. **Draft mode is exempt**: nothing is signed when a draft is saved, and the warning fires when the draft is
-eventually signed, exactly as it does for a transfer draft.
+the same kind of acknowledgement a transfer asks for, worded for a reward destination: the confirm shows the warning and
+`Sign` stays disabled until the user ticks that they have verified it. A new address forgets the previous tick.
+_Restake_ never warns — there is no recipient. **Draft mode is exempt**: nothing is signed when a draft is saved, and
+the warning fires when the draft is eventually signed, exactly as it does for a transfer draft.
 
 ## Lifecycle
 
@@ -89,9 +89,11 @@ the final approval does — updates the drawer on its own.
 ## Drafts
 
 The form carries the app-wide draft toggle. In draft mode the user picks the signing path themselves, the fee and
-balance checks step aside, and the primary button creates a **draft** instead of walking on to the confirm. The draft
-call is built for the path's own source account. A request whose `signingMode` is `draft` — an address-book position —
-opens with the toggle already on. Signing and draft creation never share a confirmation: draft mode ends at the form.
+balance checks step aside, and the primary button creates a **draft** instead of walking on to the confirm. The draft's
+**source is pinned to the position's own account**: the source picker offers nothing else, and the model builds no call
+— and offers no _Save as draft_ — for a path that starts anywhere else, since `set_payee` acts on the origin's own stash
+and any other origin has no rights over it. A request whose `signingMode` is `draft` — an address-book position — opens
+with the toggle already on. Signing and draft creation never share a confirmation: draft mode ends at the form.
 
 ## Add to basket
 

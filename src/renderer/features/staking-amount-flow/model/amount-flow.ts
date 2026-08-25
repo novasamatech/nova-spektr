@@ -13,6 +13,7 @@ import {
 } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import {
+  MULTISIG_DEPOSIT_ACTION,
   createComplexTxStore,
   createRouteSignerStore,
   createTxValidationStore,
@@ -424,7 +425,7 @@ export const createAmountFlowModel = () => {
   );
 
   const $multisigDeposit = $balanceValidationResults.map((results) =>
-    getActionRequiredAmount(results, 'multisig deposit').reduce(
+    getActionRequiredAmount(results, MULTISIG_DEPOSIT_ACTION).reduce(
       (deposit, action) => deposit.add(action.required),
       BN_ZERO,
     ),

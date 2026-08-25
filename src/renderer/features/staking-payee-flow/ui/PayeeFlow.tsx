@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { BASKET_RESULT_AUTO_CLOSE_MS } from '@/shared/transactions';
 import { Modal } from '@/shared/ui-kit';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
@@ -30,7 +31,7 @@ export const PayeeFlow = () => {
         isOpen={isBasketOpen}
         variant="success"
         title={t('operation.addedToBasket')}
-        autoCloseTimeout={2000}
+        autoCloseTimeout={BASKET_RESULT_AUTO_CLOSE_MS}
         onClose={closeBasketModal}
       />
     );

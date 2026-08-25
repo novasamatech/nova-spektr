@@ -335,61 +335,32 @@ export const createStakingDashboardActions = ({
     target: kpi.enableActions,
   });
 
-  const amountFlowReady = sample({
-    clock: [wire, amountFlow.$enabled],
-    source: amountFlow.$enabled,
-  }).filter({ fn: (enabled) => enabled });
+  /**
+   * Enables a flow's actions once it is wired and its feature flag is on — on
+   * `wire`, and again whenever the flag flips on afterwards.
+   */
+  const wireFlow = ({
+    $enabled,
+    positionActions,
+    kpiActions = [],
+  }: {
+    $enabled: Store<boolean>;
+    positionActions: PositionAction[];
+    kpiActions?: StakingKpiAction[];
+  }) => {
+    const ready = sample({ clock: [wire, $enabled], source: $enabled }).filter({ fn: (enabled) => enabled });
 
-  sample({
-    clock: amountFlowReady,
-    fn: (): PositionAction[] => ['addStake', 'unbond'],
-    target: positions.actionsWired,
-  });
+    sample({ clock: ready, fn: () => positionActions, target: positions.actionsWired });
 
-  sample({
-    clock: amountFlowReady,
-    fn: (): StakingKpiAction[] => ['unbond'],
-    target: kpi.enableActions,
-  });
+    if (kpiActions.length > 0) {
+      sample({ clock: ready, fn: () => kpiActions, target: kpi.enableActions });
+    }
+  };
 
-  const confirmFlowReady = sample({
-    clock: [wire, confirmFlow.$enabled],
-    source: confirmFlow.$enabled,
-  }).filter({ fn: (enabled) => enabled });
-
-  sample({
-    clock: confirmFlowReady,
-    fn: (): PositionAction[] => ['changeValidators'],
-    target: positions.actionsWired,
-  });
-
-  sample({
-    clock: confirmFlowReady,
-    fn: (): StakingKpiAction[] => ['redeem'],
-    target: kpi.enableActions,
-  });
-
-  const newPositionFlowReady = sample({
-    clock: [wire, newPositionFlow.$enabled],
-    source: newPositionFlow.$enabled,
-  }).filter({ fn: (enabled) => enabled });
-
-  sample({
-    clock: newPositionFlowReady,
-    fn: (): PositionAction[] => ['startStaking'],
-    target: positions.actionsWired,
-  });
-
-  const payeeFlowReady = sample({
-    clock: [wire, payeeFlow.$enabled],
-    source: payeeFlow.$enabled,
-  }).filter({ fn: (enabled) => enabled });
-
-  sample({
-    clock: payeeFlowReady,
-    fn: (): PositionAction[] => ['changeRewardDestination'],
-    target: positions.actionsWired,
-  });
+  wireFlow({ $enabled: amountFlow.$enabled, positionActions: ['addStake', 'unbond'], kpiActions: ['unbond'] });
+  wireFlow({ $enabled: confirmFlow.$enabled, positionActions: ['changeValidators'], kpiActions: ['redeem'] });
+  wireFlow({ $enabled: newPositionFlow.$enabled, positionActions: ['startStaking'] });
+  wireFlow({ $enabled: payeeFlow.$enabled, positionActions: ['changeRewardDestination'] });
 
   return {
     wire,

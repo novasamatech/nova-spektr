@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createWatch, fork } from 'effector';
 import { Provider } from 'effector-react';
 
@@ -252,37 +252,46 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     unwatch();
   });
 
+  /**
+   * The Rewards stat cell — label plus value — so assertions never match the
+   * header or a chip.
+   */
+  const findRewardsCell = async () => {
+    const label = await screen.findByText('Rewards');
+
+    return within(label.parentElement!);
+  };
+
   test('should show Restaked when rewards are staked', async () => {
     renderDrawer({ ...row, payee: 'Staked', payeeLoaded: true });
 
-    expect(await screen.findByText('Rewards')).toBeInTheDocument();
-    expect(screen.getByText('Restaked')).toBeInTheDocument();
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Restaked')).toBeInTheDocument();
   });
 
   test('should name the stash with its short address when rewards go to the stash', async () => {
     renderDrawer({ ...row, payee: 'Stash', payeeLoaded: true });
 
-    // The header normally shows the wallet name ("My Vault"); should name
-    // resolution fall back to the account name, "Stash" appears twice.
-    expect((await screen.findAllByText('Stash')).length).toBeGreaterThanOrEqual(1);
-    // The short stash address under the label — the header may render the same
-    // string, so the assertion is "at least the cell", not "exactly once".
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Stash')).toBeInTheDocument();
     const shortStash = toShortAddress(toAddress(accountId, { prefix: polkadotAssetHubChain.addressPrefix }));
-    expect(screen.getAllByText(shortStash).length).toBeGreaterThanOrEqual(1);
+    expect(cell.getByText(shortStash)).toBeInTheDocument();
   });
 
   test('should show the legacy Controller destination read-only', async () => {
     renderDrawer({ ...row, payee: 'Controller', payeeLoaded: true });
 
-    expect(await screen.findByText('Controller')).toBeInTheDocument();
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Controller')).toBeInTheDocument();
   });
 
   test('should shimmer while the destination is unread and never claim Restaked', async () => {
     renderDrawer({ ...row, payee: null, payeeLoaded: false });
 
-    expect(await screen.findByText('Rewards')).toBeInTheDocument();
-    expect(screen.queryByText('Restaked')).not.toBeInTheDocument();
-    expect(screen.queryByText('Stash')).not.toBeInTheDocument();
+    const cell = await findRewardsCell();
+    expect(cell.getByTestId('StatCellSkeleton')).toBeInTheDocument();
+    expect(cell.queryByText('Restaked')).not.toBeInTheDocument();
+    expect(cell.queryByText('Stash')).not.toBeInTheDocument();
   });
 
   test('should offer Change reward destination on a nominator position', async () => {
