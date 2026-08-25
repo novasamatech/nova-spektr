@@ -6,7 +6,7 @@ import { ProxyTypeOrder, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Button, Icon, MultiSelect } from '@/shared/ui';
-import { DateRangePicker } from '@/shared/ui-kit';
+import { Checkbox, DateRangePicker } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { STATUS_FILTER_LABEL_KEYS, STATUS_FILTER_ORDER, isStatusFilterValue } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
@@ -81,6 +81,14 @@ export const OperationsFilter = memo(() => {
           {t('operations.filters.clearFilters')}
         </Button>
       )}
+      <div className="shrink-0 whitespace-nowrap">
+        <Checkbox
+          checked={selectedOptions.needsMySignature}
+          onChange={checked => operationsContextModel.setFilter({ needsMySignature: checked })}
+        >
+          {t('operations.filters.needsMySignature')}
+        </Checkbox>
+      </div>
       <div className="w-[136px]">
         <DateRangePicker
           value={selectedOptions.dateRange}

@@ -63,10 +63,12 @@ const emptyContext: OperationsFilterContext = {
     proxyType: [],
     status: [],
     searchQuery: '',
+    needsMySignature: false,
   },
   tab: 'pending',
   hiddenIds: [],
   searchMatchedIds: null,
+  needsMySignatureIds: null,
   isScopeMerged: false,
 };
 
@@ -618,6 +620,26 @@ describe('operations-filter', () => {
       expect(filterOperation(hiddenOp, mockMultisigAccount, ctx)).toBe(true);
       expect(filterOperation(visibleOp, mockMultisigAccount, ctx)).toBe(false);
     });
+
+    test('needs-my-signature ids: keeps only listed operations', () => {
+      const mine = createMockOperation({ id: 'op-mine', status: 'pending' });
+      const signed = createMockOperation({ id: 'op-signed', status: 'pending' });
+      const ctx: OperationsFilterContext = {
+        ...emptyContext,
+        filters: { ...emptyContext.filters, needsMySignature: true },
+        isScopeMerged: true,
+        needsMySignatureIds: new Set(['op-mine']),
+      };
+
+      expect(filterOperation(mine, mockMultisigAccount, ctx)).toBe(true);
+      expect(filterOperation(signed, mockMultisigAccount, ctx)).toBe(false);
+    });
+
+    test('needs-my-signature ids: null applies no narrowing', () => {
+      const op = createMockOperation({ id: 'op-1', status: 'pending' });
+
+      expect(filterOperation(op, mockMultisigAccount, { ...emptyContext, needsMySignatureIds: null })).toBe(true);
+    });
   });
 
   describe('getWalletSearchEntries', () => {
@@ -688,10 +710,15 @@ describe('operations-filter', () => {
       status: [],
       dateRange: undefined,
       searchQuery: '',
+      needsMySignature: false,
     };
 
     test('empty filter narrows nothing', () => {
       expect(hasNarrowingFilter(emptyFilter)).toBe(false);
+    });
+
+    test('needs my signature narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, needsMySignature: true })).toBe(true);
     });
 
     test('blank search query narrows nothing', () => {
@@ -727,6 +754,7 @@ describe('operations-filter', () => {
       status: [],
       dateRange: undefined,
       searchQuery: '',
+      needsMySignature: false,
     };
 
     test('kept on the pending tab with no filter', () => {

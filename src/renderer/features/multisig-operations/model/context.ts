@@ -12,7 +12,6 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DateRange } from '@/shared/ui-kit';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -21,6 +20,7 @@ import {
   contactMultisigsModel,
   identity,
   multisigOperation,
+  multisigOperationService,
 } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -30,6 +30,7 @@ import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/agg
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bucketOperations } from '../lib/bucket-operations';
 import {
+  type OperationsFilterCriteria,
   type WalletSearchEntry,
   buildOperationSearchRow,
   filterOperation,
@@ -45,14 +46,8 @@ import { multisigOperationsFeature } from './feature';
 
 export { type OperationWithAccount } from '../lib/types';
 
-interface SelectedFilters {
-  network: string[];
-  type: string[];
-  proxyType: string[];
-  status: StatusFilterValue[];
-  dateRange?: DateRange;
-  searchQuery: string;
-}
+// One shape for the store and the pure filter — a new criterion is added once.
+type SelectedFilters = OperationsFilterCriteria;
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
 const $hiddenOperationIds = createStore<string[]>([]);
@@ -73,6 +68,7 @@ const initialFilter: SelectedFilters = {
   status: [],
   dateRange: undefined,
   searchQuery: '',
+  needsMySignature: false,
 };
 
 const setFilter = createEvent<Partial<SelectedFilters>>();
@@ -90,7 +86,8 @@ const $filter = createStore(initialFilter)
 // Any non-search filter active → tabs collapse to "All operations" (search alone doesn't merge scope).
 const $isScopeMerged = $filter.map(filter =>
   Boolean(
-    filter.network.length ||
+    filter.needsMySignature ||
+      filter.network.length ||
       filter.type.length ||
       filter.proxyType.length ||
       filter.status.length ||
@@ -317,6 +314,31 @@ const $searchMatchedOperationIds = createGuardedStore<Set<string> | null>(
   haveSameMatchedIds,
 );
 
+const $needsMySignatureIdsRaw = combine(
+  {
+    operationsWithAccounts: $operationsWithAccounts,
+    enabled: $filter.map(filter => filter.needsMySignature),
+    walletAccounts: accounts.$list,
+    chains: networkModel.$chains,
+  },
+  ({ operationsWithAccounts, enabled, walletAccounts, chains }): Set<string> | null => {
+    if (!enabled) return null;
+
+    const ids = new Set<string>();
+    for (const { operation, account } of operationsWithAccounts) {
+      if (multisigOperationService.needsUserSignature(operation, account, walletAccounts, chains[operation.chainId])) {
+        ids.add(operation.id);
+      }
+    }
+
+    return ids;
+  },
+);
+
+// `accounts.$list` churns on unrelated account edits; like the search ids, the
+// guard keeps an unchanged set from re-running the downstream filter chain.
+const $needsMySignatureIds = createGuardedStore<Set<string> | null>($needsMySignatureIdsRaw, null, haveSameMatchedIds);
+
 const $filteredOperations = combine(
   {
     operationsWithAccounts: $operationsWithAccounts,
@@ -324,15 +346,25 @@ const $filteredOperations = combine(
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
     searchMatchedIds: $searchMatchedOperationIds,
+    needsMySignatureIds: $needsMySignatureIds,
     isScopeMerged: $isScopeMerged,
   },
-  ({ operationsWithAccounts, filter, tab, hiddenIds, searchMatchedIds, isScopeMerged }): OperationWithAccount[] => {
+  ({
+    operationsWithAccounts,
+    filter,
+    tab,
+    hiddenIds,
+    searchMatchedIds,
+    needsMySignatureIds,
+    isScopeMerged,
+  }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
       filterOperation(operation, account, {
         filters: filter,
         tab,
         hiddenIds,
         searchMatchedIds,
+        needsMySignatureIds,
         isScopeMerged,
       }),
     );
@@ -553,6 +585,7 @@ export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
   $isScopeMerged,
+  $needsMySignatureIds,
   $filteredOperations,
   $sectionedOperations,
   $multisigAccounts,

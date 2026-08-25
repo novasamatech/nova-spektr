@@ -1,8 +1,9 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId, AccountType, CryptoType, SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type Draft } from '@/domains/backend';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { type SearchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
 import { type DraftListScope, buildDraftSearchRow, filterDraftsByScope } from './draft-scope';
@@ -70,14 +71,14 @@ const resolvers: SearchResolvers = {
 };
 
 /** Mirrors what useVisibleDrafts does: resolve names, then filter. */
-const filterWithSearch = (drafts: Draft[], scope: DraftListScope) => {
+const filterWithSearch = (drafts: Draft[], scope: DraftListScope, walletAccounts: AnyAccount[] = []) => {
   const searchMatchedIds = searchOperationRows(
     drafts.map((draft) => buildDraftSearchRow(draft, chains, resolvers.resolveWalletName)),
     scope.searchQuery,
     resolvers,
   );
 
-  return filterDraftsByScope(drafts, scope, searchMatchedIds);
+  return filterDraftsByScope(drafts, scope, searchMatchedIds, walletAccounts);
 };
 
 describe('filterDraftsByScope', () => {
@@ -295,6 +296,86 @@ describe('filterDraftsByScope', () => {
       expect(filterWithSearch([nestedDraft], { ...emptyScope, searchQuery: 'Adam' }).map((d) => d.id)).toEqual([
         'draft-nested',
       ]);
+    });
+  });
+
+  describe('needs my signature', () => {
+    const makeAccount = (accountId: string, signingType = SigningType.POLKADOT_VAULT): AnyAccount =>
+      ({
+        id: `account-${accountId}`,
+        walletId: 1,
+        accountId,
+        name: 'Bob',
+        type: 'universal',
+        accountType: AccountType.BASE,
+        cryptoType: CryptoType.SR25519,
+        signingType,
+        createdAt: 0,
+      }) as never;
+
+    // Bob is a local account that can sign; Charlie is not local.
+    const walletAccounts = [makeAccount(BOB_ACCOUNT_ID)];
+    // A usable path needs the multisig hop and the signing leaf.
+    const path = [
+      { kind: 'multisig', accountId: MOCK_ACCOUNT_ID },
+      { kind: 'signatory', accountId: BOB_ACCOUNT_ID },
+    ] as never;
+    const mineDraft = createMockDraft({ id: 'draft-mine', initiatorAccountId: BOB_ACCOUNT_ID, signingPath: path });
+    const foreignDraft = createMockDraft({
+      id: 'draft-foreign',
+      initiatorAccountId: CHARLIE_ACCOUNT_ID,
+      signingPath: path,
+    });
+    const unassignedDraft = createMockDraft({ id: 'draft-unassigned', initiatorAccountId: null, signingPath: path });
+    const legacyDraft = createMockDraft({ id: 'draft-legacy', initiatorAccountId: BOB_ACCOUNT_ID, signingPath: [] });
+
+    // `hasPermissionToMakeActions` resolves through a DI anyOf with no handlers
+    // in unit tests — seed the same watch-only rule the account domain uses.
+    beforeEach(() => {
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: ({ account }) => account.signingType !== SigningType.WATCH_ONLY,
+        available: () => true,
+      });
+    });
+
+    afterEach(() => {
+      accountService.accountActionPermissionAnyOf.resetHandlers();
+    });
+
+    test('off: keeps every draft whoever the initiator is', () => {
+      const result = filterWithSearch(
+        [mineDraft, foreignDraft, unassignedDraft, legacyDraft],
+        emptyScope,
+        walletAccounts,
+      );
+      expect(result.map((d) => d.id)).toEqual(['draft-mine', 'draft-foreign', 'draft-unassigned', 'draft-legacy']);
+    });
+
+    test('on: keeps only drafts assigned to a local signer', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      const result = filterWithSearch([mineDraft, foreignDraft, unassignedDraft], scope, walletAccounts);
+      expect(result.map((d) => d.id)).toEqual(['draft-mine']);
+    });
+
+    test('on: a draft nobody local can initiate is not mine', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      expect(filterWithSearch([foreignDraft, unassignedDraft], scope, walletAccounts)).toEqual([]);
+    });
+
+    test('on: a legacy draft without a signing path is not mine even if the initiator is local', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      expect(filterWithSearch([legacyDraft], scope, walletAccounts)).toEqual([]);
+    });
+
+    test('on: a watch-only initiator cannot sign, so the draft is not mine', () => {
+      const scope = { ...emptyScope, needsMySignature: true };
+      const watchOnly = [makeAccount(BOB_ACCOUNT_ID, SigningType.WATCH_ONLY)];
+      expect(filterWithSearch([mineDraft], scope, watchOnly)).toEqual([]);
+    });
+
+    test('on: combines with the other scope filters', () => {
+      const scope = { ...emptyScope, needsMySignature: true, network: [KUSAMA_CHAIN_ID] };
+      expect(filterWithSearch([mineDraft], scope, walletAccounts)).toEqual([]);
     });
   });
 });

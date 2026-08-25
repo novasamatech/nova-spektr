@@ -57,6 +57,8 @@ function createSnapshotPosition(accountId: AccountId): StakingPosition {
     unbonding: [],
     redeemable: SNAPSHOT_REDEEMABLE,
     totalUnbonding: '0',
+    payee: null,
+    payeeLoaded: false,
   };
 }
 

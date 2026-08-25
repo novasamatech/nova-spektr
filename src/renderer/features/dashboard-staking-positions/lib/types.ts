@@ -1,7 +1,7 @@
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
-import { type NominationStatus, type PositionStatus, type StakingPosition } from '@/domains/staking';
+import { type NominationStatus, type Payee, type PositionStatus, type StakingPosition } from '@/domains/staking';
 
 /**
  * Why a position offers no actions. Each maps to its own tooltip, because the
@@ -80,6 +80,12 @@ export type PositionRow = {
   nominationCount: number;
   /** Pending drafts initiated by this account on this chain. */
   draftCount: number;
+  /**
+   * Mirrors `position.payee` / `position.payeeLoaded` — the drawer's Rewards
+   * cell.
+   */
+  payee: Payee | null;
+  payeeLoaded: boolean;
 };
 
 /** One row of the drawer's nominations table. */

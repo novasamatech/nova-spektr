@@ -37,6 +37,7 @@ import {
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type ChangeValidatorsTarget, type RedeemTarget } from '@/features/staking-confirm-flow';
+import { type PayeeFlowTarget } from '@/features/staking-payee-flow';
 import { createStakingDashboardActions } from '../model/wiring';
 
 const ACTIVE_ERA = 1500;
@@ -117,6 +118,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
   const positionClaimRequested = createEvent<ClaimPayload>();
   const positionAddStakeRequested = createEvent<PositionActionPayload>();
   const positionUnbondRequested = createEvent<PositionActionPayload>();
+  const positionChangeRewardDestinationRequested = createEvent<PositionActionPayload>();
   const nominationsChangeRequested = createEvent<NominationsChangePayload>();
   const startStakingRequested = createEvent();
   const actionsWired = createEvent<PositionAction[]>();
@@ -130,6 +132,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
   const confirmChangeValidatorsRequested = createEvent<ChangeValidatorsTarget>();
   const confirmRedeemRequested = createEvent<RedeemTarget>();
   const newPositionRequested = createEvent();
+  const payeeChangeRequested = createEvent<PayeeFlowTarget>();
 
   const $chains = createStore<Record<ChainId, Chain>>({
     [chainId(1)]: chain(1, 'DOT'),
@@ -157,6 +160,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
 
   const $confirmFlowEnabled = createStore(true);
   const $newPositionFlowEnabled = createStore(true);
+  const $payeeFlowEnabled = createStore(true);
 
   const model = createStakingDashboardActions({
     sources: { $chains, $accounts, $wallets, $positions, $eras, $payoutsCache },
@@ -171,6 +175,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       claimRequested: positionClaimRequested,
       addStakeRequested: positionAddStakeRequested,
       unbondRequested: positionUnbondRequested,
+      changeRewardDestinationRequested: positionChangeRewardDestinationRequested,
       nominationsChangeRequested,
       startStakingRequested,
       actionsWired,
@@ -194,6 +199,10 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       newPositionRequested,
       $enabled: $newPositionFlowEnabled,
     },
+    payeeFlow: {
+      changeRewardDestinationRequested: payeeChangeRequested,
+      $enabled: $payeeFlowEnabled,
+    },
   });
 
   return {
@@ -201,6 +210,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
     $amountFlowEnabled,
     $confirmFlowEnabled,
     $newPositionFlowEnabled,
+    $payeeFlowEnabled,
     events: {
       kpiClaimRequested,
       kpiRedeemRequested,
@@ -210,6 +220,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       positionClaimRequested,
       positionAddStakeRequested,
       positionUnbondRequested,
+      positionChangeRewardDestinationRequested,
       nominationsChangeRequested,
       startStakingRequested,
       actionsWired,
@@ -221,6 +232,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
       confirmChangeValidatorsRequested,
       confirmRedeemRequested,
       newPositionRequested,
+      payeeChangeRequested,
     },
   };
 }
@@ -671,6 +683,32 @@ describe('staking dashboard actions wiring', () => {
     });
   });
 
+  describe('payee flow', () => {
+    it('forwards a change-reward-destination payload unchanged', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.payeeChangeRequested, scope);
+      const payload = positionPayload(1, 1);
+
+      await allSettled(harness.events.positionChangeRewardDestinationRequested, { scope, params: payload });
+
+      expect(forwarded).toEqual([payload]);
+    });
+
+    it('keeps the drawer signing mode — a contact position opens in draft mode', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability();
+      const forwarded = collect(harness.events.payeeChangeRequested, scope);
+
+      await allSettled(harness.events.positionChangeRewardDestinationRequested, {
+        scope,
+        params: contactPositionPayload(7, 1),
+      });
+
+      expect(forwarded[0]?.signingMode).toBe('draft');
+    });
+  });
+
   describe('gating', () => {
     it('announces every action that has a destination', async () => {
       const harness: Harness = createHarness();
@@ -681,7 +719,14 @@ describe('staking dashboard actions wiring', () => {
       await allSettled(harness.model.wire, { scope, params: undefined });
 
       expect(positionActions.flat()).toEqual(
-        expect.arrayContaining(['claim', 'startStaking', 'addStake', 'unbond', 'changeValidators']),
+        expect.arrayContaining([
+          'claim',
+          'startStaking',
+          'addStake',
+          'unbond',
+          'changeValidators',
+          'changeRewardDestination',
+        ]),
       );
       expect(kpiActions.flat()).toEqual(expect.arrayContaining(['claim', 'unbond', 'redeem']));
     });
@@ -705,6 +750,18 @@ describe('staking dashboard actions wiring', () => {
       await allSettled(harness.model.wire, { scope, params: undefined });
 
       expect(positionActions.flat()).not.toContain('startStaking');
+    });
+
+    it('leaves change reward destination gated while its flow is off', async () => {
+      const harness: Harness = createHarness();
+      const scope = await forkWithAccountAvailability([[harness.$payeeFlowEnabled, false]]);
+      const positionActions = collect(harness.events.actionsWired, scope);
+
+      await allSettled(harness.model.wire, { scope, params: undefined });
+
+      expect(positionActions.flat()).not.toContain('changeRewardDestination');
+      // The other flows are untouched by this flag.
+      expect(positionActions.flat()).toContain('changeValidators');
     });
 
     it('leaves the confirm-flow actions gated while the staking flag is off', async () => {

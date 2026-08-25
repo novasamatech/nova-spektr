@@ -71,7 +71,7 @@ flowchart TD
 | `blocked · watchOnly`          | A local account this installation holds no key for                          | `view only` in the row; every chip disabled with its reason                                     |
 | `blocked · noDraftRoute`       | Not ours, and no multisig or proxy could sign for it                        | same                                                                                            |
 | `blocked · draftsNotConnected` | Could carry a draft, but no external address book was ever connected        | Chips disabled with the reason — but **no** `view only` caption                                 |
-| `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | same                                                                                            |
+| `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | `view only` in the row; chips disabled, the reason says to add the account's key to a wallet    |
 
 Three rules behind that table are easy to get wrong, and each was a bug before it was a rule.
 
@@ -103,9 +103,10 @@ sentence.
 
 **The `view only` caption is spent only on the terminal reasons.** The 4%-wide last column has room for one word, and
 that word is the most final one in the vocabulary — so `isViewOnly` gives it to `watchOnly` and `noDraftRoute`, which
-are facts about the address, and withholds it from the two draft reasons, which are a missing connection and a missing
-permission. Stamping "view only" on a row that is one click, or one admin, away from acting would undo in the grid the
-very distinction the four reasons exist to draw. Which reason it is stays the drawer's business.
+are facts about the address, and to `draftsNoPermission`, which nothing on the dashboard can grant — from here that row
+is as read-only as a watch-only one, and its tooltip says how to act on the account instead: add its key to a wallet. It
+is withheld from `draftsNotConnected`, a missing connection that is one click away; stamping "view only" on that row
+would undo in the grid the very distinction the reasons exist to draw. Which reason it is stays the drawer's business.
 
 **Claim is the exception to all of it.** A payout call names the _validator_, is permissionless, and pays each
 nominator's own payee whoever submits it. So the Claim chip is gated by whether anyone here can sign on the network, not
@@ -177,12 +178,13 @@ the data lands.
 
 ### The drawer
 
-A 720px right-hand panel: who the account is and its access mode, a six-cell stats grid repeating the row's columns (the
-user arrived by clicking one of them and should not have to remember which), the next unbonding chunk with a
-`12d 4h left → Aug 3` countdown, the action chips, and — for a nominator — the full nominations table. The countdown
-shows the two largest units that still say something — `12d 4h`, then `3h 7m`, then `43m` — because a wait rounded to
-`0d 0h` tells the user only that it is under an hour, which is exactly when the minutes matter. The width is set by that
-table — six columns, four of them sortable — not by the panel's own content; at 560px its headers no longer fit.
+A 720px right-hand panel: who the account is and its access mode, a seven-cell stats grid repeating the row's columns
+plus the reward destination (the user arrived by clicking one of them and should not have to remember which), the next
+unbonding chunk with a `12d 4h left → Aug 3` countdown, the action chips, and — for a nominator — the full nominations
+table. The countdown shows the two largest units that still say something — `12d 4h`, then `3h 7m`, then `43m` — because
+a wait rounded to `0d 0h` tells the user only that it is under an hour, which is exactly when the minutes matter. The
+width is set by that table — six columns, four of them sortable — not by the panel's own content; at 560px its headers
+no longer fit.
 
 Each nomination is `active`, `waiting` or `dropped out`, and the era validator set is what separates the last two: a
 validator missing from it was simply not elected, while one that _is_ elected but does not carry our stake dropped us
@@ -197,9 +199,16 @@ A **validator position** has no nominations to list, so the table gives way to a
 (with a red `Blocked` badge when the validator refuses new nominations), self stake, total stake, nominator count and
 era points. Everything but the commission is a fact of the active era, so while the validator is waiting for election
 those cells all read `—` under a note saying it was not elected — showing zeros there would read as facts nobody
-established. The stats grid's `Validators` cell becomes `Nominators` for the same reason. The `Change validators` chip
-is absent rather than disabled — a validator nominates nobody, so the picker has nothing to change — while `Claim`,
-`Add stake` and `Unbond` stay: a validator stash bonds, unbonds and collects its own rewards like any other.
+established. The stats grid's `Validators` cell becomes `Nominators` for the same reason.
+
+The seventh cell, **Rewards**, shows where the position's rewards go — for nominators and validators alike: `Restaked`,
+`Stash` (with the stash address), the payout account by name, or the legacy `Controller`. It shimmers until the payee
+subscription has answered and reads `—` only when the chain holds no destination at all; the two must not look the same.
+The cell does not hold the table — the row is complete without it.
+
+The `Change validators` chip is absent rather than disabled — a validator nominates nobody, so the picker has nothing to
+change — while `Claim`, `Add stake` and `Unbond` stay: a validator stash bonds, unbonds and collects its own rewards
+like any other. `Change reward destination` stays as well, for both kinds: every stash has a payee.
 
 The unbonding countdown comes from the chain's era anchor. Without one the strip falls back to the era count, which is
 the only thing actually known.
@@ -239,13 +248,14 @@ place to sign it.
 
 The widget emits, and never consumes:
 
-| Event                        | Fired by                                               | Wired |
-| ---------------------------- | ------------------------------------------------------ | ----- |
-| `claimRequested`             | The drawer's `Claim <amount>` chip                     | yes   |
-| `addStakeRequested`          | The drawer's `Add stake` chip                          | yes   |
-| `unbondRequested`            | The drawer's `Unbond` chip                             | yes   |
-| `nominationsChangeRequested` | The validator picker's submit, with the chosen set     | yes   |
-| `startStakingRequested`      | `+ New position` and the empty state's `Start staking` | yes   |
+| Event                              | Fired by                                               | Wired |
+| ---------------------------------- | ------------------------------------------------------ | ----- |
+| `claimRequested`                   | The drawer's `Claim <amount>` chip                     | yes   |
+| `addStakeRequested`                | The drawer's `Add stake` chip                          | yes   |
+| `unbondRequested`                  | The drawer's `Unbond` chip                             | yes   |
+| `changeRewardDestinationRequested` | The drawer's `Change reward destination` chip          | yes   |
+| `nominationsChangeRequested`       | The validator picker's submit, with the chosen set     | yes   |
+| `startStakingRequested`            | `+ New position` and the empty state's `Start staking` | yes   |
 
 A host announces which of these it has taken responsibility for through `positionActions.actionsWired([...])`, and every
 chip whose action has not been announced renders disabled with a tooltip saying so. A chip that looks pressable and
@@ -254,7 +264,8 @@ action**, not one flag, because the flows behind them arrive separately.
 
 [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) is that host today, and every chip is now wired —
 `Change validators` included: the picked set is handed to [`staking-confirm-flow`](../staking-confirm-flow/README.md),
-which turns it into a `nominate` transaction.
+which turns it into a `nominate` transaction; `Change reward destination` is handed to
+[`staking-payee-flow`](../staking-payee-flow/README.md).
 
 ## Known gaps
 
@@ -278,6 +289,7 @@ which turns it into a `nominate` transaction.
 - `features/validator-selection` — the picker the `Change validators` chip opens, and the model that scopes the
   validator aggregate to the position's chain.
 - [`staking-confirm-flow`](../staking-confirm-flow/README.md) — signs the picked set the picker submits.
+- [`staking-payee-flow`](../staking-payee-flow/README.md) — changes the reward destination the drawer shows.
 - [`staking-dashboard-actions`](../staking-dashboard-actions/README.md) — the host that consumes the events above and
   announces which chips are live.
 - `features/drafts` — where the pending-draft counts come from, and the owner of both halves of the draft rule this

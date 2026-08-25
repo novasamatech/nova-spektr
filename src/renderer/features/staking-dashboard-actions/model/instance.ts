@@ -1,6 +1,7 @@
 import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
+import { ZERO_BALANCE } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
 import { era, payouts } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -13,6 +14,7 @@ import { stakingAmountFlow } from '@/features/staking-amount-flow';
 import { claimRewardsModel } from '@/features/staking-claim-rewards';
 import { stakingConfirmFlow } from '@/features/staking-confirm-flow';
 import { stakingNewPositionFlow } from '@/features/staking-new-position-flow';
+import { stakingPayeeFlow } from '@/features/staking-payee-flow';
 
 import { type DraftToastOperation, createDraftToast } from './draft-toast';
 import { createStakingDashboardActions } from './wiring';
@@ -47,6 +49,7 @@ export const stakingDashboardActions = createStakingDashboardActions({
     claimRequested: positionActions.events.claimRequested,
     addStakeRequested: positionActions.events.addStakeRequested,
     unbondRequested: positionActions.events.unbondRequested,
+    changeRewardDestinationRequested: positionActions.events.changeRewardDestinationRequested,
     nominationsChangeRequested: positionActions.events.nominationsChangeRequested,
     startStakingRequested: positionActions.events.startStakingRequested,
     actionsWired: positionActions.actionsWired,
@@ -70,6 +73,10 @@ export const stakingDashboardActions = createStakingDashboardActions({
     newPositionRequested: stakingNewPositionFlow.newPositionRequested,
     $enabled: $stakingEnabled,
   },
+  payeeFlow: {
+    changeRewardDestinationRequested: stakingPayeeFlow.changeRewardDestinationRequested,
+    $enabled: $stakingEnabled,
+  },
 });
 
 /**
@@ -78,6 +85,9 @@ export const stakingDashboardActions = createStakingDashboardActions({
  */
 const $claimOperation = createStore<DraftToastOperation | null>('claim');
 const $newPositionOperation = createStore<DraftToastOperation | null>('newPosition');
+const $payeeOperation = createStore<DraftToastOperation | null>('changeRewardDestination');
+/** `set_payee` moves nothing; the toast line names no amount for it. */
+const $payeeAmount = createStore(ZERO_BALANCE);
 
 export const draftToast = createDraftToast({
   flows: [
@@ -124,6 +134,17 @@ export const draftToast = createDraftToast({
       $amount: stakingConfirmFlow.$amount,
       $initiator: stakingConfirmFlow.$initiator,
       $draftSigningPath: stakingConfirmFlow.$draftSigningPath,
+    },
+    {
+      saveAsDraftRequested: stakingPayeeFlow.saveAsDraftRequested,
+      flowStarted: stakingPayeeFlow.flowStarted,
+      $initiatedDraft: stakingPayeeFlow.$initiatedDraft,
+      $operation: $payeeOperation,
+      $chain: stakingPayeeFlow.$chain,
+      $asset: stakingPayeeFlow.$asset,
+      $amount: $payeeAmount,
+      $initiator: stakingPayeeFlow.$initiator,
+      $draftSigningPath: stakingPayeeFlow.$draftSigningPath,
     },
   ],
   $accounts: accounts.$list,

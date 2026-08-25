@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createWatch, fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import { type Wallet, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
@@ -36,6 +37,8 @@ const position: StakingPosition = {
   unbonding: [],
   redeemable: '0',
   totalUnbonding: '0',
+  payee: 'Staked',
+  payeeLoaded: true,
 };
 
 /** The wallet behind the base row — `direct` means a local wallet holds it. */
@@ -72,6 +75,8 @@ const row: PositionRow = {
   activeValidatorCount: 0,
   nominationCount: 0,
   draftCount: 0,
+  payee: 'Staked',
+  payeeLoaded: true,
 };
 
 const renderDrawer = (drawerRow: PositionRow = row, wiredActions: PositionAction[] = ['changeValidators']) => {
@@ -243,6 +248,94 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     await waitFor(() => expect(requested).toHaveLength(1));
     expect(requested[0]).toMatchObject({ chain: polkadotAssetHubChain, signingMode: 'local' });
     expect(chip.querySelector('[data-testid="prefix"]')).not.toBeInTheDocument();
+
+    unwatch();
+  });
+
+  /**
+   * The Rewards stat cell — label plus value — so assertions never match the
+   * header or a chip.
+   */
+  const findRewardsCell = async () => {
+    const label = await screen.findByText('Rewards');
+
+    return within(label.parentElement!);
+  };
+
+  test('should show Restaked when rewards are staked', async () => {
+    renderDrawer({ ...row, payee: 'Staked', payeeLoaded: true });
+
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Restaked')).toBeInTheDocument();
+  });
+
+  test('should name the stash with its short address when rewards go to the stash', async () => {
+    renderDrawer({ ...row, payee: 'Stash', payeeLoaded: true });
+
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Stash')).toBeInTheDocument();
+    const shortStash = toShortAddress(toAddress(accountId, { prefix: polkadotAssetHubChain.addressPrefix }));
+    expect(cell.getByText(shortStash)).toBeInTheDocument();
+  });
+
+  test('should show the legacy Controller destination read-only', async () => {
+    renderDrawer({ ...row, payee: 'Controller', payeeLoaded: true });
+
+    const cell = await findRewardsCell();
+    expect(cell.getByText('Controller')).toBeInTheDocument();
+  });
+
+  test('should shimmer while the destination is unread and never claim Restaked', async () => {
+    renderDrawer({ ...row, payee: null, payeeLoaded: false });
+
+    const cell = await findRewardsCell();
+    expect(cell.getByTestId('StatCellSkeleton')).toBeInTheDocument();
+    expect(cell.queryByText('Restaked')).not.toBeInTheDocument();
+    expect(cell.queryByText('Stash')).not.toBeInTheDocument();
+  });
+
+  test('should offer Change reward destination on a nominator position', async () => {
+    renderDrawer(row);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeInTheDocument();
+  });
+
+  test('should offer Change reward destination on a validator position too', async () => {
+    renderDrawer(validatorRow);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeInTheDocument();
+  });
+
+  test('should keep Change reward destination disabled on a watch-only position', async () => {
+    const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
+
+    renderDrawer({ ...row, wallet, access: { mode: 'blocked', reason: 'watchOnly' } });
+
+    expect(await screen.findByText('view only')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Change reward destination' })).toBeDisabled();
+  });
+
+  test('should stay disabled until the reward-destination flow is wired', async () => {
+    renderDrawer(row, ['changeValidators']);
+
+    expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeDisabled();
+  });
+
+  test('should emit changeRewardDestinationRequested with the position payload', async () => {
+    const requested: unknown[] = [];
+    const unwatch = createWatch({
+      unit: positionActions.events.changeRewardDestinationRequested,
+      fn: (payload) => requested.push(payload),
+    });
+
+    renderDrawer(row, ['changeRewardDestination']);
+
+    const chip = await screen.findByRole('button', { name: 'Change reward destination' });
+    expect(chip).toBeEnabled();
+    fireEvent.click(chip);
+
+    expect(requested).toHaveLength(1);
+    expect(requested[0]).toMatchObject({ chain: polkadotAssetHubChain, account: localAccount, signingMode: 'local' });
 
     unwatch();
   });

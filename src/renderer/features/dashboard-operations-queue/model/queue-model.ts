@@ -1,11 +1,6 @@
 import { type Chain, type ChainId } from '@/shared/core';
 import { type Draft } from '@/domains/backend';
-import {
-  type AnyAccount,
-  type MultisigOperation,
-  MultisigOperationStatus,
-  multisigOperationService,
-} from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 export function filterScopedDrafts(drafts: Draft[], selectedAccountIds: Set<string>): Draft[] {
@@ -38,18 +33,9 @@ export function filterAwaitingSignature(
   if (multisigByAccountId.size === 0) return [];
 
   return operations.filter((op) => {
-    // awaitingOutcome: already resolved on-chain, only the final status is unknown — nothing to sign
-    if (op.status !== MultisigOperationStatus.Pending || op.awaitingOutcome) return false;
     const multisig = multisigByAccountId.get(op.multisigAccountId);
     if (!multisig || !accountUtils.isAnyMultisigAccount(multisig)) return false;
 
-    const actionable = multisigOperationService.findActionableSignatories(
-      op,
-      multisig,
-      walletAccounts,
-      chains[op.chainId],
-    );
-
-    return actionable.length > 0;
+    return multisigOperationService.needsUserSignature(op, multisig, walletAccounts, chains[op.chainId]);
   });
 }

@@ -13,9 +13,11 @@ export { createTxValidationStore } from './createTxValidationStore';
 export {
   type ValidationResult,
   type ValidationRule,
+  MULTISIG_DEPOSIT_ACTION,
   createTxValidator,
   getActionRequiredAmount,
 } from './createTxValidator';
+export { BASKET_RESULT_AUTO_CLOSE_MS } from './constants';
 export { combineTotalRequiredFee } from './combineTotalRequiredFee';
 export {
   type EditControllerMarkerPayload,

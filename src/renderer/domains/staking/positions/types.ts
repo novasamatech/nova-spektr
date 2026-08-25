@@ -3,6 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EraAnchor } from '../era/service';
 import { type ExposureMap } from '../exposures/types';
 import { type Nomination } from '../nominations/types';
+import { type Payee } from '../types';
 import { type ValidatorPrefs } from '../validator-prefs/types';
 import { type EraValidatorMap } from '../validators/types';
 
@@ -103,6 +104,13 @@ export type StakingPosition = {
   redeemable: string;
   /** Planck sum of chunks with `era > activeEra`. */
   totalUnbonding: string;
+  /**
+   * Where rewards go. `null` both while unread and when the chain holds no
+   * destination (`None`); `payeeLoaded` tells the two apart.
+   */
+  payee: Payee | null;
+  /** The payee subscription has answered for this stash. */
+  payeeLoaded: boolean;
 };
 
 /**
@@ -133,4 +141,7 @@ export type DerivePositionInput = {
   activeEra: EraIndex;
   /** `null` when the chain doesn't expose enough data for era timing. */
   eraAnchor: EraAnchor | null;
+  /** `null` while unread or `None` on chain — see `StakingPosition.payee`. */
+  payee: Payee | null;
+  payeeLoaded: boolean;
 };

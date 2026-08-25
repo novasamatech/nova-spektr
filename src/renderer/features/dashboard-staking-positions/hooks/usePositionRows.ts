@@ -166,6 +166,8 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         activeValidatorCount: position.activeValidators.length,
         nominationCount: position.nominations.length,
         draftCount: draftCountByKey.get(`${position.chainId}-${position.accountId}`) ?? 0,
+        payee: position.payee,
+        payeeLoaded: position.payeeLoaded,
       });
     }
 

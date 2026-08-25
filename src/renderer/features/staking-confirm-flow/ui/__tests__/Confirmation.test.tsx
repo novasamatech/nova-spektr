@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { allSettled, fork } from 'effector';
 import { Provider } from 'effector-react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
 import { type Validator } from '@/shared/core';
@@ -9,6 +10,7 @@ import { createAccountId, dotAsset, polkadotAssetHubChain } from '@/shared/mocks
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ThemeProvider } from '@/shared/ui-kit';
 import { type StakingPosition } from '@/domains/staking';
+import { authModel, connectionHistoryModel } from '@/aggregates/backend';
 import { confirmFlowModel } from '../../model/confirm-flow';
 import { Confirmation } from '../Confirmation';
 
@@ -36,6 +38,8 @@ const position: StakingPosition = {
   unbonding: [],
   redeemable: '0',
   totalUnbonding: '0',
+  payee: null,
+  payeeLoaded: false,
 };
 
 const validator: Validator = {
@@ -56,7 +60,9 @@ const renderConfirmation = (scope: ReturnType<typeof fork>) =>
     <Provider value={scope}>
       <I18Provider>
         <ThemeProvider>
-          <Confirmation />
+          <MemoryRouter>
+            <Confirmation />
+          </MemoryRouter>
         </ThemeProvider>
       </I18Provider>
     </Provider>,
@@ -71,7 +77,13 @@ describe('staking-confirm-flow · Confirmation', () => {
    * with nothing said.
    */
   it('renders for a position with no local account', async () => {
-    const scope = fork();
+    // A connected address book whose user may write drafts — the picker's own
+    // precondition; without it the draft section explains instead of listing.
+    const scope = fork({
+      values: new Map()
+        .set(connectionHistoryModel.$hasEverConnected, true)
+        .set(authModel.$authState, { accountId, accountName: 'Backend user', permissions: ['operation-draft:write'] }),
+    });
 
     await allSettled(confirmFlowModel.changeValidatorsRequested, {
       scope,
@@ -88,10 +100,11 @@ describe('staking-confirm-flow · Confirmation', () => {
 
     renderConfirmation(scope);
 
-    // The body is there: what the operation does, the source picker, and the
-    // draft affordance that used to sit below the guard that hid it.
+    // The body is there: what the operation does, the draft's source section
+    // (a plain contact has no draft route, so it explains rather than lists),
+    // and the draft affordance that used to sit below the guard that hid it.
     expect(screen.getByText('New validators')).toBeInTheDocument();
-    expect(screen.getByText('Source account')).toBeInTheDocument();
+    expect(screen.getByText('No account available to create this draft')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save as draft' })).toBeInTheDocument();
   });
 });

@@ -26,7 +26,8 @@ import { type AnyAccount } from '../account/types';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
-import { type MultisigEvent, type MultisigOperation, MultisigEventStatus } from './types';
+import { isContactMultisigAccount } from './contact-multisigs';
+import { type MultisigEvent, type MultisigOperation, MultisigEventStatus, MultisigOperationStatus } from './types';
 
 /**
  * Public keys of signers' wallets are compared byte-for-byte and sorted
@@ -331,6 +332,28 @@ function hasSignedWithAllOwnSignatories(
   return ownSignatories.every(signatory => approvedBy.has(signatory.accountId));
 }
 
+/**
+ * Whether the operation still needs the user: it is collecting approvals and at
+ * least one own signatory (see `findActionableSignatories`) has not acted yet —
+ * the user can approve it, or add the call data it waits on. Shared by the
+ * row's Approve button, the dashboard queue and the "Needs my signature" filter
+ * so they can never disagree.
+ */
+function needsUserSignature(
+  op: Pick<MultisigOperation, 'events' | 'status' | 'awaitingOutcome'>,
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount,
+  walletAccounts: AnyAccount[],
+  chain: Chain | null | undefined,
+): boolean {
+  // An awaiting-outcome operation has already left on-chain storage — it only
+  // looks pending until the indexer reports; signing it would fail.
+  if (op.status !== MultisigOperationStatus.Pending || op.awaitingOutcome) return false;
+  // The user holds no signatory keys for a contact-backed multisig.
+  if (isContactMultisigAccount(multisigAccount)) return false;
+
+  return findActionableSignatories(op, multisigAccount, walletAccounts, chain).length > 0;
+}
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -355,6 +378,7 @@ export const multisigOperationService = {
   getOperationTimestamp,
   findOwnSignatories,
   findActionableSignatories,
+  needsUserSignature,
   hasSignedWithAllOwnSignatories,
   accountMatchesSignatory,
 };
