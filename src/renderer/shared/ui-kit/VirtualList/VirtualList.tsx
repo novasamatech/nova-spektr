@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { useScrollAreaViewport } from '../ScrollArea/context';
@@ -56,11 +56,15 @@ export const VirtualList = <T,>({
   const [scrollMargin, setScrollMargin] = useState(0);
 
   // The viewport is an *ancestor*, and React attaches an ancestor's ref only
-  // after a descendant's layout effect has run — so on first mount the ref is
-  // still empty. Resolving it into state on every render (a ref read, nothing
-  // measured) is what lets the measuring effect below start once it exists.
+  // after a descendant's layout effect has run — so in a layout effect on
+  // first mount the ref is still empty, and if nothing re-renders the list
+  // afterwards (the items were already there when it mounted) it stays empty
+  // and only the placeholder below ever shows. A passive effect runs once the
+  // whole commit is done, refs included, so resolving here (a ref read,
+  // nothing measured) is what lets the measuring effect below start as soon
+  // as the viewport exists.
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => {
+  useEffect(() => {
     const next = viewportRef?.current ?? null;
     setScrollElement(prev => (prev === next ? prev : next));
   });
@@ -124,9 +128,9 @@ export const VirtualList = <T,>({
 
     // Inside a `ScrollArea`, but this is the first render of the commit that
     // creates the viewport, so its ref is not attached yet. Render only the
-    // full-height placeholder: the layout effect above resolves the viewport
-    // and re-renders with real rows before the browser paints, so nothing
-    // blank is ever shown — while rendering the rows here would mount the
+    // full-height placeholder: the effect above resolves the viewport as soon
+    // as the commit is done and re-renders with real rows, so at most a blank
+    // frame is shown — while rendering the rows here would mount the
     // entire list once just to throw it away, which is the cost this component
     // exists to avoid.
     return (

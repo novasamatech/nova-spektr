@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { type ReactNode, isValidElement, memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, isValidElement, memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
@@ -281,12 +281,15 @@ const VirtualizedTableBody = <T,>({
   const [scrollMargin, setScrollMargin] = useState(0);
 
   // The scroll element is an *ancestor* of this table, and React attaches an
-  // ancestor's ref after a descendant's layout effect has already run — so on
-  // first mount `getScrollElement()` answers `null`. Resolving it into state on
-  // every render (a ref read, nothing measured) is what lets the measuring
-  // effect below start once it actually exists.
+  // ancestor's ref after a descendant's layout effect has already run — so in
+  // a layout effect on first mount `getScrollElement()` answers `null`, and if
+  // nothing re-renders the table afterwards (the data was already there when
+  // it mounted) it stays `null` and the virtualizer renders no rows at all.
+  // A passive effect runs once the whole commit is done, refs included, so
+  // resolving here (a ref read, nothing measured) is what lets the measuring
+  // effect below start as soon as the element exists.
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
-  useLayoutEffect(() => {
+  useEffect(() => {
     const next = virtualization.getScrollElement();
     setScrollElement(prev => (prev === next ? prev : next));
   });
