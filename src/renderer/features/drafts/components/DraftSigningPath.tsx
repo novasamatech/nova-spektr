@@ -24,13 +24,10 @@ type Props = {
   allowedProxyTypes?: readonly string[];
   /**
    * Fix the draft's source to this address; the user picks the hops after it,
-   * never the account it runs from. `null` only when the operation genuinely
-   * has no origin of its own yet — see the note on the component.
-   *
-   * Required, with no default: forgetting it is silent and expensive, and the
-   * answer is a property of the flow that a caller always knows.
+   * never the account it runs from. Omitted (or `null`) when the operation has
+   * no origin of its own yet — see the note on the component.
    */
-  pinnedSourceAccountId: AccountId | null;
+  pinnedSourceAccountId?: AccountId | null;
 };
 
 /**
@@ -50,10 +47,14 @@ type Props = {
  * reviewed and co-signed. Pinning removes the class of mistake instead of
  * validating against it.
  *
- * `null` is the other real answer, not an opt-out: a flow that is _choosing_ an
- * origin rather than acting on one — opening a brand-new stake, or submitting a
- * permissionless payout anybody may pay for — has nothing to pin, and the
- * source list is the control the user came for.
+ * Leaving it off is the other real answer, not an opt-out: a flow that is
+ * _choosing_ an origin rather than acting on one — opening a brand-new stake, a
+ * transfer, a vote, or submitting a permissionless payout anybody may pay for —
+ * has nothing to pin, and the source list is the control the user came for.
+ * That is why the prop stays optional: making it required would put the word
+ * `null` in every such form for no gain. The cost is that a future flow opened
+ * for one account can forget to pin; see the drafts README for the surfaces
+ * this is still open on.
  */
 export const DraftSigningPath = memo(
   ({

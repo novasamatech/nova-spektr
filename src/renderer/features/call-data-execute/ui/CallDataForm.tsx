@@ -58,7 +58,6 @@ export const CallDataForm = () => {
               <DraftSigningPath
                 chainId={chain?.chainId ?? null}
                 asset={chain ? getNativeAsset(chain.assets) : null}
-                pinnedSourceAccountId={null}
                 $draftPath={formModel.$draftSigningPath}
                 draftPathCommitted={formModel.events.draftPathCommitted}
                 draftPathEditStarted={formModel.events.draftPathEditStarted}

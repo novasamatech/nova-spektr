@@ -37,12 +37,6 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
         <DraftSigningPath
           chainId={network.chain.chainId}
           asset={network.asset}
-          pinnedSourceAccountId={
-            // Not pinned: on this screen draft mode picks the origin itself —
-            // the call is built from the path's first node, and the form was
-            // not opened for one position. See the drafts README.
-            null
-          }
           $draftPath={formModel.$draftSigningPath}
           draftPathCommitted={formModel.events.draftPathCommitted}
           draftPathEditStarted={formModel.events.draftPathEditStarted}

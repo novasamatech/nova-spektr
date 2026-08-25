@@ -40,7 +40,6 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
         <DraftSigningPath
           chainId={chain.chainId}
           asset={nativeAsset}
-          pinnedSourceAccountId={null}
           $draftPath={removeProxyModel.$draftSigningPath}
           draftPathCommitted={removeProxyModel.events.draftPathCommitted}
           draftPathEditStarted={removeProxyModel.events.draftPathEditStarted}

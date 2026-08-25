@@ -160,15 +160,21 @@ that one entry, and the user picks only the hops after it. Left free, a user cou
 position sourced at contact B, and the draft would act on B's ledger or fail outright — after being reviewed and
 co-signed. Pinning removes the class of mistake rather than validating against it.
 
-`DraftSigningPath`'s `pinnedSourceAccountId` is therefore **required, with no default**: forgetting it is silent and
-expensive, and every caller knows the answer. Today the dashboard staking flows (add stake / unbond / change validators
-/ redeem) pin; every other call site passes `null`.
+Today the dashboard staking flows (add stake / unbond / change validators / redeem) pin; every other call site leaves
+`pinnedSourceAccountId` off.
 
-> **Open question.** The legacy Staking-page forms (`staking-withdraw`, `staking-unstake`, `staking-bond-extra`,
-> `staking-restake`, `staking-nominate`, `staking-payee`) sit between the two cases: they are opened on one of the
-> user's own accounts and show that account's figures, yet their draft mode lets the source be re-pointed, and an
-> `unstake` amount validated against account A can end up drafted for B. They pass `null` today — the pre-existing
-> behaviour — and pinning them is a behavioural change that needs its own verification pass.
+> **Open on two counts.**
+>
+> The legacy Staking-page forms (`staking-withdraw`, `staking-unstake`, `staking-bond-extra`, `staking-restake`,
+> `staking-nominate`, `staking-payee`) sit between the two cases: they are opened on one of the user's own accounts and
+> show that account's figures, yet their draft mode lets the source be re-pointed, and an `unstake` amount validated
+> against account A can end up drafted for B. Pinning them is a behavioural change that needs its own verification pass.
+>
+> Nothing enforces the choice. `pinnedSourceAccountId` is optional, so a future flow opened for one specific account can
+> forget it and fail silently. Making it required was tried and reverted: it puts the word `null` into all ~20
+> draft-capable forms and drags every one of their features into a change that has nothing to do with them — which the
+> Feature Map gate correctly refuses. If the enforcement is worth it, it is its own PR, with the spec review that
+> implies.
 
 **Editing** an existing draft is limited to its description (with the decoded call and signing summary shown for
 context); closing with unsaved changes asks for confirmation.

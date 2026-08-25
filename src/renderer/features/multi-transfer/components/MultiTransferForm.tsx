@@ -47,7 +47,6 @@ export const MultiTransferForm = memo(({ formId }: Props) => {
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
-              pinnedSourceAccountId={null}
               $draftPath={formModel.$draftSigningPath}
               draftPathCommitted={formModel.events.draftPathCommitted}
               draftPathEditStarted={formModel.events.draftPathEditStarted}

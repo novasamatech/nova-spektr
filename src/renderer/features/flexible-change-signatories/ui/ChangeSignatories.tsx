@@ -169,7 +169,6 @@ export const ChangeSignatories = ({
                 <DraftSigningPath
                   chainId={chain.chainId}
                   asset={getNativeAsset(chain.assets)}
-                  pinnedSourceAccountId={null}
                   $draftPath={changeSignatoriesModel.$draftSigningPath}
                   draftPathCommitted={changeSignatoriesModel.events.draftPathCommitted}
                   draftPathEditStarted={changeSignatoriesModel.events.draftPathEditStarted}
