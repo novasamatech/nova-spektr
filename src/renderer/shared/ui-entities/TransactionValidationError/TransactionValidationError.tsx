@@ -52,6 +52,19 @@ export type TransactionValidationFatalError = {
   kind?: 'dryRun' | 'internal';
 };
 
+/**
+ * A rule the operation breaks that is neither a balance shortfall nor a dry-run
+ * failure — e.g. a bond under the chain's minimum. Shaped like `@/shared/forms`
+ * `ValidationError`: an i18n key resolved at render time.
+ */
+export type TransactionValidationRuleError = {
+  /** Stable id (`'minimum bond'`), for tests and field highlighting. */
+  rule: string;
+  /** I18n key. */
+  message: string;
+  values?: Record<string, unknown>;
+};
+
 export type TransactionValidationPermissionError = {
   account: AnyAccount;
   permission: string;
@@ -83,6 +96,7 @@ type Props = {
     | TransactionValidationPermissionError
     | TransactionValidationBalanceError
     | TransactionValidationFatalError
+    | TransactionValidationRuleError
     | TransactionValidationNetworkError
     | TransactionValidationDryRunError
   )[];
@@ -93,8 +107,9 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const { t } = useI18n();
 
   const fatalErrors = errors.filter(
-    (e): e is TransactionValidationFatalError => 'message' in e && !('networkError' in e),
+    (e): e is TransactionValidationFatalError => 'message' in e && !('rule' in e) && !('networkError' in e),
   );
+  const ruleErrors = errors.filter((e): e is TransactionValidationRuleError => 'rule' in e);
   const networkErrors = errors.filter((e): e is TransactionValidationNetworkError => 'networkError' in e);
   const dryRunErrors = errors.filter((e): e is TransactionValidationDryRunError => 'dryRunError' in e);
   const permissionErrors = errors.filter((e): e is TransactionValidationPermissionError => 'permission' in e);
@@ -120,6 +135,14 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
         </span>,
       );
     }
+  }
+
+  for (const error of ruleErrors) {
+    errorNodes.push(
+      <span key={error.rule} data-testid={`${TEST_IDS.VALIDATIONS.RULE}:${error.rule}`}>
+        {t(error.message, error.values)}
+      </span>,
+    );
   }
 
   if (networkErrors.length > 0) {

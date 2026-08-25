@@ -27,6 +27,7 @@ import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
+import { balanceSubModel } from '@/features/assets-balances';
 import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -346,6 +347,16 @@ export const createAmountFlowModel = () => {
 
   /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
+
+  // The fee payer and every hop on the route need a balance the validator can
+  // read. For an account outside the selected wallet the dashboard only fetched
+  // it once, and only on chains that were connected at that moment — so ask
+  // again for exactly the accounts this operation is about to charge.
+  sample({
+    clock: $route,
+    filter: (route) => route.length > 0,
+    target: balanceSubModel.fetchAccounts,
+  });
 
   const $available = combine(
     { isDraftMode: draftMode.$isDraftMode, reservable: $reservable, fee: $fee },

@@ -1,6 +1,6 @@
 # Bond & Nominate
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-03
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -43,6 +43,10 @@ flowchart TD
 | Submitting   | Signed                                                | Submission progress, then the result                                   |
 | Basket       | The operation was added to the basket instead of sent | A short success toast; nothing goes on chain                           |
 | Draft saved  | Draft mode was on at confirmation                     | The call is stored for someone else to sign; nothing goes on chain     |
+
+The amount is validated by the shared transaction validator (`bondNominateValidator`), which — besides fee, deposits and
+"can the account reserve the amount" — refuses a bond under the chain's `MinNominatorBond`: `staking.nominate` rejects
+such a stash and the batch fails as a whole.
 
 The validator step is a step, not a detour: leaving it with **Back** keeps the amount already entered, and closing the
 modal at any point abandons the whole operation rather than half of it.

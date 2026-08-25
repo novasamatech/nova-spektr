@@ -34,6 +34,7 @@ export { removeVoteValidator } from './lib/remove-vote-rules';
 export { RemovePureProxiedRules } from './lib/remove-pure-proxied-rules';
 
 export { BondNominateRules, bondNominateValidator } from './lib/bond-nominate-rules';
+export { MINIMUM_BOND_RULE, checkMinimumBond, isBelowMinimumBond } from './lib/validation';
 export { NominateRules, nominateValidator } from './lib/nominate-rules';
 export { PayeeRules, payeeValidator } from './lib/payee-rules';
 export { RestakeRules, restakeValidator } from './lib/restake-rules';

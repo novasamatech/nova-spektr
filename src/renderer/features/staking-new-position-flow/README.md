@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -33,17 +33,24 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 
 ## States / scenarios
 
-| State      | When                                             | What the user sees                                                   |
-| ---------- | ------------------------------------------------ | -------------------------------------------------------------------- |
-| Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                |
-| Below min  | The amount is under the chain minimum            | A red callout, and `Continue` refuses                                |
-| Over max   | The amount is above what the account can stake   | A red callout names the available figure, and `Continue` refuses     |
-| No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses        |
-| Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account |
-| Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit  |
-| Sign       | `Sign` on the confirm                            | The standard signing step                                            |
-| Submit     | The signature is in                              | The standard submit step                                             |
-| Draft      | Draft mode is on                                 | The form saves a draft instead of signing, and the flow ends there   |
+| State      | When                                             | What the user sees                                                                                                                               |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                                                                                            |
+| Invalid    | The shared validator rejects the operation       | The standard "This operation cannot be completed" alert, a red frame on the amount when the amount itself is the problem, and `Continue` refuses |
+| No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses                                                                                    |
+| Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account                                                                             |
+| Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit                                                                              |
+| Sign       | `Sign` on the confirm                            | The standard signing step                                                                                                                        |
+| Submit     | The signature is in                              | The standard submit step                                                                                                                         |
+| Draft      | Draft mode is on                                 | The form saves a draft instead of signing, and the flow ends there                                                                               |
+
+**Validation is the same pipeline the transfer flow runs**, not a private set of checks. From the first keystroke the
+form validates through `bondNominateValidator` — fee, existential deposit, multisig deposit, proxy permissions, "can the
+account reserve the amount", and the chain minimum — and every verdict is rendered by the shared
+`TransactionValidationError` alert. Until the validators are picked there is no real call to validate, so the validator
+runs against the fee probe (the largest call the flow could send), which is the same upper bound `Max` is computed
+against. The confirm step re-runs the same validator on the real call. Draft mode hides the alert and skips the gate, as
+transfers do: a draft is for somebody else to sign.
 
 **The minimum bond blocks rather than warns** — the opposite of what the unbond screen does with the same figure. The
 reason is the call, not the policy: `staking.nominate` rejects a stash bonded below `MinNominatorBond`, and the bond and
@@ -132,7 +139,8 @@ transaction before it is signed, so a check that fails at this moment must not b
 ## Rules carried over from the old flow
 
 - Validation is `bondNominateValidator` from `features/operations/OperationsValidation` — the same rules the Staking
-  page's `staking-bond-nominate` runs, including the "can this account actually reserve what it is bonding" check.
+  page's `staking-bond-nominate` runs, including the "can this account actually reserve what it is bonding" check and
+  the chain minimum.
 - The call is `transactionBuilder.buildBondNominate`, so the dashboard and the Staking page produce the same extrinsic.
 - The origin of the inner call is the account being staked from, never the signer: a multisig wraps the call, it does
   not replace its origin.

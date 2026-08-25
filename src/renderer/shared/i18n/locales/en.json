@@ -2989,6 +2989,8 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "errors": {
+        "chainUnsupported": "{chain} is not available in this wallet",
+        "chainUnsupportedDescription": "The wallet approved a connection without this network. Update the wallet app or sign with another account.",
         "connectionFailed": "Connection failed",
         "connectionFailedDescription": "Could not connect to WalletConnect. Check your internet connection and try again.",
         "rejected": "Operation rejected",
@@ -3001,6 +3003,7 @@
         "cancelButton": "Cancel",
         "confirmButton": "Reconnect",
         "connected": "Connected",
+        "chainMissing": "The current session does not include {chain}. Reconnect the wallet to add it and continue signing.",
         "description": "You need to reconnect to proceed with signing",
         "reconnecting": "Waiting for Reconnect...",
         "title": "{ walletName } is not connected"
@@ -3762,6 +3765,7 @@
       "validators": "Validators",
       "yourValidatorsTitle": "Selected validators"
     },
+    "belowMinimumBondError": "A nomination needs at least {minimum} bonded. Below that the network rejects the whole transaction.",
     "notEnoughBalanceError": "Not enough funds to complete operation",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
@@ -3978,8 +3982,6 @@
       "accountPlaceholder": "Select an account",
       "amountLabel": "Amount to stake",
       "availableLabel": "Available",
-      "belowMinimumDescription": "A nomination needs at least {minimum} bonded. Below that the network rejects the whole transaction.",
-      "belowMinimumTitle": "Below the minimum stake",
       "cancelButton": "Cancel",
       "confirm": {
         "rewardsDestination": "Rewards go to",
@@ -3993,8 +3995,6 @@
       "maxButton": "Max",
       "networkLabel": "Network",
       "networkPlaceholder": "Select a network",
-      "overMaxDescription": "The account has {max} available to stake.",
-      "overMaxTitle": "Not enough available balance",
       "payoutAccountPlaceholder": "Payout account",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",

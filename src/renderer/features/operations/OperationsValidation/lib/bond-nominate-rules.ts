@@ -15,7 +15,7 @@ import {
   type SignatoryFeeStore,
 } from '../types/types';
 
-import { balanceValidation, descriptionValidation } from './validation';
+import { balanceValidation, checkMinimumBond, descriptionValidation } from './validation';
 
 export const BondNominateRules = {
   shards: {
@@ -137,7 +137,7 @@ export const BondNominateRules = {
   },
 };
 
-export const bondNominateValidator = createTxValidator<{ chain: Chain; amount: string }>({
+export const bondNominateValidator = createTxValidator<{ chain: Chain; amount: string; minimumBond: BN }>({
   additionalBalanceRules: [
     ({ route, asset, chain, amount, getBalance }) => {
       const initiator = accountService.findInitiator(route);
@@ -155,6 +155,11 @@ export const bondNominateValidator = createTxValidator<{ chain: Chain; amount: s
         asset: asset,
         action: 'amount',
       };
+    },
+  ],
+  rules: [
+    ({ asset, amount, minimumBond }) => {
+      return checkMinimumBond({ amount: new BN(formatAmount(amount, asset.precision)), minimumBond, asset });
     },
   ],
 });

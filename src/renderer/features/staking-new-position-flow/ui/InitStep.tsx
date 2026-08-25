@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { RewardsDestination } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, Combobox, FootnoteText, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
@@ -42,6 +42,7 @@ export const InitStep = () => {
     <>
       <ScrollArea>
         <div className="flex flex-col gap-4 px-5 pb-4">
+          {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
           <ChainField />
 
           <DraftModeCard isOn={isDraftMode} onToggle={newPositionFlowModel.toggleDraftMode} />
@@ -67,12 +68,9 @@ export const InitStep = () => {
             $isDraftPathComplete={newPositionFlowModel.$isDraftPathComplete}
           >
             <div className="flex flex-col gap-4">
-              {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
               <NoSignerError />
               {!isDraftMode && <StakeFromField />}
               <AmountField />
-              <OverMaxError />
-              <MinimumBondError />
               <DestinationField />
               <FeeRow />
             </div>
@@ -194,14 +192,14 @@ const AmountField = () => {
   const amount = useUnit(newPositionFlowModel.$amount);
   const amountPlanck = useUnit(newPositionFlowModel.$amountPlanck);
   const available = useUnit(newPositionFlowModel.$available);
-  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
+  const isAmountInvalid = useUnit(newPositionFlowModel.$isAmountInvalid);
 
   if (!asset) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={isOverMax}
+        invalid={isAmountInvalid}
         value={amount}
         balance={available}
         balancePlaceholder={t('staking.newPosition.availableLabel')}
@@ -216,51 +214,6 @@ const AmountField = () => {
       />
       <AssetFiatBalance asset={asset} amount={amountPlanck.toString()} className="text-footnote" />
     </div>
-  );
-};
-
-/**
- * The words behind the field's red frame: the account simply does not have the
- * amount. Names the figure the frame is silently comparing against.
- */
-const OverMaxError = () => {
-  const { t } = useI18n();
-
-  const asset = useUnit(newPositionFlowModel.$asset);
-  const available = useUnit(newPositionFlowModel.$available);
-  const isOverMax = useUnit(newPositionFlowModel.$isOverMax);
-
-  if (!asset || !isOverMax) return null;
-
-  return (
-    <Alert active variant="error" title={t('staking.newPosition.overMaxTitle')}>
-      <FootnoteText className="text-text-secondary">
-        {t('staking.newPosition.overMaxDescription', { max: formatAsset(available, asset) })}
-      </FootnoteText>
-    </Alert>
-  );
-};
-
-/**
- * Red, and blocking — unlike the same figure on the unbond screen, which only
- * warns. `staking.nominate` rejects a stash bonded below the minimum, and the
- * bond and the nomination travel as one batch.
- */
-const MinimumBondError = () => {
-  const { t } = useI18n();
-
-  const isBelowMinimum = useUnit(newPositionFlowModel.$isBelowMinimumBond);
-  const minimumBond = useUnit(newPositionFlowModel.$minimumBond);
-  const asset = useUnit(newPositionFlowModel.$asset);
-
-  if (!isBelowMinimum || !asset) return null;
-
-  return (
-    <Alert active variant="error" title={t('staking.newPosition.belowMinimumTitle')}>
-      <FootnoteText className="text-text-secondary">
-        {t('staking.newPosition.belowMinimumDescription', { minimum: formatAsset(minimumBond, asset) })}
-      </FootnoteText>
-    </Alert>
   );
 };
 
