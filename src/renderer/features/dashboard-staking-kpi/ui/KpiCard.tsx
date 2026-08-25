@@ -11,6 +11,11 @@ type Props = {
   valueClass?: string;
   subline: ReactNode;
   /**
+   * Optional visual under the subline — a sparkline, say. Fills whatever height
+   * the card has left; absent, the card is text only.
+   */
+  visual?: ReactNode;
+  /**
    * Optional call-to-action strip. Dropped entirely when there is nothing to
    * act on — the card never shows a "nothing to claim" placeholder.
    */
@@ -26,46 +31,50 @@ type Props = {
  * by the widget layout) and the footer is pinned to the bottom, so neither a
  * shimmer resolving into a value nor a footer appearing shifts the row.
  */
-export const KpiCard = memo(({ title, value, valueClass, subline, footer, loading, onClick, ariaLabel }: Props) => {
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!onClick) return;
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        onClick();
-      }
-    },
-    [onClick],
-  );
+export const KpiCard = memo(
+  ({ title, value, valueClass, subline, visual, footer, loading, onClick, ariaLabel }: Props) => {
+    const handleKeyDown = useCallback(
+      (event: KeyboardEvent<HTMLDivElement>) => {
+        if (!onClick) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      },
+      [onClick],
+    );
 
-  return (
-    <div
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={ariaLabel}
-      className={cnTw(
-        'flex h-full flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow',
-        onClick &&
-          'cursor-pointer transition-shadow hover:shadow-card-shadow-level2 focus-visible:ring-2 focus-visible:ring-primary-button-background-default focus-visible:outline-none',
-      )}
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-    >
-      <FootnoteText className="truncate text-text-tertiary">{title}</FootnoteText>
-
-      <div className="mt-1 flex h-8 items-center">
-        {loading ? <Skeleton width={112} height={24} /> : <TitleText className={valueClass}>{value}</TitleText>}
-      </div>
-
-      <div className="mt-0.5 flex h-4 items-center">
-        {loading ? (
-          <Skeleton width={144} height={12} />
-        ) : (
-          <HelpText className="truncate text-text-tertiary">{subline}</HelpText>
+    return (
+      <div
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        aria-label={ariaLabel}
+        className={cnTw(
+          'flex h-full flex-col rounded-lg border border-token-container-border bg-white p-4 shadow-card-shadow',
+          onClick &&
+            'cursor-pointer transition-shadow hover:shadow-card-shadow-level2 focus-visible:ring-2 focus-visible:ring-primary-button-background-default focus-visible:outline-none',
         )}
-      </div>
+        onClick={onClick}
+        onKeyDown={handleKeyDown}
+      >
+        <FootnoteText className="truncate text-text-tertiary">{title}</FootnoteText>
 
-      {footer ? <div className="mt-auto border-t border-divider pt-2">{footer}</div> : null}
-    </div>
-  );
-});
+        <div className="mt-1 flex h-8 items-center">
+          {loading ? <Skeleton width={112} height={24} /> : <TitleText className={valueClass}>{value}</TitleText>}
+        </div>
+
+        <div className="mt-0.5 flex h-4 items-center">
+          {loading ? (
+            <Skeleton width={144} height={12} />
+          ) : (
+            <HelpText className="truncate text-text-tertiary">{subline}</HelpText>
+          )}
+        </div>
+
+        {visual ? <div className="mt-2 min-h-0 flex-1">{visual}</div> : null}
+
+        {footer ? <div className="mt-auto border-t border-divider pt-2">{footer}</div> : null}
+      </div>
+    );
+  },
+);

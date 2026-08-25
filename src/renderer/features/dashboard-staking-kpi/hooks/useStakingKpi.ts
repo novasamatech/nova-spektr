@@ -21,7 +21,6 @@ import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
 import { type NetworkAvgBlend } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { type UnbondingFooter, type UnclaimedFooter, getUnbondingFooter, getUnclaimedFooter } from '../lib/footer';
-import { type NominationRow, buildNominationRows } from '../lib/nominations';
 import { filterPositionsByAccounts, withdrawablePositions } from '../lib/summary';
 import { type BreakdownRow, type ClaimRow, type PositionRow } from '../lib/types';
 
@@ -56,7 +55,6 @@ export type StakingKpiData = {
   activeValidatorCount: number;
   positionCount: number;
   /** One row per validator the selection nominates, most-nominated first. */
-  nominationRows: NominationRow[];
 
   /** Rewards. */
   rewardsWindowDays: number;
@@ -312,15 +310,6 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     return rows.sort((a, b) => new BigNumber(b.stakedFiat).comparedTo(a.stakedFiat) ?? 0);
   }, [positions, assets, toFiat, accessFor]);
 
-  const nominationRows = useMemo(() => {
-    const chainNames: Record<string, string> = {};
-    for (const entry of chains) {
-      chainNames[entry.chainId] = entry.chainName;
-    }
-
-    return buildNominationRows(positions, chainNames);
-  }, [positions, chains]);
-
   const breakdownRows = useMemo(() => {
     const rows = positions.map((position, index) => {
       const asset = assets[position.chainId];
@@ -364,7 +353,6 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
 
     activeValidatorCount: summary.activeValidatorCount,
     positionCount: summary.positionCount,
-    nominationRows,
 
     rewardsWindowDays: REWARDS_WINDOW_DAYS,
     rewardsFiat,

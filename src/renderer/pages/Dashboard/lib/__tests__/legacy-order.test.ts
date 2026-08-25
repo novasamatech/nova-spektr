@@ -25,7 +25,7 @@ describe('readLegacyOrder', () => {
       'a',
       'feature: dashboard/staking-total-staked',
       'feature: dashboard/staking-apy',
-      'feature: dashboard/staking-nominations',
+      'feature: dashboard/staking-min-stake',
       'feature: dashboard/staking-rewards',
       'b',
     ]);

@@ -4,17 +4,19 @@
 
 ## Overview
 
-Four cards on the Dashboard's **Staking** tab that answer, at a glance, _how much am I staking, what is it earning, who
-is earning it, and is anything about to be lost_. Each card is a door — clicking it opens a drill-down with the
-per-position detail behind the number, and two of them carry a call-to-action footer for money that needs the user to do
-something about it.
+Three cards on the Dashboard's **Staking** tab that answer, at a glance, _how much am I staking, what is it earning, and
+is anything about to be lost_. Each card is a door — clicking it opens a drill-down with the per-position detail behind
+the number, and two of them carry a call-to-action footer for money that needs the user to do something about it.
 
-**Four separate dashboard widgets, not a row.** Each card is its own DI feature (`dashboard/staking-total-staked`,
-`-apy`, `-nominations`, `-rewards`), so edit mode gives each one its own drag handle and the user can put any card
-anywhere on the tab — or between the Positions table and the rewards chart. They ship as one module because they share a
-data layer, not a layout: every card assembles its figures from the same hook over the same stores, so a card and its
-drill-down can never disagree about a number. Layouts saved before the split are migrated in place by the dashboard
-model, so the cards do not jump to the bottom of an arranged tab.
+**Three separate dashboard widgets, not a row.** Each card is its own DI feature (`dashboard/staking-total-staked`,
+`-apy`, `-rewards`), so edit mode gives each one its own drag handle and the user can put any card anywhere on the tab —
+or between the Positions table and the rewards chart. They ship as one module because they share a data layer, not a
+layout: every card assembles its figures from the same hook over the same stores, so a card and its drill-down can never
+disagree about a number. Layouts saved before the split are migrated in place by the dashboard model, so the cards do
+not jump to the bottom of an arranged tab. The fourth slot of the row is the network-level
+[`dashboard-staking-min-stake`](../dashboard-staking-min-stake/README.md) card, which shares the card shell (`KpiCard`,
+`KpiWidgetFrame`, `KPI_SIZE`) from this module and inherits the slot the retired "Nominated validators" card held in
+saved layouts.
 
 The cards are deliberately **multi-chain and multi-asset**. Token amounts are never summed across assets: a total is
 either fiat (`$29.6M`) or a list (`5.38M DOT + 60K KSM`). Anything else would invent a number that does not exist.
@@ -43,15 +45,15 @@ flowchart TD
     LOAD -- "yes" --> SKEL["Titles stay, values shimmer"]
     LOAD -- "no" --> EMPTY{"Any position?"}
     EMPTY -- "no" --> ZERO["Zeroes — $0, —, 0"]
-    EMPTY -- "yes" --> DATA["Four cards, footers where there is something to do"]
+    EMPTY -- "yes" --> DATA["Three cards, footers where there is something to do"]
 ```
 
 | State           | When it appears                                | What the user sees                                                     |
 | --------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
-| No selection    | The dashboard account picker is empty          | Four cards, each a grey em dash, none clickable                        |
+| No selection    | The dashboard account picker is empty          | Three cards, each a grey em dash, none clickable                       |
 | Loading         | The positions aggregate is still resolving     | Card titles in place, values and sub-lines shimmering, no layout shift |
-| Empty           | Loaded, the selection stakes nothing           | `$0`, a grey `—` for APY, `0` nominations — **not** skeletons          |
-| Populated       | At least one position                          | Four figures with sub-lines                                            |
+| Empty           | Loaded, the selection stakes nothing           | `$0`, a grey `—` for APY, `$0` rewards — **not** skeletons             |
+| Populated       | At least one position                          | Three figures with sub-lines                                           |
 | Unbonding       | Something is unbonding or already withdrawable | A footer on Total staked with the amounts and a Redeem link            |
 | Unclaimed       | Something is unclaimed                         | A footer on Rewards with the amount and a Claim link                   |
 | Drill-down open | A card or a footer link is clicked             | The matching modal                                                     |
@@ -63,7 +65,7 @@ skeletons there would tell a user who genuinely stakes nothing that the app is s
 and an empty prompt is noise on a surface people scan rather than read. Card heights are fixed and the footer is pinned
 to the bottom, so a footer appearing — or a shimmer resolving — never moves the card.
 
-### The four cards
+### The three cards
 
 - **Total staked** — the fiat total of the **active** stake, with a per-asset sub-line; what is unbonding is not in it,
   so the card and its footer never count the same planck twice. The footer merges what is still unbonding with what has
@@ -87,11 +89,6 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
   the stake would describe a different portfolio than the headline next to it, so it stays hidden rather than being
   presented as "the" network average.
 
-- **Nominated validators** — how many distinct validators the selection nominates, counted **per chain**: the same key
-  elected on Polkadot and on Kusama is two validators, because it is two nomination sets and two rewards. The subline
-  carries how many of them the era actually backs, which is what the card used to lead with. The headline moved because
-  the question people bring to it is coverage — "who am I spread across" — and a count of _active_ validators silently
-  omits every nomination that was not elected.
 - **Rewards** — what the selection earned over the last 30 days, plus an unclaimed footer. The window is anchored to UTC
   midnight rather than to "now", so re-opening the tab does not refetch the same 30 days under a new key.
 
@@ -204,21 +201,6 @@ chain's own era duration.
   `network avg 15.2% · 21d` on a Kusama row next to `· 30d` on a Polkadot one, because the two chains' history depths
   genuinely differ. The row deliberately ignores the card footer's coverage gate: a single chain's average is complete
   by definition, so a benchmark that could not cover every chain still degrades into detail here, never into nothing.
-- **Nominated validators** opens the nomination spread — where the selection's stake actually went, as opposed to where
-  it was pointed. The table lists **every nomination of every account**, grouped by account (largest position first) and
-  labelled with what the era did with it:
-
-  | Status          | Meaning                                                     |
-  | --------------- | ----------------------------------------------------------- |
-  | **active**      | elected, and its exposure page carries this account's stake |
-  | **no stake**    | elected, but the election put nothing of ours behind it     |
-  | **not elected** | not in the era's validator set, so it can back nobody       |
-
-  The middle state is the one no other surface shows: a nomination that looks fine in the list and earns nothing.
-  Without the era's validator set nothing is called "no stake" — an accusation the data does not support is worse than
-  no answer, so the row falls back to "not elected". An **active** validator whose exposure page has not been read shows
-  an em dash, never a zero.
-
   Beside it, a donut sized by the **fiat value of the stake behind each validator**, plus a grey slice for bonded stake
   backing nobody. Fiat, not planck: a chart mixing DOT and KSM by raw amounts would rank them by decimals. Donut and
   table are hover-linked both ways through the row's colour dot. The donut deliberately ignores the status filter above
@@ -281,10 +263,6 @@ differ only by a network or a window nobody wrote down.
   about the concentration underneath it. The split is the election's, not the nomination list's — an account nominating
   sixteen validators is usually backing far fewer — so a validator whose exposure page has not been read yet is omitted
   rather than written down as a zero.
-- **Nomination spread** exports the same pairs but **all** of them, with the status column beside the amount: the paid
-  ones, the elected ones that pay nothing, and the ones that were never elected. It is the only file in which a wasted
-  nomination can be told from a working one. An unread exposure leaves the amount cell empty rather than writing a zero
-  nobody verified.
 
 ### Actions and access
 

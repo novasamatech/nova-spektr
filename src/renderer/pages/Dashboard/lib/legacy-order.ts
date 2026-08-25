@@ -8,12 +8,16 @@ const LEGACY_KEY = 'dashboard-widget-order';
  * appended at the end, so without this the four staking cards would silently
  * jump below everything the user had arranged. Expanding the old key in place
  * keeps them where they were.
+ *
+ * The third card of that split was "Nominated validators"; it was replaced by
+ * the network-level "Min stake to enter the active set" card, which inherits
+ * its slot so an arranged row does not get a hole.
  */
 const WIDGET_SPLITS: Record<string, string[]> = {
   'feature: dashboard/staking-kpi': [
     'feature: dashboard/staking-total-staked',
     'feature: dashboard/staking-apy',
-    'feature: dashboard/staking-nominations',
+    'feature: dashboard/staking-min-stake',
     'feature: dashboard/staking-rewards',
   ],
 };

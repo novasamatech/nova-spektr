@@ -3,7 +3,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { type CsvColumn } from '@/shared/lib/csv';
 import { type RawPayoutRow } from '../hooks/useRawRewardPayouts';
 
-import { type AllocationRow, type SpreadRow } from './spread';
+import { type AllocationRow } from './spread';
 import { type PositionRow } from './types';
 
 /**
@@ -62,7 +62,7 @@ function slug(part: string): string {
  * UTC−5 would otherwise be filed under tomorrow.
  */
 export function csvFileName(
-  kind: 'rewards' | 'positions' | 'reward-payouts' | 'allocation' | 'nomination-spread',
+  kind: 'rewards' | 'positions' | 'reward-payouts' | 'allocation' | 'min-stake',
   options: { parts?: string[]; now?: Date } = {},
 ): string {
   const now = options.now ?? new Date();
@@ -139,40 +139,6 @@ export function allocationCsvColumns(headers: AllocationCsvHeaders): CsvColumn<C
     { header: headers.asset, cell: (row) => row.symbol },
     { header: headers.validator, cell: (row) => row.validatorAddress },
     { header: headers.allocated, cell: (row) => toTokens(row.allocated, row.precision) },
-    { header: headers.staked, cell: (row) => toTokens(row.positionTotal, row.precision) },
-  ];
-}
-
-export type SpreadCsvHeaders = AllocationCsvHeaders & { status: string };
-
-export type CsvSpreadRow = SpreadRow & {
-  address: string;
-  accountName: string;
-  validatorAddress: string;
-  /** Already localised — the file is read by a person, not re-parsed. */
-  statusLabel: string;
-};
-
-/**
- * Every nomination, not only the paid ones.
- *
- * The status column is what makes the file worth more than the allocation
- * export: it is the only place a nomination that earns nothing can be told
- * apart from one that was never elected. An unread exposure leaves the amount
- * empty rather than writing a zero nobody verified.
- */
-export function spreadCsvColumns(headers: SpreadCsvHeaders): CsvColumn<CsvSpreadRow>[] {
-  return [
-    { header: headers.account, cell: (row) => row.accountName },
-    { header: headers.address, cell: (row) => row.address },
-    { header: headers.network, cell: (row) => row.chainName },
-    { header: headers.asset, cell: (row) => row.symbol },
-    { header: headers.validator, cell: (row) => row.validatorAddress },
-    { header: headers.status, cell: (row) => row.statusLabel },
-    {
-      header: headers.allocated,
-      cell: (row) => (row.allocated === null ? '' : toTokens(row.allocated, row.precision)),
-    },
     { header: headers.staked, cell: (row) => toTokens(row.positionTotal, row.precision) },
   ];
 }

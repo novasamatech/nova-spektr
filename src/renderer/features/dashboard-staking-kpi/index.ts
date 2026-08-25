@@ -4,9 +4,9 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { dashboardStakingSlot, defineWidget } from '@/pages/Dashboard';
 
+import { KPI_SIZE } from './lib/kpi-size';
 import { dashboardStakingKpiActions } from './model/actions';
 import { ApyWidget } from './ui/ApyWidget';
-import { NominationsWidget } from './ui/NominationsWidget';
 import { RewardsWidget } from './ui/RewardsWidget';
 import { TotalStakedWidget } from './ui/TotalStakedWidget';
 
@@ -17,11 +17,16 @@ export type {
   UnbondRequestPayload,
 } from './model/actions';
 export { dashboardStakingKpiActions };
+export { KpiCard } from './ui/KpiCard';
+export { KpiWidgetFrame, NoSelectionCard } from './ui/KpiWidgetFrame';
+export { KPI_SIZE } from './lib/kpi-size';
+export { csvFileName } from './lib/csv';
 
 const enable = $features.map(({ dashboard }) => dashboard);
 
 /**
- * Four features, not one.
+ * Three features, not one (the fourth card of the row, the network-level "Min
+ * stake to enter the active set", is `dashboard-staking-min-stake`).
  *
  * DI keys a slot registration as `feature: ${name}` and the dashboard stores
  * its layout by that key, so a card can only be moved on its own if it is its
@@ -43,21 +48,11 @@ export const dashboardStakingApyFeature = createFeature({
   enable,
 });
 
-export const dashboardStakingNominationsFeature = createFeature({
-  name: 'dashboard/staking-nominations',
-  input: createStore({}),
-  enable,
-});
-
 export const dashboardStakingRewardsFeature = createFeature({
   name: 'dashboard/staking-rewards',
   input: createStore({}),
   enable,
 });
-
-// A KPI card is one figure with a subline — extra height would only add blank
-// card, so growth is capped at double width and the default height.
-const KPI_SIZE = { defaultSize: { w: 1, h: 2 }, minSize: { w: 1, h: 2 }, maxSize: { w: 2, h: 2 } };
 
 dashboardStakingTotalStakedFeature.inject(
   dashboardStakingSlot,
@@ -74,15 +69,6 @@ dashboardStakingApyFeature.inject(
     order: 1,
     label: 'dashboard.staking.kpi.apy.title',
     render: ApyWidget,
-    ...KPI_SIZE,
-  }),
-);
-dashboardStakingNominationsFeature.inject(
-  dashboardStakingSlot,
-  defineWidget({
-    order: 2,
-    label: 'dashboard.staking.kpi.nominations.title',
-    render: NominationsWidget,
     ...KPI_SIZE,
   }),
 );

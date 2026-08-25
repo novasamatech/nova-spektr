@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { useActiveEra, useEraAnchor, useEraThresholds } from '@/domains/staking';
 import { useApi } from '@/entities/network';
-import { ERA_DEPTH } from '../lib/constants';
 import { deriveEraDateMs } from '../lib/era';
 import { planckToTokens } from '../lib/format';
 
@@ -32,11 +31,11 @@ type Result = {
 };
 
 /**
- * Entry thresholds of the past `ERA_DEPTH` completed eras plus the active one.
- * The active era's exposures are fixed at election, so its threshold is
- * readable — and leads the card — while the era is still running.
+ * Entry thresholds of the past `depth` completed eras plus the active one. The
+ * active era's exposures are fixed at election, so its threshold is readable —
+ * and leads the card — while the era is still running.
  */
-export const useMinStakeRows = (chain: Chain | null, precision: number): Result => {
+export const useMinStakeRows = (chain: Chain | null, precision: number, depth: number): Result => {
   const chainId = chain?.chainId ?? NO_CHAIN;
   const api = useApi(chainId);
   // Asset Hub carries neither `session` nor `babe`, so era timing is read off
@@ -50,7 +49,7 @@ export const useMinStakeRows = (chain: Chain | null, precision: number): Result 
     chainId,
     api,
     era: activeEra ?? null,
-    depth: ERA_DEPTH,
+    depth,
   });
 
   const rows = useMemo(() => {

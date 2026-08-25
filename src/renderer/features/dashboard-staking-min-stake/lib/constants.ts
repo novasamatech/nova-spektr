@@ -1,8 +1,20 @@
-/** Completed eras drawn before the active one. */
+/**
+ * Completed eras the KPI card's sparkline covers — its delta is against the
+ * first.
+ */
 export const ERA_DEPTH = 7;
 
-/** The plot box never shrinks below the design's 158px. */
-export const CHART_MIN_HEIGHT = 158;
+/** Height of the drill-down's plot box. */
+export const CHART_HEIGHT = 220;
+
+/** Above this many eras the per-era value labels would collide, so they go. */
+export const MAX_LABELLED_ERAS = 12;
+
+/** Above this many eras the per-era dots become noise on the step line. */
+export const MAX_DOTTED_ERAS = 30;
+
+/** How many x-axis labels the plot shows at most — the rest are thinned. */
+export const MAX_AXIS_LABELS = 8;
 
 /**
  * Share of the plot box the value scale occupies; the strip above it is
