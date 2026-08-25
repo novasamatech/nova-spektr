@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { produce } from 'immer';
-import { previous } from 'patronum';
+import { previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { type BalanceDraft, type Chain, type ChainId, type Wallet } from '@/shared/core';
@@ -37,6 +37,10 @@ const $subscriptions = createStore<Subscriptions>({});
 // subscribed accounts. this array exists because some chain can be in disconnected status and $subscriptions
 // doesn't represent subscription intention.
 const $subscribedAccounts = createStore<RequestedAccount[]>([]);
+// one-shot fetches that arrived while their chain was disconnected, replayed once it connects.
+// Without it a balance requested for an offline chain (a testnet still connecting, a node in
+// failover) is silently never fetched — and a flow that later needs it fails its fee check.
+const $deferredFetches = createStore<Record<ChainId, AccountId[]>>({});
 
 // effects
 
@@ -354,6 +358,9 @@ sample({
   target: fetchAccountIds,
 });
 
+const fetchNow = createEvent<FetchAccountParam[]>();
+const deferFetch = createEvent<RequestedAccount[]>();
+
 sample({
   clock: fetchAccountIds,
   source: {
@@ -362,37 +369,59 @@ sample({
     statuses: networkModel.$connectionStatuses,
   },
   fn({ chains, apis, statuses }, requests) {
-    if (requests.length === 0) return [];
-
     const params: FetchAccountParam[] = [];
+    const deferred: RequestedAccount[] = [];
+
+    if (requests.length === 0) return { params, deferred };
 
     for (const [chainId, status] of entries(statuses)) {
-      if (!networkUtils.isConnectedStatus(status)) continue;
-
       const api = apis[chainId];
       const chain = chains[chainId];
-      if (nullable(api) || nullable(chain)) continue;
+      const chainRequests = requests.filter((request) => request.chain.chainId === chainId);
+      if (chainRequests.length === 0) continue;
 
-      const accountIds: AccountId[] = [];
-
-      for (const request of requests) {
-        if (request.chain.chainId === chainId) {
-          accountIds.push(request.accountId);
-        }
+      if (!networkUtils.isConnectedStatus(status) || nullable(api) || nullable(chain)) {
+        deferred.push(...chainRequests);
+        continue;
       }
 
-      if (accountIds.length > 0) {
-        params.push({
-          api,
-          chain,
-          accounts: accountIds,
-        });
-      }
+      params.push({ api, chain, accounts: chainRequests.map((request) => request.accountId) });
     }
 
-    return params;
+    return { params, deferred };
   },
+  target: spread({ params: fetchNow, deferred: deferFetch }),
+});
+
+sample({
+  clock: fetchNow,
   target: series(fetchAccountsFx, { parallel: true, skipErrors: true }),
+});
+
+$deferredFetches.on(deferFetch, (deferred, requests) =>
+  produce(deferred, (draft) => {
+    for (const { accountId, chain } of requests) {
+      const accountIds = (draft[chain.chainId] ??= []);
+      if (!accountIds.includes(accountId)) accountIds.push(accountId);
+    }
+  }),
+);
+
+// a chain came online: replay whatever one-shot fetches were waiting for it
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: { deferred: $deferredFetches, chains: networkModel.$chains },
+  filter: ({ deferred }, { chainId, status }) =>
+    networkUtils.isConnectedStatus(status) && (deferred[chainId]?.length ?? 0) > 0,
+  fn: ({ deferred, chains }, { chainId }) => {
+    const chain = chains[chainId];
+    if (nullable(chain)) return { requests: [], rest: deferred };
+
+    const { [chainId]: accountIds = [], ...rest } = deferred;
+
+    return { requests: accountIds.map((accountId) => ({ accountId, chain })), rest };
+  },
+  target: spread({ requests: fetchAccountIds, rest: $deferredFetches }),
 });
 
 sample({
@@ -425,5 +454,7 @@ export const balanceSubModel = {
     unsubscribeFx,
     $subscribedAccounts,
     $subscriptions,
+    $deferredFetches,
+    fetchAccountsFx,
   },
 };
