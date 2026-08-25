@@ -4,7 +4,6 @@ import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type MinStakeRow } from '../hooks/useMinStakeRows';
 import { TOOLTIP_WIDTH } from '../lib/constants';
-import { type AxisMode } from '../lib/range';
 import { type ScaleWindow } from '../lib/scale';
 
 import { type ChartHover, MinStakeStepChart } from './MinStakeStepChart';
@@ -13,7 +12,6 @@ import { MinStakeTooltip } from './MinStakeTooltip';
 type Props = {
   rows: MinStakeRow[];
   scaleWindow: ScaleWindow;
-  axisMode: AxisMode;
   asset: Asset;
   showFiat: boolean;
 };
@@ -25,7 +23,7 @@ const clamp = (value: number, min: number, max: number): number => Math.min(Math
  * the controls, so moving the pointer across the eras re-renders the plot only
  * — not the whole drill-down.
  */
-export const MinStakeChartArea = ({ rows, scaleWindow, axisMode, asset, showFiat }: Props) => {
+export const MinStakeChartArea = ({ rows, scaleWindow, asset, showFiat }: Props) => {
   const { formatDate } = useI18n();
   const [hover, setHover] = useState<ChartHover | null>(null);
 
@@ -37,7 +35,6 @@ export const MinStakeChartArea = ({ rows, scaleWindow, axisMode, asset, showFiat
       <MinStakeStepChart
         rows={rows}
         scaleWindow={scaleWindow}
-        axisMode={axisMode}
         hoveredIndex={hover?.index ?? null}
         formatDate={formatDate}
         onHoverChange={setHover}

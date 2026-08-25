@@ -14,8 +14,8 @@ It is the entry threshold read from the era's exposures, **not** `minimumActiveS
 audiences: an operator watching how safe their seat is, and a prospective validator sizing what it takes to get in.
 
 The card is variant **1A** and the drill-down's plot variant **2C "era step line"** of the approved design exploration
-(`Min Stake Widget Options.dc.html`); the range, axis, table and export controls of the drill-down follow the house
-patterns of the rewards drill-down on the same tab.
+(`Min Stake Widget Options.dc.html`); the range, table and export controls of the drill-down follow the house patterns
+of the rewards drill-down on the same tab.
 
 ## Who can use it / when it applies
 
@@ -45,15 +45,13 @@ and the file — a spreadsheet is where people do arithmetic.
 
 ### The drill-down
 
-Three controls, one question each:
+Two controls, one question each:
 
 - **Network** — the configured Asset Hub chains; the pick is shared with the card.
 - **Era range** — `7`, `14`, `30` eras or `Max`, counted in completed eras before the active one. Eras are the honest
   unit: a Polkadot era is a day, a Kusama era six hours, so a range in days would mean a different number of election
   rounds per chain. Every preset is clamped to what the chain still keeps (`staking.historyDepth`, 84 on Polkadot and
   Kusama, minus the active era) — a pick the chain cannot serve reads what it can rather than failing.
-- **X axis** — `Eras` (era numbers, with the date underneath while the plot is sparse) or `Timeline` (dates, falling
-  back to the era number where a date cannot be stated honestly — see below).
 
 Under the controls: the headline (`1.26M DOT · era 2,273 · active`, the delta chip against the first era of the range,
 elected validators per era), the step line, the axis note, then a table newest era first — era, date, exact threshold,
@@ -69,9 +67,10 @@ threshold is constant inside an era, so a curve through the points would draw a 
 identical steps. The floor sits at `min − 0.4·range`, the note under the plot states it ("axis floor … — zoomed, not
 zero"), and a literally constant series still gets a visible band so the line sits mid-plot rather than on the axis.
 
-**Era labels are real or absent.** Dates derive from the chain's era anchor; when the anchor is unavailable, or the
-chain's eras are shorter than a day (several eras then share a date — in practice Kusama's 6h eras), the date is omitted
-rather than estimated. The era _number_ is always shown.
+**Era labels are real or absent.** The x axis prints era numbers, with the date underneath while the plot is sparse.
+Dates derive from the chain's era anchor; when the anchor is unavailable, or the chain's eras are shorter than a day
+(several eras then share a date — in practice Kusama's 6h eras), the date is omitted rather than estimated. The era
+_number_ is always shown.
 
 **Hover** — the era's column tints and a card floats over the plot (no reflow) with the era, its date, the threshold in
 full, fiat when enabled, the change against the previous era and the elected count. Hover state lives in the plot
@@ -82,7 +81,7 @@ subtree and is driven by one pointer-move handler mapped to a column, so moving 
 the era is still running.
 
 Out of scope for now: keyboard access to the per-era hover card (the table carries the same numbers), and persisting the
-range and axis picks across sessions.
+range pick across sessions.
 
 ## Lifecycle
 
@@ -106,6 +105,6 @@ per-era cache plus the one missing read.
   `dashboard/staking-nominations` slot to this card.
 - `domains/staking` — the `era-thresholds` module (min backing + validator count per era), the active era and the era
   anchor (`useEraAnchor`).
-- `shared/ui-kit` — `SegmentedControl`, the three toggles of the drill-down, shared with the rewards chart.
+- `shared/ui-kit` — `SegmentedControl`, the two toggles of the drill-down, shared with the rewards chart.
 - [`dashboard-staking-rewards-chart`](../dashboard-staking-rewards-chart/README.md) — the house pattern for a chart on
   this tab: fixed-box states, asset toggle, "era labels real or absent".

@@ -21,10 +21,3 @@ export function resolveEraDepth(preset: EraRangePreset, historyDepth: number | n
 
   return Math.min(Number(preset), available);
 }
-
-/** What the x axis is labelled with. */
-export const AXIS_MODES = ['eras', 'timeline'] as const;
-
-export type AxisMode = (typeof AXIS_MODES)[number];
-
-export const DEFAULT_AXIS_MODE: AxisMode = 'eras';

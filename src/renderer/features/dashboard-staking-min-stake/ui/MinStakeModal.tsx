@@ -28,15 +28,7 @@ import {
   formatSignedPercent,
   formatSignedTokens,
 } from '../lib/format';
-import {
-  type AxisMode,
-  type EraRangePreset,
-  AXIS_MODES,
-  DEFAULT_AXIS_MODE,
-  DEFAULT_ERA_RANGE,
-  ERA_RANGE_PRESETS,
-  resolveEraDepth,
-} from '../lib/range';
+import { type EraRangePreset, DEFAULT_ERA_RANGE, ERA_RANGE_PRESETS, resolveEraDepth } from '../lib/range';
 import { buildWindow } from '../lib/scale';
 
 import { MinStakeChartArea } from './MinStakeChartArea';
@@ -65,17 +57,15 @@ type TableRow = {
  * prints in full — the hover card, the table and the CSV all carry `1,152,410`,
  * never `1.15M`.
  *
- * Three controls, one question each: **which network** (the Asset Hub chains
- * configured in this build), **how far back** (in eras — the honest unit, as
- * Polkadot and Kusama eras differ in length) and **what the x axis says** (era
- * numbers or dates). Range and axis are session state: nothing here is worth a
- * stored preference yet.
+ * Two controls, one question each: **which network** (the Asset Hub chains
+ * configured in this build) and **how far back** (in eras — the honest unit, as
+ * Polkadot and Kusama eras differ in length). The range is session state:
+ * nothing here is worth a stored preference yet.
  */
 export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, onClose }: Props) => {
   const { t, formatDate } = useI18n();
 
   const [range, setRange] = useState<EraRangePreset>(DEFAULT_ERA_RANGE);
-  const [axisMode, setAxisMode] = useState<AxisMode>(DEFAULT_AXIS_MODE);
 
   const historyDepth = useHistoryDepth(selected.chain);
   const depth = resolveEraDepth(range, historyDepth);
@@ -90,11 +80,6 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
       ERA_RANGE_PRESETS.map((preset) => ({ value: preset, label: t(`dashboard.staking.minStake.range.${preset}`) })),
     [t],
   );
-  const axisOptions = useMemo<SegmentedOption<AxisMode>[]>(
-    () => AXIS_MODES.map((mode) => ({ value: mode, label: t(`dashboard.staking.minStake.axis.${mode}`) })),
-    [t],
-  );
-
   const scaleWindow = useMemo(
     () => (rows && rows.length > 0 ? buildWindow(rows.map((row) => row.tokens)) : null),
     [rows],
@@ -212,12 +197,6 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
               label={t('dashboard.staking.minStake.rangeSwitch')}
               onChange={setRange}
             />
-            <SegmentedControl
-              value={axisMode}
-              options={axisOptions}
-              label={t('dashboard.staking.minStake.axisSwitch')}
-              onChange={setAxisMode}
-            />
           </div>
 
           <div className="flex h-6 items-baseline gap-2">
@@ -267,7 +246,6 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
               <MinStakeChartArea
                 rows={series.rows}
                 scaleWindow={series.scaleWindow}
-                axisMode={axisMode}
                 asset={selected.asset}
                 showFiat={showFiat}
               />

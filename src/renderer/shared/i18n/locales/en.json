@@ -1015,11 +1015,6 @@
           "30": "30 eras",
           "max": "Max"
         },
-        "axisSwitch": "X axis",
-        "axis": {
-          "eras": "Eras",
-          "timeline": "Timeline"
-        },
         "table": {
           "era": "Era",
           "date": "Date",
