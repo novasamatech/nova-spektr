@@ -87,6 +87,14 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   // cannot sign (watch-only, a multisig without a local signatory) is still a
   // local wallet — signability is the pencil glyph's business, not this badge's.
   const isContact = row !== null && row.wallet === null;
+  // `unbond` takes from the active stake only. A ledger whose whole stake is
+  // already unbonding shows a row, a status and a countdown, but has nothing
+  // left to unbond — the chip must say so instead of opening a flow at 0.
+  const unbondBlockedHint =
+    accessBlockedHint ??
+    (row !== null && new BN(row.position.stake.active).isZero()
+      ? t('dashboard.staking.positions.detail.actions.nothingToUnbond')
+      : undefined);
   // While the payout scan is in flight `unclaimed.total` is a placeholder `'0'`,
   // not an answer. Reading it as one made the drawer open with "Nothing to claim
   // on this position" over a position that turned out to have rewards.
@@ -360,7 +368,7 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
                 t('dashboard.staking.positions.detail.actions.unbond'),
                 () => positionActions.events.unbondRequested(actionPayload),
                 false,
-                accessBlockedHint,
+                unbondBlockedHint,
               )}
 
               {/*

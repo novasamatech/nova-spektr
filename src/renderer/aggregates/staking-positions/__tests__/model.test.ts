@@ -477,7 +477,7 @@ describe('aggregates/staking-positions', () => {
     expect(summary.activeValidatorCount).toBe(2);
 
     expect(summary.byChain[POLKADOT_AH]).toMatchObject({
-      totalStaked: '3300',
+      totalStaked: '3000',
       redeemable: '100',
       totalUnbonding: '200',
       activeValidatorCount: 1,

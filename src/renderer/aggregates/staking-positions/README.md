@@ -124,9 +124,10 @@ Those rules live in one pure function, `summarizePositions(positions)`, which is
 exported alongside it. A consumer that narrows the selection further — the dashboard's KPI row follows its own account
 picker on top of the selection — summarizes the subset with the same function instead of restating the rules.
 
-`$summary.totalStaked` is the ledger's **total** — bonded plus everything still unbonding — matching what the dashboard
-showed before this aggregate existed. `redeemable` and `totalUnbonding` split the unlocking chunks against the active
-era, so they always add up to the unbonding part of that total.
+`$summary.totalStaked` is the sum of the ledgers' **active** stake — what is actually bonded and what `unbond` can take.
+Unlocking chunks are never part of it: `redeemable` and `totalUnbonding` split them against the active era, so
+`totalStaked + redeemable + totalUnbonding` is the ledger total. (It used to be the ledger total itself, which made a
+position whose whole stake was unbonding read as "10 WND staked" while the unbond flow honestly offered 0.)
 
 ## Loading and emptiness
 

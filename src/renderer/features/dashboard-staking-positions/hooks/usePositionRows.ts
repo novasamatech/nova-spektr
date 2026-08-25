@@ -123,7 +123,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     const chainTotals = new Map<ChainId, BN>();
     for (const position of visible) {
       const current = chainTotals.get(position.chainId) ?? BN_ZERO;
-      chainTotals.set(position.chainId, current.add(new BN(position.stake.total)));
+      chainTotals.set(position.chainId, current.add(new BN(position.stake.active)));
     }
 
     const rows: PositionRow[] = [];
@@ -157,9 +157,9 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         }),
         multisig: getMultisigThreshold(account),
         status: position.status,
-        staked: position.stake.total,
+        staked: position.stake.active,
         sharePercent: calculateSharePercent(
-          position.stake.total,
+          position.stake.active,
           (chainTotals.get(position.chainId) ?? BN_ZERO).toString(),
         ),
         apy: derivePositionApy(position, chainValidators),

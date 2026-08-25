@@ -57,6 +57,16 @@ describe('summarizePositions', () => {
     expect(summary.positionCount).toBe(3);
   });
 
+  test('unbonding chunks are not counted as staked', () => {
+    const position = makePosition({ chainId: POLKADOT, total: '100', totalUnbonding: '100' });
+    position.stake = { ...position.stake, active: '0', total: '100' };
+
+    const summary = summarizePositions([position]);
+
+    expect(summary.byChain[POLKADOT]?.totalStaked).toBe('0');
+    expect(summary.byChain[POLKADOT]?.totalUnbonding).toBe('100');
+  });
+
   test('the same validator on two chains counts twice', () => {
     const summary = summarizePositions([
       makePosition({ chainId: POLKADOT, activeValidators: [VAL_A, VAL_B] }),

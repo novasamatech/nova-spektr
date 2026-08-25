@@ -8,7 +8,10 @@ import { type StakingPosition } from '@/domains/staking';
 /** Totals of a single staking chain. Planck amounts are in that chain's asset. */
 export type StakingChainSummary = {
   chainId: ChainId;
-  /** Sum of `stake.total` — bonded plus everything still unbonding. */
+  /**
+   * Sum of `stake.active` — what is actually bonded; unbonding chunks live in
+   * `totalUnbonding` / `redeemable`.
+   */
   totalStaked: string;
   redeemable: string;
   totalUnbonding: string;
@@ -75,7 +78,7 @@ export function summarizePositions(positions: StakingPosition[]): StakingSummary
       validatorsByChain.set(chainId, new Set());
     }
 
-    summary.totalStaked = addPlanck(summary.totalStaked, position.stake.total);
+    summary.totalStaked = addPlanck(summary.totalStaked, position.stake.active);
     summary.redeemable = addPlanck(summary.redeemable, position.redeemable);
     summary.totalUnbonding = addPlanck(summary.totalUnbonding, position.totalUnbonding);
     summary.positionCount += 1;

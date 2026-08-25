@@ -300,8 +300,8 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         chainName: asset.chainName,
         symbol: asset.symbol,
         precision: asset.precision,
-        staked: position.stake.total,
-        stakedFiat: toFiat(position.chainId, position.stake.total),
+        staked: position.stake.active,
+        stakedFiat: toFiat(position.chainId, position.stake.active),
         unbonding: position.unbonding,
         totalUnbonding: position.totalUnbonding,
         redeemable: position.redeemable,
@@ -324,7 +324,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const breakdownRows = useMemo(() => {
     const rows = positions.map((position, index) => {
       const asset = assets[position.chainId];
-      const fiat = toFiat(position.chainId, position.stake.total);
+      const fiat = toFiat(position.chainId, position.stake.active);
 
       return {
         key: `${position.chainId}:${position.accountId}`,
@@ -334,7 +334,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         symbol: asset?.symbol ?? '',
         precision: asset?.precision ?? 0,
         value: new BigNumber(fiat).toNumber(),
-        stake: position.stake.total,
+        stake: position.stake.active,
         fiat,
         color: getColorByPriceId(asset?.priceId ?? '', index),
         apy: apyByChain[position.chainId] ?? null,

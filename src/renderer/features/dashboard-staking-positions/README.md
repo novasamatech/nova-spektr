@@ -144,6 +144,9 @@ descending by default, and clearing the sort returns to that default rather than
   done with it: the multisig threshold and the count of pending drafts this very account already initiated on this very
   chain. A validator position adds a `Validator` chip here (with a tooltip) — the one glance-level marker that the rest
   of the row reads differently.
+- **Staked** — the ledger's **active** stake, the same figure the Unbond flow caps against. Chunks that are already
+  unbonding are not "staked": they show in the drawer's unbonding strip and in the KPI footer instead, and a position
+  whose whole stake is unbonding shows `0` here with its `Unbond` chip disabled.
 - **Share** — a share of what the user is _looking at_. Under the dashboard's account filter the denominator is the
   visible chain total, so the column always adds up to 100%.
 - **Status** — `Active` / `Waiting` / `Inactive` / `Bonded`, each with the reason behind it. The reason is the point:
