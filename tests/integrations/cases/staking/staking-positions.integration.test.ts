@@ -264,8 +264,8 @@ describe('Staking Positions - Integration', () => {
     expect(summary.activeValidatorCount).toBe(2);
 
     expect(summary.byChain[POLKADOT_AH]).toMatchObject({
-      // 1300 nominating + 2000 merely bonded.
-      totalStaked: '3300',
+      // 1000 active nominating + 2000 active merely bonded — unlocking chunks are not staked.
+      totalStaked: '3000',
       redeemable: '100',
       totalUnbonding: '200',
       activeValidatorCount: 1,
@@ -319,12 +319,12 @@ describe('Staking Positions - Integration', () => {
     await settle();
 
     const before = polkadot.subscribeCalls();
-    expect(env.getState(stakingPositions.$summary).byChain[POLKADOT_AH]?.totalStaked).toBe('3300');
+    expect(env.getState(stakingPositions.$summary).byChain[POLKADOT_AH]?.totalStaked).toBe('3000');
 
     polkadot.setLedger(stakingAccountB.accountId, { total: '5000', active: '5000' });
     await settle();
 
-    expect(env.getState(stakingPositions.$summary).byChain[POLKADOT_AH]?.totalStaked).toBe('6300');
+    expect(env.getState(stakingPositions.$summary).byChain[POLKADOT_AH]?.totalStaked).toBe('6000');
     expect(polkadot.subscribeCalls()).toEqual(before);
   });
 });
