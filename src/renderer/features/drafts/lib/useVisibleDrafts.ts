@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Draft } from '@/domains/backend';
-import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { $searchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
@@ -10,7 +10,7 @@ import { type DraftListScope, buildDraftSearchRow, filterDraftsByScope } from '.
 import { useReadableDrafts } from './useReadableDrafts';
 import { filterVisibleDrafts } from './visible-drafts';
 
-const NO_SIGNER_IDS = new Set<string>();
+const NO_ACCOUNTS: AnyAccount[] = [];
 
 /**
  * Readable drafts minus the ones already linked to a live operation — exactly
@@ -36,13 +36,10 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
 
   const needsMySignature = Boolean(scope?.needsMySignature);
   // Same idea: the account list is only consulted while the toggle is on.
-  const localSignerIds = useStoreMap({
+  const walletAccounts = useStoreMap({
     store: accounts.$list,
     keys: [needsMySignature],
-    fn: (allAccounts) =>
-      needsMySignature
-        ? new Set<string>(allAccounts.filter(accountService.hasPermissionToMakeActions).map((a) => a.accountId))
-        : NO_SIGNER_IDS,
+    fn: (allAccounts) => (needsMySignature ? allAccounts : NO_ACCOUNTS),
   });
 
   const visibleDrafts = useMemo(() => {
@@ -59,8 +56,8 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
         )
       : null;
 
-    return filterDraftsByScope(visible, scope, searchMatchedIds, localSignerIds);
-  }, [drafts, scope, chains, resolvers, localSignerIds]);
+    return filterDraftsByScope(visible, scope, searchMatchedIds, walletAccounts);
+  }, [drafts, scope, chains, resolvers, walletAccounts]);
 
   return { drafts: visibleDrafts, available };
 }
