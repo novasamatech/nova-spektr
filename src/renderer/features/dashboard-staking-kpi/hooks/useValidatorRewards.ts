@@ -45,7 +45,10 @@ export type ValidatorRewardsResult = {
  * The era range is what keeps that affordable, which is why the window is a
  * parameter of the fetch rather than a filter over a fetched year.
  */
-export const useValidatorRewards = (positions: StakingPosition[], window: RewardWindow): ValidatorRewardsResult => {
+export const useValidatorRewards = (
+  positions: StakingPosition[],
+  rewardWindow: RewardWindow,
+): ValidatorRewardsResult => {
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
   const eras = useChainEras();
@@ -77,12 +80,13 @@ export const useValidatorRewards = (positions: StakingPosition[], window: Reward
         continue;
       }
 
-      const eraRange = windowEraRange(window, {
+      const eraRange = windowEraRange(rewardWindow, {
         activeEra,
         eraDurationMs: eraDurations[chainId] ?? null,
         historyDepth,
       });
-      // Nothing closed inside the window — or nothing of it is still on chain.
+      // Nothing closed inside the window, nothing of it still on chain — or the
+      // window is a custom range still waiting for its dates.
       if (!eraRange) continue;
 
       byChain.set(chainId, {
@@ -96,7 +100,7 @@ export const useValidatorRewards = (positions: StakingPosition[], window: Reward
 
     // Sorted so the cache key of a selection does not depend on row order.
     return [...byChain.values()].map((request) => ({ ...request, stashes: [...request.stashes].sort() }));
-  }, [positions, chains, apis, eras, eraDurations, window]);
+  }, [positions, chains, apis, eras, eraDurations, rewardWindow]);
 
   useResourcePool(eraRewardsResource, requests);
 

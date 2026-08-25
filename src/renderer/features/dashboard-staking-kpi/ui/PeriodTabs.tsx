@@ -5,7 +5,7 @@ import { type RewardWindow, REWARD_PERIODS } from '../lib/reward-period';
 
 type Props = {
   value: RewardWindow;
-  onChange: (window: RewardWindow) => void;
+  onChange: (rewardWindow: RewardWindow) => void;
 };
 
 /** The window everything time-bounded on the rewards screen is read through. */

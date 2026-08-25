@@ -3,13 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   type RewardWindow,
   DEFAULT_REWARD_WINDOW,
-  erasInPeriod,
   erasInWindow,
   isCustomWindowPending,
   isWindowReady,
   periodStart,
   windowBounds,
-  windowDays,
   windowEraRange,
   windowSlug,
 } from '../reward-period';
@@ -54,25 +52,25 @@ describe('periodStart', () => {
   });
 });
 
-describe('erasInPeriod', () => {
+describe('erasInWindow (presets)', () => {
   it('counts a day per era on Polkadot', () => {
-    expect(erasInPeriod('7d', DAY_MS, HISTORY_DEPTH)).toBe(7);
-    expect(erasInPeriod('30d', DAY_MS, HISTORY_DEPTH)).toBe(30);
+    expect(erasInWindow(preset('7d'), DAY_MS, HISTORY_DEPTH)).toBe(7);
+    expect(erasInWindow(preset('30d'), DAY_MS, HISTORY_DEPTH)).toBe(30);
   });
 
   it('counts four eras a day on Kusama', () => {
-    expect(erasInPeriod('7d', DAY_MS / 4, HISTORY_DEPTH)).toBe(28);
+    expect(erasInWindow(preset('7d'), DAY_MS / 4, HISTORY_DEPTH)).toBe(28);
   });
 
   it('never asks for more history than the chain keeps', () => {
     // 30 Kusama days would be 120 eras; nothing older than the depth is on
     // chain to attribute a reward to.
-    expect(erasInPeriod('30d', DAY_MS / 4, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
-    expect(erasInPeriod('all', DAY_MS, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
+    expect(erasInWindow(preset('30d'), DAY_MS / 4, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
+    expect(erasInWindow(preset('all'), DAY_MS, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
   });
 
   it('falls back to the full depth when the era duration is unknown', () => {
-    expect(erasInPeriod('7d', null, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
+    expect(erasInWindow(preset('7d'), null, HISTORY_DEPTH)).toBe(HISTORY_DEPTH);
   });
 });
 
@@ -107,12 +105,10 @@ describe('windowEraRange', () => {
     expect(windowEraRange(untilYesterday, kusama, NOW)).toEqual({ eraFrom: 990, eraTo: 998 });
   });
 
-  it('keeps a half-picked range open-ended on the missing side', () => {
-    const fromJuly: RewardWindow = { period: 'custom', range: { from: JULY_1, to: undefined } };
-    const empty: RewardWindow = { period: 'custom', range: null };
-
-    expect(windowEraRange(fromJuly, polkadot, NOW)).toEqual({ eraFrom: 47, eraTo: 99 });
-    expect(windowEraRange(empty, polkadot, NOW)).toEqual({ eraFrom: 16, eraTo: 99 });
+  it('has no eras until both ends of a custom range are picked', () => {
+    // Nothing is fetched for a pending window; an open end would quietly read as "all time".
+    expect(windowEraRange(halfPicked, polkadot, NOW)).toBeNull();
+    expect(windowEraRange(emptyCustom, polkadot, NOW)).toBeNull();
   });
 
   it('has no eras for a window older than the history the chain keeps', () => {
@@ -134,7 +130,8 @@ describe('windowBounds', () => {
     const { from, to } = windowBounds(july);
 
     expect(from).toBe(Math.floor(JULY_1.getTime() / 1000));
-    expect(to).toBe(Math.floor((JULY_31.getTime() + DAY_MS - 1) / 1000));
+    // The last millisecond of the 31st — the next local midnight, minus one.
+    expect(to).toBe(Math.floor((new Date(2026, 7, 1).getTime() - 1) / 1000));
   });
 
   it('keeps a half-picked range open-ended on the missing side', () => {
@@ -147,27 +144,6 @@ describe('windowBounds', () => {
 
     expect(windowBounds(preset('7d'), now)).toEqual({ from: periodStart('7d', now), to: null });
     expect(windowBounds(preset('all'), now)).toEqual({ from: null, to: null });
-  });
-});
-
-describe('windowDays', () => {
-  it('counts both end days, so 1 Jul – 31 Jul is 31 days', () => {
-    expect(windowDays(july)).toBe(31);
-  });
-
-  it('counts a single-day range as one day', () => {
-    expect(windowDays({ period: 'custom', range: { from: JULY_1, to: JULY_1 } })).toBe(1);
-  });
-
-  it('has no length until both ends are picked', () => {
-    expect(windowDays(halfPicked)).toBeNull();
-    expect(windowDays(emptyCustom)).toBeNull();
-  });
-
-  it('keeps the preset lengths', () => {
-    expect(windowDays(preset('7d'))).toBe(7);
-    expect(windowDays(preset('30d'))).toBe(30);
-    expect(windowDays(preset('all'))).toBeNull();
   });
 });
 
@@ -206,7 +182,7 @@ describe('windowSlug', () => {
   });
 
   it('names a full custom range by its local days', () => {
-    expect(windowSlug(july)).toBe('2026-07-01_2026-07-31');
+    expect(windowSlug(july)).toBe('from-2026-07-01-to-2026-07-31');
   });
 
   it('falls back to "custom" while the range is incomplete', () => {
@@ -248,12 +224,5 @@ describe('erasInWindow', () => {
 
   it('falls back to the full depth when the era duration is unknown', () => {
     expect(erasInWindow(july, null, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
-  });
-
-  it('matches erasInPeriod for presets', () => {
-    expect(erasInWindow(preset('7d'), DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(
-      erasInPeriod('7d', DAY_MS, HISTORY_DEPTH),
-    );
-    expect(erasInWindow(preset('all'), DAY_MS, HISTORY_DEPTH, AUGUST_21_MIDNIGHT)).toBe(HISTORY_DEPTH);
   });
 });

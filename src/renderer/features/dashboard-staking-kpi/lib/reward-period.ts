@@ -1,4 +1,3 @@
-import { type DateRange } from '@/shared/ui-kit';
 import { getErasInDays } from '@/domains/staking';
 
 /** Windows the rewards drill-down can be looked at through. */
@@ -7,6 +6,13 @@ export const REWARD_PERIODS = ['7d', '30d', 'all', 'custom'] as const;
 export type RewardPeriod = (typeof REWARD_PERIODS)[number];
 
 export const DEFAULT_REWARD_PERIOD: RewardPeriod = '30d';
+
+/**
+ * Inclusive day bounds, local time. Structurally the shape `react-day-picker`
+ * reports (`from` present but possibly undefined, `to` optional), kept as a
+ * local type so the date math here does not depend on the picker.
+ */
+export type RewardDateRange = { from: Date | undefined; to?: Date };
 
 /**
  * A period plus, for `custom`, the dates behind it.
@@ -19,11 +25,10 @@ export const DEFAULT_REWARD_PERIOD: RewardPeriod = '30d';
 export type RewardWindow = {
   period: RewardPeriod;
   /**
-   * Inclusive day bounds, local time. Only meaningful for `custom`, and
-   * half-filled while the user is still picking — `react-day-picker` reports
-   * the first click as `{ from }` alone.
+   * Only meaningful for `custom`, and half-filled while the user is still
+   * picking — the picker reports the first click as `{ from }` alone.
    */
-  range: DateRange | null;
+  range: RewardDateRange | null;
 };
 
 export const DEFAULT_REWARD_WINDOW: RewardWindow = { period: DEFAULT_REWARD_PERIOD, range: null };
@@ -37,6 +42,15 @@ export function periodDays(period: RewardPeriod): number | null {
   return DAYS_BY_PERIOD[period];
 }
 
+function isCustom(rewardWindow: RewardWindow): boolean {
+  return rewardWindow.period === 'custom';
+}
+
+/** The range behind a custom window; empty for presets and before a pick. */
+function customRange(rewardWindow: RewardWindow): Partial<RewardDateRange> {
+  return isCustom(rewardWindow) ? (rewardWindow.range ?? {}) : {};
+}
+
 /**
  * Unix **seconds** the window covers — the unit the indexer stamps payouts with
  * — both bounds inclusive of the whole day the user picked: someone asking for
@@ -45,17 +59,17 @@ export function periodDays(period: RewardPeriod): number | null {
  * `null` bounds mean "unbounded that way", which is what `all` is, and what a
  * half-picked custom range is until its other end lands.
  */
-export function windowBounds(window: RewardWindow, now = new Date()): { from: number | null; to: number | null } {
-  if (window.period === 'custom') {
-    const { from, to } = window.range ?? {};
+export function windowBounds(rewardWindow: RewardWindow, now = new Date()): { from: number | null; to: number | null } {
+  if (isCustom(rewardWindow)) {
+    const { from, to } = customRange(rewardWindow);
 
     return {
       from: from ? Math.floor(startOfDayMs(from) / 1000) : null,
-      to: to ? Math.floor((startOfDayMs(to) + DAY_MS - 1) / 1000) : null,
+      to: to ? Math.floor(endOfDayMs(to) / 1000) : null,
     };
   }
 
-  const start = periodStart(window.period, now);
+  const start = periodStart(rewardWindow.period, now);
 
   return { from: start ?? null, to: null };
 }
@@ -65,39 +79,41 @@ function startOfDayMs(date: Date): number {
 }
 
 /**
- * Days the window spans, used to annualise what it earned. A custom range
- * counts both end days, so 1 Jul – 31 Jul is 31 days rather than 30.
+ * The last millisecond of the local day. Taken from the next midnight rather
+ * than `start + 24h`: a day that changes the clocks is 23 or 25 hours long.
  */
-export function windowDays(window: RewardWindow): number | null {
-  if (window.period !== 'custom') return periodDays(window.period);
-
-  const { from, to } = window.range ?? {};
-  if (!from || !to) return null;
-
-  return Math.max(1, Math.round((startOfDayMs(to) - startOfDayMs(from)) / DAY_MS) + 1);
+function endOfDayMs(date: Date): number {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime() - 1;
 }
 
 /** Whether the window is fully specified — a half-picked range is not. */
-export function isWindowReady(window: RewardWindow): boolean {
-  return window.period !== 'custom' || Boolean(window.range?.from && window.range.to);
+export function isWindowReady(rewardWindow: RewardWindow): boolean {
+  const { from, to } = customRange(rewardWindow);
+
+  return !isCustom(rewardWindow) || Boolean(from && to);
 }
 
 /**
  * A custom window still waiting for its dates. The drill-down reports nothing
  * for it — falling back to "all time" would answer a question nobody asked.
  */
-export function isCustomWindowPending(window: RewardWindow): boolean {
-  return window.period === 'custom' && !isWindowReady(window);
+export function isCustomWindowPending(rewardWindow: RewardWindow): boolean {
+  return isCustom(rewardWindow) && !isWindowReady(rewardWindow);
 }
 
-/** Short label for a file name: `30d`, `all`, or `2026-07-01_2026-07-31`. */
-export function windowSlug(window: RewardWindow): string {
-  if (window.period !== 'custom') return window.period;
+/**
+ * Short label for a file name: `30d`, `all`, or
+ * `from-2026-07-01-to-2026-07-31`. Spelled with words rather than a symbol
+ * between the days because the file name folds every non-alphanumeric into `-`
+ * and three dates in a row do not read.
+ */
+export function windowSlug(rewardWindow: RewardWindow): string {
+  if (!isCustom(rewardWindow)) return rewardWindow.period;
 
-  const { from, to } = window.range ?? {};
+  const { from, to } = customRange(rewardWindow);
   if (!from || !to) return 'custom';
 
-  return `${toIsoDay(from)}_${toIsoDay(to)}`;
+  return `from-${toIsoDay(from)}-to-${toIsoDay(to)}`;
 }
 
 function toIsoDay(date: Date): string {
@@ -133,28 +149,22 @@ export function periodStart(period: RewardPeriod, now = new Date()): number | un
  * from the chain's own era duration. Capped by `historyDepth`: nothing older is
  * on chain to attribute a reward to, and asking for it costs an indexer page
  * walk that can only come back empty.
- */
-export function erasInPeriod(period: RewardPeriod, eraDurationMs: number | null, historyDepth: number): number {
-  return erasInWindow({ period, range: null }, eraDurationMs, historyDepth);
-}
-
-/**
- * Same, for a window that may be a custom range.
  *
- * Counted from **now** back to the range's start — eras are numbered from the
- * active one, so a July window looked at in September reaches back over the
- * eras since July. `windowEraRange` trims the ones after its end off again.
+ * A custom range is counted from **now** back to its start — eras are numbered
+ * from the active one, so a July window looked at in September reaches back
+ * over the eras since July. `windowEraRange` trims the ones after its end off
+ * again.
  */
 export function erasInWindow(
-  window: RewardWindow,
+  rewardWindow: RewardWindow,
   eraDurationMs: number | null,
   historyDepth: number,
   now = Date.now(),
 ): number {
   if (!eraDurationMs || eraDurationMs <= 0) return historyDepth;
 
-  if (window.period === 'custom') {
-    const from = window.range?.from;
+  if (isCustom(rewardWindow)) {
+    const { from } = customRange(rewardWindow);
     if (!from) return historyDepth;
 
     const span = Math.max(DAY_MS, now - startOfDayMs(from));
@@ -162,7 +172,7 @@ export function erasInWindow(
     return Math.min(historyDepth, Math.max(1, Math.ceil(span / eraDurationMs)));
   }
 
-  const days = periodDays(window.period);
+  const days = periodDays(rewardWindow.period);
   if (days === null) return historyDepth;
 
   return Math.min(historyDepth, getErasInDays(days, eraDurationMs));
@@ -178,8 +188,9 @@ type ChainEraFacts = {
 };
 
 /**
- * The closed eras of a chain that fall inside the window, `null` when none
- * does.
+ * The closed eras of a chain that fall inside the window, `null` when none does
+ * — or when the window is a custom range still waiting for its dates, since
+ * nothing is fetched or reported until both ends land.
  *
  * The active era is never part of it: it has not paid anything yet, so its
  * arithmetic is not final. A preset therefore ends at the last closed era and
@@ -188,12 +199,14 @@ type ChainEraFacts = {
  * captioned "over the period". Era boundaries are only known to the day, so an
  * era straddling either end is kept rather than dropped.
  */
-export function windowEraRange(window: RewardWindow, chain: ChainEraFacts, now = Date.now()): EraRange | null {
+export function windowEraRange(rewardWindow: RewardWindow, chain: ChainEraFacts, now = Date.now()): EraRange | null {
+  if (!isWindowReady(rewardWindow)) return null;
+
   const { activeEra, eraDurationMs, historyDepth } = chain;
   const lastClosed = activeEra - 1;
 
-  const eraFrom = Math.max(0, lastClosed - erasInWindow(window, eraDurationMs, historyDepth, now) + 1);
-  const eraTo = lastClosed - erasSinceWindowEnd(window, eraDurationMs, now);
+  const eraFrom = Math.max(0, lastClosed - erasInWindow(rewardWindow, eraDurationMs, historyDepth, now) + 1);
+  const eraTo = lastClosed - erasSinceWindowEnd(rewardWindow, eraDurationMs, now);
 
   return eraTo < eraFrom ? null : { eraFrom, eraTo };
 }
@@ -203,14 +216,14 @@ export function windowEraRange(window: RewardWindow, chain: ChainEraFacts, now =
  * between its end and now. Zero for every window that reaches now, which is
  * every preset and a custom range whose end is today or still unpicked.
  */
-function erasSinceWindowEnd(window: RewardWindow, eraDurationMs: number | null, now: number): number {
-  if (window.period !== 'custom' || !eraDurationMs || eraDurationMs <= 0) return 0;
+function erasSinceWindowEnd(rewardWindow: RewardWindow, eraDurationMs: number | null, now: number): number {
+  if (!eraDurationMs || eraDurationMs <= 0) return 0;
 
-  const to = window.range?.to;
+  const { to } = customRange(rewardWindow);
   if (!to) return 0;
 
-  // The day after the last picked one, at midnight — the instant the window closed.
-  const elapsed = now - (startOfDayMs(to) + DAY_MS);
+  // The first instant after the last picked day — when the window closed.
+  const elapsed = now - (endOfDayMs(to) + 1);
   if (elapsed <= 0) return 0;
 
   // The era the end falls into may still hold the window's last hours; only

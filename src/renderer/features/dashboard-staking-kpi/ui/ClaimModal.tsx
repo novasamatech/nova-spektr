@@ -63,9 +63,6 @@ type Props = {
 
 type DisplayRow = ValidatorRewardRow & { color: string; accruedFiat: string; expiryDays: number | null };
 
-// Stable empty selection — a fresh [] per render would re-key the memos below.
-const NO_POSITIONS: StakingPosition[] = [];
-
 /** A segmented-control button, styled like `Tabs.Trigger` without its panels. */
 const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button
@@ -109,9 +106,10 @@ export const ClaimModal = memo(
 
     const [rewardWindow, setRewardWindow] = useState<RewardWindow>(DEFAULT_REWARD_WINDOW);
     /**
-     * A Custom tab with no dates yet. Nothing is fetched or reported for it —
-     * an unbounded window would quietly read as "all time" behind a tab that
-     * says "custom".
+     * A Custom tab with no dates yet. Nothing is reported for it — an unbounded
+     * window would quietly read as "all time" behind a tab that says "custom".
+     * The fetch side is handled by `windowEraRange`, which yields no era range
+     * for a pending window, so the hook below simply has nothing to request.
      */
     const windowPending = isCustomWindowPending(rewardWindow);
     const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
@@ -121,7 +119,7 @@ export const ClaimModal = memo(
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
 
-    const { rewards, pendingChains } = useValidatorRewards(windowPending ? NO_POSITIONS : positions, rewardWindow);
+    const { rewards, pendingChains } = useValidatorRewards(positions, rewardWindow);
     const pendingChainSet = useMemo(() => new Set(pendingChains), [pendingChains]);
 
     /**
