@@ -12,7 +12,6 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DateRange } from '@/shared/ui-kit';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -21,6 +20,7 @@ import {
   contactMultisigsModel,
   identity,
   multisigOperation,
+  multisigOperationService,
 } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -30,11 +30,11 @@ import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/agg
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bucketOperations } from '../lib/bucket-operations';
 import {
+  type OperationsFilterCriteria,
   type WalletSearchEntry,
   buildOperationSearchRow,
   filterOperation,
   getWalletSearchEntries,
-  operationNeedsMySignature,
   shouldAlwaysShowInProgress,
 } from '../lib/operations-filter';
 import { type StatusFilterValue, getOperationSection } from '../lib/operations-sections';
@@ -46,15 +46,8 @@ import { multisigOperationsFeature } from './feature';
 
 export { type OperationWithAccount } from '../lib/types';
 
-interface SelectedFilters {
-  network: string[];
-  type: string[];
-  proxyType: string[];
-  status: StatusFilterValue[];
-  dateRange?: DateRange;
-  searchQuery: string;
-  needsMySignature: boolean;
-}
+// One shape for the store and the pure filter — a new criterion is added once.
+type SelectedFilters = OperationsFilterCriteria;
 export type TabFilter = 'pending' | 'history' | 'hidden';
 
 const $hiddenOperationIds = createStore<string[]>([]);
@@ -333,7 +326,7 @@ const $needsMySignatureIdsRaw = combine(
 
     const ids = new Set<string>();
     for (const { operation, account } of operationsWithAccounts) {
-      if (operationNeedsMySignature(operation, account, walletAccounts, chains[operation.chainId])) {
+      if (multisigOperationService.needsUserSignature(operation, account, walletAccounts, chains[operation.chainId])) {
         ids.add(operation.id);
       }
     }

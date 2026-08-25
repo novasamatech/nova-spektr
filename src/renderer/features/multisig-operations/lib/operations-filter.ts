@@ -13,14 +13,7 @@ import {
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
-import {
-  type AnyAccount,
-  type IdentityMap,
-  type MultisigOperation,
-  accountService,
-  isContactMultisigAccount,
-  multisigOperationService,
-} from '@/domains/network';
+import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { type OperationSearchRow } from '@/aggregates/operations-search';
@@ -49,7 +42,8 @@ export interface OperationsFilterContext {
   searchMatchedIds: Set<string> | null;
   // Ids of operations a local signatory can still act on, or `null` when the
   // "Needs my signature" toggle is off. Computed once for the whole list (see
-  // `operationNeedsMySignature`) so `filterOperation` needs no wallets/chains.
+  // `multisigOperationService.needsUserSignature`) so `filterOperation` needs
+  // no wallets/chains.
   needsMySignatureIds: Set<string> | null;
   // Any non-search filter active → tabs collapse to "All operations".
   isScopeMerged: boolean;
@@ -153,28 +147,6 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
     return isAfter(txDate, startOfDay(from)) || txDate.getTime() === startOfDay(from).getTime();
   }
   return true;
-};
-
-/**
- * Whether the operation still needs the user: it is collecting approvals and at
- * least one locally available signatory has not acted yet — the user can
- * approve it, or add the call data it waits on. This is the rule behind the
- * row's Approve button (`OperationActions`) and the dashboard queue, so the
- * filter and the row can never disagree.
- */
-export const operationNeedsMySignature = (
-  operation: MultisigOperation,
-  account: MultisigAccount | FlexibleMultisigAccount,
-  walletAccounts: AnyAccount[],
-  chain: Chain | null | undefined,
-): boolean => {
-  // An awaiting-outcome operation has already left on-chain storage — it only
-  // looks pending until the indexer reports; signing it would fail.
-  if (operation.status !== 'pending' || operation.awaitingOutcome) return false;
-  // The user holds no signatory keys for a contact-backed multisig.
-  if (isContactMultisigAccount(account)) return false;
-
-  return multisigOperationService.findActionableSignatories(operation, account, walletAccounts, chain).length > 0;
 };
 
 /**

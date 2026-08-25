@@ -454,8 +454,10 @@ The list can be narrowed by **search** and six **filters**:
   the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (submitter,
   initiator, description or address) — while an active transaction-type or proxy-type filter puts every draft out of
   scope (a draft's call may be absent or undecoded), so the drafts section and the merged "All operations" count stay
-  consistent with the filtered list. With **Needs my signature** on, the drafts section keeps only drafts whose assigned
-  initiator is a local account that can sign — a draft nobody local can initiate is not "mine".
+  consistent with the filtered list. With **Needs my signature** on, the drafts section keeps only drafts the user can
+  actually submit — the assigned initiator is a local account that can sign and the draft carries a signing path (the
+  same rule that enables **Submit**); a draft nobody local can initiate, or a legacy draft that has to be recreated, is
+  not "mine".
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.

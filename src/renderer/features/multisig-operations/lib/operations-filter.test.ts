@@ -1,28 +1,18 @@
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
   type Chain,
   type Contact,
-  type MultisigAccount,
   type Wallet,
   AccountNameType,
-  AccountType,
   CryptoType,
   SigningType,
   TransactionType,
   WalletType,
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { createAccountId, polkadotChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  type AnyAccount,
-  type MultisigEvent,
-  type MultisigOperation,
-  CONTACT_MULTISIG_WALLET_ID,
-  MultisigEventStatus,
-  accountService,
-} from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { type OperationSearchRow, type SearchResolvers, searchOperationRows } from '@/aggregates/operations-search';
 
 import {
@@ -39,7 +29,6 @@ import {
   matchesStatus,
   matchesTab,
   matchesTxType,
-  operationNeedsMySignature,
   shouldAlwaysShowInProgress,
 } from './operations-filter';
 
@@ -650,122 +639,6 @@ describe('operations-filter', () => {
       const op = createMockOperation({ id: 'op-1', status: 'pending' });
 
       expect(filterOperation(op, mockMultisigAccount, { ...emptyContext, needsMySignatureIds: null })).toBe(true);
-    });
-  });
-
-  describe('operationNeedsMySignature', () => {
-    const SIGNER_ID = createAccountId('signer-a');
-    const OTHER_SIGNER_ID = createAccountId('signer-b');
-
-    const multisigAccount = {
-      id: 'multisig-1',
-      walletId: 1,
-      name: 'Team multisig',
-      type: 'universal',
-      accountType: AccountType.MULTISIG,
-      accountId: MOCK_ACCOUNT_ID,
-      cryptoType: CryptoType.SR25519,
-      signingType: SigningType.MULTISIG,
-      signatories: [{ accountId: SIGNER_ID }, { accountId: OTHER_SIGNER_ID }],
-      threshold: 2,
-      createdAt: 0,
-    } as unknown as MultisigAccount;
-
-    // The user holds only signer-a; signer-b belongs to someone else.
-    const signerAccount = {
-      id: 'signer-a',
-      walletId: 1,
-      name: 'Signer A',
-      type: 'universal',
-      accountType: AccountType.BASE,
-      accountId: SIGNER_ID,
-      cryptoType: CryptoType.SR25519,
-      signingType: SigningType.POLKADOT_VAULT,
-      createdAt: 0,
-    } as unknown as AnyAccount;
-
-    const approveEvent = (accountId: AccountId): MultisigEvent =>
-      ({
-        id: `approve-${accountId}`,
-        accountId,
-        status: MultisigEventStatus.Approve,
-        blockCreated: 100,
-        indexCreated: 0,
-        timestamp: 0,
-      }) as unknown as MultisigEvent;
-
-    // `findActionableSignatories` checks chain availability through a DI anyOf
-    // that has no handlers in unit tests — seed the same chain-matching handler
-    // the service tests use.
-    beforeEach(() => {
-      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
-        body: ({ account, chain }) =>
-          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
-        available: () => true,
-      });
-    });
-
-    afterEach(() => {
-      accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
-    });
-
-    test('pending operation with an own signatory still to act needs my signature', () => {
-      const op = createMockOperation({ status: 'pending', events: [] });
-
-      expect(operationNeedsMySignature(op, multisigAccount, [signerAccount], polkadotChain)).toBe(true);
-    });
-
-    test('does not match once every own signatory has approved', () => {
-      const op = createMockOperation({ status: 'pending', events: [approveEvent(SIGNER_ID)] });
-
-      expect(operationNeedsMySignature(op, multisigAccount, [signerAccount], polkadotChain)).toBe(false);
-    });
-
-    test('still matches while another own signatory has not approved', () => {
-      const otherSignerAccount = { ...signerAccount, id: 'signer-b', accountId: OTHER_SIGNER_ID } as AnyAccount;
-      const op = createMockOperation({ status: 'pending', events: [approveEvent(SIGNER_ID)] });
-
-      expect(operationNeedsMySignature(op, multisigAccount, [signerAccount, otherSignerAccount], polkadotChain)).toBe(
-        true,
-      );
-    });
-
-    test('does not match an operation awaiting its on-chain outcome', () => {
-      const op = createMockOperation({ status: 'pending', awaitingOutcome: true, events: [] });
-
-      expect(operationNeedsMySignature(op, multisigAccount, [signerAccount], polkadotChain)).toBe(false);
-    });
-
-    test('does not match a contact multisig (no local signatory keys)', () => {
-      const contactMultisig = { ...multisigAccount, walletId: CONTACT_MULTISIG_WALLET_ID } as MultisigAccount;
-      const op = createMockOperation({ status: 'pending', events: [] });
-
-      expect(operationNeedsMySignature(op, contactMultisig, [signerAccount], polkadotChain)).toBe(false);
-    });
-
-    test('does not match a resolved operation', () => {
-      expect(
-        operationNeedsMySignature(
-          createMockOperation({ status: 'executed' }),
-          multisigAccount,
-          [signerAccount],
-          polkadotChain,
-        ),
-      ).toBe(false);
-      expect(
-        operationNeedsMySignature(
-          createMockOperation({ status: 'cancelled' }),
-          multisigAccount,
-          [signerAccount],
-          polkadotChain,
-        ),
-      ).toBe(false);
-    });
-
-    test('does not match when the chain is unknown', () => {
-      const op = createMockOperation({ status: 'pending', events: [] });
-
-      expect(operationNeedsMySignature(op, multisigAccount, [signerAccount], undefined)).toBe(false);
     });
   });
 
