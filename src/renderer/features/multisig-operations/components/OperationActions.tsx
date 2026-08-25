@@ -78,16 +78,17 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
       return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
     });
 
-  const hasApproveAccount =
-    !isContact && multisigOperationService.findActionableSignatories(operation, account, allAccounts, chain).length > 0;
+  // Same predicate as the "Needs my signature" filter and the dashboard queue;
+  // it already covers the contact and awaiting-outcome cases.
+  const hasApproveAccount = multisigOperationService.needsUserSignature(operation, account, allAccounts, chain);
 
   const isRejectAvailable = isActionable && hasRejectAccount;
 
   const isFinalSigning = operation.events.length === account.threshold - 1;
   const hasValidCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
-  const isApproveAvailable = isActionable && hasApproveAccount && (!isFinalSigning || hasValidCallData);
+  const isApproveAvailable = hasApproveAccount && (!isFinalSigning || hasValidCallData);
 
-  const needsCallData = isActionable && hasApproveAccount && isFinalSigning && !hasValidCallData;
+  const needsCallData = hasApproveAccount && isFinalSigning && !hasValidCallData;
 
   // Nothing left to approve because the user already did — say so instead of leaving a blank cell.
   // "Own" is decided by the same service predicate that gates Approve, so the two can never disagree.

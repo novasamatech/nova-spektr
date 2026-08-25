@@ -5,6 +5,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '../account/service';
 import { type AnyAccount } from '../account/types';
 
+import { CONTACT_MULTISIG_WALLET_ID } from './contact-multisigs';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation, MultisigEventStatus } from './types';
 
@@ -605,6 +606,64 @@ describe('multisig operation service', () => {
             null,
           ),
         ).toBe(false);
+      });
+    });
+
+    describe('needsUserSignature', () => {
+      const makeOperation = (overrides: Partial<MultisigOperation> = {}) =>
+        ({ status: 'pending', events: [], ...overrides }) as MultisigOperation;
+
+      // The user holds only sigA; sigB belongs to someone else.
+      const multisig = makeMultisigAccount([{ accountId: sigA }, { accountId: sigB }]);
+      const accountA = makeWalletAccount(sigA, 1);
+
+      it('is true while an own signatory still has to act', () => {
+        expect(multisigOperationService.needsUserSignature(makeOperation(), multisig, [accountA], polkadotChain)).toBe(
+          true,
+        );
+      });
+
+      it('is false once every own signatory has approved', () => {
+        const op = makeOperation({ events: [makeApproveEvent(sigA)] });
+
+        expect(multisigOperationService.needsUserSignature(op, multisig, [accountA], polkadotChain)).toBe(false);
+      });
+
+      it('stays true while another own signatory has not approved', () => {
+        const accountB = makeWalletAccount(sigB, 2);
+        const op = makeOperation({ events: [makeApproveEvent(sigA)] });
+
+        expect(multisigOperationService.needsUserSignature(op, multisig, [accountA, accountB], polkadotChain)).toBe(
+          true,
+        );
+      });
+
+      it('is false for an operation awaiting its on-chain outcome', () => {
+        const op = makeOperation({ awaitingOutcome: true });
+
+        expect(multisigOperationService.needsUserSignature(op, multisig, [accountA], polkadotChain)).toBe(false);
+      });
+
+      it('is false for a contact multisig (no local signatory keys)', () => {
+        const contactMultisig = { ...multisig, walletId: CONTACT_MULTISIG_WALLET_ID };
+
+        expect(
+          multisigOperationService.needsUserSignature(makeOperation(), contactMultisig, [accountA], polkadotChain),
+        ).toBe(false);
+      });
+
+      it('is false for a resolved operation', () => {
+        for (const status of ['executed', 'cancelled'] as const) {
+          expect(
+            multisigOperationService.needsUserSignature(makeOperation({ status }), multisig, [accountA], polkadotChain),
+          ).toBe(false);
+        }
+      });
+
+      it('is false when the chain is unknown', () => {
+        expect(multisigOperationService.needsUserSignature(makeOperation(), multisig, [accountA], undefined)).toBe(
+          false,
+        );
       });
     });
   });

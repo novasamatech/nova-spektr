@@ -1,10 +1,14 @@
 import { endOfDay, isAfter, isWithinInterval, startOfDay } from 'date-fns';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
+import { type AnyAccount } from '@/domains/network';
 import { type OperationSearchRow, type SearchAccountRef } from '@/aggregates/operations-search';
+
+import { findSubmittableInitiator } from './draft-initiator';
 
 /**
  * The subset of the Operations view's filters a draft can honor. A draft's
@@ -18,6 +22,11 @@ export type DraftListScope = {
   proxyType: string[];
   dateRange?: DateRange;
   searchQuery: string;
+  /**
+   * "Needs my signature": keep only drafts the user can submit — see
+   * `findSubmittableInitiator`.
+   */
+  needsMySignature?: boolean;
 };
 
 const matchesNetwork = (draft: Draft, networkIds: string[]): boolean => {
@@ -110,12 +119,14 @@ export const buildDraftSearchRow = (
  * (drafts match only the dedicated `drafts` status).
  *
  * `searchMatchedIds` comes from the caller because it needs resolved display
- * names; `null` means no query.
+ * names; `null` means no query. `walletAccounts` is consulted only when
+ * `scope.needsMySignature` is set.
  */
 export const filterDraftsByScope = (
   drafts: Draft[],
   scope: DraftListScope,
   searchMatchedIds: Set<string> | null,
+  walletAccounts: AnyAccount[],
 ): Draft[] => {
   if (scope.type.length > 0 || scope.proxyType.length > 0) return [];
 
@@ -123,6 +134,7 @@ export const filterDraftsByScope = (
     (draft) =>
       matchesNetwork(draft, scope.network) &&
       matchesDateRange(draft, scope.dateRange) &&
-      (searchMatchedIds === null || searchMatchedIds.has(draft.id)),
+      (searchMatchedIds === null || searchMatchedIds.has(draft.id)) &&
+      (!scope.needsMySignature || nonNullable(findSubmittableInitiator(draft, walletAccounts))),
   );
 };

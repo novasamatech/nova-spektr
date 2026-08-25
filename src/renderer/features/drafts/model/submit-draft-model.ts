@@ -45,6 +45,7 @@ import { type TransactionSigningPayload, signModel } from '@/features/operations
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
+import { findLocalInitiator, findSubmittableInitiator } from '../lib/draft-initiator';
 import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 import { preserveSigningPath } from '../lib/preserve-signing-path';
 import { type SubmitDraftErrorKind } from '../lib/submit-draft-screen';
@@ -348,15 +349,7 @@ const $graphSignatories = createSignatoriesStore({
 // topology.
 const $savedPathSignatory = combine(
   { draft: $draft, accounts: walletModel.$availableAccounts },
-  ({ draft, accounts }): AnyAccount | null => {
-    if (!draft?.initiatorAccountId) return null;
-    if (!Array.isArray(draft.signingPath) || draft.signingPath.length === 0) return null;
-
-    return (
-      accounts.find((a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
-      null
-    );
-  },
+  ({ draft, accounts }): AnyAccount | null => (draft ? findSubmittableInitiator(draft, accounts) : null),
 );
 
 const $signatories = combine($graphSignatories, $savedPathSignatory, (graphSignatories, savedPathSignatory) => {
@@ -467,9 +460,7 @@ const $initiatorUnavailable = combine(
     // the banner has nothing left to ask for.
     if (signatory !== null) return false;
 
-    return !availableAccounts.some(
-      (a) => a.accountId === draft.initiatorAccountId && accountService.hasPermissionToMakeActions(a),
-    );
+    return nullable(findLocalInitiator(draft, availableAccounts));
   },
 );
 
@@ -497,15 +488,8 @@ sample({
 sample({
   clock: [walletModel.$availableAccounts, $draft],
   source: { draft: $draft, accounts: walletModel.$availableAccounts },
-  filter: ({ draft, accounts }) =>
-    nonNullable(draft) &&
-    Array.isArray(draft.signingPath) &&
-    draft.signingPath.length > 0 &&
-    nonNullable(draft.initiatorAccountId) &&
-    accounts.some((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)),
-  fn: ({ draft, accounts }) =>
-    accounts.find((a) => a.accountId === draft!.initiatorAccountId && accountService.hasPermissionToMakeActions(a)) ??
-    null,
+  filter: ({ draft, accounts }) => nonNullable(draft) && nonNullable(findSubmittableInitiator(draft, accounts)),
+  fn: ({ draft, accounts }) => findSubmittableInitiator(draft!, accounts),
   target: $signatory,
 });
 
