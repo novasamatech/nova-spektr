@@ -4,7 +4,7 @@ import { type BN } from '@polkadot/util';
 import { type EraIndex } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 
-import { type EraThreshold } from './types';
+import { type EraThreshold, type EraThresholdWindow } from './types';
 
 export const eraThresholdsService = {
   getEraThreshold,
@@ -16,16 +16,18 @@ export const eraThresholdsService = {
  * first, fetched one era at a time through `fetchEra`.
  *
  * A flaky era read must not blank the whole widget: an era whose fetch throws
- * is dropped from the series instead of failing the window. Only a window with
- * no answers at all propagates the failure — returning `[]` there would cache
- * the claim "no era history" that nobody established.
+ * is dropped from the series and listed in `failedEras`, so the caller can tell
+ * a hole from an era outside history and retry the window sooner. Only a window
+ * with no answers at all propagates the failure — returning an empty window
+ * there would cache the claim "no era history" that nobody established.
  */
 async function collectEraThresholds(
   era: EraIndex,
   depth: number,
   fetchEra: (era: EraIndex) => Promise<EraThreshold | null>,
-): Promise<EraThreshold[]> {
+): Promise<EraThresholdWindow> {
   const thresholds: EraThreshold[] = [];
+  const failedEras: EraIndex[] = [];
   let failure: unknown = null;
 
   for (let index = Math.max(era - depth, 0); index <= era; index += 1) {
@@ -35,6 +37,7 @@ async function collectEraThresholds(
         thresholds.push(threshold);
       }
     } catch (error) {
+      failedEras.push(index);
       failure = error;
     }
   }
@@ -43,7 +46,7 @@ async function collectEraThresholds(
     throw failure;
   }
 
-  return thresholds;
+  return { thresholds, failedEras };
 }
 
 /**

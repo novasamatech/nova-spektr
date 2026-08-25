@@ -72,7 +72,8 @@ describe('collectEraThresholds', () => {
     });
 
     expect(fetched).toEqual([ERA - 2, ERA - 1, ERA]);
-    expect(result.map(t => t.era)).toEqual([ERA - 2, ERA - 1, ERA]);
+    expect(result.thresholds.map(t => t.era)).toEqual([ERA - 2, ERA - 1, ERA]);
+    expect(result.failedEras).toEqual([]);
   });
 
   test('should drop an era whose read keeps failing instead of failing the window', async () => {
@@ -82,7 +83,8 @@ describe('collectEraThresholds', () => {
       return threshold(era);
     });
 
-    expect(result.map(t => t.era)).toEqual([ERA - 2, ERA]);
+    expect(result.thresholds.map(t => t.era)).toEqual([ERA - 2, ERA]);
+    expect(result.failedEras).toEqual([ERA - 1]);
   });
 
   test('should drop eras outside history without treating them as failures', async () => {
@@ -90,7 +92,8 @@ describe('collectEraThresholds', () => {
       era === ERA - 2 ? null : threshold(era),
     );
 
-    expect(result.map(t => t.era)).toEqual([ERA - 1, ERA]);
+    expect(result.thresholds.map(t => t.era)).toEqual([ERA - 1, ERA]);
+    expect(result.failedEras).toEqual([]);
   });
 
   test('should propagate the failure when no era answered', async () => {

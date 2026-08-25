@@ -5,18 +5,17 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
-import { Label, Skeleton, Tooltip } from '@/shared/ui-kit';
+import { type SegmentedOption, Label, SegmentedControl, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useMinStakeRows } from '../hooks/useMinStakeRows';
 import { useThresholdAssets } from '../hooks/useThresholdAssets';
 import { CHART_MIN_HEIGHT, ERA_DEPTH, TOOLTIP_WIDTH } from '../lib/constants';
-import { formatAxisValue, formatSignedPercent, formatSignedTokens } from '../lib/format';
+import { formatAxisValue, formatEraNumber, formatSignedPercent, formatSignedTokens } from '../lib/format';
 import { buildWindow } from '../lib/scale';
 
 import { type ChartHover, MinStakeStepChart } from './MinStakeStepChart';
 import { MinStakeTooltip } from './MinStakeTooltip';
-import { type SegmentedOption, SegmentedControl } from './SegmentedControl';
 
 const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(value, min), max);
 
@@ -81,7 +80,7 @@ export const MinStakeWidget = () => {
             <>
               <SmallTitleText className="tabular-nums">{formatAsset(current.minStake, selected.asset)}</SmallTitleText>
               <FootnoteText className="text-text-tertiary">
-                {t('dashboard.staking.minStake.headlineEra', { era: current.era.toLocaleString('en-US') })}
+                {t('dashboard.staking.minStake.headlineEra', { era: formatEraNumber(current.era) })}
               </FootnoteText>
               {current !== first && (
                 <Tooltip>
@@ -96,7 +95,7 @@ export const MinStakeWidget = () => {
                     {t('dashboard.staking.minStake.deltaTitle', {
                       delta: formatSignedTokens(current.tokens - first.tokens),
                       symbol: selected.symbol,
-                      era: first.era.toLocaleString('en-US'),
+                      era: formatEraNumber(first.era),
                       eras: ERA_DEPTH,
                     })}
                   </Tooltip.Content>

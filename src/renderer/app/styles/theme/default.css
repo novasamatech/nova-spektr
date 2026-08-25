@@ -22,6 +22,9 @@
   /* ICON */
   --icon-accent: #4649f6;
   --icon-accent-default: rgba(70, 73, 246, 0.72);
+  /* Muted accent tints for chart strokes/fills on a card */
+  --chart-accent-line: #8f92fa;
+  --chart-accent-area: #e1e2fe;
   --tab-icon-active: #363643;
   --tab-icon-inactive: #868692;
   --icon-hover: #79797d;
@@ -38,7 +41,7 @@
   /* BUTTON */
   /* primary */
   --primary-button-background-default: #4649f6;
-  --primary-button-background-hover: #3235B1;
+  --primary-button-background-hover: #3235b1;
   --primary-button-background-active: #222376;
   --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
   /* secondary */
@@ -132,11 +135,13 @@
   --card-shadow: 0px 3px 4px rgba(69, 69, 137, 0.04), inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);
   --knob-shadow: 0px 2px 6px rgba(0, 0, 0, 0.16);
   --input-active-shadow: 0px 0px 0px 2px rgba(36, 99, 235, 0.16);
-  --card-shadow-level2: 0px 2px 2px rgba(69, 69, 137, 0.05), 0px 4px 6px rgba(69, 69, 137, 0.06),
+  --card-shadow-level2:
+    0px 2px 2px rgba(69, 69, 137, 0.05), 0px 4px 6px rgba(69, 69, 137, 0.06),
     inset 0px -0.5px 0px rgba(69, 69, 137, 0.12);
   --stack: 0px 3px 4px 0px rgba(69, 69, 137, 0.04);
   --stack-hover: 0px 4px 6px 0px rgba(69, 69, 137, 0.06), 0px 2px 2px 0px rgba(69, 69, 137, 0.05);
   --shadow-1: 0px 3px 4px 0px rgba(69, 69, 137, 0.04), 0px -0.5px 0px 0px rgba(69, 69, 137, 0.12) inset;
-  --shadow-2: 0px 4px 6px 0px rgba(69, 69, 137, 0.06), 0px -0.5px 0px 0px rgba(69, 69, 137, 0.12) inset,
+  --shadow-2:
+    0px 4px 6px 0px rgba(69, 69, 137, 0.06), 0px -0.5px 0px 0px rgba(69, 69, 137, 0.12) inset,
     0px 2px 2px 0px rgba(69, 69, 137, 0.05);
 }

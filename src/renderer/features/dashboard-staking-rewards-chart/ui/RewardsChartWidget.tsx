@@ -5,7 +5,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { type SegmentedOption, SegmentedControl, Skeleton } from '@/shared/ui-kit';
 import { currencySelect } from '@/aggregates/currency-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { DashboardWidget } from '@/pages/Dashboard';
@@ -20,7 +20,6 @@ import { type RangeKey } from '../lib/types';
 
 import { RewardsBarChart } from './RewardsBarChart';
 import { RewardsChartTooltip } from './RewardsChartTooltip';
-import { type SegmentedOption, SegmentedControl } from './SegmentedControl';
 
 type EntryLike = { accountId: string; name: string; address: string };
 

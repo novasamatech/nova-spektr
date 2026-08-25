@@ -1,5 +1,6 @@
 import {
   formatAxisValue,
+  formatEraNumber,
   formatEraValue,
   formatExactTokens,
   formatSignedPercent,
@@ -55,5 +56,12 @@ describe('formatAxisValue', () => {
   test('should use K below a million and integers below ten thousand', () => {
     expect(formatAxisValue(450_000, 50_000)).toBe('450K');
     expect(formatAxisValue(4_500, 500)).toBe('4,500');
+  });
+});
+
+describe('formatEraNumber', () => {
+  test('should group thousands', () => {
+    expect(formatEraNumber(2260)).toBe('2,260');
+    expect(formatEraNumber(9897)).toBe('9,897');
   });
 });

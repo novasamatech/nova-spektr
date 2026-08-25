@@ -1,21 +1,12 @@
-import { type RewardBucket } from './types';
+import { type ActiveEraAnchor } from '@/domains/staking';
 
-/**
- * A known era plus the moment it started and how long an era lasts on that
- * chain — everything needed to walk backwards to an earlier era.
- */
-export type RewardsEraAnchor = {
-  era: number;
-  /** Unix ms the anchored era became active. */
-  eraStartMs: number;
-  eraDurationMs: number;
-};
+import { type RewardBucket } from './types';
 
 /**
  * Era in effect at `timestampMs`, walked back from the anchor. `null` when the
  * anchor is unusable or the walk lands before era 0 — never a guess.
  */
-export const deriveEraAt = (anchor: RewardsEraAnchor | null, timestampMs: number): number | null => {
+export const deriveEraAt = (anchor: ActiveEraAnchor | null, timestampMs: number): number | null => {
   if (!anchor || anchor.eraDurationMs <= 0) return null;
 
   const elapsed = timestampMs - anchor.eraStartMs;
@@ -37,7 +28,7 @@ export const deriveEraAt = (anchor: RewardsEraAnchor | null, timestampMs: number
  * The label is the era active at the **middle** of the day, since era
  * boundaries do not align with midnight.
  */
-export const resolveBucketEra = (bucket: RewardBucket, anchor: RewardsEraAnchor | null): number | null => {
+export const resolveBucketEra = (bucket: RewardBucket, anchor: ActiveEraAnchor | null): number | null => {
   if (!anchor || bucket.granularity !== 'day') return null;
   if (anchor.eraDurationMs < bucket.end - bucket.start) return null;
 

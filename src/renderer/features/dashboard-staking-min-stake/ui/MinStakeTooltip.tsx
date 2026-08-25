@@ -4,7 +4,7 @@ import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type MinStakeRow } from '../hooks/useMinStakeRows';
 import { ERA_DATE_FORMAT, TOOLTIP_WIDTH } from '../lib/constants';
-import { formatExactTokens, formatSignedTokens } from '../lib/format';
+import { formatEraNumber, formatExactTokens, formatSignedTokens } from '../lib/format';
 
 type Props = {
   row: MinStakeRow;
@@ -27,7 +27,7 @@ export const MinStakeTooltip = ({ row, previous, asset, showFiat, formatDate }: 
 
   const date = row.dateMs === null ? null : formatDate(row.dateMs, ERA_DATE_FORMAT);
   const title = [
-    t('dashboard.staking.minStake.tooltip.era', { era: row.era.toLocaleString('en-US') }),
+    t('dashboard.staking.minStake.tooltip.era', { era: formatEraNumber(row.era) }),
     date,
     row.isActive ? t('dashboard.staking.minStake.tooltip.active') : null,
   ]
@@ -60,7 +60,7 @@ export const MinStakeTooltip = ({ row, previous, asset, showFiat, formatDate }: 
         <div className="flex items-baseline justify-between gap-3">
           <FootnoteText className="text-text-secondary">
             {previous
-              ? t('dashboard.staking.minStake.tooltip.vsEra', { era: previous.era.toLocaleString('en-US') })
+              ? t('dashboard.staking.minStake.tooltip.vsEra', { era: formatEraNumber(previous.era) })
               : t('dashboard.staking.minStake.tooltip.vsPreviousEra')}
           </FootnoteText>
           <FootnoteText className="text-text-secondary tabular-nums">

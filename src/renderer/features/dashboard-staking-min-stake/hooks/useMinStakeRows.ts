@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
-import { useActiveEra, useEraProgress, useEraThresholds } from '@/domains/staking';
+import { useActiveEra, useEraAnchor, useEraThresholds } from '@/domains/staking';
 import { useApi } from '@/entities/network';
 import { ERA_DEPTH } from '../lib/constants';
 import { deriveEraDateMs } from '../lib/era';
@@ -44,13 +44,7 @@ export const useMinStakeRows = (chain: Chain | null, precision: number): Result 
   const relayApi = useApi(chain?.parentId ?? chainId);
 
   const { data: activeEra } = useActiveEra({ chainId, api });
-  const { data: progress } = useEraProgress({
-    chainId,
-    api,
-    timelineApi: relayApi ?? api,
-    chain,
-    era: activeEra ?? null,
-  });
+  const anchor = useEraAnchor({ chainId, api, timelineApi: relayApi ?? api, chain });
 
   const { data: thresholds, pending } = useEraThresholds({
     chainId,
@@ -62,20 +56,15 @@ export const useMinStakeRows = (chain: Chain | null, precision: number): Result 
   const rows = useMemo(() => {
     if (thresholds === undefined || activeEra === undefined) return undefined;
 
-    const timeline =
-      progress && progress.era === activeEra && progress.eraDurationMs > 0
-        ? { startMs: progress.eraStartMs, eraDurationMs: progress.eraDurationMs }
-        : null;
-
     return thresholds.map<MinStakeRow>((threshold) => ({
       era: threshold.era,
       minStake: threshold.minStake,
       tokens: planckToTokens(threshold.minStake, precision),
       validatorCount: threshold.validatorCount,
-      dateMs: deriveEraDateMs(timeline, activeEra, threshold.era),
+      dateMs: deriveEraDateMs(anchor, threshold.era),
       isActive: threshold.era === activeEra,
     }));
-  }, [thresholds, activeEra, progress, precision]);
+  }, [thresholds, activeEra, anchor, precision]);
 
   return { rows, pending: pending || rows === undefined };
 };

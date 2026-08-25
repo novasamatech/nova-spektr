@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js';
 
+import { formatGroups } from '@/shared/lib/utils';
+
 /**
  * Planck string → token units as a plain number. Display-only: the widget
  * compares and plots thresholds, it never does money arithmetic on the result.
@@ -8,9 +10,11 @@ export const planckToTokens = (planck: string, precision: number): number => {
   return new BigNumber(planck).shiftedBy(-precision).toNumber();
 };
 
-// The locale is pinned rather than inherited from the system: the labels are
-// asserted verbatim in tests, and the app ships English-only UI text today.
-const group = (value: number): string => Math.round(value).toLocaleString('en-US');
+/** Integer with thousands grouping — the house `formatGroups`, on a number. */
+const group = (value: number): string => formatGroups(String(Math.round(value)));
+
+/** Era number as printed everywhere on the card — `2,260`. */
+export const formatEraNumber = (era: number): string => group(era);
 
 /**
  * Per-era plot label. `formatBalance`'s M-shorthand prints the same "1.15M" for
@@ -24,7 +28,7 @@ export const formatEraValue = (tokens: number): string => {
 
   const thousands = tokens / 1_000;
 
-  return `${thousands.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}K`;
+  return `${formatGroups(thousands.toFixed(1))}K`;
 };
 
 /** Full-precision token amount for the hover card — `1,149,983`, never `1.15M`. */

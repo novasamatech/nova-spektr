@@ -74,13 +74,17 @@ is actually fetched. Switching the asset repeats the walk for the other chain; e
 local. The card never navigates anywhere.
 
 Failures degrade quietly: an era whose read never answers is dropped from the series rather than drawn as zero, and a
-chain with no readable history shows the empty state.
+chain with no readable history shows the empty state. A window with such a hole is not trusted for the session — it
+expires after a minute, so the next mount of the card (tab switch, asset toggle) fills the gap from the per-era cache
+plus the one missing read.
+
+Out of scope for now: keyboard access to the per-era hover card — the columns are pointer-only, as on the rewards chart.
 
 ## Related
 
 - `pages/Dashboard` — hosts the staking widget slot.
 - `domains/staking` — the `era-thresholds` module (min backing + validator count per era), the active era and the era
-  anchor.
+  anchor (`useEraAnchor`).
+- `shared/ui-kit` — `SegmentedControl`, the asset toggle shared with the rewards chart.
 - [`dashboard-staking-rewards-chart`](../dashboard-staking-rewards-chart/README.md) — the house pattern for a chart card
-  on this tab: fixed-box states, asset toggle, "era labels real or absent". The segmented control is a deliberate local
-  twin of that card's, so neither widget depends on the other being installed.
+  on this tab: fixed-box states, asset toggle, "era labels real or absent".

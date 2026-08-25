@@ -5,7 +5,7 @@ import { type ChainId, type EraIndex } from '@/shared/core';
 import { createQueryResource } from '@/shared/query';
 
 import { eraThresholdsService } from './service';
-import { type EraThreshold } from './types';
+import { type EraThreshold, type EraThresholdWindow } from './types';
 
 export type EraThresholdResourceParams = {
   chainId: ChainId;
@@ -20,8 +20,9 @@ function eraKey(chainId: ChainId, era: EraIndex): string {
 /**
  * Per-era cache, kept for the whole session: a closed era's exposures are
  * immutable, and the active era's are fixed at election — a threshold read once
- * never changes. `null` (era outside history) is cached too, so a missing era
- * is not re-scanned on every render.
+ * never changes. `null` (era outside history) lands in the store as well, but
+ * the request cache treats `null` as a miss, so such an era is read again
+ * whenever the window re-runs — once per era advance, one cheap empty read.
  */
 const $eraThresholdCache = createStore<Record<string, EraThreshold | null>>({});
 
@@ -51,15 +52,24 @@ export type EraThresholdsResourceParams = {
   depth: number;
 };
 
-type EraThresholdsCache = Record<ChainId, { era: EraIndex; depth: number; thresholds: EraThreshold[] }>;
+type EraThresholdsCache = Record<ChainId, { era: EraIndex; depth: number } & EraThresholdWindow>;
 
 const $eraThresholdsCache = createStore<EraThresholdsCache>({});
+
+/**
+ * A window with a hole in it is re-read on the next request after this long,
+ * instead of being trusted for the session like a complete one — the eras that
+ * did answer come straight from the per-era cache, so the retry only costs the
+ * missing reads.
+ */
+const INCOMPLETE_WINDOW_STALE_MS = 60_000;
 
 /**
  * Thresholds of the last `depth` completed eras plus the active one, oldest
  * first. Eras outside history — and eras whose read keeps failing after the
  * retries — are dropped from the series rather than reported as zero or allowed
- * to fail the whole window (see `collectEraThresholds`).
+ * to fail the whole window (see `collectEraThresholds`). Failed eras are kept
+ * in `failedEras`, and such a window expires quickly.
  *
  * Eras are read one by one, sequentially: eight parallel prefix reads of ~600
  * entries each is exactly the burst public RPC nodes rate-limit. Each era goes
@@ -70,14 +80,14 @@ export const eraThresholdsResource = createQueryResource<EraThresholdsResourcePa
   key: ({ chainId, era, depth }) => [chainId, String(era), String(depth)],
 })
   .name('eraThresholds')
-  .request<EraThreshold[]>(({ chainId, api, era, depth }) => {
+  .request<EraThresholdWindow>(({ chainId, api, era, depth }) => {
     return eraThresholdsService.collectEraThresholds(era, depth, index =>
       eraThresholdResource.fetch({ chainId, api, era: index }),
     );
   })
   .cache({
     store: $eraThresholdsCache,
-    map: (state, thresholds, { chainId, era, depth }) => ({ ...state, [chainId]: { era, depth, thresholds } }),
-    staleAfter: Number.POSITIVE_INFINITY,
+    map: (state, window, { chainId, era, depth }) => ({ ...state, [chainId]: { era, depth, ...window } }),
+    staleAfter: window => (window.failedEras.length > 0 ? INCOMPLETE_WINDOW_STALE_MS : Number.POSITIVE_INFINITY),
   })
   .build();

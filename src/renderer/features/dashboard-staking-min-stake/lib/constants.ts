@@ -13,19 +13,22 @@ export const CHART_VALUE_SHARE = 132 / 158;
 
 export const TOOLTIP_WIDTH = 232;
 
+/** Gap between a step's dot and the value label above it, in px. */
+export const VALUE_LABEL_OFFSET_PX = 9;
+
 /** Date-fns pattern for era dates — the x labels and the hover card title. */
 export const ERA_DATE_FORMAT = 'MMM d';
 
 /**
  * Step-line palette. SVG strokes cannot read Tailwind classes, so the values
- * live here; the theme-owned ones reference their CSS tokens so a theme change
- * cannot drift away from the widget.
+ * live here — every one references a theme token, so a theme change cannot
+ * drift away from the widget.
  */
 export const STEP_COLORS = {
-  /** Completed eras — a fixed tint of the accent, no token exists for it. */
-  line: '#8f92fa',
-  /** Fill under the steps — same fixed tint family. */
-  area: '#e1e2fe',
+  /** Completed eras — the muted accent tint. */
+  line: 'var(--chart-accent-line)',
+  /** Fill under the steps. */
+  area: 'var(--chart-accent-area)',
   /** The active era's segment and dot. */
   accent: 'var(--icon-accent)',
   /** Fill of a completed era's dot — the dot sits on the card. */

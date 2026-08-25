@@ -15,3 +15,10 @@ export type EraThreshold = {
   /** How many validators the era elected. */
   validatorCount: number;
 };
+
+/** A window of era thresholds, oldest first, plus the eras it could not read. */
+export type EraThresholdWindow = {
+  thresholds: EraThreshold[];
+  /** Eras whose read failed after the retries — the series has a hole there. */
+  failedEras: EraIndex[];
+};

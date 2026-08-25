@@ -3,7 +3,7 @@ import { type MouseEvent, useCallback, useMemo, useRef } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
 import { type MinStakeRow } from '../hooks/useMinStakeRows';
-import { CHART_VALUE_SHARE, ERA_DATE_FORMAT, STEP_COLORS } from '../lib/constants';
+import { CHART_VALUE_SHARE, ERA_DATE_FORMAT, STEP_COLORS, VALUE_LABEL_OFFSET_PX } from '../lib/constants';
 import { formatAxisValue, formatEraValue } from '../lib/format';
 import { type ScaleWindow, fractionOf } from '../lib/scale';
 
@@ -124,11 +124,13 @@ export const MinStakeStepChart = ({ rows, scaleWindow, hoveredIndex, formatDate,
             preserveAspectRatio="none"
             className="absolute inset-0 block h-full w-full"
           >
-            <polygon points={geometry.areaPoints} fill={STEP_COLORS.area} opacity={0.7} />
+            {/* var() resolves in CSS properties only, never in presentation
+                attributes — token-based paints go through style. */}
+            <polygon points={geometry.areaPoints} style={{ fill: STEP_COLORS.area }} opacity={0.7} />
             <polyline
               points={geometry.linePoints}
               fill="none"
-              stroke={STEP_COLORS.line}
+              style={{ stroke: STEP_COLORS.line }}
               strokeWidth={2}
               strokeLinejoin="round"
               vectorEffect="non-scaling-stroke"
@@ -136,8 +138,6 @@ export const MinStakeStepChart = ({ rows, scaleWindow, hoveredIndex, formatDate,
             <polyline
               points={geometry.activePoints}
               fill="none"
-              // var() resolves in CSS properties only, never in presentation
-              // attributes — the token-based stroke must go through style.
               style={{ stroke: STEP_COLORS.accent }}
               strokeWidth={2.4}
               strokeLinejoin="round"
@@ -155,7 +155,7 @@ export const MinStakeStepChart = ({ rows, scaleWindow, hoveredIndex, formatDate,
             >
               <div
                 className="absolute inset-x-0 text-center"
-                style={{ bottom: `calc(${geometry.columns[index]?.bottom} + 9px)` }}
+                style={{ bottom: `calc(${geometry.columns[index]?.bottom} + ${VALUE_LABEL_OFFSET_PX}px)` }}
               >
                 <HelpText
                   className={cnTw(
