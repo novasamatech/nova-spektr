@@ -32,6 +32,7 @@ export const AmountStep = () => {
   const position = useUnit(amountFlowModel.$position);
   const wallet = useUnit(amountFlowModel.$wallet);
   const isDraftMode = useUnit(amountFlowModel.$isDraftMode);
+  const signingPath = useUnit(amountFlowModel.$signingPath);
   const errors = useUnit(amountFlowModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
 
@@ -41,8 +42,11 @@ export const AmountStep = () => {
     <>
       <ScrollArea>
         <div className="flex flex-col gap-4 px-5 pb-4">
+          {/* Who acts, once: the signing route when there is one to show, the
+              bare account for a direct signer, the draft path in draft mode. */}
+          {!isDraftMode && <SigningRoute />}
           <div className="flex flex-wrap items-center gap-2">
-            {initiator && (
+            {initiator && !isDraftMode && signingPath.length < 2 && (
               <div className="flex min-w-0 items-center rounded-lg border border-container-border px-2.5 py-1.5">
                 <NamedAccount accountId={initiator.accountId} chain={chain} wallet={wallet} iconSize={20} />
               </div>
@@ -82,7 +86,6 @@ export const AmountStep = () => {
               <UnlockingLimitError />
               <MinimumBondWarning />
               <ConsequenceCallout />
-              {!isDraftMode && <SigningRoute />}
             </div>
           </DraftFormBody>
         </div>

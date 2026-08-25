@@ -41,16 +41,16 @@ Unbond layout verbatim, which is also what the design review asked for.
 
 The amount screen is one layout in both modes:
 
-| Element              | Unbond                                                           | Add stake                                                 |
-| -------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- |
-| Title                | "Unbond"                                                         | "Add stake"                                               |
-| Chips                | Account (identicon, resolved name, short address) + network chip | same                                                      |
-| Amount label (right) | `Staked: 1.2M DOT` — the position's **active** stake             | `Available: …` — spendable balance, minus the network fee |
-| `Max`                | the whole active stake                                           | everything available after the fee                        |
-| Helper line          | `≈ $6.24M · remaining staked: 100 DOT ($520)`                    | `≈ $6.24M`                                                |
-| Warning callout      | amber, when the remainder falls below the minimum active bond    | never                                                     |
-| Info callout         | unbonding period and the projected unlock date                   | "funds start earning next era"                            |
-| Footer               | `Cancel` / `Continue`                                            | same                                                      |
+| Element              | Unbond                                                                    | Add stake                                                 |
+| -------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Title                | "Unbond"                                                                  | "Add stake"                                               |
+| Header               | Signing route (or the bare account when it signs directly) + network chip | same                                                      |
+| Amount label (right) | `Staked: 1.2M DOT` — the position's **active** stake                      | `Available: …` — spendable balance, minus the network fee |
+| `Max`                | the whole active stake                                                    | everything available after the fee                        |
+| Helper line          | `≈ $6.24M · remaining staked: 100 DOT ($520)`                             | `≈ $6.24M`                                                |
+| Warning callout      | amber, when the remainder falls below the minimum active bond             | never                                                     |
+| Info callout         | unbonding period and the projected unlock date                            | "funds start earning next era"                            |
+| Footer               | `Cancel` / `Continue`                                                     | same                                                      |
 
 **The below-minimum warning does not block `Continue`.** Leaving a stub too small to nominate is legal — merely
 suboptimal — and the user may well mean it. The callout names both figures and the two ways out ("unbond everything, or
