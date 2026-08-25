@@ -12,7 +12,7 @@ import {
   rewardsService,
 } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { type RewardPeriod, erasInPeriod } from '../lib/reward-period';
+import { type RewardWindow, windowEraRange } from '../lib/reward-period';
 
 import { useChainEras, useEraDurations } from './useChainEras';
 import { useResourcePool } from './useResourcePool';
@@ -45,7 +45,10 @@ export type ValidatorRewardsResult = {
  * The era range is what keeps that affordable, which is why the window is a
  * parameter of the fetch rather than a filter over a fetched year.
  */
-export const useValidatorRewards = (positions: StakingPosition[], period: RewardPeriod): ValidatorRewardsResult => {
+export const useValidatorRewards = (
+  positions: StakingPosition[],
+  rewardWindow: RewardWindow,
+): ValidatorRewardsResult => {
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
   const eras = useChainEras();
@@ -77,24 +80,27 @@ export const useValidatorRewards = (positions: StakingPosition[], period: Reward
         continue;
       }
 
-      // The active era has not paid anything yet — its arithmetic is not final.
-      const eraTo = activeEra - 1;
-      const eraFrom = Math.max(0, eraTo - erasInPeriod(period, eraDurations[chainId] ?? null, historyDepth) + 1);
-      if (eraTo < eraFrom) continue;
+      const eraRange = windowEraRange(rewardWindow, {
+        activeEra,
+        eraDurationMs: eraDurations[chainId] ?? null,
+        historyDepth,
+      });
+      // Nothing closed inside the window, nothing of it still on chain — or the
+      // window is a custom range still waiting for its dates.
+      if (!eraRange) continue;
 
       byChain.set(chainId, {
         chainId,
         api,
         stashes: [position.stake.stash],
-        eraFrom,
-        eraTo,
+        ...eraRange,
         rewardSources: rewardsService.collectChainRewardSources(chain, chains, 'staking-chain'),
       });
     }
 
     // Sorted so the cache key of a selection does not depend on row order.
     return [...byChain.values()].map((request) => ({ ...request, stashes: [...request.stashes].sort() }));
-  }, [positions, chains, apis, eras, eraDurations, period]);
+  }, [positions, chains, apis, eras, eraDurations, rewardWindow]);
 
   useResourcePool(eraRewardsResource, requests);
 

@@ -22,7 +22,13 @@ import { formatAssetAmountExact, sumFiat } from '../lib/amounts';
 import { csvFileName, rawPayoutCsvColumns } from '../lib/csv';
 import { DEFAULT_CLAIM_WINDOW_ERAS, daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { formatFiat } from '../lib/format-fiat';
-import { type RewardPeriod, DEFAULT_REWARD_PERIOD, periodStart } from '../lib/reward-period';
+import {
+  type RewardWindow,
+  DEFAULT_REWARD_WINDOW,
+  isCustomWindowPending,
+  windowBounds,
+  windowSlug,
+} from '../lib/reward-period';
 import { DEFAULT_REWARD_SORT, isRewardSortColumn, sortRewardRows } from '../lib/reward-sorting';
 import { type ClaimRow } from '../lib/types';
 import {
@@ -98,7 +104,14 @@ export const ClaimModal = memo(
     const signableChains = useSignableChains();
     const blockedChains = useUnit(dashboardStakingKpiActions.$blockedClaimChains);
 
-    const [period, setPeriod] = useState<RewardPeriod>(DEFAULT_REWARD_PERIOD);
+    const [rewardWindow, setRewardWindow] = useState<RewardWindow>(DEFAULT_REWARD_WINDOW);
+    /**
+     * A Custom tab with no dates yet. Nothing is reported for it — an unbounded
+     * window would quietly read as "all time" behind a tab that says "custom".
+     * The fetch side is handled by `windowEraRange`, which yields no era range
+     * for a pending window, so the hook below simply has nothing to request.
+     */
+    const windowPending = isCustomWindowPending(rewardWindow);
     const [chainFilter, setChainFilter] = useState<ChainId | null>(null);
     const [nominatorFilter, setNominatorFilter] = useState<AccountId | null>(null);
     const [tableSort, setTableSort] = useState<TableSort>(DEFAULT_REWARD_SORT);
@@ -106,7 +119,7 @@ export const ClaimModal = memo(
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
 
-    const { rewards, pendingChains } = useValidatorRewards(positions, period);
+    const { rewards, pendingChains } = useValidatorRewards(positions, rewardWindow);
     const pendingChainSet = useMemo(() => new Set(pendingChains), [pendingChains]);
 
     /**
@@ -345,18 +358,19 @@ export const ClaimModal = memo(
 
     const rawPayouts = useRawRewardPayouts(payoutRequests);
 
-    const windowStart = periodStart(period);
-    const windowedPayouts = useMemo(
-      () =>
-        rawPayouts.filter(
-          (payout) =>
-            (windowStart === undefined || payout.timestamp >= windowStart) &&
-            (chainFilter === null || payout.chainId === chainFilter) &&
-            // The indexer speaks addresses; the filter speaks account ids.
-            (nominatorFilter === null || toAccountId(payout.address) === nominatorFilter),
-        ),
-      [rawPayouts, windowStart, chainFilter, nominatorFilter],
-    );
+    const bounds = windowBounds(rewardWindow);
+    const windowedPayouts = useMemo(() => {
+      if (windowPending) return [];
+
+      return rawPayouts.filter(
+        (payout) =>
+          (bounds.from === null || payout.timestamp >= bounds.from) &&
+          (bounds.to === null || payout.timestamp <= bounds.to) &&
+          (chainFilter === null || payout.chainId === chainFilter) &&
+          // The indexer speaks addresses; the filter speaks account ids.
+          (nominatorFilter === null || toAccountId(payout.address) === nominatorFilter),
+      );
+    }, [rawPayouts, windowPending, bounds.from, bounds.to, chainFilter, nominatorFilter]);
 
     /**
      * Exports the indexer's own payout rows, scoped to the period on screen.
@@ -389,8 +403,11 @@ export const ClaimModal = memo(
       const network =
         chainFilter === null ? 'all-networks' : (networks.find((n) => n.chainId === chainFilter)?.chainName ?? '');
 
-      downloadCsv(csvFileName('reward-payouts', { parts: [network, period] }), buildCsv(columns, windowedPayouts));
-    }, [windowedPayouts, scopedClaimRows, chainFilter, networks, period, t]);
+      downloadCsv(
+        csvFileName('reward-payouts', { parts: [network, windowSlug(rewardWindow)] }),
+        buildCsv(columns, windowedPayouts),
+      );
+    }, [windowedPayouts, scopedClaimRows, chainFilter, networks, rewardWindow, t]);
 
     const handleClaimRow = useCallback(
       (row: ValidatorRewardRow) => claimRequested({ requests: toClaimRequests([row], signableChains) }),
@@ -610,7 +627,7 @@ export const ClaimModal = memo(
                 slightly different number (actual payouts land on their own
                 clock) read as a discrepancy rather than a different fact. */}
               <div className="flex items-center justify-end gap-4">
-                <PeriodTabs value={period} onChange={setPeriod} />
+                <PeriodTabs value={rewardWindow} onChange={setRewardWindow} />
               </div>
 
               {/* One network is not a choice — the filter appears with the second. */}
@@ -708,7 +725,7 @@ export const ClaimModal = memo(
                                 </CaptionText>
                               </div>
                             ) : null}
-                            {pendingChainSet.has(nominator.chainId) ? (
+                            {windowPending ? null : pendingChainSet.has(nominator.chainId) ? (
                               <Skeleton width="56px" height="12px" />
                             ) : (
                               <HelpText className="shrink-0 text-text-tertiary tabular-nums">
@@ -722,7 +739,11 @@ export const ClaimModal = memo(
                   </div>
 
                   <div ref={listRef} className="min-w-0 flex-1 overflow-y-auto">
-                    {displayRows.length === 0 ? (
+                    {windowPending ? (
+                      <FootnoteText className="px-3 py-6 text-text-tertiary">
+                        {t('dashboard.staking.kpi.rewards.period.pickDates')}
+                      </FootnoteText>
+                    ) : displayRows.length === 0 ? (
                       loading ? (
                         <RewardsTableSkeleton titles={columnTitles} />
                       ) : (
@@ -777,7 +798,7 @@ export const ClaimModal = memo(
                         .join(' · ')}
             </FootnoteText>
             <div className="flex items-center gap-2">
-              <Button variant="text" size="sm" onClick={handleExport}>
+              <Button variant="text" size="sm" disabled={windowPending} onClick={handleExport}>
                 {t('dashboard.staking.kpi.exportCsv')}
               </Button>
               <Tooltip open={claimEnabled ? false : undefined}>
