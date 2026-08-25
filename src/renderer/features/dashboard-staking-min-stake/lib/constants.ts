@@ -1,3 +1,8 @@
+import { type ChainId } from '@/shared/core';
+
+/** Placeholder key for "no chain selected" — resolves to no api, hence no data. */
+export const NO_CHAIN: ChainId = '0x00';
+
 /**
  * Completed eras the KPI card's sparkline covers — its delta is against the
  * first.
@@ -30,6 +35,9 @@ export const VALUE_LABEL_OFFSET_PX = 9;
 
 /** Date-fns pattern for era dates — the x labels and the hover card title. */
 export const ERA_DATE_FORMAT = 'MMM d';
+
+/** Date-fns pattern for the CSV — a spreadsheet needs the year, and ISO sorts. */
+export const CSV_DATE_FORMAT = 'yyyy-MM-dd';
 
 /**
  * Step-line palette. SVG strokes cannot read Tailwind classes, so the values

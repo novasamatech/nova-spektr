@@ -18,7 +18,7 @@ export type CsvMinStakeRow = {
   previous: MinStakeRow | undefined;
   chainName: string;
   precision: number;
-  /** Already localised date, or empty where the card shows none. */
+  /** ISO date (`yyyy-MM-dd`), or empty where the card shows none. */
   date: string;
 };
 

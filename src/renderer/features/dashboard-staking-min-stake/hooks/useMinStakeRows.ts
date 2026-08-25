@@ -1,13 +1,12 @@
+import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
-import { useActiveEra, useEraAnchor, useEraThresholds } from '@/domains/staking';
+import { type Chain, type EraIndex } from '@/shared/core';
+import { eraThresholds, useActiveEra, useEraAnchor, useEraThresholds } from '@/domains/staking';
 import { useApi } from '@/entities/network';
+import { NO_CHAIN } from '../lib/constants';
 import { deriveEraDateMs } from '../lib/era';
 import { planckToTokens } from '../lib/format';
-
-/** Placeholder key for "no chain selected" — resolves to no api, hence no data. */
-const NO_CHAIN: ChainId = '0x00';
 
 export type MinStakeRow = {
   era: EraIndex;
@@ -25,8 +24,12 @@ export type MinStakeRow = {
 };
 
 type Result = {
-  /** Oldest era first, the active era last. `undefined` until the read answers. */
+  /**
+   * Oldest era first, the active era last. `undefined` until the read answers —
+   * or when it failed.
+   */
   rows: MinStakeRow[] | undefined;
+  /** Still waiting. `false` with `rows === undefined` means the read gave up. */
   pending: boolean;
 };
 
@@ -51,6 +54,11 @@ export const useMinStakeRows = (chain: Chain | null, precision: number, depth: n
     era: activeEra ?? null,
     depth,
   });
+  const failedWindows = useUnit(eraThresholds.$failedWindows);
+  const failed =
+    api !== null &&
+    activeEra !== undefined &&
+    eraThresholds.eraThresholdsResource.createKey({ chainId, api, era: activeEra, depth }) in failedWindows;
 
   const rows = useMemo(() => {
     if (thresholds === undefined || activeEra === undefined) return undefined;
@@ -65,5 +73,5 @@ export const useMinStakeRows = (chain: Chain | null, precision: number, depth: n
     }));
   }, [thresholds, activeEra, anchor, precision]);
 
-  return { rows, pending: pending || rows === undefined };
+  return { rows, pending: !failed && (pending || rows === undefined) };
 };

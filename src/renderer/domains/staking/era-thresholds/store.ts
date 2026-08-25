@@ -1,3 +1,3 @@
-import { eraThresholdsResource } from './resource';
+import { $failedEraThresholdWindows, eraThresholdsResource } from './resource';
 
-export const eraThresholds = { eraThresholdsResource };
+export const eraThresholds = { eraThresholdsResource, $failedWindows: $failedEraThresholdWindows };

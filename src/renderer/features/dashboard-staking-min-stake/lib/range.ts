@@ -14,10 +14,15 @@ export const DEFAULT_ERA_RANGE: EraRangePreset = '7';
  * `historyDepth` counts the active era, so one less than it is readable behind
  * it. Every preset is clamped to that — a "30 eras" pick on a chain keeping 20
  * reads 19, never errors on the missing ones.
+ *
+ * `null` while `max` cannot be resolved yet (the depth is not known): the
+ * caller holds the read rather than fetching a placeholder window and then the
+ * real one.
  */
-export function resolveEraDepth(preset: EraRangePreset, historyDepth: number | null): number {
+export function resolveEraDepth(preset: EraRangePreset, historyDepth: number | null): number | null {
+  if (preset === 'max') return historyDepth === null ? null : Math.max(historyDepth - 1, 0);
+
   const available = historyDepth === null ? Number.POSITIVE_INFINITY : Math.max(historyDepth - 1, 0);
-  if (preset === 'max') return historyDepth === null ? 0 : available;
 
   return Math.min(Number(preset), available);
 }

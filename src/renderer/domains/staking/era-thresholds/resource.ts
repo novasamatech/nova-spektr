@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createStore } from 'effector';
+import { createStore, sample } from 'effector';
 
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { createQueryResource } from '@/shared/query';
@@ -104,3 +104,30 @@ export const eraThresholdsResource = createQueryResource<EraThresholdsResourcePa
     staleAfter: window => (window.failedEras.length > 0 ? INCOMPLETE_WINDOW_STALE_MS : Number.POSITIVE_INFINITY),
   })
   .build();
+
+/**
+ * Windows whose read gave up after the retries, by request key. `useResource`
+ * reports "pending" until something lands in the cache, so without this a chain
+ * that cannot be read shows a shimmer for the session instead of an answer. A
+ * key is cleared the moment a later read for it succeeds.
+ */
+export const $failedEraThresholdWindows = createStore<Record<string, true>>({});
+
+sample({
+  clock: eraThresholdsResource.fail,
+  source: $failedEraThresholdWindows,
+  fn: (failed, { params }) => ({ ...failed, [eraThresholdsResource.createKey(params)]: true as const }),
+  target: $failedEraThresholdWindows,
+});
+
+sample({
+  clock: eraThresholdsResource.push,
+  source: $failedEraThresholdWindows,
+  filter: (failed, { params }) => eraThresholdsResource.createKey(params) in failed,
+  fn: (failed, { params }) => {
+    const { [eraThresholdsResource.createKey(params)]: _cleared, ...rest } = failed;
+
+    return rest;
+  },
+  target: $failedEraThresholdWindows,
+});

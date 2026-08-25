@@ -19,7 +19,7 @@ import { csvFileName } from '@/features/dashboard-staking-kpi';
 import { useHistoryDepth } from '../hooks/useHistoryDepth';
 import { type MinStakeRow, useMinStakeRows } from '../hooks/useMinStakeRows';
 import { type ThresholdAsset } from '../hooks/useThresholdAssets';
-import { CHART_HEIGHT, ERA_DATE_FORMAT } from '../lib/constants';
+import { CHART_HEIGHT, CSV_DATE_FORMAT, ERA_DATE_FORMAT } from '../lib/constants';
 import { type CsvMinStakeRow, minStakeCsvColumns } from '../lib/csv';
 import {
   formatAxisValue,
@@ -69,7 +69,14 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
 
   const historyDepth = useHistoryDepth(selected.chain);
   const depth = resolveEraDepth(range, historyDepth);
-  const { rows, pending } = useMinStakeRows(selected.chain, selected.asset.precision, depth);
+  // No chain while the depth is unresolved: the hook then reports pending
+  // without firing a placeholder read.
+  const { rows, pending: reading } = useMinStakeRows(
+    depth === null ? null : selected.chain,
+    selected.asset.precision,
+    depth ?? 0,
+  );
+  const pending = depth === null || reading;
 
   const assetOptions = useMemo<SegmentedOption<ChainId>[]>(
     () => assets.map((asset) => ({ value: asset.chainId, label: asset.symbol })),
@@ -153,7 +160,7 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
       previous: rows[index - 1],
       chainName: selected.chain.name,
       precision: selected.asset.precision,
-      date: dateOf(row),
+      date: row.dateMs === null ? '' : formatDate(row.dateMs, CSV_DATE_FORMAT),
     }));
     const csvColumns = minStakeCsvColumns({
       network: t('dashboard.staking.minStake.csv.network'),
@@ -168,7 +175,7 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
       csvFileName('min-stake', { parts: [selected.chain.name, `${rows.length}-eras`] }),
       buildCsv(csvColumns, csvRows),
     );
-  }, [rows, selected, dateOf, t]);
+  }, [rows, selected, formatDate, t]);
 
   const current = rows?.at(-1);
   const first = rows?.[0];
@@ -255,7 +262,7 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
                   {t('dashboard.staking.minStake.empty.title')}
                 </FootnoteText>
                 <HelpText className="text-text-tertiary">
-                  {t('dashboard.staking.minStake.empty.description', { chain: selected.chain.name, eras: depth })}
+                  {t('dashboard.staking.minStake.empty.description', { chain: selected.chain.name, eras: depth ?? 0 })}
                 </HelpText>
               </div>
             )}

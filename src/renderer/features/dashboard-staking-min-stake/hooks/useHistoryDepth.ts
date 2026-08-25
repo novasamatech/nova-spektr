@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { useApi } from '@/entities/network';
-
-/** Placeholder key for "no chain selected" — resolves to no api, hence no depth. */
-const NO_CHAIN: ChainId = '0x00';
+import { NO_CHAIN } from '../lib/constants';
 
 /**
  * How many eras of exposures the chain keeps (`staking.historyDepth`, 84 on

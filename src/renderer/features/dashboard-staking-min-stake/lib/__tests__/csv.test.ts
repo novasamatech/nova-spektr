@@ -25,14 +25,14 @@ describe('minStakeCsvColumns', () => {
     const first = row(2258, '11499830000000000');
     const second = row(2259, '11524100000000000');
     const rows: CsvMinStakeRow[] = [
-      { row: first, previous: undefined, chainName: 'Polkadot Asset Hub', precision: 10, date: 'Aug 11' },
-      { row: second, previous: first, chainName: 'Polkadot Asset Hub', precision: 10, date: 'Aug 12' },
+      { row: first, previous: undefined, chainName: 'Polkadot Asset Hub', precision: 10, date: '2026-08-11' },
+      { row: second, previous: first, chainName: 'Polkadot Asset Hub', precision: 10, date: '2026-08-12' },
     ];
 
     expect(buildCsv(minStakeCsvColumns(HEADERS), rows).split('\r\n')).toEqual([
       'Network,Era,Date,Min stake,Change,Validators',
-      'Polkadot Asset Hub,2258,Aug 11,1149983,,600',
-      'Polkadot Asset Hub,2259,Aug 12,1152410,2427,600',
+      'Polkadot Asset Hub,2258,2026-08-11,1149983,,600',
+      'Polkadot Asset Hub,2259,2026-08-12,1152410,2427,600',
     ]);
   });
 });

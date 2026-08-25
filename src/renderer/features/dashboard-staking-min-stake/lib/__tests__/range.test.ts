@@ -10,9 +10,9 @@ describe('resolveEraDepth', () => {
     expect(resolveEraDepth('30', 20)).toBe(19);
   });
 
-  test('should read everything for max, and nothing before the depth is known', () => {
+  test('should read everything for max, and hold the read before the depth is known', () => {
     expect(resolveEraDepth('max', 84)).toBe(83);
-    expect(resolveEraDepth('max', null)).toBe(0);
+    expect(resolveEraDepth('max', null)).toBeNull();
   });
 
   test('should trust a preset while the depth is unknown', () => {

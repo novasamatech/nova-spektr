@@ -13,6 +13,7 @@ import {
   VALUE_LABEL_OFFSET_PX,
 } from '../lib/constants';
 import { formatAxisValue, formatEraNumber, formatEraValue } from '../lib/format';
+import { VIEW, buildStepGeometry } from '../lib/geometry';
 import { type ScaleWindow, fractionOf } from '../lib/scale';
 
 export type ChartHover = {
@@ -30,9 +31,6 @@ type Props = {
   formatDate: (date: Date | number, pattern: string) => string;
   onHoverChange: (hover: ChartHover | null) => void;
 };
-
-/** Internal SVG coordinate space; stretched to the box by the viewBox. */
-const VIEW = 1000;
 
 /** Width of the y-axis label strip. */
 const AXIS_CLASS = 'w-10 shrink-0';
@@ -59,29 +57,10 @@ export const MinStakeStepChart = memo(({ rows, scaleWindow, hoveredIndex, format
   const count = rows.length;
 
   const geometry = useMemo(() => {
-    const columnWidth = VIEW / count;
     const yOf = (row: MinStakeRow) => VIEW - fractionOf(scaleWindow, row.tokens) * CHART_VALUE_SHARE * VIEW;
 
-    const linePoints = rows
-      .map((row, index) => {
-        const y = yOf(row).toFixed(1);
-
-        return `${(index * columnWidth).toFixed(1)},${y} ${((index + 1) * columnWidth).toFixed(1)},${y}`;
-      })
-      .join(' ');
-
-    const last = rows.at(-1);
-    const previous = rows.at(-2) ?? last;
-    const activeX = (count - 1) * columnWidth;
-    const activePoints =
-      last === undefined || previous === undefined
-        ? ''
-        : `${activeX.toFixed(1)},${yOf(previous).toFixed(1)} ${activeX.toFixed(1)},${yOf(last).toFixed(1)} ${VIEW},${yOf(last).toFixed(1)}`;
-
     return {
-      linePoints,
-      areaPoints: `${linePoints} ${VIEW},${VIEW} 0,${VIEW}`,
-      activePoints,
+      ...buildStepGeometry(rows, yOf),
       columns: rows.map((row, index) => ({
         left: percent(index / count),
         width: percent(1 / count),
