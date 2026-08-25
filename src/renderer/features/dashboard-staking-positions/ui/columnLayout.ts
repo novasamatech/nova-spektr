@@ -16,7 +16,7 @@ export const POSITION_COLUMNS = [
   { key: 'apy', titleKey: 'columns.apy', width: '8%', sortable: true },
   { key: 'activeValidatorCount', titleKey: 'columns.validators', width: '10%', sortable: true },
   { key: 'asset', titleKey: 'columns.unclaimed', width: '15%', sortable: false },
-  { key: 'accessMode', titleKey: null, width: '4%', sortable: false },
+  { key: 'access', titleKey: null, width: '4%', sortable: false },
 ] as const satisfies readonly {
   key: keyof PositionRow;
   titleKey: string | null;

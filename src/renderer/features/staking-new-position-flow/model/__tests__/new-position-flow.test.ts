@@ -97,6 +97,21 @@ vi.mock('@/entities/balance', async (importOriginal) => {
   };
 });
 
+/**
+ * Whether an account fits a chain is decided by a DI `anyOf` registry, and a
+ * unit fork boots none — so every account reads as unavailable and the "Stake
+ * from" field has nothing to seed itself with. The availability rule has its
+ * own tests; here every account fits every chain.
+ */
+vi.mock('@/domains/network/account/service', async (importOriginal) => {
+  const actual = await importOriginal<{ accountService: Record<string, unknown> }>();
+
+  return {
+    ...actual,
+    accountService: { ...actual.accountService, isAccountAvailableOnChain: () => true },
+  };
+});
+
 vi.mock('@/entities/transaction', async (importOriginal) => {
   const actual = await importOriginal<{ transactionService: Record<string, unknown> }>();
 
@@ -129,6 +144,7 @@ vi.mock('@/features/validator-selection', async () => {
 const { newPositionFlowModel } = await import('../new-position-flow');
 const { networkModel } = await import('@/entities/network');
 const { walletModel } = await import('@/entities/wallet');
+const { accounts } = await import('@/domains/network');
 const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 
@@ -230,6 +246,27 @@ describe('staking-new-position-flow · entry', () => {
     expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.NONE);
     expect(scope.getState(newPositionFlowModel.$amount)).toBe('');
     expect(scope.getState(newPositionFlowModel.$validators)).toEqual([]);
+  });
+
+  /**
+   * Opening must seed the initiator from what is already loaded, not only from
+   * a fresh emission of the account list.
+   *
+   * This is the reopen case, and the reason the fixture seeds the wallet and
+   * account stores without driving an event: by the second open, wallets and
+   * accounts settled long ago and will not emit again, while `flowClosed` has
+   * already reset the initiator to null. A form whose "Stake from" card comes
+   * from the signing path has no path, no available balance and no way to
+   * continue until something unrelated happens to re-emit.
+   */
+  it('seeds the initiator from accounts that were already loaded', async () => {
+    const scope = fork({
+      values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]).set(accounts.__test.$list, [ACCOUNT]),
+    });
+
+    await allSettled(newPositionFlowModel.newPositionRequested, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$initiator)).toEqual(ACCOUNT);
   });
 });
 

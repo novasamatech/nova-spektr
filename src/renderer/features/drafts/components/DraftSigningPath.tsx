@@ -1,23 +1,15 @@
-import { type EventCallable, type Store, createStore } from 'effector';
+import { type EventCallable, type Store } from 'effector';
 import { useUnit } from 'effector-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type Asset, type ChainId } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
-import { contactModel } from '@/entities/contact';
-import {
-  type PathNextOption,
-  type PathSource,
-  SigningPathInline,
-  StepPath,
-  graphModel,
-  pathModel,
-} from '@/features/signing-path';
+import { SigningPathInline, StepPath, pathModel } from '@/features/signing-path';
+import { useDraftSources } from '../lib/useDraftSources';
 
 const DRAFT_INLINE_HOLD_MS = 500;
-
-const $emptySources = createStore<PathSource[]>([]);
 
 type Props = {
   chainId: ChainId | null;
@@ -30,6 +22,12 @@ type Props = {
   draftPathEditEnded: EventCallable<void>;
   /** Forwarded to `StepPath` / `SigningPathInline`. Default: no restriction. */
   allowedProxyTypes?: readonly string[];
+  /**
+   * Fix the draft's source to this address; the user picks the hops after it,
+   * never the account it runs from. Omitted (or `null`) when the operation has
+   * no origin of its own yet — see the note on the component.
+   */
+  pinnedSourceAccountId?: AccountId | null;
 };
 
 /**
@@ -38,6 +36,25 @@ type Props = {
  * compact `SigningPathInline` once the user finishes picking. Mirrors the
  * `CreateDraftModal`'s path policy so both surfaces produce equivalent draft
  * seeds.
+ *
+ * With `pinnedSourceAccountId` the first hop is decided for the user and the
+ * source list collapses to that one entry. Callers that opened this for a
+ * _specific_ account — a staking position, say — must pin it: a draft records
+ * the exact route it will be submitted along, and the host flows build the
+ * draft's call from the path's first node. Left free, the user can author an
+ * `unbond` for contact A's position sourced at contact B, and the draft either
+ * acts on B's ledger or fails outright at submission — after it has been
+ * reviewed and co-signed. Pinning removes the class of mistake instead of
+ * validating against it.
+ *
+ * Leaving it off is the other real answer, not an opt-out: a flow that is
+ * _choosing_ an origin rather than acting on one — opening a brand-new stake, a
+ * transfer, a vote, or submitting a permissionless payout anybody may pay for —
+ * has nothing to pin, and the source list is the control the user came for.
+ * That is why the prop stays optional: making it required would put the word
+ * `null` in every such form for no gain. The cost is that a future flow opened
+ * for one account can forget to pin; see the drafts README for the surfaces
+ * this is still open on.
  */
 export const DraftSigningPath = memo(
   ({
@@ -48,31 +65,54 @@ export const DraftSigningPath = memo(
     draftPathEditStarted,
     draftPathEditEnded,
     allowedProxyTypes,
+    pinnedSourceAccountId,
   }: Props) => {
     const isPathComplete = useUnit(pathModel.$isComplete);
+    const livePath = useUnit(pathModel.$path);
+    // Bound through `useUnit`, not called off the module: the event has to run
+    // in whatever scope this tree is rendered under, or the seed lands in the
+    // global scope and the picker below never sees its own source.
+    const seedPath = useUnit(pathModel.pathSeeded);
     const draftPath = useUnit($draftPath);
 
-    const sourcesStore = useMemo(
-      () => (chainId ? graphModel.$sourcesFor(chainId, { allowedProxyTypes }) : $emptySources),
-      [chainId, allowedProxyTypes],
-    );
-    const allSources = useUnit(sourcesStore);
-    const backendContacts = useUnit(contactModel.$backendContacts);
+    // Which sources a draft may start from is the drafts feature's own rule —
+    // address-book entries that the signing-path graph can actually route from.
+    // Shared with whoever decides *whether* to open this picker in the first
+    // place, so the two cannot disagree about an empty list.
+    const { sources: allDraftSources, filterNextOption } = useDraftSources(chainId, allowedProxyTypes);
 
-    // Drafts restrict sources to External Address-Book entries (same policy
-    // CreateDraftModal applies). Multisig hops past the source must also be
-    // address-book entries; signers (leaves of a multisig) are left unfiltered.
-    const addressBookIds = useMemo(() => new Set(backendContacts.map((c) => c.accountId)), [backendContacts]);
-
-    const draftSources = useMemo<PathSource[]>(
-      () => allSources.filter((s) => addressBookIds.has(s.accountId)),
-      [allSources, addressBookIds],
+    // Pinned: one source, and it is not a choice. Filtering the list rather
+    // than only locking the card means an address the graph cannot route from
+    // leaves the picker genuinely empty, instead of quietly offering some other
+    // account the user never asked about.
+    const draftSources = useMemo(
+      () =>
+        pinnedSourceAccountId
+          ? allDraftSources.filter((source) => source.accountId === pinnedSourceAccountId)
+          : allDraftSources,
+      [allDraftSources, pinnedSourceAccountId],
     );
 
-    const filterNextOption = useMemo<(option: PathNextOption) => boolean>(
-      () => (option) => option.kind !== 'multisig' || addressBookIds.has(option.accountId),
-      [addressBookIds],
-    );
+    // The node kind comes from the graph, not from the caller: a flexible
+    // multisig enters as `proxied` and a plain one as `multisig`, and the path
+    // grammar rejects the wrong one.
+    const pinnedNode = useMemo<PathNode | null>(() => {
+      const source = pinnedSourceAccountId ? draftSources.at(0) : undefined;
+      if (!source) return null;
+
+      return { kind: source.isProxy ? 'proxied' : 'multisig', accountId: source.accountId };
+    }, [draftSources, pinnedSourceAccountId]);
+
+    // `pathModel` is a singleton the edit modal and the host flow both reset,
+    // so the pinned root is re-asserted whenever it goes missing rather than
+    // seeded once. Synchronising a shared external unit is what this effect is
+    // for; there is no render-time way to own state that lives outside React.
+    const pinnedRootMissing = pinnedNode !== null && livePath.at(0)?.accountId !== pinnedNode.accountId;
+    useEffect(() => {
+      if (pinnedNode && pinnedRootMissing) {
+        seedPath([pinnedNode]);
+      }
+    }, [pinnedNode, pinnedRootMissing, seedPath]);
 
     // Hold the StepPath "Path complete" success card for a beat after the user
     // finishes picking, then crossfade to the editable inline view. Gives the
@@ -130,7 +170,7 @@ export const DraftSigningPath = memo(
               path={draftPath}
               asset={asset}
               getBalance={() => null}
-              editableInitiator
+              editableInitiator={!pinnedSourceAccountId}
               sources={draftSources}
               filterNextOption={filterNextOption}
               restrictToOwnAccounts={false}
@@ -144,6 +184,7 @@ export const DraftSigningPath = memo(
             className="min-h-0"
             chainId={chainId}
             sources={draftSources}
+            lockedSourceCount={pinnedNode ? 1 : 0}
             filterNextOption={filterNextOption}
             allowedProxyTypes={allowedProxyTypes}
           />

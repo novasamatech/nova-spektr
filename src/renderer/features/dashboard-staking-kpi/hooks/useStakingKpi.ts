@@ -1,16 +1,17 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { type Wallet } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
+import { accounts } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import { type StakingSummary, summarizePositions, useStakingPositions } from '@/aggregates/staking-positions';
-import { getAccessMode, useSignerAccountIds } from '@/features/dashboard-staking-positions';
-import { type AccessMode } from '../lib/access';
+import { getPositionAccess, useDraftPolicy, useSignerAccountIds } from '@/features/dashboard-staking-positions';
+import { type Access } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
 import { type NetworkAvgBlend } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
@@ -24,13 +25,6 @@ import { useChainEras, useChainHistoryDepths, useEraDurations } from './useChain
 import { REWARDS_WINDOW_DAYS, useRewardsWindow, useRewardsWindowStart } from './useRewardsWindow';
 import { useStakingChainAssets } from './useStakingChainAssets';
 import { unclaimedKey, useUnclaimedPayoutsByPosition } from './useUnclaimedPayouts';
-
-/**
- * A position whose account is not local at all — an address-book row. That is
- * the same verdict `getAccessMode(null, wallets)` gives the positions table, so
- * the two surfaces never disagree about what can be done with the row.
- */
-const DEFAULT_ACCESS_MODE: AccessMode = 'draft';
 
 export type StakingKpiData = {
   positions: StakingPosition[];
@@ -82,7 +76,13 @@ const EMPTY_ACCOUNT_IDS: AccountId[] = [];
 export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const { positions: allPositions, pending } = useStakingPositions();
   const wallets = useUnit(walletModel.$wallets);
-  const accounts = useUnit(walletModel.$availableAccounts);
+  // The account domain's own list, not `walletModel.$availableAccounts`: the
+  // accounts hanging off a wallet are a deprecated mirror of it, and the
+  // positions table resolves rows from the domain. A hidden wallet's account is
+  // still filtered out — not here, but where it belongs, by the wallet lookup
+  // inside `getPositionAccess`, which is the same rule the positions table
+  // applies.
+  const allAccounts = useUnit(accounts.$list);
   const { byChain: assets, chains, currency, fiatFlag, toFiat } = useStakingChainAssets();
   const eras = useChainEras();
   const eraDurations = useEraDurations();
@@ -105,15 +105,17 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const unclaimed = useUnclaimedPayoutsByPosition(positions);
 
   const accountByAccountId = useMemo(() => {
-    const map = new Map<string, (typeof accounts)[number]>();
-    for (const account of accounts) {
+    const map = new Map<string, (typeof allAccounts)[number]>();
+    for (const account of allAccounts) {
+      // First writer wins: a wallet account is a better answer than a virtual
+      // signatory placeholder created for the same key.
       if (!map.has(account.accountId)) {
         map.set(account.accountId, account);
       }
     }
 
     return map;
-  }, [accounts]);
+  }, [allAccounts]);
 
   const walletByAccount = useMemo(() => {
     const result: Record<string, Wallet | null> = {};
@@ -124,18 +126,33 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     return result;
   }, [accountByAccountId, wallets]);
 
-  // Built once for the whole selection rather than inside `getAccessMode`: the
-  // loop below runs per account, and the set is the same for all of them.
+  // Built once for the whole selection rather than inside `getPositionAccess`:
+  // the loops below run per row, and both are the same for all of them.
   const signerAccountIds = useSignerAccountIds();
+  const positionChainIds = useMemo(() => [...new Set(positions.map((p) => p.chainId))], [positions]);
+  const draftPolicy = useDraftPolicy(positionChainIds);
 
-  const accessByAccount = useMemo(() => {
-    const result: Record<string, AccessMode> = {};
-    for (const [accountId, account] of accountByAccountId) {
-      result[accountId] = getAccessMode(account, wallets, signerAccountIds);
-    }
-
-    return result;
-  }, [accountByAccountId, wallets, signerAccountIds]);
+  /**
+   * The verdict for one row, which is a position — an account _on a chain_.
+   *
+   * Not cached per account: a proxy edge exists on one network and not on
+   * another, so the same address can be a draft source on Polkadot and a dead
+   * end on Kusama. An account absent from the wallet map is an address-book
+   * entry, and the verdict for a `null` account is exactly the one the
+   * positions table gives it — the two surfaces cannot disagree.
+   */
+  const accessFor = useCallback(
+    (accountId: AccountId, chainId: ChainId): Access =>
+      getPositionAccess({
+        account: accountByAccountId.get(accountId) ?? null,
+        accountId,
+        chainId,
+        wallets,
+        signerAccountIds,
+        draftPolicy,
+      }),
+    [accountByAccountId, wallets, signerAccountIds, draftPolicy],
+  );
 
   // --- Total staked -------------------------------------------------------
 
@@ -214,12 +231,14 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unclaimedFiat: toFiat(position.chainId, entry?.total ?? '0'),
         eras,
         payouts,
-        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
       });
     }
 
     return rows;
-  }, [positions, assets, unclaimed, rewardsByChain, toFiat, accessByAccount]);
+    // No access verdict here on purpose: a payout is permissionless, so a claim
+    // row is offered on the strength of the payer this installation substitutes
+    // rather than of the position's own account. Nothing downstream reads one.
+  }, [positions, assets, unclaimed, rewardsByChain, toFiat]);
 
   const unclaimedFooter = useMemo(() => {
     const byAsset = new Map<string, AssetAmount>();
@@ -278,12 +297,12 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unbonding: position.unbonding,
         totalUnbonding: position.totalUnbonding,
         redeemable: position.redeemable,
-        accessMode: accessByAccount[position.accountId] ?? DEFAULT_ACCESS_MODE,
+        access: accessFor(position.accountId, position.chainId),
       });
     }
 
     return rows.sort((a, b) => new BigNumber(b.stakedFiat).comparedTo(a.stakedFiat) ?? 0);
-  }, [positions, assets, toFiat, accessByAccount]);
+  }, [positions, assets, toFiat, accessFor]);
 
   const nominationRows = useMemo(() => {
     const chainNames: Record<string, string> = {};

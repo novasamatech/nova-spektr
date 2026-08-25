@@ -5,7 +5,7 @@ import { CaptionText, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type Column, type TableSort, Table } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/widgets/price';
-import { type PositionRow } from '../lib';
+import { type PositionRow, isViewOnly } from '../lib';
 
 import { PositionAccountCell } from './PositionAccountCell';
 import { PositionStatusPill } from './PositionStatusPill';
@@ -82,10 +82,16 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
 
       asset: (row) => <UnclaimedCell row={row} />,
 
-      accessMode: (row) => (
+      // A glyph for "this one leaves as a draft", a word for "this one never
+      // does anything". The caption is deliberately *not* shown for every
+      // blocked row: two of the four reasons are a missing address book and a
+      // missing permission, and stamping those "view only" would call a row
+      // dead that is one click, or one admin, away from acting. Which reason it
+      // is stays the drawer's business — one caption keeps the column at 4%.
+      access: (row) => (
         <div className="flex items-center justify-end gap-x-1.5">
-          {row.accessMode === 'draft' ? <Icon name="edit" size={14} className="text-text-tertiary" /> : null}
-          {row.accessMode === 'watchOnly' ? (
+          {row.access.mode === 'draft' ? <Icon name="edit" size={14} className="text-text-tertiary" /> : null}
+          {isViewOnly(row.access) ? (
             <CaptionText className="text-text-tertiary">{t('dashboard.staking.positions.viewOnly')}</CaptionText>
           ) : null}
           <Icon name="right" size={14} className="text-text-tertiary" />

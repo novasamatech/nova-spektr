@@ -38,6 +38,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const chain = useUnit(confirmFlowModel.$chain);
   const asset = useUnit(confirmFlowModel.$asset);
   const initiator = useUnit(confirmFlowModel.$initiator);
+  const position = useUnit(confirmFlowModel.$position);
   const signatory = useUnit(confirmFlowModel.$signatory);
   const signingPath = useUnit(confirmFlowModel.$signingPath);
   const validators = useUnit(confirmFlowModel.$validators);
@@ -65,10 +66,43 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
   const [isValidatorsOpen, setValidatorsOpen] = useState(false);
 
-  if (!mode || !chain || !asset || !initiator) return null;
+  // Deliberately not gated on the initiator.
+  //
+  // This screen *is* the first screen of the flow, and a position the user
+  // cannot sign for — an address-book contact, a multisig with no signatory of
+  // ours — arrives here with no local account at all and draft mode already on.
+  // Bailing on a null initiator opened the modal, painted its title, and left
+  // the body blank: the validator set the user had just picked was thrown away
+  // with nothing said, and the draft affordance built for exactly this case sat
+  // below the guard that hid it.
+  if (!mode || !chain || !asset) return null;
 
   const isRedeem = mode === 'redeem';
   const signatoryWallet = signatory ? walletUtils.getWalletById(wallets, signatory.walletId) : null;
+
+  // What the operation does, which is worth showing whether or not we hold the
+  // account it will run from.
+  const operationRow = isRedeem ? (
+    <DetailRow label={t('staking.confirmFlow.labels.redeeming')}>
+      <div className="flex flex-col items-end gap-y-0.5">
+        <AssetBalance value={amount} asset={asset} showSymbol />
+        <AssetFiatBalance asset={asset} amount={amount} />
+      </div>
+    </DetailRow>
+  ) : (
+    <DetailRow label={t('staking.confirmFlow.labels.validators')}>
+      <button
+        type="button"
+        className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
+        onClick={() => setValidatorsOpen(true)}
+      >
+        <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
+          <CaptionText className="text-white">{validators.length}</CaptionText>
+        </div>
+        <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+      </button>
+    </DetailRow>
+  );
 
   return (
     <>
@@ -91,9 +125,14 @@ export const Confirmation = ({ onGoBack }: Props) => {
         <Box padding={[0, 5]} gap={4}>
           <DraftModeCard isOn={isDraftMode} onToggle={confirmFlowModel.toggleDraftMode} />
           {isDraftMode && (
+            /* The draft runs from the position the user opened, never from an
+               account they happen to pick in the source list: the submission
+               executes from the path's first node, and any other origin has no
+               rights over this stash. */
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={position?.accountId ?? null}
               $draftPath={confirmFlowModel.$draftSigningPath}
               draftPathCommitted={confirmFlowModel.draftPathCommitted}
               draftPathEditStarted={confirmFlowModel.draftPathEditStarted}
@@ -119,39 +158,28 @@ export const Confirmation = ({ onGoBack }: Props) => {
           )}
 
           <Box padding={[4, 5]}>
-            <TransactionDetails
-              chain={chain}
-              wallets={wallets}
-              initiators={[initiator]}
-              signatory={signatory ?? initiator}
-            >
-              {isRedeem ? (
-                <DetailRow label={t('staking.confirmFlow.labels.redeeming')}>
-                  <div className="flex flex-col items-end gap-y-0.5">
-                    <AssetBalance value={amount} asset={asset} showSymbol />
-                    <AssetFiatBalance asset={asset} amount={amount} />
-                  </div>
-                </DetailRow>
-              ) : (
-                <DetailRow label={t('staking.confirmFlow.labels.validators')}>
-                  <button
-                    type="button"
-                    className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
-                    onClick={() => setValidatorsOpen(true)}
-                  >
-                    <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
-                      <CaptionText className="text-white">{validators.length}</CaptionText>
-                    </div>
-                    <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-                  </button>
-                </DetailRow>
-              )}
-              <Separator className="border-filter-border" />
-              <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />
-              {hasMultisigAccount && (
-                <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={preparing} />
-              )}
-            </TransactionDetails>
+            {/* `TransactionDetails` describes who signs and what it costs, and
+                dereferences the signatory to do it. With no local account there
+                is no signatory and no fee of ours to quote — the draft's own
+                source and route are drawn above — so only what the operation
+                does is carried over. */}
+            {initiator ? (
+              <TransactionDetails
+                chain={chain}
+                wallets={wallets}
+                initiators={[initiator]}
+                signatory={signatory ?? initiator}
+              >
+                {operationRow}
+                <Separator className="border-filter-border" />
+                <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />
+                {hasMultisigAccount && (
+                  <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={preparing} />
+                )}
+              </TransactionDetails>
+            ) : (
+              <dl className="flex w-full flex-col gap-y-4 text-footnote">{operationRow}</dl>
+            )}
           </Box>
 
           {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}

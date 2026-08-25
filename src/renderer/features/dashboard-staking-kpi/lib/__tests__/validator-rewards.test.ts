@@ -32,7 +32,6 @@ function claimRow(params: Partial<ClaimRow> & { accountId: AccountId }): ClaimRo
     unclaimedFiat: '0',
     eras: [],
     payouts: [],
-    accessMode: 'direct',
     ...params,
   } as ClaimRow;
 }
@@ -87,7 +86,7 @@ describe('buildValidatorRewardRows', () => {
     // The payout names the validator and is permissionless, so an address-book
     // nominator's rewards are ours to collect for them.
     const rows = buildValidatorRewardRows({
-      claimRows: [claimRow({ accountId: account(1), accessMode: 'draft', payouts: [payout(10, 1)] })],
+      claimRows: [claimRow({ accountId: account(1), payouts: [payout(10, 1)] })],
       rewards: [],
       toFiat,
     });

@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -274,15 +274,20 @@ differ only by a network or a window nobody wrote down.
   nomination can be told from a working one. An unread exposure leaves the amount cell empty rather than writing a zero
   nobody verified.
 
-### Actions and access modes
+### Actions and access
 
-An action the account's access mode does not allow is **absent**, not greyed out — a watch-only row simply has no
-buttons. Everything else is a question of _which_ flow, not _whether_.
+Redeem and Unbond are origin-bound — only the stash may withdraw or unbond its own ledger — so a row the user cannot act
+on renders them **disabled with the reason in the tooltip**, rather than showing an empty cell. Everything else is a
+question of _which_ flow, not _whether_.
 
-The mode is resolved by the positions feature, from the account behind the position. A row whose address belongs to no
-account of this installation — an address-book position — resolves to `draft`, exactly as the positions table resolves
-it: it keeps its actions, and they can only leave as drafts. Reading a missing account as watch-only would silently hide
-the buttons on a row the table shows as actionable.
+The verdict is resolved by the positions feature, from the account behind the position and from the same chain, so the
+drill-down and the positions table cannot disagree — including about the two halves of the draft rule (can a draft start
+at this address, and may this user write one). Both surfaces read the account domain's own list: an earlier split, where
+this hook walked `Wallet.accounts` and the table read the domain, is exactly how they came to differ over virtual
+signatory placeholders.
+
+Claim is the exception, here as in the drawer: a payout names the validator and is permissionless, so it is gated by
+whether anyone here can sign on the network and offered even on a row nothing else is.
 
 The cards themselves never run a transaction. Claim, Redeem and Unbond publish a request carrying the selected positions
 or payouts, and the staking flows own everything from there. A host declares which of the three it has connected — **per

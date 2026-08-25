@@ -40,10 +40,7 @@ export type ValidatorRewardRow = {
 };
 
 type Params = {
-  /**
-   * Per (chain, account) claim data — the source of unclaimed payouts and
-   * access.
-   */
+  /** Per (chain, account) claim data — the source of unclaimed payouts. */
   claimRows: ClaimRow[];
   /** Attributed rewards over the selected window. */
   rewards: ChainEraReward[];

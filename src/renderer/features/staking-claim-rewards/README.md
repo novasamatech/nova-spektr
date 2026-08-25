@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-13
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
 
 ## Overview
 
@@ -200,6 +200,12 @@ The payer is always visible and always changeable: the confirm renders `SigningP
 rather than `SigningPathSection`, because the section hides itself below two hops and a payout signed by a plain account
 has exactly one. Changing the source card rewrites the sender of every plan, and fee, route and validation follow from
 it.
+
+The choice is over **the keys this installation holds**, and this is the one screen in the app where a plain signing
+account is offered as a path _source_. Everywhere else the source is fixed by the operation and the path only says how a
+signature reaches it, so the graph offers only delegating accounts — which for a while left this picker listing
+multisigs and proxies while refusing the very vault account most users would pay with. A permissionless call inverts the
+question, so it asks the graph for own signers too.
 
 **Validation is `createTxValidator()` with no extra rules.** A payout moves nothing out of the sender, so there is no
 amount rule to write; fee affordability, the existential-deposit guard, per-hop route balances, the multisig deposit and

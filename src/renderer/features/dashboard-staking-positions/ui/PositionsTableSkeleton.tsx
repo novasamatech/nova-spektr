@@ -18,7 +18,7 @@ const PLACEHOLDER_WIDTH: Record<PositionColumnKey, string> = {
   apy: '40px',
   activeValidatorCount: '52px',
   asset: '88px',
-  accessMode: '16px',
+  access: '16px',
 };
 
 /**
@@ -42,7 +42,7 @@ export const PositionsTableSkeleton = () => {
         apy: null,
         activeValidatorCount: null,
         asset: null,
-        accessMode: null,
+        access: null,
       })),
     [],
   );

@@ -1,6 +1,6 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { entries, nullable } from '@/shared/lib/utils';
@@ -13,7 +13,7 @@ import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
-import { collectSignerAccountIds } from '../lib/signer-accounts';
+import { collectSignerAccountIds, isSignerAccount } from '../lib/signer-accounts';
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
@@ -269,15 +269,29 @@ function makeReachabilityChecker(multisigByAccountId: MultisigByAccountId, allow
   return (id: AccountId) => check(id, new Set());
 }
 
-function buildSources(
-  contactByAccountId: ContactsByAccountId,
-  multisigByAccountId: MultisigByAccountId,
-  proxies: Record<AccountId, ProxyAccount[] | undefined>,
-  accountList: AnyAccount[],
-  chainId: ChainId,
-  allowedSet: Set<AccountId> | null,
-  resolveName: AccountNameResolver,
-): PathSource[] {
+type BuildSourcesParams = {
+  contactByAccountId: ContactsByAccountId;
+  multisigByAccountId: MultisigByAccountId;
+  proxies: Record<AccountId, ProxyAccount[] | undefined>;
+  accountList: AnyAccount[];
+  chainId: ChainId;
+  /** `restrictToOwn`: the signers a branch must reach. `null` — no restriction. */
+  allowedSet: Set<AccountId> | null;
+  resolveName: AccountNameResolver;
+  /** Set only when the caller asked for own signing keys as roots — see pass 4. */
+  ownSignerChain: Chain | null;
+};
+
+function buildSources({
+  contactByAccountId,
+  multisigByAccountId,
+  proxies,
+  accountList,
+  chainId,
+  allowedSet,
+  resolveName,
+  ownSignerChain,
+}: BuildSourcesParams): PathSource[] {
   const sources: PathSource[] = [];
   const seenAccounts = new Set<AccountId>();
   const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
@@ -371,6 +385,27 @@ function buildSources(
       isProxy: true,
       walletType: null,
     });
+  }
+
+  // 4. The user's own plain signing accounts, only when the caller asked for
+  //    them. Every pass above answers "who can this operation run from, given
+  //    that somebody else holds the key" — a delegation question, which a plain
+  //    account has no part in. A permissionless call inverts that: the operation
+  //    may run from anyone, so the roots are exactly the keys we hold.
+  if (ownSignerChain) {
+    for (const account of accountList) {
+      if (seenAccounts.has(account.accountId)) continue;
+      if (!isSignerAccount(account)) continue;
+      if (!accountService.isAccountAvailableOnChain(account, ownSignerChain)) continue;
+
+      seenAccounts.add(account.accountId);
+      sources.push({
+        accountId: account.accountId,
+        name: resolveName(account.accountId, chainId),
+        isProxy: false,
+        walletType: null,
+      });
+    }
   }
 
   return sources;
@@ -578,6 +613,21 @@ export type GraphOptions = {
    */
   restrictToOwn?: boolean;
   /**
+   * Also offer the user's own plain signing accounts as sources.
+   *
+   * Off by default, because for most operations the source is not a choice: the
+   * transaction runs from a specific account and the path only says how a
+   * signature reaches it. Turn it on for a **permissionless** call — a staking
+   * payout names the validator and may be submitted by anybody — where picking
+   * who pays is the whole point of the control.
+   *
+   * Deliberately separate from `restrictToOwn`, which narrows the delegation
+   * branches rather than widening the roots. Drafts must never see these: a
+   * draft is handed to a co-signer, and a plain account of ours is no route for
+   * anyone else.
+   */
+  includeOwnSigners?: boolean;
+  /**
    * When set, multisig delegates whose proxyType isn't in this list are still
    * surfaced in the picker but marked `disabled` with `disabledReason` — users
    * see the delegate exists, with a tooltip explaining why they can't pick it.
@@ -598,9 +648,12 @@ const sourcesForCache = new Map<string, Store<PathSource[]>>();
 const optsCacheSegment = (opts?: GraphOptions): string => {
   const restrict = opts?.restrictToOwn ? 'own' : 'all';
   const allowed = opts?.allowedProxyTypes ? `[${[...opts.allowedProxyTypes].sort().join(',')}]` : '*';
+  // Part of the key because it changes what the store returns — leaving it out
+  // would hand a caller the list built for the opposite setting.
+  const signers = opts?.includeOwnSigners ? '+signers' : '';
   // disabledProxyReason is display-only and doesn't affect what's returned,
   // so it's intentionally excluded from the cache key.
-  return `${restrict}:${allowed}`;
+  return `${restrict}:${allowed}${signers}`;
 };
 
 function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]> {
@@ -609,46 +662,34 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
   const $cached = sourcesForCache.get(cacheKey);
   if ($cached) return $cached;
 
-  const $store = restrictToOwn
-    ? combine(
-        {
-          contactByAccountId: $contactByAccountId,
-          multisigByAccountId: $multisigByAccountId,
-          proxies: proxyModel.$proxies,
-          accountList: accounts.$list,
-          allowed: $ownSignerAccountIds,
-          resolveName: $nameResolver,
-        },
-        ({ contactByAccountId, multisigByAccountId, proxies, accountList, allowed, resolveName }) =>
-          buildSources(
-            contactByAccountId,
-            multisigByAccountId,
-            proxies as Record<AccountId, ProxyAccount[] | undefined>,
-            accountList,
-            chainId,
-            allowed,
-            resolveName,
-          ),
-      )
-    : combine(
-        {
-          contactByAccountId: $contactByAccountId,
-          multisigByAccountId: $multisigByAccountId,
-          proxies: proxyModel.$proxies,
-          accountList: accounts.$list,
-          resolveName: $nameResolver,
-        },
-        ({ contactByAccountId, multisigByAccountId, proxies, accountList, resolveName }) =>
-          buildSources(
-            contactByAccountId,
-            multisigByAccountId,
-            proxies as Record<AccountId, ProxyAccount[] | undefined>,
-            accountList,
-            chainId,
-            null,
-            resolveName,
-          ),
-      );
+  // `null` unless the caller asked for own signing accounts — `buildSources`
+  // reads it as "also offer the keys we hold, on this chain".
+  const $ownSignerChain = opts?.includeOwnSigners
+    ? networkModel.$chains.map((chains) => chains[chainId] ?? null)
+    : createStore<Chain | null>(null);
+
+  // `null` unless the caller narrowed the branches to what this installation
+  // can finish signing. One store either way, so the two readings of the source
+  // builder stay a single `combine` rather than two that must be edited in step.
+  const $allowedSet = restrictToOwn ? $ownSignerAccountIds : createStore<Set<AccountId> | null>(null);
+
+  const $store = combine(
+    {
+      contactByAccountId: $contactByAccountId,
+      multisigByAccountId: $multisigByAccountId,
+      proxies: proxyModel.$proxies,
+      accountList: accounts.$list,
+      allowedSet: $allowedSet,
+      resolveName: $nameResolver,
+      ownSignerChain: $ownSignerChain,
+    },
+    ({ proxies, ...rest }) =>
+      buildSources({
+        ...rest,
+        chainId,
+        proxies: proxies as Record<AccountId, ProxyAccount[] | undefined>,
+      }),
+  );
   sourcesForCache.set(cacheKey, $store);
 
   return $store;

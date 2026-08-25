@@ -2,8 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Scope, allSettled, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Chain, type ChainId } from '@/shared/core';
-import { type DecodedTransaction, TransactionType } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';

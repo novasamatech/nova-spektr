@@ -1,11 +1,8 @@
-import { useUnit } from 'effector-react';
-
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Switch } from '@/shared/ui';
-import { connectionHistoryModel } from '@/aggregates/backend';
-import { AddressBookHealthOverlay, backendContactsModel } from '@/features/contacts';
-import { useCanCreateDraft } from '../lib/useCanCreateDraft';
+import { AddressBookHealthOverlay } from '@/features/contacts';
+import { canStartDraft, useDraftAvailability } from '../lib/useDraftAvailability';
 
 type Props = {
   isOn: boolean;
@@ -14,9 +11,15 @@ type Props = {
 
 /**
  * In-flow toggle card that flips a transaction-builder form into draft-creation
- * mode. Self-gating: returns null when the user has never connected to the
- * backend or lacks write permission. When the address book is offline, the card
- * stays visible but is covered by a reconnect overlay.
+ * mode. Self-gating on `useDraftAvailability`: absent when no address book was
+ * ever connected and when the user may not write drafts, since no action here
+ * fixes either. When it was connected and is merely unreachable, the card stays
+ * and a reconnect overlay covers it — that one the user can fix.
+ *
+ * The gate is the shared rule rather than a local restatement of it, because
+ * anything that decides whether to _offer_ a draft has to reach the same
+ * verdict as this card; a caller that opens a flow this card then hides leaves
+ * the user in a form with no way out.
  *
  * The host owns `isOn` state. The visual "active" state collapses when the
  * address book is unhealthy — the user can't pick a source until they
@@ -24,14 +27,11 @@ type Props = {
  */
 export const DraftModeCard = ({ isOn, onToggle }: Props) => {
   const { t } = useI18n();
-  const hasEverConnected = useUnit(connectionHistoryModel.$hasEverConnected);
-  const isHealthy = useUnit(backendContactsModel.$isHealthy);
-  const canWrite = useCanCreateDraft();
+  const availability = useDraftAvailability();
 
-  if (!hasEverConnected) return null;
-  // No reconnect can fix a missing permission — hide the card entirely.
-  if (isHealthy && !canWrite) return null;
+  if (!canStartDraft(availability)) return null;
 
+  const isHealthy = availability === 'ready';
   const isVisuallyActive = isOn && isHealthy;
 
   return (

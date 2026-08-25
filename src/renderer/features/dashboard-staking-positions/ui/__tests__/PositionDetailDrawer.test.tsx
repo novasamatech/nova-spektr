@@ -52,7 +52,7 @@ const localAccount: AnyAccount = {
   createdAt: 0,
 };
 
-// A coherent row: `getAccessMode` cannot answer `direct` for an account it
+// A coherent row: `getPositionAccess` cannot answer `direct` for an account it
 // never found, so the base fixture carries the account and wallet that verdict
 // implies. Tests that want another mode override all three together.
 const row: PositionRow = {
@@ -63,7 +63,7 @@ const row: PositionRow = {
   asset: dotAsset,
   account: localAccount,
   wallet: localWallet,
-  accessMode: 'direct',
+  access: { mode: 'direct' },
   multisig: null,
   status: 'active',
   staked: '1000000000000',
@@ -125,7 +125,7 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
   test('should badge a contact position as Address book, never Local wallet', async () => {
     // `wallet: null` is the fact the badge states — nothing local holds the
     // account, it is known from the address book alone.
-    renderDrawer({ ...row, account: null, wallet: null, accessMode: 'draft' });
+    renderDrawer({ ...row, account: null, wallet: null, access: { mode: 'draft' } });
 
     expect(await screen.findByText('Address book')).toBeInTheDocument();
     expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
@@ -143,10 +143,10 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     // covers a multisig this installation holds as a wallet but cannot sign
     // for. The badge states provenance, so a local wallet behind the account
     // means "Local wallet" — signability is the pencil glyph's business, and
-    // keying the badge off `accessMode === 'draft'` would call this a contact.
+    // keying the badge off `access.mode === 'draft'` would call this a contact.
     const wallet = { id: 3, name: 'Team Multisig', type: WalletType.MULTISIG, accounts: [] };
 
-    renderDrawer({ ...row, wallet, accessMode: 'draft' });
+    renderDrawer({ ...row, wallet, access: { mode: 'draft' } });
 
     expect(await screen.findByText('Local wallet')).toBeInTheDocument();
     expect(screen.queryByText('Address book')).not.toBeInTheDocument();
@@ -155,11 +155,33 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
   test('should keep the view only badge for a watch-only position', async () => {
     const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
 
-    renderDrawer({ ...row, wallet, accessMode: 'watchOnly' });
+    renderDrawer({ ...row, wallet, access: { mode: 'blocked', reason: 'watchOnly' } });
 
     expect(await screen.findByText('view only')).toBeInTheDocument();
     expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
     expect(screen.queryByText('Address book')).not.toBeInTheDocument();
+  });
+
+  test('should keep the action chips on a blocked position, disabled instead of absent', async () => {
+    // The reversal this widget is built around. A blocked row used to drop its
+    // whole action strip for a sentence; now every chip stays and carries its
+    // own reason, because two of the four reasons are things the user can go
+    // and fix and a control that vanishes cannot say so.
+    const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
+
+    renderDrawer({ ...row, wallet, access: { mode: 'blocked', reason: 'watchOnly' } });
+
+    expect(await screen.findByRole('button', { name: 'Change validators' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add stake' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Unbond' })).toBeDisabled();
+  });
+
+  test('should leave the chips alone on a position that can be signed for', async () => {
+    renderDrawer(row);
+
+    // Only `changeValidators` is wired in this scope, so it is the one chip
+    // whose enabled state says anything about the access rule.
+    expect(await screen.findByRole('button', { name: 'Change validators' })).toBeEnabled();
   });
 
   test('should show validator stats instead of nominations for a validator position', async () => {

@@ -135,6 +135,10 @@ export const Confirmation = ({ onGoBack }: Props) => {
               <SigningPathInline
                 editableInitiator
                 restrictToOwnAccounts
+                // A payout is permissionless, so the payer is a free choice
+                // among the keys we hold — not only the delegating accounts the
+                // graph offers for origin-bound calls.
+                includeOwnSigners
                 chainId={chain.chainId}
                 path={signingPath.length > 0 ? signingPath : [{ kind: 'signer', accountId: initiator.accountId }]}
                 asset={asset}

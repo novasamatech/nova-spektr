@@ -11,8 +11,9 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
 import { useVisibleDrafts } from '@/features/drafts';
-import { type PositionRow, averageApy, calculateSharePercent, getAccessMode, getMultisigThreshold } from '../lib';
+import { type PositionRow, averageApy, calculateSharePercent, getMultisigThreshold, getPositionAccess } from '../lib';
 
+import { useDraftPolicy } from './useDraftPolicy';
 import { useSignerAccountIds } from './useSignerAccountIds';
 
 export type PositionRowsResult = {
@@ -80,9 +81,24 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     return map;
   }, [allAccounts]);
 
-  // One set for the whole table: `getAccessMode` runs per row and would
+  // One set for the whole table: `getPositionAccess` runs per row and would
   // otherwise rebuild it every time.
   const signerAccountIds = useSignerAccountIds();
+
+  // Same reasoning for the draft rule, which additionally has to be asked of
+  // every chain the table can show — a proxy edge exists on one network and not
+  // on another, so the answer is per (address, chain), not per address. Only
+  // the chains the user is actually looking at: the account filter is applied
+  // first, so a filtered-out network costs nothing.
+  const visiblePositions = useMemo(
+    () => positions.filter((position) => nullable(selectedIds) || selectedIds.has(position.accountId)),
+    [positions, selectedIds],
+  );
+  const positionChainIds = useMemo(
+    () => [...new Set(visiblePositions.map((position) => position.chainId))],
+    [visiblePositions],
+  );
+  const draftPolicy = useDraftPolicy(positionChainIds);
 
   const draftCountByKey = useMemo(() => {
     const counts = new Map<string, number>();
@@ -99,7 +115,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   }, [drafts, draftsAvailable]);
 
   return useMemo(() => {
-    const visible = positions.filter((position) => nullable(selectedIds) || selectedIds.has(position.accountId));
+    const visible = visiblePositions;
 
     // The share column is a share of what the user is looking at. Using the
     // aggregate's chain total instead would make the column add up to less than
@@ -131,7 +147,14 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         asset,
         account,
         wallet,
-        accessMode: getAccessMode(account, wallets, signerAccountIds),
+        access: getPositionAccess({
+          account,
+          accountId: position.accountId,
+          chainId: position.chainId,
+          wallets,
+          signerAccountIds,
+          draftPolicy,
+        }),
         multisig: getMultisigThreshold(account),
         status: position.status,
         staked: position.stake.total,
@@ -148,11 +171,11 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
 
     return { rows, pending, draftsAvailable };
   }, [
-    positions,
-    selectedIds,
+    visiblePositions,
     chains,
     wallets,
     signerAccountIds,
+    draftPolicy,
     accountByAccountId,
     eraValidators,
     draftCountByKey,

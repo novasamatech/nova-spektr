@@ -29,6 +29,7 @@ export const AmountStep = () => {
   const chain = useUnit(amountFlowModel.$chain);
   const asset = useUnit(amountFlowModel.$asset);
   const initiator = useUnit(amountFlowModel.$initiator);
+  const position = useUnit(amountFlowModel.$position);
   const wallet = useUnit(amountFlowModel.$wallet);
   const isDraftMode = useUnit(amountFlowModel.$isDraftMode);
   const errors = useUnit(amountFlowModel.$errors);
@@ -54,9 +55,14 @@ export const AmountStep = () => {
 
           <DraftModeCard isOn={isDraftMode} onToggle={amountFlowModel.toggleDraftMode} />
           {isDraftMode && (
+            /* The draft runs from the position the user opened, never from an
+               account they happen to pick in the source list: the submission
+               executes from the path's first node, and any other origin has no
+               rights over this stash. */
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={position?.accountId ?? null}
               $draftPath={amountFlowModel.$draftSigningPath}
               draftPathCommitted={amountFlowModel.draftPathCommitted}
               draftPathEditStarted={amountFlowModel.draftPathEditStarted}

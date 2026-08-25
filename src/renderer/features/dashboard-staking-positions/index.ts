@@ -6,8 +6,22 @@ import { dashboardStakingSlot, defineWidget } from '@/pages/Dashboard';
 
 import { PositionsWidget } from './ui/PositionsWidget';
 
-export type { CountdownParts, MultisigThreshold, PositionAccessMode, PositionRow } from './lib';
-export { canAct, getAccessMode, getCountdownParts, getMultisigThreshold, getUnbondingCountdown } from './lib';
+export type {
+  CountdownParts,
+  DraftPolicy,
+  MultisigThreshold,
+  PositionAccess,
+  PositionBlockedReason,
+  PositionRow,
+} from './lib';
+export {
+  getBlockedReasonKey,
+  getCountdownParts,
+  getMultisigThreshold,
+  getPositionAccess,
+  getUnbondingCountdown,
+} from './lib';
+export { useDraftPolicy } from './hooks/useDraftPolicy';
 export type {
   ClaimPayload,
   NominationsChangePayload,

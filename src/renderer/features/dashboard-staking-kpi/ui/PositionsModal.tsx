@@ -11,9 +11,9 @@ import { type Column, EmptyMessage, Modal, Table, Tooltip } from '@/shared/ui-ki
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { getBlockedReasonKey } from '@/features/dashboard-staking-positions';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { useNominationSpread } from '../hooks/useNominationSpread';
-import { canAct } from '../lib/access';
 import { type AssetAmount, formatAssetAmount, formatAssetAmounts, sumFiat, sumPlanck } from '../lib/amounts';
 import { type CsvAllocationRow, allocationCsvColumns, csvFileName } from '../lib/csv';
 import { formatFiat } from '../lib/format-fiat';
@@ -36,8 +36,10 @@ type Props = {
 
 /**
  * The Total-staked card's drill-down: every position, what is unbonding on it,
- * and the actions the account's access mode actually allows. A mode that cannot
- * redeem shows no Redeem button at all rather than a greyed-out one.
+ * and the actions its access verdict allows. A position that cannot redeem
+ * keeps the Redeem button, disabled, with the reason in its tooltip — a control
+ * that vanishes cannot tell the user that connecting an address book, or asking
+ * an admin, would bring it back.
  */
 export const PositionsModal = memo(({ rows, positions, currency, walletByAccount, onClose }: Props) => {
   const { t } = useI18n();
@@ -161,14 +163,22 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
         ),
       },
       {
-        key: 'accessMode',
+        key: 'access',
         title: t('dashboard.staking.kpi.columns.actions'),
         width: '20%',
         render: (_, item) => {
-          if (!canAct(item.accessMode)) return null;
-
           const hasRedeemable = Number(item.redeemable) > 0;
           const hasStake = Number(item.staked) > 0;
+
+          // A position the user cannot act on keeps its buttons and says why,
+          // rather than showing an empty cell. Both operations are origin-bound
+          // — only the stash may withdraw or unbond its own ledger — so the
+          // access verdict blocks them outright, ahead of the per-flow wiring.
+          const blockedReasonKey = getBlockedReasonKey(item.access);
+          const blockedHint = blockedReasonKey === null ? null : t(blockedReasonKey);
+
+          const redeemAllowed = redeemEnabled && blockedReasonKey === null;
+          const unbondAllowed = unbondEnabled && blockedReasonKey === null;
 
           // One tooltip per button, not one around both: the two are served by
           // different flows, so one can be live while the other is not.
@@ -178,13 +188,13 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
           return (
             <div className="flex flex-wrap items-center gap-1">
               {hasRedeemable && (
-                <Tooltip open={redeemEnabled ? false : undefined}>
+                <Tooltip open={redeemAllowed ? false : undefined}>
                   <Tooltip.Trigger>
                     <div>
                       <Button
                         variant="chip"
                         size="sm"
-                        disabled={!redeemEnabled}
+                        disabled={!redeemAllowed}
                         onClick={() =>
                           redeemRequested({ accountId: item.accountId, chainId: item.chainId, amount: item.redeemable })
                         }
@@ -193,24 +203,24 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
                       </Button>
                     </div>
                   </Tooltip.Trigger>
-                  <Tooltip.Content>{t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
+                  <Tooltip.Content>{blockedHint ?? t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
                 </Tooltip>
               )}
               {hasStake && (
-                <Tooltip open={unbondEnabled ? false : undefined}>
+                <Tooltip open={unbondAllowed ? false : undefined}>
                   <Tooltip.Trigger>
                     <div>
                       <Button
                         variant="text"
                         size="sm"
-                        disabled={!unbondEnabled}
+                        disabled={!unbondAllowed}
                         onClick={() => unbondRequested({ accountId: item.accountId, chainId: item.chainId })}
                       >
                         {t('dashboard.staking.kpi.positions.unbond')}
                       </Button>
                     </div>
                   </Tooltip.Trigger>
-                  <Tooltip.Content>{t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
+                  <Tooltip.Content>{blockedHint ?? t('dashboard.staking.kpi.actionUnavailable')}</Tooltip.Content>
                 </Tooltip>
               )}
             </div>
