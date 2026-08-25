@@ -65,7 +65,8 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
 
 ### The four cards
 
-- **Total staked** — the fiat total, with a per-asset sub-line. Its footer merges what is still unbonding with what has
+- **Total staked** — the fiat total of the **active** stake, with a per-asset sub-line; what is unbonding is not in it,
+  so the card and its footer never count the same planck twice. The footer merges what is still unbonding with what has
   already matured, because a position whose chunks have all matured has nothing "unbonding" left yet is precisely the
   one that needs the Redeem link.
 - **Est. APY** — a **stake-weighted** blend of the per-chain network APYs, weighted by the **fiat value of the earning

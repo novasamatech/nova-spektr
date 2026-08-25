@@ -10,7 +10,7 @@ import { ThemeProvider } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition } from '@/domains/staking';
 import { type PositionRow } from '../../lib';
-import { positionActions } from '../../model/position-actions';
+import { type PositionAction, positionActions } from '../../model/position-actions';
 import { PositionDetailDrawer } from '../PositionDetailDrawer';
 
 const accountId = createAccountId('stash') as AccountId;
@@ -74,8 +74,8 @@ const row: PositionRow = {
   draftCount: 0,
 };
 
-const renderDrawer = (drawerRow: PositionRow = row) => {
-  const scope = fork({ values: [[positionActions.$wiredActions, ['changeValidators']]] });
+const renderDrawer = (drawerRow: PositionRow = row, wiredActions: PositionAction[] = ['changeValidators']) => {
+  const scope = fork({ values: [[positionActions.$wiredActions, wiredActions]] });
 
   return render(
     <Provider value={scope}>
@@ -174,6 +174,28 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     expect(await screen.findByRole('button', { name: 'Change validators' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Add stake' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Unbond' })).toBeDisabled();
+  });
+
+  test('should disable Unbond when the whole stake is already unbonding', async () => {
+    // The ledger still exists — 10 WND total, all of it in an unlocking chunk —
+    // so the row, the status and the countdown are all right, but `unbond`
+    // takes from the active stake and there is none. Opening the flow at
+    // "Staked: 0" was the symptom; the chip has to say why instead.
+    const unbondingPosition: StakingPosition = {
+      ...position,
+      stake: {
+        ...position.stake,
+        active: '0',
+        total: '1000000000000',
+        unlocking: [{ value: '1000000000000', era: '9' }],
+      },
+      totalUnbonding: '1000000000000',
+    };
+
+    renderDrawer({ ...row, position: unbondingPosition, staked: '0' }, ['changeValidators', 'addStake', 'unbond']);
+
+    expect(await screen.findByRole('button', { name: 'Unbond' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add stake' })).toBeEnabled();
   });
 
   test('should leave the chips alone on a position that can be signed for', async () => {

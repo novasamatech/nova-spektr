@@ -64,7 +64,10 @@ export type PositionRow = {
   multisig: MultisigThreshold | null;
   /** Mirrors `position.status` — the table needs it as a sortable column key. */
   status: PositionStatus;
-  /** Ledger total — bonded plus everything still unbonding, in planck. */
+  /**
+   * Active stake in planck — what `unbond` can take. Unbonding chunks are
+   * counted separately.
+   */
   staked: string;
   /** Share of the chain's visible total, in percent. */
   sharePercent: number;

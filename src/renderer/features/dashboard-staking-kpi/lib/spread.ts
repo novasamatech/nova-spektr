@@ -87,7 +87,7 @@ export function buildSpreadRows({
   eraValidatorsByChain,
   metaByChain,
 }: Params): SpreadRow[] {
-  const ordered = [...positions].sort((a, b) => comparePlanck(a.stake.total, b.stake.total));
+  const ordered = [...positions].sort((a, b) => comparePlanck(a.stake.active, b.stake.active));
   const rows: SpreadRow[] = [];
 
   for (const position of ordered) {
@@ -116,7 +116,7 @@ export function buildSpreadRows({
         precision: meta.precision,
         status,
         allocated: individual ? individual.value : status === 'active' ? null : '0',
-        positionTotal: position.stake.total,
+        positionTotal: position.stake.active,
       });
     }
 
