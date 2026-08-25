@@ -1101,7 +1101,8 @@
           "blocked": {
             "watchOnly": "Watch-only account — this wallet holds no key to sign with.",
             "noDraftRoute": "This address is not one of your accounts, and it has no multisig or proxy that could sign for it.",
-            "draftsNotConnected": "Connect an external address book to prepare operations for this account as drafts."
+            "draftsNotConnected": "Connect an external address book to prepare operations for this account as drafts.",
+            "draftsNoPermission": "You have no permission to create operations from this account. To act on it, add its key to one of your wallets."
           },
           "rewardsDestination": {
             "controller": "Controller",
@@ -3052,6 +3053,13 @@
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
       "noWritePermission": "You do not have permission to create drafts. Contact your admin.",
+      "noPermissionForAccount": "You have no permission to create drafts, so nothing can be prepared from {address}. To act on this account, add its key to one of your wallets.",
+      "noPermissionForDrafts": "You have no permission to create drafts. Ask your address book admin, or act from an account whose key you hold.",
+      "notConnectedForDrafts": "Connect an external address book to create drafts.",
+      "noSourcesTitle": "No account available to create this draft",
+      "noSourcesPinnedHint": "{address} is not in your address book as a multisig, or as an account whose proxy is a multisig, so nobody can sign a draft for it.",
+      "noSourcesHint": "Add a multisig — or an account whose proxy is a multisig — to your address book to create drafts on {chain}.",
+      "openAddressBookButton": "Open address book",
       "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
       "noDescription": "No description",
       "noInitiator": "Unassigned",

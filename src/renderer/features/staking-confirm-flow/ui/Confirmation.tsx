@@ -137,6 +137,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
               draftPathCommitted={confirmFlowModel.draftPathCommitted}
               draftPathEditStarted={confirmFlowModel.draftPathEditStarted}
               draftPathEditEnded={confirmFlowModel.draftPathEditEnded}
+              onLeaveFlow={confirmFlowModel.flowClosed}
             />
           )}
         </Box>

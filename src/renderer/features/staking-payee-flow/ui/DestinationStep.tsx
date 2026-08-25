@@ -1,17 +1,16 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
-import { Alert, Button, Combobox, FootnoteText, InputHint, RadioGroup } from '@/shared/ui';
+import { toAddress } from '@/shared/lib/utils';
+import { Alert, Button, FootnoteText, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { ChainIcon, Identicon, TransactionValidationError } from '@/shared/ui-entities';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
-import { useAccountsNames, useWalletsNames } from '@/domains/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { RecipientCombobox } from '@/widgets/RecipientPicker';
 import { payeeFlowModel } from '../model/payee-flow';
 import { type PayeeOption } from '../types';
 
@@ -31,6 +30,7 @@ export const DestinationStep = () => {
   const isDraftMode = useUnit(payeeFlowModel.$isDraftMode);
   const errors = useUnit(payeeFlowModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
+  const position = useUnit(payeeFlowModel.$position);
 
   if (!chain || !asset) return null;
 
@@ -52,13 +52,19 @@ export const DestinationStep = () => {
 
           <DraftModeCard isOn={isDraftMode} onToggle={payeeFlowModel.toggleDraftMode} />
           {isDraftMode && (
+            /* The draft runs from the position the user opened, never from an
+               account they happen to pick in the source list: the submission
+               executes from the path's first node, and any other origin has no
+               rights over this stash. */
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={position?.accountId ?? null}
               $draftPath={payeeFlowModel.$draftSigningPath}
               draftPathCommitted={payeeFlowModel.draftPathCommitted}
               draftPathEditStarted={payeeFlowModel.draftPathEditStarted}
               draftPathEditEnded={payeeFlowModel.draftPathEditEnded}
+              onLeaveFlow={payeeFlowModel.flowClosed}
             />
           )}
 
@@ -90,10 +96,10 @@ export const DestinationStep = () => {
 type OptionValue = { option: PayeeOption };
 
 /**
- * The radio pair and, under the second option, the payout-account picker.
- *
- * The picker searches what the user sees — resolved account names, resolved
- * wallet names and the displayed address — never the raw stored name.
+ * The radio pair and, under the second option, the payout-account picker — the
+ * same picker the transfer form offers, own accounts, address book and typed
+ * address alike. Nothing is excluded: paying rewards to the stash itself is the
+ * common case.
  */
 const DestinationField = () => {
   const { t } = useI18n();
@@ -101,53 +107,7 @@ const DestinationField = () => {
   const chain = useUnit(payeeFlowModel.$chain);
   const option = useUnit(payeeFlowModel.$option);
   const address = useUnit(payeeFlowModel.$address);
-  const query = useUnit(payeeFlowModel.$destinationQuery);
-  const candidates = useUnit(payeeFlowModel.$destinationCandidates);
   const isAddressValid = useUnit(payeeFlowModel.$isAddressValid);
-  const wallets = useUnit(walletModel.$wallets);
-
-  const candidateAccounts = useMemo(
-    () => candidates.map((candidate) => candidate.account).filter(nonNullable),
-    [candidates],
-  );
-  const resolvedAccounts = useAccountsNames(candidateAccounts, chain);
-  const resolvedWallets = useWalletsNames(wallets);
-
-  const destinationOptions = useMemo(() => {
-    if (!chain) return [];
-
-    const namesByAccount = new Map(resolvedAccounts.map((account) => [account.id, account.name]));
-    const namesByWallet = new Map(resolvedWallets.map((wallet) => [wallet.id, wallet.name]));
-
-    const rows = candidates.map((candidate) => ({
-      candidate,
-      address: toAddress(candidate.accountId, { prefix: chain.addressPrefix }),
-      name: candidate.account
-        ? (namesByAccount.get(candidate.account.id) ?? candidate.account.name)
-        : (candidate.name ?? ''),
-      walletName: candidate.account ? (namesByWallet.get(candidate.account.walletId) ?? '') : '',
-    }));
-
-    return performSearch({ records: rows, query, weights: { name: 1, walletName: 0.75, address: 0.5 } }).map(
-      ({ candidate, address }) => ({
-        id: candidate.id,
-        value: address,
-        element: (
-          <div className="flex w-full justify-between">
-            <NamedAccount
-              accountId={candidate.accountId}
-              chain={chain}
-              wallet={candidate.account ? walletUtils.getWalletById(wallets, candidate.account.walletId) : null}
-              walletNameAs="fallback"
-              variant="short"
-              iconSize={20}
-              hideExplorers
-            />
-          </div>
-        ),
-      }),
-    );
-  }, [candidates, resolvedAccounts, resolvedWallets, wallets, query, chain]);
 
   if (!chain) return null;
 
@@ -168,31 +128,22 @@ const DestinationField = () => {
       <RadioGroup.Option option={options[0]!} />
       <RadioGroup.Option option={options[1]!}>
         <div className="flex flex-col gap-y-2">
-          <Combobox
+          <RecipientCombobox
+            chain={chain}
             placeholder={t('staking.bond.payoutAccountPlaceholder')}
-            query={query}
             value={address}
-            options={destinationOptions}
             invalid={showAddressError}
             prefixElement={
-              <div className="flex h-auto items-center">
-                <Identicon
-                  address={toAddress(address, { prefix: chain.addressPrefix })}
-                  size={20}
-                  background={false}
-                  canCopy={false}
-                />
-              </div>
+              <Identicon
+                address={toAddress(address, { prefix: chain.addressPrefix })}
+                size={20}
+                background={false}
+                canCopy={false}
+              />
             }
-            onInput={(value) => {
-              // Free entry: what is typed is the address until an option is picked.
-              payeeFlowModel.destinationQueryChanged(value);
-              payeeFlowModel.addressChanged(value);
-            }}
-            onChange={({ value }) => {
-              payeeFlowModel.addressChanged(value);
-              payeeFlowModel.destinationQueryChanged('');
-            }}
+            // Free entry: what is typed is the address until an option is picked.
+            onInput={payeeFlowModel.addressChanged}
+            onChange={payeeFlowModel.addressChanged}
           />
 
           <InputHint active={showAddressError} variant="error">

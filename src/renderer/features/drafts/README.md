@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -160,8 +160,8 @@ that one entry, and the user picks only the hops after it. Left free, a user cou
 position sourced at contact B, and the draft would act on B's ledger or fail outright — after being reviewed and
 co-signed. Pinning removes the class of mistake rather than validating against it.
 
-Today the dashboard staking flows (add stake / unbond / change validators / redeem) pin; every other call site leaves
-`pinnedSourceAccountId` off.
+Today the dashboard staking flows (add stake / unbond / change validators / redeem / change reward destination) pin;
+every other call site leaves `pinnedSourceAccountId` off.
 
 > **Open on two counts.**
 >
@@ -241,6 +241,9 @@ with no multisig hop) are covered the same way as multisig ones.
 | Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
 | Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
 | Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                                                         | A toast with a **Retry** action; the draft stays visible and retryable                                                                                                                                            |
+| Source picker, book offline     | Draft mode is on and the address book was connected before but is unreachable now                                                    | No picker at all — the mode card carries the Reconnect prompt, and a dead list under it would only contradict it                                                                                                  |
+| Source picker, nothing to offer | The book is reachable but no address in it can start a draft here — a pinned position that is a plain contact, or no multisig at all | "No account available to create this draft", the reason (naming the pinned address), and **Open address book** — which closes the flow and goes there                                                             |
+| Source picker, no permission    | The user lacks `operation-draft:write` but the flow opened in draft mode anyway                                                      | A notice instead of the picker: nothing can be prepared from the account; to act on it, add its key to a wallet                                                                                                   |
 
 ## Sync & reconnect
 
