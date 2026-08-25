@@ -851,6 +851,7 @@
           "newPosition": "New position {amount}",
           "unbond": "Unbond {amount}",
           "addStake": "Add stake {amount}",
+          "changeRewardDestination": "Change reward destination",
           "changeValidators": "Change validators",
           "redeem": "Redeem {amount}"
         }
@@ -1074,7 +1075,8 @@
             "share": "Share of chain",
             "unclaimed": "Unclaimed",
             "validators": "Validators",
-            "nominators": "Nominators"
+            "nominators": "Nominators",
+            "rewards": "Rewards"
           },
           "unbonding": "Unbonding",
           "unbondingLeft": "{duration} left",
@@ -1088,6 +1090,7 @@
             "addStake": "Add stake",
             "unbond": "Unbond",
             "changeValidators": "Change validators",
+            "changeRewardDestination": "Change reward destination",
             "notWired": "This action is not connected to a transaction flow yet.",
             "nothingInPeriod": "No rewards attributed in this window.",
             "scanningPayouts": "Checking what is still unclaimed…",
@@ -1098,7 +1101,13 @@
           "blocked": {
             "watchOnly": "Watch-only account — this wallet holds no key to sign with.",
             "noDraftRoute": "This address is not one of your accounts, and it has no multisig or proxy that could sign for it.",
-            "draftsNotConnected": "Connect an external address book to prepare operations for this account as drafts."
+            "draftsNotConnected": "Connect an external address book to prepare operations for this account as drafts.",
+            "draftsNoPermission": "You have no permission to create operations from this account. To act on it, add its key to one of your wallets."
+          },
+          "rewardsDestination": {
+            "controller": "Controller",
+            "restaked": "Restaked",
+            "stash": "Stash"
           },
           "validator": {
             "title": "Validator",
@@ -3044,6 +3053,14 @@
       "connectToCreate": "Sign in to create drafts",
       "connectToSubmit": "Sign in to submit drafts",
       "noWritePermission": "You do not have permission to create drafts. Contact your admin.",
+      "noPermissionForAccount": "Nothing can be prepared from {address}: you have no permission to create drafts. Ask your address book admin for it, or add this account's key to one of your wallets.",
+      "noPermissionForDrafts": "You have no permission to create drafts. Ask your address book admin for it, or act from an account whose key you hold.",
+      "noPermissionTitle": "Drafts cannot be prepared here",
+      "notConnectedForDrafts": "Connect an external address book to create drafts.",
+      "noSourcesTitle": "No account available to create this draft",
+      "noSourcesPinnedHint": "{address} is not in your address book as a multisig, or as an account whose proxy is a multisig, so nobody can sign a draft for it.",
+      "noSourcesHint": "Add a multisig — or an account whose proxy is a multisig — to your address book to create drafts on {chain}.",
+      "openAddressBookButton": "Open address book",
       "noMultisigsInAddressBook": "No multisig accounts found. Add a multisig wallet first.",
       "noDescription": "No description",
       "noInitiator": "Unassigned",
@@ -3418,12 +3435,21 @@
     "unifiedAddressCopied": "Unified address copied!",
     "viewInExplorers": "View in explorers"
   },
+  "recipientPicker": {
+    "contactsGroup": "Contacts",
+    "typedAddressGroup": "Address"
+  },
   "recipientVerification": {
     "badge": {
       "recipientUnknown": "Unknown recipient",
       "recipientUnverifiable": "Unverified recipient",
       "addressUnknown": "Unknown address",
       "addressUnverifiable": "Unverified address"
+    },
+    "payee": {
+      "title": "Payout address is not in your address book",
+      "body": "Every future reward will be paid to this address until the destination is changed again. Confirm you have verified it.",
+      "ackLabel": "I have verified this address and want rewards paid to it"
     },
     "transfer": {
       "title": "Unknown recipient address",
@@ -4069,6 +4095,18 @@
       "noSignerTitle": "No account to sign with",
       "nothingToRedeemHint": "The unlocked funds shown here have already been withdrawn or are staked again. Signing would pay a fee and move nothing.",
       "nothingToRedeemTitle": "Nothing left to redeem"
+    },
+    "payeeFlow": {
+      "accountOption": "Transferable to account",
+      "cancelButton": "Cancel",
+      "confirm": {
+        "destination": "New destination"
+      },
+      "continueButton": "Continue",
+      "hint": "Applies from the next payout. Rewards already paid out are not moved.",
+      "recipientHint": "Rewards will be paid to this address on every payout — make sure it is the right one.",
+      "title": "Change reward destination",
+      "unchangedHint": "This is already the current reward destination."
     },
     "payout": {
       "confirmTitle": "Claim Rewards",

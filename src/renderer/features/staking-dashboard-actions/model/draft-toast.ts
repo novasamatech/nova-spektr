@@ -9,7 +9,12 @@ import { type AmountFlowMode } from '@/features/staking-amount-flow';
 import { type ConfirmFlowMode } from '@/features/staking-confirm-flow';
 import { findWallet } from '../lib/resolve';
 
-export type DraftToastOperation = 'claim' | 'newPosition' | AmountFlowMode | ConfirmFlowMode;
+export type DraftToastOperation =
+  | 'claim'
+  | 'newPosition'
+  | 'changeRewardDestination'
+  | AmountFlowMode
+  | ConfirmFlowMode;
 
 /** Everything frame F10's line says, resolved down to plain values. */
 export type DraftToastContext = {

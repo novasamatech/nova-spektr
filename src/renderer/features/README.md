@@ -76,6 +76,7 @@ notes.
 - [`staking-confirm-flow`](./staking-confirm-flow/README.md)
 - [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
 - [`staking-new-position-flow`](./staking-new-position-flow/README.md)
+- [`staking-payee-flow`](./staking-payee-flow/README.md)
 - `staking-bond-extra`
 - [`staking-bond-nominate`](./staking-bond-nominate/README.md)
 - [`staking-nominate`](./staking-nominate/README.md)
@@ -138,7 +139,8 @@ notes.
 - `send-to-contact`
 
 > See also: [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings on the transfer form and
-> confirm step.
+> confirm step; [`RecipientPicker`](../widgets/RecipientPicker/README.md) (widget) — the shared recipient / payout
+> address combobox and its three suggestion groups.
 
 ## Assets & Balances
 

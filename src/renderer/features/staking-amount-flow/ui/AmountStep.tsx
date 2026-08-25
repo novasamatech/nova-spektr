@@ -72,6 +72,7 @@ export const AmountStep = () => {
               draftPathCommitted={amountFlowModel.draftPathCommitted}
               draftPathEditStarted={amountFlowModel.draftPathEditStarted}
               draftPathEditEnded={amountFlowModel.draftPathEditEnded}
+              onLeaveFlow={amountFlowModel.flowClosed}
             />
           )}
 

@@ -52,7 +52,6 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { createDraftModeBinding, wireDraftSourceBalance } from '@/features/drafts';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
-import { transferUtils } from '../lib/transfer-utils';
 import { type NetworkStore, type NetworkStoreParams } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
@@ -945,7 +944,7 @@ const $destinationAccounts = combine(
 
 // "Myself" targets the sender's own address on the destination chain when the
 // sender can receive there (keyless senders — multisig, proxied, watch-only —
-// must pass the availability rule, see transferUtils.canReceiveOnChain).
+// must pass the availability rule, see accountService.canReceiveOnChain).
 // Otherwise it falls back to the wallet's signing-available destination-chain
 // accounts: autofill for a single one, selection modal for several.
 const $myselfDestination = combine(
@@ -957,7 +956,7 @@ const $myselfDestination = combine(
   ({ chain, initiator, destinationAccounts }) => {
     if (nullable(chain)) return null;
 
-    if (nonNullable(initiator) && transferUtils.canReceiveOnChain(initiator, chain)) {
+    if (nonNullable(initiator) && accountService.canReceiveOnChain(initiator, chain)) {
       return toAddress(initiator.accountId, { prefix: chain.addressPrefix });
     }
 

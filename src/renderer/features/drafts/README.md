@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -54,9 +54,9 @@ whether to offer an action at all:
   a draft source and never will be.
 
 Published rather than re-derived per screen: a caller that judged this differently would send the user into a form whose
-draft toggle renders nothing, or whose source list is empty. The wording of a refusal travels the same way — see
-`DRAFT_NO_WRITE_PERMISSION_KEY` — so a predicting surface explains a missing permission in the same sentence the drafts
-list uses, and a rename here cannot leave another feature rendering a raw i18n path.
+draft toggle renders nothing, or whose source list is empty. The wording of a refusal does not travel: a surface that
+only _predicts_ whether a draft is possible (the staking dashboard's blocked reasons) phrases its own explanation, and
+the drafts feature keeps its i18n keys to itself.
 
 The source set is asked one chain at a time (`useDraftSources`) or across several at once (`useDraftSourceLookup`, for a
 table that mixes networks). Both keep their combined stores in a module cache, as the signing-path graph does: an
@@ -160,8 +160,8 @@ that one entry, and the user picks only the hops after it. Left free, a user cou
 position sourced at contact B, and the draft would act on B's ledger or fail outright — after being reviewed and
 co-signed. Pinning removes the class of mistake rather than validating against it.
 
-Today the dashboard staking flows (add stake / unbond / change validators / redeem) pin; every other call site leaves
-`pinnedSourceAccountId` off.
+Today the dashboard staking flows (add stake / unbond / change validators / redeem / change reward destination) pin;
+every other call site leaves `pinnedSourceAccountId` off.
 
 > **Open on two counts.**
 >
@@ -241,6 +241,9 @@ with no multisig hop) are covered the same way as multisig ones.
 | Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
 | Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
 | Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                                                         | A toast with a **Retry** action; the draft stays visible and retryable                                                                                                                                            |
+| Source picker, book offline     | Draft mode is on and the address book was connected before but is unreachable now                                                    | No picker at all — the mode card carries the Reconnect prompt, and a dead list under it would only contradict it                                                                                                  |
+| Source picker, nothing to offer | The book is reachable but no address in it can start a draft here — a pinned position that is a plain contact, or no multisig at all | "No account available to create this draft" and the reason (naming the pinned address); **Open address book** only if the host passes `onLeaveFlow` (global-slot modals outlive navigation)                       |
+| Source picker, no permission    | The user lacks `operation-draft:write` but the flow opened in draft mode anyway                                                      | A notice instead of the picker: nothing can be prepared from the account; to act on it, add its key to a wallet                                                                                                   |
 
 ## Sync & reconnect
 

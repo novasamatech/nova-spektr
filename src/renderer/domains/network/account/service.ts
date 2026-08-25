@@ -12,6 +12,7 @@ import {
   type Wallet,
   AccountNameType,
   AccountType,
+  SigningType,
   WalletType,
   isBackendContact,
   isLocalContact,
@@ -100,6 +101,18 @@ function isAccountSchemeMatchChain(accountId: AccountId, chain: Chain): boolean 
   return networkUtils.isEthereumBased(chain.options) === isEthereumAccountId(accountId);
 }
 
+/**
+ * Signing types whose accounts represent keys the user actually holds. Keyless
+ * constructs (watch-only, multisig, proxied / pure proxy, signatory
+ * placeholders) are stamped WATCH_ONLY or MULTISIG at creation.
+ */
+const RECEIVE_BY_SCHEME_SIGNING_TYPES: SigningType[] = [
+  SigningType.PARITY_SIGNER,
+  SigningType.POLKADOT_VAULT,
+  SigningType.EXTENSION,
+  SigningType.WALLET_CONNECT,
+];
+
 function isCryptoMatch(account: Pick<AnyAccount, 'accountId'>, chain: Chain): boolean {
   return isAccountSchemeMatchChain(account.accountId, chain);
 }
@@ -114,6 +127,24 @@ function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAcco
 
 function isUniversalAccount(account: Pick<AnyAccount, 'type'>): account is UniversalAccount {
   return account.type === 'universal';
+}
+
+/**
+ * Whether an account can _receive_ on the chain — a looser question than
+ * whether it can sign there. Keyed accounts control their address on any
+ * scheme-compatible chain even when the key is scoped to another one, so the
+ * strict availability rule would hide key-set vault derived keys that are
+ * perfectly valid recipients. Accounts whose key the user does not hold
+ * (watch-only, multisig, proxied / pure proxy, signatory placeholders) keep the
+ * strict rule: such an address is not necessarily controlled on a foreign
+ * chain, and funds sent there may be lost.
+ */
+function canReceiveOnChain(account: AnyAccount, chain: Chain): boolean {
+  if (RECEIVE_BY_SCHEME_SIGNING_TYPES.includes(account.signingType)) {
+    return isCryptoMatch(account, chain);
+  }
+
+  return isAccountAvailableOnChain(account, chain);
 }
 
 function isAccountAvailableOnChain(account: AnyAccount, chain: Chain) {
@@ -851,6 +882,7 @@ export const accountService = {
   isAccountAvailableOnChain,
   isAccountSchemeMatchChain,
   isCryptoMatch,
+  canReceiveOnChain,
   isChainMatch,
 
   canSignMultipleTransactions,

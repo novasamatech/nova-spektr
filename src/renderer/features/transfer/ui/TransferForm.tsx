@@ -1,15 +1,13 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { uniqBy } from 'lodash';
-import { type FormEvent, type ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useCallback, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Address as AddressType, type Asset, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
-  entries,
   formatAsset,
   fromPrecision,
   getNativeAsset,
@@ -21,8 +19,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Alert, Button, CaptionText, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
+import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
   Address,
@@ -31,20 +28,18 @@ import {
   UnknownRecipientAckBox,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
+import { Box, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, useAccountName, useAccountsNames, useWalletName } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
-import { contactModel } from '@/entities/contact';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection, graphModel } from '@/features/signing-path';
-import { walletSelectFeature } from '@/features/wallet-select';
 import { NamedAccount } from '@/widgets/NameResolver';
+import { RecipientCombobox } from '@/widgets/RecipientPicker';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/widgets/transaction-fee';
-import { transferUtils } from '../lib/transfer-utils';
 import { TRANSFER_ALLOWED_PROXY_TYPES, formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -52,18 +47,6 @@ import { TokenSelectorModal } from './TokenSelector';
 
 type Props = {
   onGoBack: () => void;
-};
-
-type ComboboxItem = {
-  id: string;
-  label: ReactNode;
-  value: { address: string; walletId?: number };
-};
-
-type ComboboxGroup = {
-  id: string;
-  label: ReactNode;
-  items: ComboboxItem[];
 };
 
 export const TransferForm = memo(({ onGoBack }: Props) => {
@@ -409,15 +392,6 @@ const XcmChainSelector = memo(() => {
   );
 });
 
-const { services, constants } = walletSelectFeature;
-
-const AccountAddressItem = memo(
-  ({ accountId, chain, address }: { accountId: AccountId; chain: Chain; address: AddressType }) => {
-    const resolvedName = useAccountName({ accountId, chain });
-    return <Address showIcon title={resolvedName} address={address} />;
-  },
-);
-
 const Destination = memo(() => {
   const { t } = useI18n();
 
@@ -425,13 +399,11 @@ const Destination = memo(() => {
     fields: { initiator, destination, destinationChain },
   } = useForm(formModel.form);
 
-  const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
   const isDestinationReadonly = useUnit(formModel.$isDestinationReadonly);
 
-  const [query, setQuery] = useState('');
   // Keep the editable Combobox mounted while the field is focused; only swap to
   // the read-only name card once the recipient is committed (blur/selection).
   // Swapping on raw value validity yanks focus mid-typing/paste and blocks edits.
@@ -442,19 +414,7 @@ const Destination = memo(() => {
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
 
-  const filteredContacts = useMemo(() => {
-    return performSearch({
-      query,
-      records: contacts,
-      weights: { name: 1, address: 0.5 },
-    });
-  }, [query, contacts]);
-
   const chain = destinationChain.value ?? network?.chain;
-
-  useEffect(() => {
-    setQuery('');
-  }, [chain]);
 
   const resolvedAccounts = useAccountsNames(accountsList, chain);
 
@@ -505,111 +465,13 @@ const Destination = memo(() => {
     return recipientName !== shortAddress;
   }, [recipientAccountId, recipientName, chain]);
 
-  const walletsOptions = useMemo<ComboboxGroup[]>(() => {
-    if (nullable(chain)) return [];
-
-    const filteredAccounts = transferUtils.filterRecipientAccounts({
-      accounts: resolvedAccounts,
-      chain,
-      query,
-      initiator: initiator.value,
-    });
-    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
-
-    const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, uniqueAccounts);
-    const ownAccountOptions: ComboboxGroup[] = [];
-
-    for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {
-      if (accountsGroup.length === 0) continue;
-
-      const accountOptions: ComboboxItem[] = [];
-
-      for (const account of accountsGroup) {
-        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-        accountOptions.push({
-          id: address,
-          value: { address, walletId: account.walletId },
-          label: <AccountAddressItem accountId={account.accountId} chain={chain} address={address} />,
-        });
-      }
-
-      ownAccountOptions.push({
-        id: walletFamily,
-        label: (
-          <div className="flex items-center gap-x-2" key={walletFamily}>
-            <WalletIcon type={walletFamily} />
-            <CaptionText className="font-semibold text-text-secondary uppercase">
-              {t(constants.GROUP_LABELS[walletFamily])}
-            </CaptionText>
-          </div>
-        ),
-        items: accountOptions,
-      });
-    }
-
-    return ownAccountOptions;
-  }, [query, chain, resolvedAccounts, wallets, initiator.value, t]);
-
-  const contactOptions = useMemo<ComboboxGroup[]>(() => {
-    if (validateAddress(query, chain)) return [];
-
-    const addressOptions: ComboboxItem[] = [];
-    for (const contact of filteredContacts) {
-      const displayedAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
-      const isValidAddress = validateAddress(displayedAddress, chain);
-
-      if (!isValidAddress) continue;
-
-      addressOptions.push({
-        id: contact.id.toString(),
-        label: <Address showIcon title={contact.name} address={displayedAddress} />,
-        value: { address: displayedAddress },
-      });
-    }
-
-    if (addressOptions.length === 0) return [];
-
-    return [
-      {
-        id: 'contacts',
-        label: t('createMultisigAccount.contactsGroup'),
-        items: addressOptions,
-      },
-    ];
-  }, [query, chain, filteredContacts, t]);
-
-  const options = [...walletsOptions, ...contactOptions];
-
-  // Synthetic "Address" group surfaces a typed/pasted address that isn't in
-  // the user's wallets or contacts, so transfers to fresh addresses still
-  // work without first adding a contact.
-  const customAddressOption = useMemo<ComboboxGroup | null>(() => {
-    const trimmed = query.trim();
-    if (!trimmed || !chain || !validateAddress(trimmed, chain)) return null;
-
-    const typedAccountId = toAccountId(trimmed);
-    const isAlreadyListed = options.some((g) => g.items.some((i) => toAccountId(i.value.address) === typedAccountId));
-    if (isAlreadyListed) return null;
-
-    return {
-      id: 'typed-address',
-      label: t('transfer.recipientPlaceholder'),
-      items: [{ id: trimmed, value: { address: trimmed }, label: <Address showIcon address={trimmed} /> }],
-    };
-  }, [query, chain, options, t]);
-
-  const allOptions = customAddressOption ? [customAddressOption, ...options] : options;
-
   const handleChange = () => {
     formModel.myselfClicked();
-    setQuery('');
   };
 
   const handleClearRecipient = () => {
     destination.onChange('');
     destination.markAsTouched();
-    setQuery('');
     // The card unmounts and the Combobox remounts; ask it to grab focus so the
     // user can immediately retype instead of clicking the field again.
     setAutoFocusRecipient(true);
@@ -676,8 +538,10 @@ const Destination = memo(() => {
             )}
           </div>
         ) : (
-          <Combobox
+          <RecipientCombobox
             data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
+            chain={chain}
+            excludeAccountId={initiator.value?.accountId ?? null}
             placeholder={t('transfer.recipientPlaceholder')}
             invalid={destination.touched && destination.hasError}
             disabled={isDestinationReadonly}
@@ -694,21 +558,7 @@ const Destination = memo(() => {
               setRecipientFocused(false);
               destination.markAsTouched();
             }}
-            onInput={setQuery}
-          >
-            {allOptions.map((group) => (
-              <Combobox.Group key={group.id} title={group.label}>
-                {group.items.map((option) => (
-                  <Combobox.Item
-                    key={`${option.id}-${option.value.walletId ?? 'unknown'}`}
-                    value={option.value.address}
-                  >
-                    {option.label}
-                  </Combobox.Item>
-                ))}
-              </Combobox.Group>
-            ))}
-          </Combobox>
+          />
         )}
         {isMyselfXcmEnabled && !isDestinationReadonly && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>

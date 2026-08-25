@@ -34,7 +34,7 @@ import { summarizePositions } from './lib/summary';
 
 const { eraResource, eraProgressResource } = eraModel;
 const { exposuresResource, exposurePagesResource } = exposuresModel;
-const { nominationsResource, minBondResource } = nominationsModel;
+const { nominationsResource, minBondResource, payeeResource } = nominationsModel;
 const { validatorsResource } = validatorsModel;
 const { stakingResource } = stakingModel;
 const { validatorPrefsResource } = validatorPrefsModel;
@@ -278,6 +278,17 @@ const $nominationsRequests = $chainRequests.map(requests =>
   requests.map(({ chainId, api, accountIds }) => ({ chainId, api, stashes: accountIds })),
 );
 
+// The payee map is SS58-encoded by the domain service, so the request carries
+// the chain's prefix alongside the same stash list the nominations use.
+const $payeeRequests = $chainRequests.map(requests =>
+  requests.map(({ chainId, api, accountIds, chain }) => ({
+    chainId,
+    api,
+    stashes: accountIds,
+    addressPrefix: chain.addressPrefix,
+  })),
+);
+
 const $chainOnlyRequests = $chainRequests.map(requests => requests.map(({ chainId, api }) => ({ chainId, api })));
 
 bindResourcePool(stakingResource, $stakingRequests);
@@ -287,6 +298,10 @@ bindResourcePool(nominationsResource, $nominationsRequests);
 // keyed by the queried account, mirroring the nominations wiring - on-chain
 // both maps are keyed by stash.
 bindResourcePool(validatorPrefsResource, $nominationsRequests);
+// Reward destination, read for every stash the ledger is read for. It is
+// deliberately NOT part of `$pending`: the table is complete without it, and
+// the drawer shows a shimmer in the one cell that needs it.
+bindResourcePool(payeeResource, $payeeRequests);
 bindResourcePool(minBondResource, $chainOnlyRequests);
 bindResourcePool(eraResource, $chainOnlyRequests);
 
@@ -411,6 +426,7 @@ const $positions = combine(
     chainAccounts: $chainAccounts,
     ledgers: stakingResource.$cache,
     nominations: nominationsResource.$cache,
+    payees: payeeResource.$cache,
     validatorPrefs: validatorPrefsResource.$cache,
     exposurePages: exposurePagesResource.$cache,
     validators: validatorsResource.$cache,
@@ -422,6 +438,7 @@ const $positions = combine(
     chainAccounts,
     ledgers,
     nominations,
+    payees,
     validatorPrefs,
     exposurePages,
     validators,
@@ -439,6 +456,9 @@ const $positions = combine(
       if (nullable(chainLedgers)) continue;
 
       const chainNominations = nominations[chainId] ?? {};
+      // `null`, not `{}`, while the subscription has not answered — the drawer
+      // must show a shimmer, not "—", for the seconds in between.
+      const chainPayees = payees[chainId] ?? null;
       const chainValidators = validators[chainId] ?? null;
       const pagesKey = exposurePagesCacheKey(chainId, activeEra, nominated[chainId] ?? EMPTY_VALIDATORS);
       // `null`, not `{}`. The pages land well after the ledgers, and an empty
@@ -467,6 +487,8 @@ const $positions = combine(
           validators: chainValidators,
           activeEra,
           eraAnchor,
+          payee: chainPayees?.[accountId] ?? null,
+          payeeLoaded: nonNullable(chainPayees) && accountId in chainPayees,
         });
       }
     }

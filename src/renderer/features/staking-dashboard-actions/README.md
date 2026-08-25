@@ -11,9 +11,10 @@ The dashboard's two staking widgets — [`dashboard-staking-kpi`](../dashboard-s
 [`dashboard-staking-positions`](../dashboard-staking-positions/README.md) — deliberately **only emit**. They build no
 transaction, hold no chain, and know nothing about the flows. The flows —
 [`staking-claim-rewards`](../staking-claim-rewards/README.md),
-[`staking-amount-flow`](../staking-amount-flow/README.md), [`staking-confirm-flow`](../staking-confirm-flow/README.md)
-and [`staking-new-position-flow`](../staking-new-position-flow/README.md) — deliberately **only consume**, and know
-nothing about the dashboard. This feature is the one module that knows both, and it exists so that neither side has to.
+[`staking-amount-flow`](../staking-amount-flow/README.md), [`staking-confirm-flow`](../staking-confirm-flow/README.md),
+[`staking-new-position-flow`](../staking-new-position-flow/README.md) and
+[`staking-payee-flow`](../staking-payee-flow/README.md) — deliberately **only consume**, and know nothing about the
+dashboard. This feature is the one module that knows both, and it exists so that neither side has to.
 
 It owns three jobs:
 
@@ -34,14 +35,15 @@ It owns three jobs:
 
 ## What is live
 
-| Button                                   | Emitter                      | Destination                                    |
-| ---------------------------------------- | ---------------------------- | ---------------------------------------------- |
-| Claim (KPI drill-down, position drawer)  | `claimRequested`             | `claimRewardsModel.claimRequested`             |
-| Unbond (KPI drill-down, position drawer) | `unbondRequested`            | `stakingAmountFlow.unbondRequested`            |
-| Add stake (position drawer)              | `addStakeRequested`          | `stakingAmountFlow.addStakeRequested`          |
-| Redeem (KPI drill-down)                  | `redeemRequested`            | `stakingConfirmFlow.redeemRequested`           |
-| Change validators (position drawer)      | `nominationsChangeRequested` | `stakingConfirmFlow.changeValidatorsRequested` |
-| + New position / Start staking           | `startStakingRequested`      | `newPositionFlow.newPositionRequested`         |
+| Button                                      | Emitter                            | Destination                                         |
+| ------------------------------------------- | ---------------------------------- | --------------------------------------------------- |
+| Claim (KPI drill-down, position drawer)     | `claimRequested`                   | `claimRewardsModel.claimRequested`                  |
+| Unbond (KPI drill-down, position drawer)    | `unbondRequested`                  | `stakingAmountFlow.unbondRequested`                 |
+| Add stake (position drawer)                 | `addStakeRequested`                | `stakingAmountFlow.addStakeRequested`               |
+| Redeem (KPI drill-down)                     | `redeemRequested`                  | `stakingConfirmFlow.redeemRequested`                |
+| Change validators (position drawer)         | `nominationsChangeRequested`       | `stakingConfirmFlow.changeValidatorsRequested`      |
+| Change reward destination (position drawer) | `changeRewardDestinationRequested` | `stakingPayeeFlow.changeRewardDestinationRequested` |
+| + New position / Start staking              | `startStakingRequested`            | `newPositionFlow.newPositionRequested`              |
 
 Every dashboard staking action now has a destination, and none of them leaves the dashboard — `Start staking` was the
 last one that navigated away, and it now opens the new-position flow in place. The Staking page's own forms
@@ -70,6 +72,7 @@ mounted.
 | KPI redeem with no position behind it     | Skipped — there is no ledger to withdraw from                                                                                                     |
 | KPI redeem with nothing unlocked          | Skipped — the call would move nothing and still cost a fee                                                                                        |
 | Picked validator set submitted            | Forwarded unchanged; the payload the picker produced is the payload the confirm opens on                                                          |
+| Change reward destination pressed         | Forwarded unchanged with the drawer's signing mode — a contact position opens the flow in draft mode                                              |
 | Draft saved from any of the staking flows | Bottom-left toast, auto-dismissing, with a `View drafts →` link to the Operations page                                                            |
 | Signed submission                         | No draft toast — the flows' own submit confirmation stands                                                                                        |
 
@@ -95,7 +98,8 @@ unlocked is dropped rather than opened.
 
 Every flow that can save a draft looks the same to the toast — what it was asked to do, on which network, for how much,
 and who will have to sign it — so they are bound as a list rather than as a named block each. A new staking action joins
-the toast by being bound alongside them, with nothing else to change.
+the toast by being bound alongside them, with nothing else to change. The payee flow is the latest to join; its line
+names no amount, since `set_payee` moves nothing.
 
 What the toast says is snapshotted when the user presses **Save as draft**, not when the draft comes back:
 `createDraftModel.draftCreated` closes the flow through `wireDraftCloseRedirect`, which resets the very stores the line
@@ -158,6 +162,7 @@ it to `watchOnly` as a defensive floor rather than guessing a mode for a row tha
 - [`staking-claim-rewards`](../staking-claim-rewards/README.md) — the claim session this feature dispatches into.
 - [`staking-amount-flow`](../staking-amount-flow/README.md) — the unbond / add-stake screen.
 - [`staking-confirm-flow`](../staking-confirm-flow/README.md) — the change-validators / redeem confirm.
+- [`staking-payee-flow`](../staking-payee-flow/README.md) — the change-reward-destination form and confirm.
 - [`staking-positions`](../../aggregates/staking-positions/README.md) — where the positions and eras behind a KPI
   request come from.
 - `features/drafts` — the draft the toast announces, and the Operations page it links to.

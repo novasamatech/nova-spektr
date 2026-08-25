@@ -3,11 +3,15 @@ import { useUnit } from 'effector-react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type Asset, type ChainId } from '@/shared/core';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
+import { networkModel } from '@/entities/network';
 import { SigningPathInline, StepPath, pathModel } from '@/features/signing-path';
+import { useDraftAvailability } from '../lib/useDraftAvailability';
 import { useDraftSources } from '../lib/useDraftSources';
+
+import { DraftSourcesEmpty } from './DraftSourcesEmpty';
 
 const DRAFT_INLINE_HOLD_MS = 500;
 
@@ -28,6 +32,14 @@ type Props = {
    * no origin of its own yet — see the note on the component.
    */
   pinnedSourceAccountId?: AccountId | null;
+  /**
+   * Closes the host flow when the empty state sends the user to the address
+   * book. The "Open address book" button is rendered only when this is given:
+   * flows mounted in the global modals slot outlive navigation and would stay
+   * on top of the page they sent the user to. Hosts that leave it off get the
+   * explanation without a navigating control.
+   */
+  onLeaveFlow?: () => void;
 };
 
 /**
@@ -55,6 +67,12 @@ type Props = {
  * `null` in every such form for no gain. The cost is that a future flow opened
  * for one account can forget to pin; see the drafts README for the surfaces
  * this is still open on.
+ *
+ * The picker is only ever shown with something to pick. While the address book
+ * is offline nothing renders — the mode card above carries the reconnect prompt
+ * and a dead list under it would only contradict it. With the book reachable
+ * but no source to offer, or with no permission to write drafts, an explanation
+ * with the next move stands in for the list; see `DraftSourcesEmpty`.
  */
 export const DraftSigningPath = memo(
   ({
@@ -66,7 +84,10 @@ export const DraftSigningPath = memo(
     draftPathEditEnded,
     allowedProxyTypes,
     pinnedSourceAccountId,
+    onLeaveFlow,
   }: Props) => {
+    const availability = useDraftAvailability();
+    const chains = useUnit(networkModel.$chains);
     const isPathComplete = useUnit(pathModel.$isComplete);
     const livePath = useUnit(pathModel.$path);
     // Bound through `useUnit`, not called off the module: the event has to run
@@ -147,6 +168,22 @@ export const DraftSigningPath = memo(
     );
 
     if (!chainId || !asset) return null;
+    if (availability === 'offline') return null;
+
+    if (availability !== 'ready' || draftSources.length === 0) {
+      const chain = chains[chainId];
+
+      return (
+        <DraftSourcesEmpty
+          availability={availability}
+          pinnedAddress={
+            pinnedSourceAccountId ? toAddress(pinnedSourceAccountId, { prefix: chain?.addressPrefix }) : null
+          }
+          chainName={chain?.name ?? ''}
+          onLeaveFlow={onLeaveFlow}
+        />
+      );
+    }
 
     // Drive the wrapper height via min-h (not max-h) so the form below rides a
     // single smooth transition instead of snapping when StepPath internally

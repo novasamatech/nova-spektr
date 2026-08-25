@@ -16,6 +16,7 @@ import {
   createSingleShardWallet,
   kusamaChain,
   kusamaChainId,
+  mythosChain,
   polkadotChain,
   polkadotChainId,
 } from '@/shared/mocks';
@@ -100,6 +101,41 @@ describe('account service', () => {
     );
 
     expect(filtered).toEqual([chainAccount, universalAccount]);
+  });
+
+  describe('canReceiveOnChain', () => {
+    const watchOnlyAccount: UniversalAccount = {
+      ...universalAccount,
+      id: 'watch-only',
+      signingType: SigningType.WATCH_ONLY,
+    };
+
+    const multisigAccount: ChainAccount = {
+      ...kusamaChainAccount,
+      id: 'multisig',
+      signingType: SigningType.MULTISIG,
+    };
+
+    it('should let a keyed key of another chain receive on a scheme-compatible chain', () => {
+      // Vault key derived for Kusama, no availability handler registered
+      expect(accountService.canReceiveOnChain(kusamaChainAccount, polkadotChain)).toEqual(true);
+    });
+
+    it('should keep the strict availability rule for keyless accounts on a foreign chain', () => {
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : false,
+        available: () => true,
+      });
+
+      expect(accountService.canReceiveOnChain(watchOnlyAccount, polkadotChain)).toEqual(false);
+      expect(accountService.canReceiveOnChain(multisigAccount, polkadotChain)).toEqual(false);
+      expect(accountService.canReceiveOnChain(multisigAccount, kusamaChain)).toEqual(true);
+    });
+
+    it('should reject an address-scheme mismatch even for keyed accounts', () => {
+      expect(accountService.canReceiveOnChain(chainAccount, mythosChain)).toEqual(false);
+    });
   });
 
   describe('graph', () => {
