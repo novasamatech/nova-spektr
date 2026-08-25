@@ -23,6 +23,7 @@ import { type AnyAccount, accounts as accountsDomain } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { stakingPositions } from '@/aggregates/staking-positions';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   polkadotAssetHubChain,
@@ -192,6 +193,14 @@ export async function createStakingScenario({
   // this every `isAccountAvailableOnChain` check inside the scope is false and
   // no chain ever gets an account.
   await seedAccountHandlers(env.scope);
+
+  // The dashboard hands its account selection to the positions aggregate; the
+  // aggregate never reads the selected wallet. Selected before the apis land,
+  // as at runtime, so the first subscription start is the only start.
+  await allSettled(stakingPositions.selectAccountIds, {
+    scope: env.scope,
+    params: accounts.map((account) => account.accountId),
+  });
 
   const settle = () => allSettled(env.scope);
 
