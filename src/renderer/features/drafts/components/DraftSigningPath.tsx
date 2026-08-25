@@ -24,9 +24,13 @@ type Props = {
   allowedProxyTypes?: readonly string[];
   /**
    * Fix the draft's source to this address; the user picks the hops after it,
-   * never the account it runs from. See the note on the component.
+   * never the account it runs from. `null` only when the operation genuinely
+   * has no origin of its own yet — see the note on the component.
+   *
+   * Required, with no default: forgetting it is silent and expensive, and the
+   * answer is a property of the flow that a caller always knows.
    */
-  pinnedSourceAccountId?: AccountId | null;
+  pinnedSourceAccountId: AccountId | null;
 };
 
 /**
@@ -39,11 +43,17 @@ type Props = {
  * With `pinnedSourceAccountId` the first hop is decided for the user and the
  * source list collapses to that one entry. Callers that opened this for a
  * _specific_ account — a staking position, say — must pin it: a draft records
- * the exact route it will be submitted along, and the submission executes from
- * the path's first node. Left free, the user can author an `unbond` for contact
- * A's position sourced at contact B, and the extrinsic fails at submission for
- * want of rights — after the draft has been reviewed and co-signed. Pinning
- * removes the class of mistake instead of validating against it.
+ * the exact route it will be submitted along, and the host flows build the
+ * draft's call from the path's first node. Left free, the user can author an
+ * `unbond` for contact A's position sourced at contact B, and the draft either
+ * acts on B's ledger or fails outright at submission — after it has been
+ * reviewed and co-signed. Pinning removes the class of mistake instead of
+ * validating against it.
+ *
+ * `null` is the other real answer, not an opt-out: a flow that is _choosing_ an
+ * origin rather than acting on one — opening a brand-new stake, or submitting a
+ * permissionless payout anybody may pay for — has nothing to pin, and the
+ * source list is the control the user came for.
  */
 export const DraftSigningPath = memo(
   ({

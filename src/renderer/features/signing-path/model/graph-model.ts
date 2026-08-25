@@ -269,16 +269,29 @@ function makeReachabilityChecker(multisigByAccountId: MultisigByAccountId, allow
   return (id: AccountId) => check(id, new Set());
 }
 
-function buildSources(
-  contactByAccountId: ContactsByAccountId,
-  multisigByAccountId: MultisigByAccountId,
-  proxies: Record<AccountId, ProxyAccount[] | undefined>,
-  accountList: AnyAccount[],
-  chainId: ChainId,
-  allowedSet: Set<AccountId> | null,
-  resolveName: AccountNameResolver,
-  ownSignerChain: Chain | null,
-): PathSource[] {
+type BuildSourcesParams = {
+  contactByAccountId: ContactsByAccountId;
+  multisigByAccountId: MultisigByAccountId;
+  proxies: Record<AccountId, ProxyAccount[] | undefined>;
+  accountList: AnyAccount[];
+  chainId: ChainId;
+  /** `restrictToOwn`: the signers a branch must reach. `null` — no restriction. */
+  allowedSet: Set<AccountId> | null;
+  resolveName: AccountNameResolver;
+  /** Set only when the caller asked for own signing keys as roots — see pass 4. */
+  ownSignerChain: Chain | null;
+};
+
+function buildSources({
+  contactByAccountId,
+  multisigByAccountId,
+  proxies,
+  accountList,
+  chainId,
+  allowedSet,
+  resolveName,
+  ownSignerChain,
+}: BuildSourcesParams): PathSource[] {
   const sources: PathSource[] = [];
   const seenAccounts = new Set<AccountId>();
   const canReach = allowedSet ? makeReachabilityChecker(multisigByAccountId, allowedSet) : null;
@@ -655,50 +668,28 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
     ? networkModel.$chains.map((chains) => chains[chainId] ?? null)
     : createStore<Chain | null>(null);
 
-  const $store = restrictToOwn
-    ? combine(
-        {
-          contactByAccountId: $contactByAccountId,
-          multisigByAccountId: $multisigByAccountId,
-          proxies: proxyModel.$proxies,
-          accountList: accounts.$list,
-          allowed: $ownSignerAccountIds,
-          resolveName: $nameResolver,
-          ownSignerChain: $ownSignerChain,
-        },
-        ({ contactByAccountId, multisigByAccountId, proxies, accountList, allowed, resolveName, ownSignerChain }) =>
-          buildSources(
-            contactByAccountId,
-            multisigByAccountId,
-            proxies as Record<AccountId, ProxyAccount[] | undefined>,
-            accountList,
-            chainId,
-            allowed,
-            resolveName,
-            ownSignerChain,
-          ),
-      )
-    : combine(
-        {
-          contactByAccountId: $contactByAccountId,
-          multisigByAccountId: $multisigByAccountId,
-          proxies: proxyModel.$proxies,
-          accountList: accounts.$list,
-          resolveName: $nameResolver,
-          ownSignerChain: $ownSignerChain,
-        },
-        ({ contactByAccountId, multisigByAccountId, proxies, accountList, resolveName, ownSignerChain }) =>
-          buildSources(
-            contactByAccountId,
-            multisigByAccountId,
-            proxies as Record<AccountId, ProxyAccount[] | undefined>,
-            accountList,
-            chainId,
-            null,
-            resolveName,
-            ownSignerChain,
-          ),
-      );
+  // `null` unless the caller narrowed the branches to what this installation
+  // can finish signing. One store either way, so the two readings of the source
+  // builder stay a single `combine` rather than two that must be edited in step.
+  const $allowedSet = restrictToOwn ? $ownSignerAccountIds : createStore<Set<AccountId> | null>(null);
+
+  const $store = combine(
+    {
+      contactByAccountId: $contactByAccountId,
+      multisigByAccountId: $multisigByAccountId,
+      proxies: proxyModel.$proxies,
+      accountList: accounts.$list,
+      allowedSet: $allowedSet,
+      resolveName: $nameResolver,
+      ownSignerChain: $ownSignerChain,
+    },
+    ({ proxies, ...rest }) =>
+      buildSources({
+        ...rest,
+        chainId,
+        proxies: proxies as Record<AccountId, ProxyAccount[] | undefined>,
+      }),
+  );
   sourcesForCache.set(cacheKey, $store);
 
   return $store;

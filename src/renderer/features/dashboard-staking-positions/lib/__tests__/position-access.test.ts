@@ -4,7 +4,7 @@ import { type ChainId, type Wallet, AccountType, CryptoType, SigningType, Wallet
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { collectSignerAccountIds } from '@/features/signing-path';
-import { type DraftPolicy, canAct, getMultisigThreshold, getPositionAccess } from '../position-access';
+import { type DraftPolicy, getMultisigThreshold, getPositionAccess } from '../position-access';
 
 const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(16).padStart(64, '0')}`);
 
@@ -79,7 +79,7 @@ function signersOf(wallets: Wallet[]) {
 }
 
 /** Drafts are possible and every address could carry one — the happy policy. */
-const DRAFTS_READY: DraftPolicy = { availability: 'ready', isDraftSource: () => true };
+const DRAFTS_READY: DraftPolicy = { blockedReason: null, isDraftSource: () => true };
 
 /**
  * `getPositionAccess` needs the row's address and chain even when there is no
@@ -90,15 +90,22 @@ const DRAFTS_READY: DraftPolicy = { availability: 'ready', isDraftSource: () => 
 function access(
   account: AccountFixture | null,
   wallets: Wallet[],
-  policy: DraftPolicy = DRAFTS_READY,
+  draftPolicy: DraftPolicy = DRAFTS_READY,
   accountId: AccountId = account?.accountId ?? CAROL,
 ) {
-  return getPositionAccess(account, accountId, CHAIN, wallets, signersOf(wallets), policy);
+  return getPositionAccess({
+    account,
+    accountId,
+    chainId: CHAIN,
+    wallets,
+    signerAccountIds: signersOf(wallets),
+    draftPolicy,
+  });
 }
 
-const DIRECT = { mode: 'direct', reason: null };
-const MULTISIG_ACCESS = { mode: 'multisig', reason: null };
-const DRAFT = { mode: 'draft', reason: null };
+const DIRECT = { mode: 'direct' };
+const MULTISIG_ACCESS = { mode: 'multisig' };
+const DRAFT = { mode: 'draft' };
 
 describe('getPositionAccess', () => {
   it('reports a signable local account as direct', () => {
@@ -190,12 +197,12 @@ describe('getPositionAccess', () => {
 
     const verdict = access(rowAccount, wallets, DRAFTS_READY, CAROL);
 
+    // Not `blocked`, which is what every surface keys its disabled state off.
     expect(verdict).toEqual(DRAFT);
-    expect(canAct(verdict)).toBe(true);
   });
 
   describe('when a draft is the only way through', () => {
-    const NO_ROUTE: DraftPolicy = { availability: 'ready', isDraftSource: () => false };
+    const NO_ROUTE: DraftPolicy = { blockedReason: null, isDraftSource: () => false };
 
     it('blocks an address the signing-path graph cannot route from', () => {
       // A plain contact — no multisig, no proxy — with a working address book:
@@ -204,13 +211,13 @@ describe('getPositionAccess', () => {
     });
 
     it('blocks when no external address book was ever connected', () => {
-      const policy: DraftPolicy = { availability: 'notConnected', isDraftSource: () => true };
+      const policy: DraftPolicy = { blockedReason: 'draftsNotConnected', isDraftSource: () => true };
 
       expect(access(null, [], policy)).toEqual({ mode: 'blocked', reason: 'draftsNotConnected' });
     });
 
     it('blocks when the user may not create drafts', () => {
-      const policy: DraftPolicy = { availability: 'noPermission', isDraftSource: () => true };
+      const policy: DraftPolicy = { blockedReason: 'draftsNoPermission', isDraftSource: () => true };
 
       expect(access(null, [], policy)).toEqual({ mode: 'blocked', reason: 'draftsNoPermission' });
     });
@@ -224,8 +231,8 @@ describe('getPositionAccess', () => {
      * never-connected profile.
      */
     it('says which fix is available when neither the book nor the address would do', () => {
-      const notConnected: DraftPolicy = { availability: 'notConnected', isDraftSource: () => false };
-      const noPermission: DraftPolicy = { availability: 'noPermission', isDraftSource: () => false };
+      const notConnected: DraftPolicy = { blockedReason: 'draftsNotConnected', isDraftSource: () => false };
+      const noPermission: DraftPolicy = { blockedReason: 'draftsNoPermission', isDraftSource: () => false };
 
       expect(access(null, [], notConnected)).toEqual({ mode: 'blocked', reason: 'draftsNotConnected' });
       expect(access(null, [], noPermission)).toEqual({ mode: 'blocked', reason: 'draftsNoPermission' });
@@ -234,7 +241,7 @@ describe('getPositionAccess', () => {
     it('still offers the draft while the address book is merely unreachable', () => {
       // Recoverable: the draft card carries its own reconnect prompt, and
       // refusing here would hide the one control that fixes it.
-      const policy: DraftPolicy = { availability: 'offline', isDraftSource: () => true };
+      const policy: DraftPolicy = { blockedReason: null, isDraftSource: () => true };
 
       expect(access(null, [], policy)).toEqual(DRAFT);
     });
@@ -255,7 +262,7 @@ describe('getPositionAccess', () => {
       });
       const wallets = [makeWallet(1, WalletType.WATCH_ONLY, [account])];
 
-      expect(access(account, wallets, { availability: 'ready', isDraftSource: () => true })).toEqual({
+      expect(access(account, wallets, { blockedReason: null, isDraftSource: () => true })).toEqual({
         mode: 'blocked',
         reason: 'watchOnly',
       });
@@ -264,7 +271,7 @@ describe('getPositionAccess', () => {
     it('asks the draft rule about the row’s own address and chain', () => {
       const seen: [AccountId, ChainId][] = [];
       const policy: DraftPolicy = {
-        availability: 'ready',
+        blockedReason: null,
         isDraftSource: (id, chainId) => {
           seen.push([id, chainId]);
 

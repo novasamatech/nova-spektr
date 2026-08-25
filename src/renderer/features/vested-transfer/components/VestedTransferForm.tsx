@@ -51,6 +51,7 @@ export const VestedTransferForm = () => {
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={null}
               $draftPath={formModel.$draftSigningPath}
               draftPathCommitted={formModel.events.draftPathCommitted}
               draftPathEditStarted={formModel.events.draftPathEditStarted}

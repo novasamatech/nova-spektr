@@ -1,4 +1,4 @@
-import { combine, createStore } from 'effector';
+import { type Store, combine, createStore } from 'effector';
 import { useUnit } from 'effector-react';
 import { useCallback, useMemo } from 'react';
 
@@ -12,8 +12,6 @@ const $emptySources = createStore<PathSource[]>([]);
 export type DraftSources = {
   /** Sources the picker may offer, in the graph's own order. */
   sources: PathSource[];
-  /** Whether a draft can be sourced at this address on this chain at all. */
-  isDraftSource: (accountId: AccountId) => boolean;
   /** Multisig hops past the source must be address-book entries too. */
   filterNextOption: (option: PathNextOption) => boolean;
 };
@@ -49,18 +47,42 @@ export const useDraftSources = (chainId: ChainId | null, allowedProxyTypes?: rea
   const addressBookIds = useMemo(() => new Set(backendContacts.map((c) => c.accountId)), [backendContacts]);
 
   return useMemo(() => {
-    const sources = allSources.filter((source) => addressBookIds.has(source.accountId));
-    const sourceIds = new Set(sources.map((source) => source.accountId));
-
     return {
-      sources,
-      isDraftSource: (accountId: AccountId) => sourceIds.has(accountId),
+      sources: allSources.filter((source) => addressBookIds.has(source.accountId)),
       filterNextOption: (option: PathNextOption) => option.kind !== 'multisig' || addressBookIds.has(option.accountId),
     };
   }, [allSources, addressBookIds]);
 };
 
 const $noSources = createStore(new Map<ChainId, Set<AccountId>>());
+
+/**
+ * One store per chain set, kept for the life of the process.
+ *
+ * Same reason `graphModel` keeps `sourcesForCache`: `combine` builds a derived
+ * unit permanently subscribed to its sources, and nothing here ever destroys
+ * one. Creating a fresh store per render — and the dashboard re-renders this
+ * every time another chain's positions arrive — would leave a growing pile of
+ * live subscriptions recomputing on every contact and proxy update.
+ */
+const sourcesByChainsCache = new Map<string, Store<Map<ChainId, Set<AccountId>>>>();
+
+/** `chainIds` must be deduplicated and sorted — it is also the cache key. */
+function $sourcesForChains(chainIds: ChainId[]): Store<Map<ChainId, Set<AccountId>>> {
+  if (chainIds.length === 0) return $noSources;
+
+  const cacheKey = chainIds.join(',');
+  const $cached = sourcesByChainsCache.get(cacheKey);
+  if ($cached) return $cached;
+
+  const $store = combine(
+    chainIds.map((chainId) => graphModel.$sourcesFor(chainId)),
+    (lists) => new Map(chainIds.map((chainId, index) => [chainId, new Set(lists[index]!.map((s) => s.accountId))])),
+  );
+  sourcesByChainsCache.set(cacheKey, $store);
+
+  return $store;
+}
 
 /**
  * The same rule as `useDraftSources`, asked across several chains at once.
@@ -71,24 +93,10 @@ const $noSources = createStore(new Map<ChainId, Set<AccountId>>());
  * is small and stable, so the per-chain stores are simply combined.
  */
 export const useDraftSourceLookup = (chainIds: ChainId[]): ((accountId: AccountId, chainId: ChainId) => boolean) => {
-  // Keyed by content, not by array identity: callers derive the chain set from
-  // a store, so it is a new array on every render and memoising on it directly
-  // would rebuild the combined store each time.
-  const chainKey = useMemo(() => [...new Set(chainIds)].sort().join(','), [chainIds]);
-
-  const sourcesStore = useMemo(() => {
-    const ids = [...new Set(chainIds)].sort();
-    if (ids.length === 0) return $noSources;
-
-    return combine(
-      ids.map((chainId) => graphModel.$sourcesFor(chainId)),
-      (lists) => new Map(ids.map((chainId, index) => [chainId, new Set(lists[index]!.map((s) => s.accountId))])),
-    );
-    // `chainKey` is `chainIds` by value — recomputing on it keeps the store
-    // stable while the set is unchanged, and current when it is not.
-  }, [chainKey]);
-
-  const sourcesByChain = useUnit(sourcesStore);
+  // Not memoised: callers derive the chain set from a store, so it is a new
+  // array on every render anyway. The store cache keys by the set's *content*,
+  // so the identity churn stops here rather than propagating into `useUnit`.
+  const sourcesByChain = useUnit($sourcesForChains([...new Set(chainIds)].sort()));
   const backendContacts = useUnit(contactModel.$backendContacts);
   const addressBookIds = useMemo(() => new Set(backendContacts.map((c) => c.accountId)), [backendContacts]);
 

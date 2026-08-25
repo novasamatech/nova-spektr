@@ -87,8 +87,17 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
 
   // Same reasoning for the draft rule, which additionally has to be asked of
   // every chain the table can show — a proxy edge exists on one network and not
-  // on another, so the answer is per (address, chain), not per address.
-  const positionChainIds = useMemo(() => [...new Set(positions.map((p) => p.chainId))], [positions]);
+  // on another, so the answer is per (address, chain), not per address. Only
+  // the chains the user is actually looking at: the account filter is applied
+  // first, so a filtered-out network costs nothing.
+  const visiblePositions = useMemo(
+    () => positions.filter((position) => nullable(selectedIds) || selectedIds.has(position.accountId)),
+    [positions, selectedIds],
+  );
+  const positionChainIds = useMemo(
+    () => [...new Set(visiblePositions.map((position) => position.chainId))],
+    [visiblePositions],
+  );
   const draftPolicy = useDraftPolicy(positionChainIds);
 
   const draftCountByKey = useMemo(() => {
@@ -106,7 +115,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   }, [drafts, draftsAvailable]);
 
   return useMemo(() => {
-    const visible = positions.filter((position) => nullable(selectedIds) || selectedIds.has(position.accountId));
+    const visible = visiblePositions;
 
     // The share column is a share of what the user is looking at. Using the
     // aggregate's chain total instead would make the column add up to less than
@@ -138,14 +147,14 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
         asset,
         account,
         wallet,
-        access: getPositionAccess(
+        access: getPositionAccess({
           account,
-          position.accountId,
-          position.chainId,
+          accountId: position.accountId,
+          chainId: position.chainId,
           wallets,
           signerAccountIds,
           draftPolicy,
-        ),
+        }),
         multisig: getMultisigThreshold(account),
         status: position.status,
         staked: position.stake.total,
@@ -162,8 +171,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
 
     return { rows, pending, draftsAvailable };
   }, [
-    positions,
-    selectedIds,
+    visiblePositions,
     chains,
     wallets,
     signerAccountIds,

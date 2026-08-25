@@ -63,7 +63,7 @@ const row: PositionRow = {
   asset: dotAsset,
   account: localAccount,
   wallet: localWallet,
-  access: { mode: 'direct', reason: null },
+  access: { mode: 'direct' },
   multisig: null,
   status: 'active',
   staked: '1000000000000',
@@ -125,7 +125,7 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
   test('should badge a contact position as Address book, never Local wallet', async () => {
     // `wallet: null` is the fact the badge states — nothing local holds the
     // account, it is known from the address book alone.
-    renderDrawer({ ...row, account: null, wallet: null, access: { mode: 'draft', reason: null } });
+    renderDrawer({ ...row, account: null, wallet: null, access: { mode: 'draft' } });
 
     expect(await screen.findByText('Address book')).toBeInTheDocument();
     expect(screen.queryByText('Local wallet')).not.toBeInTheDocument();
@@ -146,7 +146,7 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     // keying the badge off `access.mode === 'draft'` would call this a contact.
     const wallet = { id: 3, name: 'Team Multisig', type: WalletType.MULTISIG, accounts: [] };
 
-    renderDrawer({ ...row, wallet, access: { mode: 'draft', reason: null } });
+    renderDrawer({ ...row, wallet, access: { mode: 'draft' } });
 
     expect(await screen.findByText('Local wallet')).toBeInTheDocument();
     expect(screen.queryByText('Address book')).not.toBeInTheDocument();

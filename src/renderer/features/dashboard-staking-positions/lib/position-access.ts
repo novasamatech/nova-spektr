@@ -3,28 +3,34 @@ import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { type DraftAvailability, canStartDraft } from '@/features/drafts';
 import { isSignerAccount } from '@/features/signing-path';
 
 import { type MultisigThreshold, type PositionAccess, type PositionBlockedReason } from './types';
 
 /**
- * What this installation could do with a draft for the address in question.
+ * What this installation could do with a draft, already resolved.
  *
  * Resolved once per surface and handed in, rather than read here: it is the
  * same answer for every row, and this runs once per row of a table and once per
- * account of the KPI selection. It also has to come from the drafts feature
- * itself — `useDraftAvailability` and `useDraftSources` — so that a row and the
- * flow it opens cannot disagree about whether a draft is possible.
+ * account of the KPI selection. Both halves come from `features/drafts` — see
+ * `useDraftPolicy`, which is where its vocabulary is translated into this one —
+ * so that a row and the flow it opens cannot disagree about whether a draft is
+ * possible. Handing the answer in also keeps this module free of any runtime
+ * dependency on the drafts feature's barrel, which exports the whole draft UI
+ * alongside the rule.
  */
 export type DraftPolicy = {
-  availability: DraftAvailability;
+  /**
+   * `null` when this user can author drafts at all; otherwise the terminal
+   * state that stops them, already in this widget's vocabulary.
+   */
+  blockedReason: Extract<PositionBlockedReason, 'draftsNotConnected' | 'draftsNoPermission'> | null;
   /** Whether a draft may start at this address on this chain at all. */
   isDraftSource: (accountId: AccountId, chainId: ChainId) => boolean;
 };
 
 const blocked = (reason: PositionBlockedReason): PositionAccess => ({ mode: 'blocked', reason });
-const allowed = (mode: 'direct' | 'multisig' | 'draft'): PositionAccess => ({ mode, reason: null });
+const allowed = (mode: 'direct' | 'multisig' | 'draft'): PositionAccess => ({ mode });
 
 /**
  * Whether the operation could leave as a draft, and what to say when it cannot.
@@ -37,18 +43,11 @@ const allowed = (mode: 'direct' | 'multisig' | 'draft'): PositionAccess => ({ mo
  * could sign for it", which is untrue and points them at nothing they can do.
  * Whether an address could carry a draft is simply unknowable until there is a
  * book to look it up in, so the connection and the permission are reported
- * first.
- *
- * `canStartDraft` rather than a second reading of the same states: it is the
- * drafts feature's own answer, and `DraftModeCard` hides itself by exactly this
- * rule. `offline` passes it — the address book was connected before, its
- * contacts are still cached, the card carries its own reconnect prompt, and
- * refusing at the dashboard would hide the one control that fixes it.
+ * first — `policy.blockedReason` is exactly that verdict, decided by the drafts
+ * feature and translated once per surface.
  */
 function resolveDraftAccess(accountId: AccountId, chainId: ChainId, policy: DraftPolicy): PositionAccess {
-  if (!canStartDraft(policy.availability)) {
-    return blocked(policy.availability === 'noPermission' ? 'draftsNoPermission' : 'draftsNotConnected');
-  }
+  if (policy.blockedReason !== null) return blocked(policy.blockedReason);
 
   if (!policy.isDraftSource(accountId, chainId)) return blocked('noDraftRoute');
 
@@ -84,14 +83,26 @@ function resolveDraftAccess(accountId: AccountId, chainId: ChainId, policy: Draf
  * deprecated mirror of it, and `useChainHasSigner`, the rule this one has to
  * agree with, reads the domain list. Build it with `collectSignerAccountIds`.
  */
-export function getPositionAccess(
-  account: AnyAccount | null | undefined,
-  accountId: AccountId,
-  chainId: ChainId,
-  wallets: Wallet[],
-  signerAccountIds: ReadonlySet<AccountId>,
-  draftPolicy: DraftPolicy,
-): PositionAccess {
+export type PositionAccessParams = {
+  /** The local account behind the address, `null` for an address-book row. */
+  account: AnyAccount | null | undefined;
+  /** The row's own address — needed even when no local account holds it. */
+  accountId: AccountId;
+  /** The row's network: a proxy edge exists on one chain and not on another. */
+  chainId: ChainId;
+  wallets: Wallet[];
+  signerAccountIds: ReadonlySet<AccountId>;
+  draftPolicy: DraftPolicy;
+};
+
+export function getPositionAccess({
+  account,
+  accountId,
+  chainId,
+  wallets,
+  signerAccountIds,
+  draftPolicy,
+}: PositionAccessParams): PositionAccess {
   // No local account at all — the address is known only from the address book.
   if (nullable(account)) return resolveDraftAccess(accountId, chainId, draftPolicy);
 
@@ -126,9 +137,4 @@ export function getMultisigThreshold(account: AnyAccount | null | undefined): Mu
   if (nullable(account) || !accountUtils.isAnyMultisigAccount(account)) return null;
 
   return { threshold: account.threshold, signatories: account.signatories.length };
-}
-
-/** Whether the account may be offered signing actions at all. */
-export function canAct(access: PositionAccess): boolean {
-  return access.mode !== 'blocked';
 }

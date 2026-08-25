@@ -41,6 +41,7 @@ export const BondForm = ({ onGoBack }: Props) => {
         <DraftSigningPath
           chainId={network.chain.chainId}
           asset={network.asset}
+          pinnedSourceAccountId={null}
           $draftPath={formModel.$draftSigningPath}
           draftPathCommitted={formModel.events.draftPathCommitted}
           draftPathEditStarted={formModel.events.draftPathEditStarted}

@@ -11,12 +11,10 @@ export type {
   DraftPolicy,
   MultisigThreshold,
   PositionAccess,
-  PositionAccessMode,
   PositionBlockedReason,
   PositionRow,
 } from './lib';
 export {
-  canAct,
   getBlockedReasonKey,
   getCountdownParts,
   getMultisigThreshold,

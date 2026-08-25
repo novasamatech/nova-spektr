@@ -49,6 +49,7 @@ export const InitStep = () => {
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={null}
               $draftPath={newPositionFlowModel.$draftSigningPath}
               draftPathCommitted={newPositionFlowModel.draftPathCommitted}
               draftPathEditStarted={newPositionFlowModel.draftPathEditStarted}

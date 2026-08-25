@@ -36,8 +36,10 @@ type Props = {
 
 /**
  * The Total-staked card's drill-down: every position, what is unbonding on it,
- * and the actions the account's access mode actually allows. A mode that cannot
- * redeem shows no Redeem button at all rather than a greyed-out one.
+ * and the actions its access verdict allows. A position that cannot redeem
+ * keeps the Redeem button, disabled, with the reason in its tooltip — a control
+ * that vanishes cannot tell the user that connecting an address book, or asking
+ * an admin, would bring it back.
  */
 export const PositionsModal = memo(({ rows, positions, currency, walletByAccount, onClose }: Props) => {
   const { t } = useI18n();
@@ -175,8 +177,8 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
           const blockedReasonKey = getBlockedReasonKey(item.access);
           const blockedHint = blockedReasonKey === null ? null : t(blockedReasonKey);
 
-          const redeemAllowed = redeemEnabled && blockedHint === null;
-          const unbondAllowed = unbondEnabled && blockedHint === null;
+          const redeemAllowed = redeemEnabled && blockedReasonKey === null;
+          const unbondAllowed = unbondEnabled && blockedReasonKey === null;
 
           // One tooltip per button, not one around both: the two are served by
           // different flows, so one can be live while the other is not.

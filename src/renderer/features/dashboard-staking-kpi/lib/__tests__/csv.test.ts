@@ -25,7 +25,7 @@ const positionRow: CsvPositionRow = {
   unbonding: [],
   totalUnbonding: '500000000000',
   redeemable: '240000000000',
-  access: { mode: 'direct', reason: null },
+  access: { mode: 'direct' },
   address: '15oF4u...',
   accountName: 'Main',
 };

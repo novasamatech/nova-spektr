@@ -111,6 +111,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
             <DraftSigningPath
               chainId={chain.chainId}
               asset={asset}
+              pinnedSourceAccountId={null}
               $draftPath={claimRewardsModel.$draftSigningPath}
               draftPathCommitted={claimRewardsModel.draftPathCommitted}
               draftPathEditStarted={claimRewardsModel.draftPathEditStarted}

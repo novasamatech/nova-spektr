@@ -1,9 +1,8 @@
 import { fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Chain, type ChainId, CryptoType, SigningType } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { SigningType } from '@/shared/core';
+import { createAccountId, createVaultBaseAccount, polkadotAssetHubChain } from '@/shared/mocks';
 
 /**
  * Whether an account fits a chain is decided by a DI `anyOf` registry, and a
@@ -24,35 +23,23 @@ const { graphModel } = await import('./graph-model');
 const { accounts } = await import('@/domains/network');
 const { networkModel } = await import('@/entities/network');
 
-const CHAIN = '0x1234' as ChainId;
-const VAULT_KEY = `1${'0'.repeat(46)}1`.slice(0, 48) as AccountId;
-const WATCHED = `1${'0'.repeat(46)}2`.slice(0, 48) as AccountId;
+const CHAIN = polkadotAssetHubChain.chainId;
+const VAULT_KEY = createAccountId('own-vault-key');
+const WATCHED = createAccountId('own-watched-key');
 
-const chain = { chainId: CHAIN, name: 'Polkadot', assets: [], nodes: [], addressPrefix: 0 } as unknown as Chain;
-
-const account = (accountId: AccountId, signingType: SigningType) =>
-  ({
-    id: accountId,
-    type: 'universal',
-    name: 'Account',
-    walletId: 1,
-    accountId,
-    cryptoType: CryptoType.SR25519,
-    signingType,
-    createdAt: 0,
-  }) as unknown as AnyAccount;
+const vaultKey = createVaultBaseAccount('vault', { walletId: 1, accountId: VAULT_KEY });
+const watched = {
+  ...createVaultBaseAccount('watched', { walletId: 1, accountId: WATCHED }),
+  signingType: SigningType.WATCH_ONLY,
+};
 
 // Mirrors the `Map<any, any>` seed helper the sibling graph-model suite uses —
 // `fork` takes a heterogeneous store→value map that no single generic describes.
 const seeded = () =>
   fork({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     values: new Map<any, any>([
-      [networkModel.$chains, { [CHAIN]: chain }],
-      [
-        accounts.__test.$list,
-        [account(VAULT_KEY, SigningType.POLKADOT_VAULT), account(WATCHED, SigningType.WATCH_ONLY)],
-      ],
+      [networkModel.$chains, { [CHAIN]: polkadotAssetHubChain }],
+      [accounts.__test.$list, [vaultKey, watched]],
     ]),
   });
 

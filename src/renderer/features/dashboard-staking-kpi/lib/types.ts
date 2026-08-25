@@ -28,7 +28,6 @@ export type ClaimRow = {
   /** Eras with something unclaimed, ascending. */
   eras: number[];
   payouts: UnclaimedPayout[];
-  access: Access;
 };
 
 /** One (account × chain) line of the positions / unbonding drill-down. */

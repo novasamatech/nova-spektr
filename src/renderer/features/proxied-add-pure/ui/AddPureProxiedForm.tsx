@@ -43,6 +43,7 @@ export const AddPureProxiedForm = () => {
         <DraftSigningPath
           chainId={chain.chainId}
           asset={nativeAsset}
+          pinnedSourceAccountId={null}
           $draftPath={formModel.$draftSigningPath}
           draftPathCommitted={formModel.events.draftPathCommitted}
           draftPathEditStarted={formModel.events.draftPathEditStarted}

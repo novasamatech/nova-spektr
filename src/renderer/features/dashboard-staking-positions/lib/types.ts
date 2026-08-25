@@ -4,18 +4,6 @@ import { type AnyAccount } from '@/domains/network';
 import { type NominationStatus, type PositionStatus, type StakingPosition } from '@/domains/staking';
 
 /**
- * How the user can act on the account behind a position.
- *
- * - `direct` — a local, signable account; the flow goes straight to sign;
- * - `multisig` — a multisig whose signatory set contains a key of this
- *   installation, so the operation can be started here and co-signed later;
- * - `draft` — no local signer reaches the account, but a draft can be authored
- *   for it and handed to whoever can;
- * - `blocked` — none of the above; the row is data only, and `reason` says why.
- */
-export type PositionAccessMode = 'direct' | 'multisig' | 'draft' | 'blocked';
-
-/**
  * Why a position offers no actions. Each maps to its own tooltip, because the
  * four are not equally final and the user's next move differs: two are facts
  * about the address, one asks them to connect something, one to ask an admin.
@@ -30,12 +18,26 @@ export type PositionAccessMode = 'direct' | 'multisig' | 'draft' | 'blocked';
  */
 export type PositionBlockedReason = 'watchOnly' | 'noDraftRoute' | 'draftsNotConnected' | 'draftsNoPermission';
 
-/** The verdict for one position: what may be done, and why not when nothing may. */
-export type PositionAccess = {
-  mode: PositionAccessMode;
-  /** Set exactly when `mode` is `blocked`. */
-  reason: PositionBlockedReason | null;
-};
+/**
+ * The verdict for one position: what may be done, and why not when nothing may.
+ *
+ * A union rather than a `{ mode, reason }` pair so that "is this blocked" and
+ * "why" are one question with one answer. Spelled as two independent fields,
+ * the invariant "`reason` is set exactly when blocked" lived in a comment, and
+ * callers picked whichever field they happened to reach for — the table asked
+ * `mode`, the drawer asked `reason`, and nothing stopped the two from being
+ * constructed out of step.
+ *
+ * - `direct` — a local, signable account; the flow goes straight to sign;
+ * - `multisig` — a multisig whose signatory set contains a key of this
+ *   installation, so the operation can be started here and co-signed later;
+ * - `draft` — no local signer reaches the account, but a draft can be authored
+ *   for it and handed to whoever can;
+ * - `blocked` — none of the above; the row is data only.
+ */
+export type PositionAccess =
+  | { mode: 'direct' | 'multisig' | 'draft' }
+  | { mode: 'blocked'; reason: PositionBlockedReason };
 
 /** `2 of 3` chip data of a multisig account. */
 export type MultisigThreshold = {

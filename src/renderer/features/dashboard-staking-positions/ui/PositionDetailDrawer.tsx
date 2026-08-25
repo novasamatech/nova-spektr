@@ -68,7 +68,9 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   const nowMs = useMemo(() => Date.now(), [row?.id]);
 
   const isOpen = row !== null;
-  const watchOnly = row?.access.reason === 'watchOnly';
+  // The badge's own question, narrower than "blocked": an address-book contact
+  // nobody can route to is blocked too, and it wears `Address book`, not this.
+  const watchOnly = row !== null && row.access.mode === 'blocked' && row.access.reason === 'watchOnly';
   /**
    * Why this position offers no origin-bound actions, `null` when it does.
    *

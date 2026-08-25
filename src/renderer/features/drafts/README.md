@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
 
 ## Overview
 
@@ -54,7 +54,14 @@ whether to offer an action at all:
   a draft source and never will be.
 
 Published rather than re-derived per screen: a caller that judged this differently would send the user into a form whose
-draft toggle renders nothing, or whose source list is empty.
+draft toggle renders nothing, or whose source list is empty. The wording of a refusal travels the same way — see
+`DRAFT_NO_WRITE_PERMISSION_KEY` — so a predicting surface explains a missing permission in the same sentence the drafts
+list uses, and a rename here cannot leave another feature rendering a raw i18n path.
+
+The source set is asked one chain at a time (`useDraftSources`) or across several at once (`useDraftSourceLookup`, for a
+table that mixes networks). Both keep their combined stores in a module cache, as the signing-path graph does: an
+Effector `combine` stays subscribed for the life of the process, so minting one per render would leave a growing pile of
+live subscriptions recomputing on every contact and proxy update.
 
 ## The drafts section
 
@@ -141,11 +148,27 @@ call data only opens to _Signing path_. Drafts can also be started **from an ope
 governance, proxy, and other operation flows offer a _draft mode_ ("Save as draft", via `createDraftModeBinding`) that
 seeds the modal with the form's call data, chain, and signing path.
 
-A flow opened for one **specific account** — a staking position, say — pins the draft's source to it: the first hop is
-decided, the source list collapses to that one entry, and the user picks only the hops after it. A draft records the
-exact route it will be submitted along and executes from the path's first node, so a draft authored for one position but
-sourced at another address fails at submission for want of rights — after it has been reviewed and co-signed. Pinning
-removes the class of mistake rather than validating against it.
+### Pinning the source
+
+In draft mode the **path's first node is the origin**: every host flow builds the draft's call from it, not from
+whatever account the form itself is sitting on. So who the source is decides what the draft _does_.
+
+For most forms that is the point — a transfer, a vote, a new proxy or a brand-new stake is being authored from scratch,
+and the source picker is the control that says on whose behalf. A flow opened for one **specific account** — a staking
+position, say — is the opposite case, and pins the source to it: the first hop is decided, the source list collapses to
+that one entry, and the user picks only the hops after it. Left free, a user could author an `unbond` for contact A's
+position sourced at contact B, and the draft would act on B's ledger or fail outright — after being reviewed and
+co-signed. Pinning removes the class of mistake rather than validating against it.
+
+`DraftSigningPath`'s `pinnedSourceAccountId` is therefore **required, with no default**: forgetting it is silent and
+expensive, and every caller knows the answer. Today the dashboard staking flows (add stake / unbond / change validators
+/ redeem) pin; every other call site passes `null`.
+
+> **Open question.** The legacy Staking-page forms (`staking-withdraw`, `staking-unstake`, `staking-bond-extra`,
+> `staking-restake`, `staking-nominate`, `staking-payee`) sit between the two cases: they are opened on one of the
+> user's own accounts and show that account's figures, yet their draft mode lets the source be re-pointed, and an
+> `unstake` amount validated against account A can end up drafted for B. They pass `null` today — the pre-existing
+> behaviour — and pinning them is a behavioural change that needs its own verification pass.
 
 **Editing** an existing draft is limited to its description (with the decoded call and signing summary shown for
 context); closing with unsaved changes asks for confirmation.

@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
 
 ## Overview
 
@@ -68,7 +68,7 @@ flowchart TD
 | `draft`                        | No local key, but the address can carry a draft and this user may write one | Full action set, plus a pencil glyph — the operation leaves as a draft, pinned to this position |
 | `blocked · watchOnly`          | A local account this installation holds no key for                          | `view only` in the row; every chip disabled with its reason                                     |
 | `blocked · noDraftRoute`       | Not ours, and no multisig or proxy could sign for it                        | same                                                                                            |
-| `blocked · draftsNotConnected` | Could carry a draft, but no external address book was ever connected        | same                                                                                            |
+| `blocked · draftsNotConnected` | Could carry a draft, but no external address book was ever connected        | Chips disabled with the reason — but **no** `view only` caption                                 |
 | `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | same                                                                                            |
 
 Three rules behind that table are easy to get wrong, and each was a bug before it was a rule.
@@ -98,6 +98,12 @@ the reason, instead of disappearing. This reverses an earlier decision here ("th
 disabled control invites the user to keep trying"). The reversal is deliberate: the reasons are now specific and two of
 them are actionable ("ask your admin", "connect an address book"), and a control that vanishes cannot carry that
 sentence.
+
+**The `view only` caption is spent only on the terminal reasons.** The 4%-wide last column has room for one word, and
+that word is the most final one in the vocabulary — so `isViewOnly` gives it to `watchOnly` and `noDraftRoute`, which
+are facts about the address, and withholds it from the two draft reasons, which are a missing connection and a missing
+permission. Stamping "view only" on a row that is one click, or one admin, away from acting would undo in the grid the
+very distinction the four reasons exist to draw. Which reason it is stays the drawer's business.
 
 **Claim is the exception to all of it.** A payout call names the _validator_, is permissionless, and pays each
 nominator's own payee whoever submits it. So the Claim chip is gated by whether anyone here can sign on the network, not

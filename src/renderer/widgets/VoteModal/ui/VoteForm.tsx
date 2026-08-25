@@ -92,6 +92,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
           <DraftSigningPath
             chainId={chain.chainId}
             asset={asset}
+            pinnedSourceAccountId={null}
             $draftPath={voteForm.$draftSigningPath}
             draftPathCommitted={voteForm.events.draftPathCommitted}
             draftPathEditStarted={voteForm.events.draftPathEditStarted}

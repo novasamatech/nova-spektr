@@ -138,19 +138,19 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
    * Not cached per account: a proxy edge exists on one network and not on
    * another, so the same address can be a draft source on Polkadot and a dead
    * end on Kusama. An account absent from the wallet map is an address-book
-   * entry, and `getPositionAccess(null, …)` is exactly the verdict the
+   * entry, and the verdict for a `null` account is exactly the one the
    * positions table gives it — the two surfaces cannot disagree.
    */
   const accessFor = useCallback(
     (accountId: AccountId, chainId: ChainId): Access =>
-      getPositionAccess(
-        accountByAccountId.get(accountId) ?? null,
+      getPositionAccess({
+        account: accountByAccountId.get(accountId) ?? null,
         accountId,
         chainId,
         wallets,
         signerAccountIds,
         draftPolicy,
-      ),
+      }),
     [accountByAccountId, wallets, signerAccountIds, draftPolicy],
   );
 
@@ -231,12 +231,14 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         unclaimedFiat: toFiat(position.chainId, entry?.total ?? '0'),
         eras,
         payouts,
-        access: accessFor(position.accountId, position.chainId),
       });
     }
 
     return rows;
-  }, [positions, assets, unclaimed, rewardsByChain, toFiat, accessFor]);
+    // No access verdict here on purpose: a payout is permissionless, so a claim
+    // row is offered on the strength of the payer this installation substitutes
+    // rather than of the position's own account. Nothing downstream reads one.
+  }, [positions, assets, unclaimed, rewardsByChain, toFiat]);
 
   const unclaimedFooter = useMemo(() => {
     const byAsset = new Map<string, AssetAmount>();
