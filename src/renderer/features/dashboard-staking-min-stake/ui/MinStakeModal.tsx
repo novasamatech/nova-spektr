@@ -197,8 +197,8 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
   return (
     <Modal isOpen size="xl" height="lg" onToggle={(open) => !open && onClose()}>
       <Modal.Title close>{t('dashboard.staking.minStake.title')}</Modal.Title>
-      <Modal.Content disableScroll>
-        <div className="flex h-full min-h-0 flex-col gap-4 px-5 pt-2 pb-4">
+      <Modal.Content>
+        <div className="flex flex-col gap-4 px-5 pt-2 pb-4">
           <div className="flex flex-wrap items-center gap-3">
             <SegmentedControl
               value={selected.chainId}
@@ -292,7 +292,7 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
             </HelpText>
           )}
 
-          <div className="min-h-0 flex-1 overflow-auto">{series && <Table columns={columns} data={tableRows} />}</div>
+          {series && <Table columns={columns} data={tableRows} />}
         </div>
       </Modal.Content>
       <Modal.Footer align="between">
