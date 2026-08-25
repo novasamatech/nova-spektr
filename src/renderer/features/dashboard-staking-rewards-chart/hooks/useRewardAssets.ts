@@ -6,7 +6,7 @@ import { getRelaychainAsset } from '@/shared/lib/utils';
 import { getColorByIndex } from '@/shared/ui/chart-constants';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { useStakingPositions } from '@/aggregates/staking-positions';
+import { useStakingAccountSelection, useStakingPositions } from '@/aggregates/staking-positions';
 
 /** A chain the asset toggle can switch to, with everything the chart needs. */
 export type RewardAsset = {
@@ -34,7 +34,10 @@ const CHAIN_COLORS: Record<string, string> = {
  * that are actually configured in this build — never from a hardcoded DOT/KSM
  * pair. A chain missing from the network config simply has no option.
  */
-export const useRewardAssets = (): RewardAsset[] => {
+export const useRewardAssets = (accountIds: string[]): RewardAsset[] => {
+  // Same rule as the KPI cards: a reader of the positions retains the
+  // selection, so hiding the positions table cannot blank this widget.
+  useStakingAccountSelection(accountIds);
   const chains = useUnit(networkModel.$chains);
   const { positions } = useStakingPositions();
 

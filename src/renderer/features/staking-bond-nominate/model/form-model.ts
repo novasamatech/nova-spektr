@@ -1,5 +1,6 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
 import { spread } from 'patronum';
 
@@ -19,7 +20,7 @@ import {
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
-import { stakingUtils } from '@/domains/staking';
+import { stakingService, stakingUtils } from '@/domains/staking';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -335,6 +336,27 @@ const $available = combine({ reservableAmount: $reservableAmount, fee: $fee }).m
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
+
+/** Chain minimum for a nomination — zero until the node answers (no floor). */
+const $minBond = createStore(BN_ZERO).reset(formInitiated);
+
+const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> => {
+  return stakingService.getMinNominatorBond(api);
+});
+
+sample({
+  clock: formInitiated,
+  source: $api,
+  filter: (api): api is ApiPromise => nonNullable(api),
+  target: getMinNominatorBondFx,
+});
+
+sample({
+  clock: getMinNominatorBondFx.doneData,
+  fn: (minBond) => new BN(minBond),
+  target: $minBond,
+});
+
 const { $errors, $valid } = createTxValidationStore({
   validator: bondNominateValidator,
   params: {
@@ -345,6 +367,7 @@ const { $errors, $valid } = createTxValidationStore({
     route: $route,
     transaction: $tx,
     amount: form.fields.amount.$value,
+    minimumBond: $minBond,
   },
 });
 

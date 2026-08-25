@@ -65,6 +65,28 @@ function createNamespaces(chains: ChainId[]) {
   };
 }
 
+/**
+ * Every chain the session can sign on — the approved `polkadot.chains` plus
+ * whatever the account list names (a wallet may fill only one of the two).
+ */
+function getSessionChains(session: SessionTypes.Struct): string[] {
+  const polkadot = session.namespaces.polkadot;
+  const fromAccounts = (polkadot?.accounts ?? [])
+    .map(meta => meta.split(':').slice(0, 2).join(':'))
+    .filter(meta => meta.length > 'polkadot:'.length);
+
+  return Array.from(new Set([...(polkadot?.chains ?? []), ...fromAccounts]));
+}
+
+/**
+ * Whether a request on `chainId` would be accepted: the sign client rejects
+ * `request()` for a chain the session was not approved for ("Missing or
+ * invalid. request() chainId"), so this is checked before asking to sign.
+ */
+function isChainInSession(session: SessionTypes.Struct, chainId: ChainId): boolean {
+  return getSessionChains(session).includes(getWalletConnectChainId(chainId));
+}
+
 function getAccountsFromSession(session: SessionTypes.Struct, chains: Chain[]) {
   if (nullable(session)) return [];
 
@@ -225,6 +247,8 @@ export const walletConnectService = {
 
   getWalletConnectChains,
   getWalletConnectChainId,
+  getSessionChains,
+  isChainInSession,
   getAccountsFromSession,
 
   createNamespaces,

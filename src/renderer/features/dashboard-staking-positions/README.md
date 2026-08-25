@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -16,16 +16,18 @@ _what exactly is wrong with this one and what can I do about it_.
 Nothing here fetches from a node. `aggregates/staking-positions` already drives every read; this feature joins the
 caches it filled and renders them.
 
-It does own one piece of wiring, though: the dashboard's account selection also contains **address book entries**, which
-are not accounts of any wallet and would therefore never produce a position. This widget hands those ids to the
-aggregate (`trackAccountIds`) once for the whole staking tab — the KPI and rewards widgets read the resulting positions
-rather than repeating the wiring. The tracked set is replaced on every selection change and released on unmount, so it
-never grows past what the user is looking at.
+It does own one piece of wiring, though: the aggregate answers for exactly the account ids it is given, and this widget
+hands it the **dashboard's account selection** through the aggregate's `useStakingAccountSelection` hook — as do the KPI
+cards, the rewards chart and the Overview accounts table, since any of them can be hidden on its own and the rest must
+keep their data. That selection is the only thing that scopes the tab: it spans every wallet of the installation plus
+the address book, and the wallet selected in wallet management plays no part. The set is replaced on every selection
+change; the aggregate counts its consumers and releases it when the last one unmounts, so it never grows past what the
+user is looking at.
 
 ## Who can use it / when it applies
 
-Visible whenever the `dashboard` feature flag is on, the wallet has at least one account, and the user has not hidden
-the widget.
+Visible whenever the `dashboard` feature flag is on, the dashboard has at least one account entry, and the user has not
+hidden the widget.
 
 What the user may _do_ with a row follows one rule: **a row offers an action only when there is a real, completable way
 to perform it.** Everything else renders the chip disabled and says, in the tooltip, exactly why. There are three ways

@@ -51,19 +51,29 @@ vi.mock('@/shared/transactions', async (importOriginal) => {
     // fork — every account would read as unsignable. The permission check has
     // its own tests; here the terminal hop simply signs.
     createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
-    createTxValidationStore: () => ({
-      $errors: createStore<unknown[]>([]),
-      $balanceValidationResults: createStore<unknown[]>([]),
-      $pending: createStore(false),
-      $validationDone: createStore(true),
-      $valid: createStore(true),
-      $failed: createStore(false),
-      $available: createStore<unknown[]>([]),
-    }),
+    // The verdict is seeded by the test: the rules themselves (over the
+    // balance, under the chain minimum) live in `bondNominateValidator` and
+    // are tested there. What is checked here is that the flow obeys them.
+    createTxValidationStore: () => {
+      const $errors = createStore<unknown[]>([]);
+      mocks.txErrors = $errors;
+
+      return {
+        $errors,
+        $balanceValidationResults: createStore<unknown[]>([]),
+        $pending: createStore(false),
+        $validationDone: createStore(true),
+        $valid: $errors.map((errors) => errors.length === 0),
+        $failed: $errors.map((errors) => errors.length > 0),
+        $available: createStore<unknown[]>([]),
+      };
+    },
   };
 });
 
-const { mocks } = vi.hoisted(() => ({ mocks: { minBond: null as unknown, chains: null as unknown } }));
+const { mocks } = vi.hoisted(() => ({
+  mocks: { minBond: null as unknown, chains: null as unknown, txErrors: null as unknown },
+}));
 
 vi.mock('@/aggregates/staking-positions', async () => {
   const { createStore } = await import('effector');
@@ -209,6 +219,10 @@ const WALLET_CONNECT_WALLET: Wallet = { id: 1, name: 'WalletConnect', type: Wall
 
 const $chains = () => mocks.chains as Store<unknown[]>;
 const $minBond = () => mocks.minBond as Store<Record<string, string>>;
+const $txErrors = () => mocks.txErrors as Store<unknown[]>;
+
+const MINIMUM_BOND_ERROR = { rule: 'minimum bond', message: 'staking.belowMinimumBondError' };
+const OVER_BALANCE_ERROR = { action: 'amount', balance: { success: false } };
 
 /**
  * What the flow reads about a network — chains, the minimum bond, and a live
@@ -284,13 +298,13 @@ describe('staking-new-position-flow · continue', () => {
     expect(initiated[0]).toMatchObject({ chain: CHAIN, asset: ASSET, initiator: ACCOUNT });
   });
 
-  it('refuses a bond below the chain minimum', async () => {
+  it('refuses a bond the validator rejected — the chain minimum', async () => {
     // `staking.nominate` rejects the stash and the batch fails as a whole, so
-    // this blocks rather than warns.
-    const scope = fork({ values: seeded(dot(10)) });
+    // the shared validator blocks rather than warns; the flow obeys it.
+    const scope = fork({ values: seeded().set($txErrors(), [MINIMUM_BOND_ERROR]) });
     await fillForm(scope, '9');
 
-    expect(scope.getState(newPositionFlowModel.$isBelowMinimumBond)).toBe(true);
+    expect(scope.getState(newPositionFlowModel.$isAmountInvalid)).toBe(true);
     expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(false);
 
     await allSettled(newPositionFlowModel.continueRequested, { scope });
@@ -298,11 +312,29 @@ describe('staking-new-position-flow · continue', () => {
     expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.INIT);
   });
 
-  it('accepts exactly the minimum', async () => {
-    const scope = fork({ values: seeded(dot(10)) });
+  it('frames the amount for a balance shortfall on the amount itself', async () => {
+    const scope = fork({ values: seeded().set($txErrors(), [OVER_BALANCE_ERROR]) });
+    await fillForm(scope, '1000');
+
+    expect(scope.getState(newPositionFlowModel.$isAmountInvalid)).toBe(true);
+    expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(false);
+  });
+
+  it('leaves the amount frame alone for errors elsewhere on the route', async () => {
+    const scope = fork({
+      values: seeded().set($txErrors(), [{ action: 'multisig deposit', balance: { success: false } }]),
+    });
     await fillForm(scope, '10');
 
-    expect(scope.getState(newPositionFlowModel.$isBelowMinimumBond)).toBe(false);
+    expect(scope.getState(newPositionFlowModel.$isAmountInvalid)).toBe(false);
+    expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(false);
+  });
+
+  it('continues once the validator is satisfied', async () => {
+    const scope = fork({ values: seeded() });
+    await fillForm(scope, '10');
+
+    expect(scope.getState(newPositionFlowModel.$isAmountInvalid)).toBe(false);
     expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(true);
   });
 

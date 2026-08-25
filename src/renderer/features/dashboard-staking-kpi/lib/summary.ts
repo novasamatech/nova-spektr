@@ -3,7 +3,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { type StakingPosition } from '@/domains/staking';
 
 /**
- * The aggregate is scoped to the selected wallet; the KPI row additionally
+ * The aggregate is scoped to the dashboard selection; the KPI row additionally
  * follows the dashboard's own account picker, so positions of accounts the user
  * unticked must not show up in the totals.
  *

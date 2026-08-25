@@ -30,13 +30,14 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { stakingPositions } from '@/aggregates/staking-positions';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { balanceSubModel } from '@/features/assets-balances';
 import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance } from '@/features/drafts';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
-import { bondNominateValidator } from '@/features/operations/OperationsValidation';
+import { MINIMUM_BOND_RULE, bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
-import { getAvailableToBond, isBelowMinimumBond, pickSeedAccount } from '../lib';
+import { getAvailableToBond, pickSeedAccount } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
 
 import { confirmModel } from './confirm';
@@ -406,7 +407,14 @@ export const createNewPositionFlowModel = () => {
     },
   );
 
-  const { $route, $tx, $fee, $pendingFee, $pendingWrapping } = createComplexTxStore({
+  const {
+    $route,
+    $tx,
+    $feeTx: $wrappedFeeTx,
+    $fee,
+    $pendingFee,
+    $pendingWrapping,
+  } = createComplexTxStore({
     api: $api,
     chain: $chain,
     transaction: $coreTx,
@@ -419,6 +427,16 @@ export const createNewPositionFlowModel = () => {
 
   /** Display/draft terminal hop; `$routeSigner` is the permission-checked one. */
   const $signatory = combine($route, $initiator, (route, initiator) => route.at(-1) ?? initiator);
+
+  // The fee payer and every hop on the route need a balance the validator can
+  // read. For an account outside the selected wallet the dashboard only fetched
+  // it once, and only on chains that were connected at that moment — so ask
+  // again for exactly the accounts this operation is about to charge.
+  sample({
+    clock: $route,
+    filter: (route) => route.length > 0,
+    target: balanceSubModel.fetchAccounts,
+  });
 
   const $available = combine(
     { isDraftMode: draftMode.$isDraftMode, reservable: $reservable, fee: $fee },
@@ -435,16 +453,20 @@ export const createNewPositionFlowModel = () => {
     target: amountChanged,
   });
 
-  const $isBelowMinimumBond = combine({ amount: $amountPlanck, minimumBond: $minimumBond }, isBelowMinimumBond);
+  // --- validation ----------------------------------------------------------
+  //
+  // The same pipeline the transfer flow runs — fee, existential deposit,
+  // multisig deposit, permissions, "can the account reserve the amount" — plus
+  // the staking rule `bondNominateValidator` carries: the chain minimum.
 
   /**
-   * More than the account can bond — its reservable balance less the fee. Both
-   * the field's red frame and the callout that explains it read this one store,
-   * so the frame can never appear without its words.
+   * The real call once the validators are known; the fee probe before that.
+   *
+   * The probe prices the largest call the flow could send, which is the same
+   * upper bound `Max` is computed against — so what the amount step validates
+   * is what the amount step promised.
    */
-  const $isOverMax = combine($amountPlanck, $available, (amount, available) => amount.gt(available));
-
-  // --- validation ----------------------------------------------------------
+  const $validationTx = combine($tx, $wrappedFeeTx, (tx, feeTx) => tx ?? feeTx);
 
   const {
     $errors,
@@ -459,10 +481,22 @@ export const createNewPositionFlowModel = () => {
       asset: $asset,
       balances: balanceModel.$balanceMap,
       route: $route,
-      transaction: $tx,
+      transaction: $validationTx,
       amount: $amount,
+      minimumBond: $minimumBond,
     },
   });
+
+  /**
+   * The field's red frame. Reads the same errors the alert renders, so the
+   * frame can never appear without its words.
+   */
+  const $isAmountInvalid = $errors.map((errors) =>
+    errors.some(
+      (error) =>
+        ('balance' in error && error.action === 'amount') || ('rule' in error && error.rule === MINIMUM_BOND_RULE),
+    ),
+  );
 
   const $hasMultisigAccount = $route.map((route) =>
     route.some((account) => accountUtils.isAnyMultisigAccount(account)),
@@ -478,17 +512,6 @@ export const createNewPositionFlowModel = () => {
   const $preparing = combine(
     { pendingFee: $pendingFee, pendingWrapping: $pendingWrapping, validating: $validating },
     ({ pendingFee, pendingWrapping, validating }) => pendingFee || pendingWrapping || validating,
-  );
-
-  /**
-   * What the amount step can decide on its own, before the node is consulted.
-   *
-   * The minimum bond blocks rather than warns: `staking.nominate` rejects a
-   * stash bonded under it, and the two calls travel as one `BATCH_ALL`.
-   */
-  const $isAmountValid = combine(
-    { amount: $amountPlanck, isOverMax: $isOverMax, belowMinimum: $isBelowMinimumBond },
-    ({ amount, isOverMax, belowMinimum }) => !amount.isZero() && !isOverMax && !belowMinimum,
   );
 
   // --- draft mode ----------------------------------------------------------
@@ -553,10 +576,6 @@ export const createNewPositionFlowModel = () => {
   wireDraftCloseRedirect({ $initiatedDraft: draftMode.$initiatedDraft, flowFinished: flowClosed });
 
   // --- amount step → validators --------------------------------------------
-  //
-  // The node has nothing to say yet: the transaction it would validate does not
-  // exist until a validator set does. What can be decided here is decided here,
-  // and the tx-level rules gate the confirm instead.
 
   const $routeSigner = createRouteSignerStore($route);
 
@@ -571,17 +590,29 @@ export const createNewPositionFlowModel = () => {
     ({ isDraftMode, initiator, routeSigner }) => !isDraftMode && nonNullable(initiator) && nullable(routeSigner),
   );
 
+  /**
+   * The amount step is gated by the same verdict the confirm is: over the
+   * balance and under the chain minimum both come out of `$isTxValid`, which
+   * runs against the fee probe until the real call exists.
+   */
   const $canContinue = combine(
     {
       isDraftMode: draftMode.$isDraftMode,
-      amountValid: $isAmountValid,
+      amount: $amountPlanck,
+      txValid: $isTxValid,
       destinationValid: $isDestinationValid,
       initiator: $initiator,
       preparing: $preparing,
       noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, amountValid, destinationValid, initiator, preparing, noRouteSigner }) =>
-      !isDraftMode && amountValid && destinationValid && nonNullable(initiator) && !preparing && !noRouteSigner,
+    ({ isDraftMode, amount, txValid, destinationValid, initiator, preparing, noRouteSigner }) =>
+      !isDraftMode &&
+      !amount.isZero() &&
+      txValid &&
+      destinationValid &&
+      nonNullable(initiator) &&
+      !preparing &&
+      !noRouteSigner,
   );
 
   /**
@@ -837,8 +868,7 @@ export const createNewPositionFlowModel = () => {
     $available,
     $reservable,
     $minimumBond,
-    $isBelowMinimumBond,
-    $isOverMax,
+    $isAmountInvalid,
     $destinationType: readonly($destinationType),
     $destination: readonly($destination),
     $isDestinationValid,

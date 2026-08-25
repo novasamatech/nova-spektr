@@ -9,7 +9,12 @@ import { accounts } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
 import { type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
-import { type StakingSummary, summarizePositions, useStakingPositions } from '@/aggregates/staking-positions';
+import {
+  type StakingSummary,
+  summarizePositions,
+  useStakingAccountSelection,
+  useStakingPositions,
+} from '@/aggregates/staking-positions';
 import { getPositionAccess, useDraftPolicy, useSignerAccountIds } from '@/features/dashboard-staking-positions';
 import { type Access } from '../lib/access';
 import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
@@ -74,6 +79,9 @@ const EMPTY_ACCOUNT_IDS: AccountId[] = [];
  * the cards and the modals can never disagree about a number.
  */
 export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
+  // Every reader of the positions retains the selection: widgets can be hidden
+  // one by one, and the cards must not go blank because the table did.
+  useStakingAccountSelection(accountIds);
   const { positions: allPositions, pending } = useStakingPositions();
   const wallets = useUnit(walletModel.$wallets);
   // The account domain's own list, not `walletModel.$availableAccounts`: the
@@ -88,8 +96,8 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const eraDurations = useEraDurations();
   const historyDepths = useChainHistoryDepths();
 
-  // The aggregate answers for the selected wallet; the dashboard's own account
-  // picker scopes it further.
+  // The aggregate answers for the dashboard selection; the KPI row narrows it
+  // to the ids it was handed.
   const positions = useMemo(() => filterPositionsByAccounts(allPositions, accountIds), [allPositions, accountIds]);
   const summary = useMemo(() => summarizePositions(positions), [positions]);
 

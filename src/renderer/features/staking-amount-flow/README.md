@@ -1,6 +1,6 @@
 # Staking amount flow (unbond / add stake)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -116,6 +116,11 @@ flowchart TD
 The confirm opens on the amount, not on the node: the wrapped transaction, the fee and the validation each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
 re-runs all three in place.
+
+The balances the validation reads are asked for by the flow itself: once the signing route resolves, every account on it
+— the position's account, a multisig or proxy hop, the signatory — is re-requested from `assets-balances`. A position
+outside the selected wallet has no live subscription, and the dashboard's one-shot fetch may have run while the chain
+was still connecting; without this the fee check would fail on a missing balance rather than on a real shortfall.
 
 On a successful submit the flow reports completion once, and the dashboard refreshes what it shows. Nothing here polls:
 the position figures behind the dashboard are live subscriptions, so an unbond that lands — or a multisig one that lands

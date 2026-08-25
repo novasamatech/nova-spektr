@@ -93,6 +93,7 @@ export const TEST_IDS = {
     MISSING_ACCOUNT: 'missing-account-error',
     BALANCE: 'balance-error',
     FATAL: 'fatal-error',
+    RULE: 'rule-error',
     INACTIVE_ACCOUNT: 'inactive-account-error',
   },
 } as const;

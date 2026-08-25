@@ -1,6 +1,6 @@
 # Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -17,13 +17,13 @@ reimplementing sign/submit itself.
 
 ## States / scenarios
 
-| Area                       | What it does                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`OperationsConfirm`**    | Per-operation-type confirmation screens (one subfolder per type — Transfer, staking actions, governance actions, proxy actions, fellowship actions). Each renders its own summary and amount, but shares common building blocks (`common/`: the multisig-exists alert, the operation-description field, the call-data and signing-path sections). |
-| **`OperationsValidation`** | Per-operation-type validation rule sets that decide whether a confirmation can proceed — e.g. balance checks, existential-deposit checks — feeding each type's `canSubmit` gate.                                                                                                                                                                  |
-| **`OperationSign`**        | Wallet-specific signing UI, switched by wallet type: Polkadot Vault (QR scan), browser Extension, WalletConnect, or a watch-only placeholder (which cannot sign).                                                                                                                                                                                 |
-| **`OperationSubmit`**      | Submits the signed extrinsic and shows the status modal: in progress → success (auto-closing) or error (dispatch/submission failure).                                                                                                                                                                                                             |
-| **`OperationMessageSign`** | The parallel flow for signing an off-chain message (not an extrinsic) — e.g. the address-book backend's auth challenge.                                                                                                                                                                                                                           |
+| Area                       | What it does                                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`OperationsConfirm`**    | Per-operation-type confirmation screens (one subfolder per type — Transfer, staking actions, governance actions, proxy actions, fellowship actions). Each renders its own summary and amount, but shares common building blocks (`common/`: the multisig-exists alert, the operation-description field, the call-data and signing-path sections).                           |
+| **`OperationsValidation`** | Per-operation-type validation rule sets that decide whether a confirmation can proceed — balance and existential-deposit checks plus operation rules such as the staking minimum bond — feeding each type's `canSubmit` gate. Every rule kind renders through the shared `TransactionValidationError` alert, so a transfer and a staking form report problems the same way. |
+| **`OperationSign`**        | Wallet-specific signing UI, switched by wallet type: Polkadot Vault (QR scan), browser Extension, WalletConnect, or a watch-only placeholder (which cannot sign). A WalletConnect session that was not approved for the transaction's chain is not asked to sign — the flow stops on a reconnect prompt first (see `wallet-connect-wallet`).                                |
+| **`OperationSubmit`**      | Submits the signed extrinsic and shows the status modal: in progress → success (auto-closing) or error (dispatch/submission failure).                                                                                                                                                                                                                                       |
+| **`OperationMessageSign`** | The parallel flow for signing an off-chain message (not an extrinsic) — e.g. the address-book backend's auth challenge.                                                                                                                                                                                                                                                     |
 
 ## Related
 

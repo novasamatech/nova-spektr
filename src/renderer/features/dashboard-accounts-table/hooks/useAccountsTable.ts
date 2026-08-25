@@ -6,6 +6,7 @@ import { buildCsv, downloadCsv } from '@/shared/lib/csv';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { type CurrencyItem } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
+import { useStakingAccountSelection } from '@/aggregates/staking-positions';
 import { accountsCsvColumns, accountsCsvFileName, buildExportFilterParts } from '../lib/csv';
 import {
   type ChipLabels,
@@ -21,7 +22,6 @@ import { type AccountGroup, type AccountRow, type SortKey, type TableSortState }
 import { buildVisibleGroups, collectVisibleRows } from '../lib/visibleRows';
 
 import { useAccountRows } from './useAccountRows';
-import { useTrackedContacts } from './useTrackedContacts';
 
 /**
  * Fiat amount with the active currency symbol/code, matching
@@ -98,7 +98,7 @@ export const useAccountsTable = ({ accountIds, allEntries }: Params): AccountsTa
   const [search, setSearch] = useState('');
   const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(new Set());
 
-  useTrackedContacts(accountIds);
+  useStakingAccountSelection(accountIds);
   const { rows, ready } = useAccountRows(accountIds, allEntries);
 
   const groups = useMemo(() => buildVisibleGroups({ rows, search, filters, sort }), [rows, search, filters, sort]);

@@ -6,7 +6,7 @@ import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_co
 import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ValidationErrors } from '@/shared/lib/utils';
-import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Modal } from '@/shared/ui-kit';
 import { transactionService } from '@/entities/transaction';
@@ -27,6 +27,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const step = useUnit(walletConnectSign.$step);
   const signed = useUnit(walletConnectSign.$signed);
   const error = useUnit(walletConnectSign.$error);
+  const chain = useUnit(walletConnectSign.$chain);
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
@@ -71,6 +72,9 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
   const isErrorModalOpen = step === 'rejected' || step === 'failed';
+  const isReconnectModalOpen = step === 'reconnect';
+  const isReconnecting = step === 'reconnecting';
+  const isReconnected = step === 'reconnected';
 
   return (
     <div className="flex w-full flex-col items-center gap-y-2.5 rounded-b-lg p-4">
@@ -89,7 +93,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
           </video>
         )}
 
-        {pairingUri && (
+        {pairingUri && !isReconnecting && (
           <WalletConnectQrCode
             uri={pairingUri}
             type={signerWallet?.type === WalletType.NOVA_WALLET ? 'novawallet' : 'walletconnect'}
@@ -115,6 +119,57 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
           {t('operation.goBackButton')}
         </Button>
       </div>
+
+      <Modal size="fit" isOpen={isReconnectModalOpen} onToggle={(open) => !open && onGoBack()}>
+        <Modal.Content>
+          <div className="flex w-full max-w-[240px] flex-col items-center justify-center px-1">
+            <Animation variant="error" />
+            <SmallTitleText className="mb-4 text-center">
+              {t('operation.walletConnect.reconnect.title', { walletName })}
+            </SmallTitleText>
+            <FootnoteText className="text-center text-text-secondary">
+              {t('operation.walletConnect.reconnect.chainMissing', { chain: chain?.name ?? '' })}
+            </FootnoteText>
+          </div>
+        </Modal.Content>
+        <Modal.Footer>
+          <div className="flex w-full gap-2">
+            <Button className="w-full" variant="text" size="sm" onClick={onGoBack}>
+              {t('operation.walletConnect.reconnect.cancelButton')}
+            </Button>
+            <Button className="w-full" size="sm" onClick={() => walletConnectSign.reconnectRequested()}>
+              {t('operation.walletConnect.reconnect.confirmButton')}
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      <StatusModal
+        isOpen={isReconnecting}
+        title={
+          pairingUri ? t('operation.walletConnect.failedTitle') : t('operation.walletConnect.reconnect.reconnecting')
+        }
+        description={pairingUri ? t('operation.walletConnect.failedDescription') : undefined}
+        className={pairingUri ? 'w-[440px]' : undefined}
+        content={
+          pairingUri ? (
+            <WalletConnectQrCode
+              uri={pairingUri}
+              type={signerWallet?.type === WalletType.NOVA_WALLET ? 'novawallet' : 'walletconnect'}
+            />
+          ) : (
+            <Animation variant="loading" loop />
+          )
+        }
+        onClose={onGoBack}
+      />
+
+      <StatusModal
+        isOpen={isReconnected}
+        title={t('operation.walletConnect.reconnect.connected')}
+        content={<Animation variant="success" />}
+        onClose={() => {}}
+      />
 
       <Modal size="fit" isOpen={isErrorModalOpen} onToggle={(open) => !open && onGoBack()}>
         <Modal.Content>

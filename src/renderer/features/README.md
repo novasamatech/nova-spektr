@@ -143,7 +143,7 @@ notes.
 ## Assets & Balances
 
 - `assets`
-- `assets-balances`
+- [`assets-balances`](./assets-balances/README.md)
 - `assets-navigation` (no spec planned)
 - `assets-transaction`
 - `assethub-migration-modal`

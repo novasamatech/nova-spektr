@@ -4,6 +4,7 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { getEraStorage } from '../era-storage';
 
 import { exposureService } from './service';
 import { type ExposureMap, type ExposureOverviewMap } from './types';
@@ -27,8 +28,8 @@ export const exposuresResource = createQueryResource<ExposuresResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
 })
   .name('exposures')
-  .request<ExposureOverviewMap>(({ api, era }) => {
-    return exposureService.getEraOverviews(api, era);
+  .request<ExposureOverviewMap>(({ chainId, api, era }) => {
+    return exposureService.getEraOverviews(api, era, getEraStorage(chainId));
   })
   // The overview walk is the single biggest read of the staking stack and
   // everything downstream (positions, validators) waits on it — one rate-limited
@@ -67,7 +68,10 @@ export const exposurePagesResource = createQueryResource<ExposurePagesResourcePa
   .request<ExposureMap>(async ({ chainId, api, era, validators }) => {
     const overviews = await exposuresResource.fetch({ chainId, api, era });
 
-    return exposureService.getExposurePages(api, era, validators, overviews);
+    // The chain's memoised era reads: the key is the whole nominated set, so
+    // a selection change re-requests every validator - and finds the ones the
+    // bounded memo still holds already read.
+    return exposureService.getExposurePages(api, era, validators, overviews, getEraStorage(chainId));
   })
   .cache({
     store: $exposurePagesCache,

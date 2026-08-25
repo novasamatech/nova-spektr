@@ -1,6 +1,6 @@
 # WalletConnect & Nova Wallet
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 >
 > **Draft — pending author review.** Written from reading the code; needs sign-off from the feature owner before it is
 > treated as the source of product truth.
@@ -22,14 +22,15 @@ Wallet). Availability of the pairing itself is handled by `wallet-connect-wallet
 
 ## States / scenarios
 
-| Situation                          | Behaviour                                                                                           |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Account's chain matches the target | The account can act and sign on that chain                                                          |
-| Account is on a different chain    | Not available — a WalletConnect session is negotiated per chain, so an account is bound to its own  |
-| Signing multiple transactions      | Never allowed: each transaction needs its own round trip to the phone, approved one at a time       |
-| Session is live for the wallet     | The switcher row shows a green dot                                                                  |
-| Session is missing or expired      | The switcher row shows a grey dot — the wallet is still selectable, but signing will need reconnect |
-| Account structure view             | Nova Wallet accounts are drawn in Nova blue; other WalletConnect accounts in WalletConnect blue     |
+| Situation                             | Behaviour                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account's chain matches the target    | The account can act and sign on that chain                                                                                                                                                                                                                                                                                        |
+| Account is on a different chain       | Not available — a WalletConnect session is negotiated per chain, so an account is bound to its own                                                                                                                                                                                                                                |
+| Signing multiple transactions         | Never allowed: each transaction needs its own round trip to the phone, approved one at a time                                                                                                                                                                                                                                     |
+| Session is live for the wallet        | The switcher row shows a green dot                                                                                                                                                                                                                                                                                                |
+| Session is missing or expired         | The switcher row shows a grey dot — the wallet is still selectable, but signing will need reconnect                                                                                                                                                                                                                               |
+| Session lacks the transaction's chain | Signing stops on a reconnect prompt instead of sending a request the wallet would reject: "Reconnect" re-pairs the wallet with the full chain list (a QR when the phone has to scan again), shows "Connected", then signs. A fresh session that still lacks the chain means the wallet app does not support it — reported as such |
+| Account structure view                | Nova Wallet accounts are drawn in Nova blue; other WalletConnect accounts in WalletConnect blue                                                                                                                                                                                                                                   |
 
 The switcher shows two separate groups — "Nova Wallet" and "WalletConnect" — each searchable by wallet name or any of
 its addresses, each row showing the connection dot and the wallet's live fiat balance.
@@ -44,6 +45,9 @@ otherwise, so the same wallet always looks the same wherever it is shown.
 2. The wallet appears in its group with a live connection indicator that follows the session state.
 3. If the session drops, the wallet stays in the list — the user can still browse its balances — and reconnecting is
    offered from the wallet's own actions rather than by re-adding the wallet.
+4. A session paired before a network existed in the app (or approved for fewer chains) is caught at signing time — the
+   sign client rejects requests for chains outside the session, so the flow re-pairs first rather than surfacing the raw
+   "Missing or invalid. request() chainId" error.
 
 ## Related
 

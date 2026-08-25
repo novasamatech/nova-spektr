@@ -10,11 +10,11 @@ import {
   scopeBind,
 } from 'effector';
 
-import { type Chain, type ChainId, type EraIndex, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import {
   type DerivePositionInput,
   type EraAnchor,
@@ -29,8 +29,6 @@ import {
   validators as validatorsModel,
 } from '@/domains/staking';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 
 import { summarizePositions } from './lib/summary';
 
@@ -44,14 +42,25 @@ const { validatorPrefsResource } = validatorPrefsModel;
 const reset = createEvent();
 
 /**
- * Follow these addresses on top of the selected wallet's own accounts.
+ * The accounts this aggregate answers for - the dashboard's account selection,
+ * as account ids.
  *
- * The dashboard's account selection is not a wallet: it also carries address
- * book entries, which have no local account object at all. Passing the whole
- * set on every selection change is the contract — the store below replaces its
- * content rather than accumulating it.
+ * Deliberately not the selected wallet: the dashboard's account picker spans
+ * every wallet of the installation plus the address book, and the staking tab
+ * has to show exactly what that picker says. Passing the whole selection on
+ * every change is the contract - the store below replaces its content rather
+ * than accumulating it.
  */
-const trackAccountIds = createEvent<AccountId[]>();
+const selectAccountIds = createEvent<AccountId[]>();
+
+/**
+ * Consumers of the selection announce themselves. The dashboard keeps its tabs
+ * mounted once visited, so the Overview accounts table and the Staking tab both
+ * hold the selection at the same time - and hiding one widget must not blank
+ * the other. The selection is released only when the last consumer leaves.
+ */
+const retainSelection = createEvent();
+const releaseSelection = createEvent();
 
 // --- Resource pools ---
 //
@@ -64,7 +73,7 @@ const trackAccountIds = createEvent<AccountId[]>();
 // That diff is the *only* writer of subscription state, teardown included -
 // `reset` empties the request lists instead of stopping keys behind the diff's
 // back. Two writers over one snapshot of the started keys would race: `reset`
-// also drops the tracked ids, which changes the request lists in the very same
+// also drops the selection, which changes the request lists in the very same
 // tick, so one of them would double-stop a key or leave a freshly started one
 // behind.
 
@@ -143,78 +152,92 @@ type ChainAccounts = {
 };
 
 /**
- * A Polkadot Vault base account shadows its own chain accounts, so it is
- * dropped whenever the wallet has derived ones - mirrors the Staking page.
+ * The selection, kept sorted and deduplicated so an identical selection never
+ * churns the pooled subscriptions - the account list is part of every ledger
+ * and nominations key.
  */
-function filterWalletAccounts(accounts: AnyAccount[], wallet: Wallet | null): AnyAccount[] {
-  if (!walletUtils.isPolkadotVault(wallet) || accounts.length <= 1) {
-    return accounts;
-  }
-
-  return accounts.filter(account => !accountUtils.isVaultBaseAccount(account));
-}
-
-/**
- * Addresses tracked on top of the selected wallet, kept sorted and deduplicated
- * so an identical selection never churns the pooled subscriptions - the account
- * list is part of every ledger and nominations key.
- */
-const $trackedAccountIds = createStore<AccountId[]>([], {
+const $selectedAccountIds = createStore<AccountId[]>([], {
   updateFilter: (next, current) =>
     next.length !== current.length || next.some((accountId, index) => accountId !== current[index]),
 });
 
-$trackedAccountIds.on(trackAccountIds, (_, accountIds) => [...new Set(accountIds)].sort());
-$trackedAccountIds.reset(reset);
+$selectedAccountIds.on(selectAccountIds, (_, accountIds) => [...new Set(accountIds)].sort());
+
+const $selectionConsumers = createStore(0)
+  .on(retainSelection, count => count + 1)
+  .on(releaseSelection, count => Math.max(0, count - 1));
+
+const lastConsumerLeft = sample({
+  clock: releaseSelection,
+  source: $selectionConsumers,
+  filter: count => count === 0,
+});
+
+$selectedAccountIds.reset(reset, lastConsumerLeft);
+
+// `reset` and the last consumer leaving both empty the selection; an empty
+// selection leaves every chain with no accounts, every request list empty, and
+// the pool diff releases every key. Nothing else needs to remember "wanted
+// nothing".
 
 /**
- * `reset` means "this aggregate wants nothing", which empties every request
- * list and lets the pool binding release the lot. It is not permanent: tracking
- * accounts again re-arms it, and that is exactly what the dashboard's staking
- * widgets do when they mount.
+ * Local account objects of the selection, by account id. Only the selected ones
+ * are indexed - the installation may hold thousands of accounts and this
+ * recomputes on every selection change.
  */
-const $torndown = createStore(false);
+const $selectedLocalAccounts = combine(
+  $selectedAccountIds,
+  accounts.$list,
+  (selectedAccountIds, allAccounts): Map<AccountId, AnyAccount[]> => {
+    const result = new Map<AccountId, AnyAccount[]>();
+    if (selectedAccountIds.length === 0) return result;
 
-$torndown.on(reset, () => true).reset(trackAccountIds);
+    const selected = new Set(selectedAccountIds);
+    for (const account of allAccounts) {
+      if (!selected.has(account.accountId)) continue;
+
+      const existing = result.get(account.accountId);
+      if (existing) {
+        existing.push(account);
+      } else {
+        result.set(account.accountId, [account]);
+      }
+    }
+
+    return result;
+  },
+);
 
 const $chainAccounts = combine(
   {
     chains: $stakingChains,
-    wallet: walletSelect.$selectedWallet,
-    selectedAccounts: walletSelect.$selectedAccounts,
-    trackedAccountIds: $trackedAccountIds,
-    torndown: $torndown,
+    selectedAccountIds: $selectedAccountIds,
+    localAccounts: $selectedLocalAccounts,
   },
-  ({ chains, wallet, selectedAccounts, trackedAccountIds, torndown }): ChainAccounts[] => {
-    if (torndown) return [];
-
-    const walletAccounts = filterWalletAccounts(selectedAccounts, wallet);
-
+  ({ chains, selectedAccountIds, localAccounts }): ChainAccounts[] => {
     return chains.map(chain => {
-      // A wallet account carries its own key scheme and chain binding, so it
-      // only joins the chains that can actually hold it.
-      const accountIds = new Set(
-        walletAccounts
-          .filter(account => accountService.isAccountAvailableOnChain(account, chain))
-          .map(account => account.accountId),
-      );
+      const accountIds = selectedAccountIds.filter(accountId => {
+        const local = localAccounts.get(accountId);
 
-      // A tracked id is a bare address with no account object behind it, so the
-      // full availability check has nothing to run against - but its key scheme
-      // is checkable, and it must be checked. An Ethereum-style 20 byte id
-      // cannot be a stash on an AccountId32 chain, and `staking.bonded.multi`
-      // rejects the *whole* batch when a single key is unencodable: one such
-      // address-book row left every chain's ledger map empty and the dashboard
-      // loading forever.
-      // An address that is both a wallet account and a tracked one collapses
-      // into a single entry here, and therefore into a single subscription.
-      for (const accountId of trackedAccountIds) {
-        if (!accountService.isAccountSchemeMatchChain(accountId, chain)) continue;
+        // A wallet account carries its own key scheme and chain binding, so it
+        // only joins the chains that can actually hold it. The same key can
+        // live in several wallets (a chain-bound account here, a universal one
+        // there): one wallet able to hold it on the chain is enough.
+        if (nonNullable(local)) {
+          return local.some(account => accountService.isAccountAvailableOnChain(account, chain));
+        }
 
-        accountIds.add(accountId);
-      }
+        // An address-book row is a bare address with no account object behind
+        // it, so the full availability check has nothing to run against - but
+        // its key scheme is checkable, and it must be checked. An Ethereum-style
+        // 20 byte id cannot be a stash on an AccountId32 chain, and
+        // `staking.bonded.multi` rejects the *whole* batch when a single key is
+        // unencodable: one such row left every chain's ledger map empty and the
+        // dashboard loading forever.
+        return accountService.isAccountSchemeMatchChain(accountId, chain);
+      });
 
-      return { chain, chainId: chain.chainId, accountIds: [...accountIds] };
+      return { chain, chainId: chain.chainId, accountIds };
     });
   },
 );
@@ -509,9 +532,9 @@ const $pending = combine(
 
       // The cache is chain-keyed and outlives the subscription key, so "a map
       // exists" is not "this map answers for the accounts being asked about".
-      // Without the coverage check a wallet switch, or a newly tracked
-      // address-book row, reads the previous set's map as a finished answer and
-      // renders the empty state instead of a skeleton.
+      // Without the coverage check a selection change - a newly ticked
+      // account, or an address-book row - reads the previous set's map as a
+      // finished answer and renders the empty state instead of a skeleton.
       if (accountIds.some(accountId => !(accountId in chainLedgers))) return true;
 
       const bonded = accountIds.filter(accountId => nonNullable(chainLedgers[accountId]));
@@ -535,14 +558,16 @@ export const stakingPositions = {
   $stakingChains,
   $chainAccounts,
   $nominatedValidators,
-  $trackedAccountIds,
+  $selectedAccountIds,
 
   $positions,
   $summary,
   $minNominatorBond,
   $pending,
 
-  trackAccountIds,
+  selectAccountIds,
+  retainSelection,
+  releaseSelection,
   reset,
 };
 

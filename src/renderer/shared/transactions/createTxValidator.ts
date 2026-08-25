@@ -8,6 +8,7 @@ import {
   type TransactionValidationBalanceError,
   type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
+  type TransactionValidationRuleError,
 } from '@/shared/ui-entities';
 import { type AnyTransaction, accountService, balanceService, transactionService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
@@ -35,6 +36,14 @@ type ValidatorRule<A> = (
   params: RulesParams<A>,
 ) => TransactionValidationBalanceError | Promise<TransactionValidationBalanceError> | undefined;
 
+/**
+ * A check that is not about balances: it either passes or names the rule the
+ * operation breaks. Blocking, like a balance shortfall.
+ */
+export type ValidationRule<A> = (
+  params: RulesParams<A>,
+) => TransactionValidationRuleError | Promise<TransactionValidationRuleError | undefined> | undefined;
+
 export type DryRunRule<A> = (
   params: RulesParams<A>,
 ) => TransactionValidationFatalError | Promise<TransactionValidationFatalError | undefined> | undefined;
@@ -44,6 +53,7 @@ export type ValidationResult = {
     | TransactionValidationBalanceError
     | TransactionValidationPermissionError
     | TransactionValidationFatalError
+    | TransactionValidationRuleError
   )[];
   balanceValidationResults: TransactionValidationBalanceError[];
   available: Balance[];
@@ -53,6 +63,7 @@ export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationRes
 
 export function createTxValidator<A>(params?: {
   additionalBalanceRules?: ValidatorRule<A>[];
+  rules?: ValidationRule<A>[];
   dryRunRules?: DryRunRule<A>[];
 }): Validator<A> {
   const validator: Validator<A> = async ({
@@ -140,9 +151,22 @@ export function createTxValidator<A>(params?: {
         }
       }
 
+      // Operation-specific rules
+
+      const ruleErrors: TransactionValidationRuleError[] = [];
+      if (params?.rules) {
+        for (const rule of params.rules) {
+          const res = await rule(ruleArgs);
+          if (nonNullable(res)) {
+            ruleErrors.push(res);
+          }
+        }
+      }
+
       // Dry run validations (only if no other errors)
       const balanceErrors = result.balanceValidationResults.filter((x) => x.balance.success === false);
-      const hasOtherErrors = transactionPermissionErrors.length > 0 || balanceErrors.length > 0;
+      const hasOtherErrors =
+        transactionPermissionErrors.length > 0 || balanceErrors.length > 0 || ruleErrors.length > 0;
 
       const dryRunErrors: TransactionValidationFatalError[] = [];
       if (params?.dryRunRules && !hasOtherErrors) {
@@ -154,7 +178,7 @@ export function createTxValidator<A>(params?: {
         }
       }
 
-      result.errors = result.errors.concat(transactionPermissionErrors, balanceErrors, dryRunErrors);
+      result.errors = result.errors.concat(transactionPermissionErrors, balanceErrors, ruleErrors, dryRunErrors);
 
       result.available = getAvailableBalances(result.balanceValidationResults);
 

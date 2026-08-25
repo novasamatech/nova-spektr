@@ -33,6 +33,7 @@ export {
   type TransactionValidationFatalError,
   type TransactionValidationNetworkError,
   type TransactionValidationPermissionError,
+  type TransactionValidationRuleError,
   TransactionValidationError,
 } from './TransactionValidationError/TransactionValidationError';
 export { UnknownRecipientBadge } from './UnknownRecipient/UnknownRecipientBadge';
