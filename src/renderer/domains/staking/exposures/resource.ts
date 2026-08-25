@@ -69,8 +69,8 @@ export const exposurePagesResource = createQueryResource<ExposurePagesResourcePa
     const overviews = await exposuresResource.fetch({ chainId, api, era });
 
     // The chain's memoised era reads: the key is the whole nominated set, so
-    // a selection change re-requests every validator - and finds all but the
-    // new ones already read.
+    // a selection change re-requests every validator - and finds the ones the
+    // bounded memo still holds already read.
     return exposureService.getExposurePages(api, era, validators, overviews, getEraStorage(chainId));
   })
   .cache({

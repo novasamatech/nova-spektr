@@ -175,15 +175,10 @@ const lastConsumerLeft = sample({
 
 $selectedAccountIds.reset(reset, lastConsumerLeft);
 
-/**
- * `reset` means "this aggregate wants nothing", which empties every request
- * list and lets the pool binding release the lot. It is not permanent:
- * selecting accounts again re-arms it, and that is exactly what the dashboard's
- * staking widgets do when they mount.
- */
-const $torndown = createStore(false);
-
-$torndown.on(reset, () => true).reset(selectAccountIds);
+// `reset` and the last consumer leaving both empty the selection; an empty
+// selection leaves every chain with no accounts, every request list empty, and
+// the pool diff releases every key. Nothing else needs to remember "wanted
+// nothing".
 
 /**
  * Local account objects of the selection, by account id. Only the selected ones
@@ -218,11 +213,8 @@ const $chainAccounts = combine(
     chains: $stakingChains,
     selectedAccountIds: $selectedAccountIds,
     localAccounts: $selectedLocalAccounts,
-    torndown: $torndown,
   },
-  ({ chains, selectedAccountIds, localAccounts, torndown }): ChainAccounts[] => {
-    if (torndown) return [];
-
+  ({ chains, selectedAccountIds, localAccounts }): ChainAccounts[] => {
     return chains.map(chain => {
       const accountIds = selectedAccountIds.filter(accountId => {
         const local = localAccounts.get(accountId);

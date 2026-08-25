@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-24
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -17,12 +17,12 @@ Nothing here fetches from a node. `aggregates/staking-positions` already drives 
 caches it filled and renders them.
 
 It does own one piece of wiring, though: the aggregate answers for exactly the account ids it is given, and this widget
-hands it the **dashboard's account selection** (the aggregate's `useStakingAccountSelection` hook) once for the whole
-staking tab — the KPI and rewards widgets read the resulting positions rather than repeating the wiring. That selection
-is the only thing that scopes the tab: it spans every wallet of the installation plus the address book, and the wallet
-selected in wallet management plays no part. The set is replaced on every selection change; the aggregate counts its
-consumers (the Overview accounts table holds the same selection, and dashboard tabs stay mounted once visited) and
-releases it when the last one unmounts, so it never grows past what the user is looking at.
+hands it the **dashboard's account selection** through the aggregate's `useStakingAccountSelection` hook — as do the KPI
+cards, the rewards chart and the Overview accounts table, since any of them can be hidden on its own and the rest must
+keep their data. That selection is the only thing that scopes the tab: it spans every wallet of the installation plus
+the address book, and the wallet selected in wallet management plays no part. The set is replaced on every selection
+change; the aggregate counts its consumers and releases it when the last one unmounts, so it never grows past what the
+user is looking at.
 
 ## Who can use it / when it applies
 

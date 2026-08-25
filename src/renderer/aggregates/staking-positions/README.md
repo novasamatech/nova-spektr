@@ -1,6 +1,6 @@
 # Staking Positions
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-24
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -71,7 +71,8 @@ subscribes for every wallet or the whole contact list.
 `ledger.multi` pair per chain, one `nominators.multi`, one `validators.multi` — batched reads whose cost grows with the
 selection, not with the number of wallets. What does grow is downstream: the union of nominated validators (the exposure
 pages read) and the per-stash unclaimed-payout scans. Those reads are memoised per `(chain, era, validator)` and
-`(chain, era)` in the staking domain, so widening the selection only reads what the previous selection did not.
+`(chain, era)` in the staking domain (bounded LRU memos), so widening the selection re-reads only what the memo no
+longer holds.
 
 ## Nominator or validator
 
@@ -214,7 +215,8 @@ live in `domains/staking` (`positionsService`) and are not duplicated here.
 - `domains/network` (`accounts.$list`), `entities/network` — the installation's account objects the selection is
   resolved against, and the connected apis everything above is keyed by. `aggregates/wallet-select` is deliberately
   **not** a dependency.
-- `features/dashboard-staking-positions`, `features/dashboard-accounts-table` — the callers of
-  `useStakingAccountSelection`: each pushes the dashboard selection once for its tab, and the other staking widgets read
-  the resulting positions. The hook retains the selection per consumer; dashboard tabs stay mounted once visited, so
-  both hold it at once and the aggregate releases it only when the last consumer unmounts.
+- `features/dashboard-staking-positions`, `features/dashboard-staking-kpi`, `features/dashboard-staking-rewards-chart`,
+  `features/dashboard-accounts-table` — every reader of `$positions` calls `useStakingAccountSelection` with the
+  dashboard selection. The hook retains the selection per consumer: widgets can be hidden one by one and dashboard tabs
+  stay mounted once visited, so several hold it at once and the aggregate releases it only when the last consumer
+  unmounts.

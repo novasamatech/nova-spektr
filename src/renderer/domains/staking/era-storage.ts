@@ -118,6 +118,7 @@ export function getEraStorage(chainId: ChainId): EraStorage {
 
 /** Drops every chain's memo - for tests that reuse a chain id across cases. */
 export const __test = {
+  OVERVIEW_MEMO_MAX_ENTRIES,
   reset() {
     eraStorageByChain.clear();
   },

@@ -813,7 +813,9 @@ describe('aggregates/staking-positions', () => {
     activeScope = null;
 
     expect(scope.getState(stakingPositions.$selectedAccountIds)).toEqual([]);
-    expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([]);
+    expect(scope.getState(stakingPositions.$chainAccounts)).toEqual([
+      { chain: polkadotChain, chainId: POLKADOT_AH, accountIds: [] },
+    ]);
     expect(chainMock.ledgers.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.nominations.has(POLKADOT_AH)).toBe(false);
     expect(chainMock.eras.has(POLKADOT_AH)).toBe(false);

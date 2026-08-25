@@ -35,7 +35,7 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
   const { t, formatDate } = useI18n();
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
 
-  const assets = useRewardAssets();
+  const assets = useRewardAssets(accountIds);
   const walletByAccountId = useWalletByAccountId();
 
   const [range, setRange] = useState<RangeKey>(DEFAULT_RANGE);

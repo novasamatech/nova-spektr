@@ -60,7 +60,7 @@ describe('domains/staking/era-storage', () => {
 
     const first = eraStorage.erasStakersOverview(api, 1).catch(() => 'failed');
     // Evict era 1 by filling the overview memo, then re-read it.
-    for (let era = 2; era < 2 + 128; era++) {
+    for (let era = 2; era < 2 + __test.OVERVIEW_MEMO_MAX_ENTRIES; era++) {
       await eraStorage.erasStakersOverview(api, era);
     }
     const second = eraStorage.erasStakersOverview(api, 1);
@@ -70,7 +70,7 @@ describe('domains/staking/era-storage', () => {
     expect(await second).toEqual([]);
     // Era 1 is still memoised by the second read - no third request.
     await eraStorage.erasStakersOverview(api, 1);
-    expect(storage.erasStakersOverview).toHaveBeenCalledTimes(2 + 128);
+    expect(storage.erasStakersOverview).toHaveBeenCalledTimes(2 + __test.OVERVIEW_MEMO_MAX_ENTRIES);
   });
 
   it('drops a failed read so the next caller retries', async () => {
