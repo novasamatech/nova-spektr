@@ -14,7 +14,7 @@ import {
   polkadotChainId,
 } from '@/shared/mocks';
 
-import { transferUtils } from './transfer-utils';
+import { filterRecipientAccounts } from './recipient-accounts';
 
 const walletId = 1;
 
@@ -32,9 +32,9 @@ const kusamaKey = createVaultChainAccount('ksm-key', {
   name: 'Kusama Key',
 });
 
-describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
+describe('widgets/RecipientPicker/lib/recipient-accounts#filterRecipientAccounts', () => {
   it('should keep chain-scoped keys of other chains — any scheme-compatible account can receive', () => {
-    const result = transferUtils.filterRecipientAccounts({
+    const result = filterRecipientAccounts({
       accounts: [polkadotKey, kusamaKey],
       chain: polkadotAssetHubChain,
       query: '',
@@ -43,19 +43,19 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
     expect(result).toEqual([polkadotKey, kusamaKey]);
   });
 
-  it('should exclude the initiator account', () => {
-    const result = transferUtils.filterRecipientAccounts({
+  it('should exclude the excluded account', () => {
+    const result = filterRecipientAccounts({
       accounts: [polkadotKey, kusamaKey],
       chain: polkadotChain,
       query: '',
-      initiator: polkadotKey,
+      excludeAccountId: polkadotKey.accountId,
     });
 
     expect(result).toEqual([kusamaKey]);
   });
 
   it('should exclude accounts with a mismatched address scheme', () => {
-    const result = transferUtils.filterRecipientAccounts({
+    const result = filterRecipientAccounts({
       accounts: [polkadotKey, kusamaKey],
       chain: mythosChain,
       query: '',
@@ -71,7 +71,7 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
     // availability handlers they are always excluded.
     const proxiedAccount = createProxiedAccount('proxied', walletId);
 
-    const result = transferUtils.filterRecipientAccounts({
+    const result = filterRecipientAccounts({
       accounts: [proxiedAccount, kusamaKey],
       chain: polkadotAssetHubChain,
       query: '',
@@ -86,7 +86,7 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
     // foreign chain, without availability handlers.
     const wcAccount = createWcAccount('wc', walletId);
 
-    const result = transferUtils.filterRecipientAccounts({
+    const result = filterRecipientAccounts({
       accounts: [wcAccount, kusamaKey],
       chain: polkadotAssetHubChain,
       query: '',
@@ -112,7 +112,7 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
       createdAt: Date.now(),
     };
 
-    const result = transferUtils.filterRecipientAccounts({
+    const result = filterRecipientAccounts({
       accounts: [watchOnlyAccount, kusamaKey],
       chain: polkadotAssetHubChain,
       query: '',
@@ -122,7 +122,7 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
   });
 
   it('should filter by name or address query', () => {
-    const byName = transferUtils.filterRecipientAccounts({
+    const byName = filterRecipientAccounts({
       accounts: [polkadotKey, kusamaKey],
       chain: polkadotChain,
       query: 'kusama',
@@ -130,7 +130,7 @@ describe('features/transfer/lib/transfer-utils#filterRecipientAccounts', () => {
     expect(byName).toEqual([kusamaKey]);
 
     const address = toAddress(polkadotKey.accountId, { prefix: polkadotChain.addressPrefix });
-    const byAddress = transferUtils.filterRecipientAccounts({
+    const byAddress = filterRecipientAccounts({
       accounts: [polkadotKey, kusamaKey],
       chain: polkadotChain,
       query: address.slice(0, 8),

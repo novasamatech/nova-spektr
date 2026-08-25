@@ -1,6 +1,6 @@
 # Staking payee flow (change reward destination)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -39,9 +39,9 @@ The form is a radio pair under the account and network chips:
 to the stash" is simply "transferable to this very account". A position that currently has one of them opens on
 _Transferable_ with the stash address filled in, which is the closest thing the user can actually submit.
 
-The picker lists the position's own account first, then the wallet's other accounts that the chain can hold, then the
-address book. Typing filters by what is shown — resolved names, wallet names, the displayed address — and anything that
-is not in the list can be typed in full.
+The picker is the shared [recipient picker](../../widgets/RecipientPicker/README.md), exactly as the transfer form
+offers it: the user's own accounts that can receive on the chain, grouped by wallet; the address book — local and
+synced; and an address typed in full. Nothing is excluded — paying rewards to the stash itself is the common case.
 
 | State                  | When it appears                                             | What the user sees                                                                |
 | ---------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |

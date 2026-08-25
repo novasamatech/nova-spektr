@@ -9,10 +9,9 @@ import {
   createTxValidationStore,
   getActionRequiredAmount,
 } from '@/shared/transactions';
-import { accountService, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { basketUtils } from '@/entities/basket';
-import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
@@ -23,7 +22,6 @@ import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { payeeValidator } from '@/features/operations/OperationsValidation';
 import { createSigningPathModel } from '@/features/signing-path';
-import { buildDestinationCandidates } from '../lib/destination-candidates';
 import { hasSelectionChanged, toDestination, toInitialSelection } from '../lib/payee-selection';
 import { type PayeeFlowConfirm, type PayeeFlowTarget, type PayeeOption, type PayeeSelection, Step } from '../types';
 
@@ -48,7 +46,6 @@ export const createPayeeFlowModel = () => {
   const stepChanged = createEvent<Step>();
   const optionChanged = createEvent<PayeeOption>();
   const addressChanged = createEvent<string>();
-  const destinationQueryChanged = createEvent<string>();
   const riskAcknowledgedToggled = createEvent<boolean>();
   const continueRequested = createEvent();
   const txSaved = createEvent();
@@ -107,10 +104,6 @@ export const createPayeeFlowModel = () => {
     .on(addressChanged, (_, address) => address)
     .reset(flowClosed);
 
-  const $destinationQuery = createStore('')
-    .on(destinationQueryChanged, (_, query) => query)
-    .reset(flowStarted, flowClosed);
-
   /**
    * Seeded from the clock payload, not from `$position`: the derived stores
    * update in the same tick, and reading them here would be a bet on effector's
@@ -145,25 +138,6 @@ export const createPayeeFlowModel = () => {
   const $isSelectionValid = combine(
     { option: $option, valid: $isAddressValid, hasChanged: $hasChanged },
     ({ option, valid, hasChanged }) => hasChanged && (option === 'restake' || valid),
-  );
-
-  /**
-   * Who the picker offers. The chain checks go through DI registries, so they
-   * are bound here and handed to the pure builder.
-   */
-  const $destinationCandidates = combine(
-    { accounts: accounts.$list, contacts: contactModel.$contacts, chain: $chain, position: $position },
-    ({ accounts, contacts, chain, position }) => {
-      if (!chain) return [];
-
-      return buildDestinationCandidates({
-        accounts,
-        contacts,
-        positionAccountId: position?.accountId ?? null,
-        isAccountOnChain: (account) => accountService.isAccountAvailableOnChain(account, chain),
-        isContactOnChain: (accountId) => accountService.isAccountSchemeMatchChain(accountId, chain),
-      });
-    },
   );
 
   // --- draft mode ----------------------------------------------------------
@@ -546,8 +520,6 @@ export const createPayeeFlowModel = () => {
     $option: readonly($option),
     $address: readonly($address),
     $selection,
-    $destinationQuery: readonly($destinationQuery),
-    $destinationCandidates,
     $destinationAccountId,
     $isAddressValid,
     $hasChanged,
@@ -591,7 +563,6 @@ export const createPayeeFlowModel = () => {
     stepChanged,
     optionChanged,
     addressChanged,
-    destinationQueryChanged,
     riskAcknowledgedToggled,
     continueRequested,
     txSaved,

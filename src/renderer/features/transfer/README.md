@@ -1,6 +1,6 @@
 # Transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
 
 ## Overview
 
@@ -28,21 +28,12 @@ network and show both origin and destination fees.
 
 ### Recipient
 
-The recipient field is a searchable combobox over three groups, filtered by name or address as the user types:
-
-| Group         | Contents                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Own accounts  | Accounts of **all** the user's wallets that can _receive_ on the destination chain: keyed accounts (vault keys, extension, WalletConnect — the user holds the signing key) qualify by address-scheme match even when the key belongs to another chain; everything else (multisig, proxied / pure proxy, watch-only, signatories) follows its wallet feature's availability rule. The sender itself is excluded. |
-| Address book  | Contacts (local and synced) whose address is valid on the destination chain.                                                                                                                                                                                                                                                                                                                                    |
-| Typed address | A pasted/typed address not present above, so fresh addresses work without creating a contact.                                                                                                                                                                                                                                                                                                                   |
+The recipient field is the shared [recipient picker](../../widgets/RecipientPicker/README.md): a searchable combobox
+over the user's own accounts that can receive on the destination chain, the address book (local and synced) and a typed
+address not present in either. The sender itself is excluded.
 
 A committed recipient collapses into a card showing the resolved name — for the user's own account that is the account
 (key) name, not the wallet name — with a clear button to re-enter edit mode.
-
-The receive-vs-sign distinction exists for key-set vaults: their chain-scoped derived keys are valid recipients on any
-scheme-compatible chain. The relaxed scheme-match rule applies only to accounts whose key the user holds; for the rest
-(multisig, pure proxy, watch-only, signatory placeholders) the transfer feature defers to the owning wallet feature's
-availability rule — offering such an address on a chain where it is not controlled would send funds into the void.
 
 ### Myself (XCM only)
 

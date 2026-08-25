@@ -139,7 +139,8 @@ notes.
 - `send-to-contact`
 
 > See also: [`recipient-verification`](#contacts--notifications) — unknown-recipient warnings on the transfer form and
-> confirm step.
+> confirm step; [`RecipientPicker`](../widgets/RecipientPicker/README.md) (widget) — the shared recipient / payout
+> address combobox and its three suggestion groups.
 
 ## Assets & Balances
 
