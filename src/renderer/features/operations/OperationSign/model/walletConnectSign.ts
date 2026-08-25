@@ -1,10 +1,10 @@
 import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
-import { attach, createEffect, createStore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { t } from 'i18next';
 import { nanoid } from 'nanoid';
-import { combineEvents, spread } from 'patronum';
+import { combineEvents, delay, spread } from 'patronum';
 
 import { type HexString, type WcAccount } from '@/shared/core';
 import { series } from '@/shared/effector';
@@ -15,7 +15,12 @@ import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
 import { type ExtrinsicSigningPayload } from '../lib/types';
 
-type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
+/**
+ * `reconnect` — the restored session cannot sign on this chain (it was paired
+ * before the network appeared, or with a narrower set): the wallet has to be
+ * re-paired with the full chain list before the request can go out.
+ */
+type Step = 'idle' | 'signing' | 'reconnect' | 'reconnecting' | 'reconnected' | 'rejected' | 'failed' | 'success';
 
 type SignResponse = {
   signature: HexString;
@@ -26,6 +31,8 @@ const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAcco
 });
 const $step = createStore<Step>('idle');
 const $error = createStore<{ title: string; description?: string } | null>(null);
+
+const reconnectRequested = createEvent();
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
 const $accounts = flow.state.map(({ accounts }) => accounts);
@@ -66,6 +73,17 @@ const setupTransactionFx = createEffect(async (payloads: ExtrinsicSigningPayload
 });
 
 const getSessionFx = attach({ effect: walletConnect.restoreSession });
+const refreshSessionFx = attach({ effect: walletConnect.refreshSession });
+
+/** The chain the payloads are signed on — one signing flow, one chain. */
+const $chain = $signingPayloads.map((payloads) => payloads.at(0)?.chain ?? null);
+
+/**
+ * A session that covers the chain; sessions that do not go to `reconnect`
+ * instead.
+ */
+const sessionReady = createEvent<SessionTypes.Struct>();
+const sessionLacksChain = createEvent<SessionTypes.Struct>();
 
 type SignParams = {
   id: string;
@@ -132,7 +150,7 @@ sample({
 });
 
 sample({
-  clock: getSessionFx.fail,
+  clock: [getSessionFx.fail, refreshSessionFx.fail],
   fn: ({ error }) => ({
     step: 'rejected' as const,
     error: walletConnectService.buildErrorDisplay(error, signErrorMessages),
@@ -194,9 +212,91 @@ sample({
   target: setupTransactionFx,
 });
 
+sample({
+  clock: [getSessionFx.doneData, refreshSessionFx.doneData],
+  source: $chain,
+  filter: (chain, session) => nonNullable(chain) && walletConnectService.isChainInSession(session, chain.chainId),
+  fn: (_, session) => session,
+  target: sessionReady,
+});
+
+sample({
+  clock: [getSessionFx.doneData, refreshSessionFx.doneData],
+  source: $chain,
+  filter: (chain, session) => nonNullable(chain) && !walletConnectService.isChainInSession(session, chain.chainId),
+  fn: (_, session) => session,
+  target: sessionLacksChain,
+});
+
+// A restored session without the chain asks for a re-pair; a freshly approved
+// one without it means the wallet does not support the chain at all.
+sample({
+  clock: sessionLacksChain,
+  source: $step,
+  filter: (step) => step !== 'reconnecting',
+  fn: () => 'reconnect' as const,
+  target: $step,
+});
+
+sample({
+  clock: sessionLacksChain,
+  source: { step: $step, chain: $chain },
+  filter: ({ step }) => step === 'reconnecting',
+  fn: ({ chain }) => ({
+    step: 'failed' as const,
+    error: {
+      title: t('operation.walletConnect.errors.chainUnsupported', { chain: chain?.name ?? '' }),
+      description: t('operation.walletConnect.errors.chainUnsupportedDescription'),
+    },
+  }),
+  target: spread({ step: $step, error: $error }),
+});
+
+sample({
+  clock: reconnectRequested,
+  source: { chains: networkModel.$chains, payloads: $signingPayloads },
+  filter: ({ payloads }) => payloads.length > 0,
+  fn: ({ chains, payloads }) => {
+    const signatory = payloads[0]!.signatory;
+
+    return {
+      step: 'reconnecting' as const,
+      params: {
+        pairingTopic: walletConnectService.isWalletConnectAccount(signatory)
+          ? signatory.signingExtras.pairingTopic
+          : undefined,
+        chains: Object.values(chains).map((c) => c.chainId),
+      },
+    };
+  },
+  target: spread({ step: $step, params: refreshSessionFx }),
+});
+
+// The re-pair succeeded: a short "Connected" beat, then the signing screen —
+// the request itself goes out at once, the wallet is already showing it.
+const reconnected = sample({
+  clock: sessionReady,
+  source: $step,
+  filter: (step) => step === 'reconnecting',
+});
+
+sample({
+  clock: reconnected,
+  fn: () => 'reconnected' as const,
+  target: $step,
+});
+
+sample({
+  clock: delay(reconnected, 1500),
+  source: $step,
+  filter: (step) => step === 'reconnected',
+  fn: () => 'signing' as const,
+  target: $step,
+});
+
 const readyToSign = combineEvents({
   events: {
-    session: getSessionFx.doneData,
+    session: sessionReady,
     transactions: setupTransactionFx.doneData,
   },
   reset: flow.close,
@@ -255,7 +355,7 @@ sample({
 // updating accounts
 
 sample({
-  clock: getSessionFx.done,
+  clock: [getSessionFx.done, refreshSessionFx.done],
   source: {
     accounts: $accounts,
     chains: networkModel.$chains,
@@ -318,5 +418,7 @@ export const walletConnectSign = {
   $step,
   $signed,
   $error,
+  $chain,
   flow,
+  reconnectRequested,
 };
