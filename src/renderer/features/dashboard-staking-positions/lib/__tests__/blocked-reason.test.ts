@@ -25,10 +25,12 @@ describe('getBlockedReasonKey', () => {
     expect(keys).not.toContain(null);
   });
 
-  it('borrows the drafts feature’s own wording for the permission it names', () => {
-    // Not a second copy of the string: a rename over there would otherwise
-    // leave this tooltip rendering a raw i18n path.
-    expect(getBlockedReasonKey(blocked('draftsNoPermission'))).toBe('operations.drafts.noWritePermission');
+  it('tells a user without the draft permission how to act on the account instead', () => {
+    // Not the drafts list's "ask your admin": from a position row the useful
+    // next move is to add the account's key to a wallet.
+    expect(getBlockedReasonKey(blocked('draftsNoPermission'))).toBe(
+      'dashboard.staking.positions.detail.blocked.draftsNoPermission',
+    );
   });
 });
 
@@ -36,16 +38,16 @@ describe('isViewOnly', () => {
   /**
    * The grid caption is the one place the four reasons collapse into one word,
    * and "view only" is the most terminal word available. It is therefore spent
-   * only on the reasons that really are terminal — a missing address book and a
-   * missing permission are one click, or one admin, away from acting, and
-   * labelling those "view only" would call a live row dead.
+   * only on the reasons the user cannot lift from this app — a missing draft
+   * permission is granted elsewhere, so the row reads like a watch-only one —
+   * and withheld from the missing connection, which is one click away.
    */
   it('is true only for reasons no action of the user’s can lift', () => {
     expect(isViewOnly(blocked('watchOnly'))).toBe(true);
     expect(isViewOnly(blocked('noDraftRoute'))).toBe(true);
+    expect(isViewOnly(blocked('draftsNoPermission'))).toBe(true);
 
     expect(isViewOnly(blocked('draftsNotConnected'))).toBe(false);
-    expect(isViewOnly(blocked('draftsNoPermission'))).toBe(false);
   });
 
   it('is false for anything that can act', () => {

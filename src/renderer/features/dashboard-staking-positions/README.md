@@ -71,7 +71,7 @@ flowchart TD
 | `blocked · watchOnly`          | A local account this installation holds no key for                          | `view only` in the row; every chip disabled with its reason                                     |
 | `blocked · noDraftRoute`       | Not ours, and no multisig or proxy could sign for it                        | same                                                                                            |
 | `blocked · draftsNotConnected` | Could carry a draft, but no external address book was ever connected        | Chips disabled with the reason — but **no** `view only` caption                                 |
-| `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | same                                                                                            |
+| `blocked · draftsNoPermission` | Could carry a draft, but the user lacks `operation-draft:write`             | `view only` in the row; chips disabled, the reason says to add the account's key to a wallet    |
 
 Three rules behind that table are easy to get wrong, and each was a bug before it was a rule.
 
@@ -103,9 +103,10 @@ sentence.
 
 **The `view only` caption is spent only on the terminal reasons.** The 4%-wide last column has room for one word, and
 that word is the most final one in the vocabulary — so `isViewOnly` gives it to `watchOnly` and `noDraftRoute`, which
-are facts about the address, and withholds it from the two draft reasons, which are a missing connection and a missing
-permission. Stamping "view only" on a row that is one click, or one admin, away from acting would undo in the grid the
-very distinction the four reasons exist to draw. Which reason it is stays the drawer's business.
+are facts about the address, and to `draftsNoPermission`, which nothing on the dashboard can grant — from here that row
+is as read-only as a watch-only one, and its tooltip says how to act on the account instead: add its key to a wallet. It
+is withheld from `draftsNotConnected`, a missing connection that is one click away; stamping "view only" on that row
+would undo in the grid the very distinction the reasons exist to draw. Which reason it is stays the drawer's business.
 
 **Claim is the exception to all of it.** A payout call names the _validator_, is permissionless, and pays each
 nominator's own payee whoever submits it. So the Claim chip is gated by whether anyone here can sign on the network, not
