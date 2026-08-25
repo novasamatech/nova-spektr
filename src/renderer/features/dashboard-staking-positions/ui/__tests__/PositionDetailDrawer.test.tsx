@@ -297,13 +297,13 @@ describe('features/dashboard-staking-positions/ui/PositionDetailDrawer', () => {
     expect(await screen.findByRole('button', { name: 'Change reward destination' })).toBeInTheDocument();
   });
 
-  test('should not offer Change reward destination on a watch-only position', async () => {
+  test('should keep Change reward destination disabled on a watch-only position', async () => {
     const wallet = { id: 2, name: 'Watching', type: WalletType.WATCH_ONLY, accounts: [] };
 
-    renderDrawer({ ...row, wallet, accessMode: 'watchOnly' });
+    renderDrawer({ ...row, wallet, access: { mode: 'blocked', reason: 'watchOnly' } });
 
     expect(await screen.findByText('view only')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Change reward destination' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Change reward destination' })).toBeDisabled();
   });
 
   test('should stay disabled until the reward-destination flow is wired', async () => {

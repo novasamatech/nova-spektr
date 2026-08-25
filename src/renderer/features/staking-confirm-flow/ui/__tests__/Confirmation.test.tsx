@@ -36,6 +36,8 @@ const position: StakingPosition = {
   unbonding: [],
   redeemable: '0',
   totalUnbonding: '0',
+  payee: null,
+  payeeLoaded: false,
 };
 
 const validator: Validator = {
