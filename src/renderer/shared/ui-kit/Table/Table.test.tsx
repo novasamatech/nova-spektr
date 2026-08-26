@@ -65,3 +65,19 @@ describe('Table virtualization', () => {
     expect(screen.getByText('Row 0')).toBeInTheDocument();
   });
 });
+
+describe('Table header truncation', () => {
+  test('wraps headers by default', () => {
+    const { container } = render(<Table columns={columns} data={rows.slice(0, 1)} />);
+
+    expect(container.querySelector('.table-container--truncate-header')).toBeNull();
+    expect(screen.getByText('Name')).not.toHaveAttribute('title');
+  });
+
+  test('applies the truncate modifier and a title only when opted in', () => {
+    const { container } = render(<Table columns={columns} data={rows.slice(0, 1)} truncateHeaders />);
+
+    expect(container.querySelector('.table-container--truncate-header')).not.toBeNull();
+    expect(screen.getByText('Name')).toHaveAttribute('title', 'Name');
+  });
+});

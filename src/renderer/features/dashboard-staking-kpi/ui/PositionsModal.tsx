@@ -265,7 +265,7 @@ export const PositionsModal = memo(({ rows, positions, currency, walletByAccount
             </div>
 
             <div className="min-w-0 flex-1 overflow-y-auto" style={{ maxHeight: 420 }}>
-              <Table columns={columns} data={rows} getRowKey={(item) => item.key} stickyHeader />
+              <Table columns={columns} data={rows} getRowKey={(item) => item.key} stickyHeader truncateHeaders />
             </div>
           </div>
         )}

@@ -62,6 +62,13 @@ type TableProps<T> = {
    */
   stickyHeader?: boolean;
   /**
+   * Keeps every header on a single line: over-long labels clip with an ellipsis
+   * (and carry the full text as a `title`) instead of wrapping and pushing the
+   * rows down. Meant for dense, fixed-width column layouts; tables whose
+   * headers hold multi-line labels or a tooltip trigger should wrap.
+   */
+  truncateHeaders?: boolean;
+  /**
    * Controlled sort state. When provided, the table does not sort data itself —
    * data is expected to arrive pre-sorted. Use together with `onSortChange`.
    */
@@ -95,6 +102,7 @@ const TableComponent = <T,>({
   className,
   cellAlign = 'middle',
   stickyHeader = false,
+  truncateHeaders = false,
   sort,
   defaultSort,
   onSortChange,
@@ -158,7 +166,16 @@ const TableComponent = <T,>({
   }, [data, columns, isControlled, internalSort]);
 
   return (
-    <div className={cnTw('table-container', { 'table-container--sticky-header': stickyHeader }, className)}>
+    <div
+      className={cnTw(
+        'table-container',
+        {
+          'table-container--sticky-header': stickyHeader,
+          'table-container--truncate-header': truncateHeaders,
+        },
+        className,
+      )}
+    >
       <table className="table">
         <thead className="table-header">
           <tr>
@@ -176,7 +193,13 @@ const TableComponent = <T,>({
                   onClick={() => handleSort(column.key)}
                 >
                   <div className="table-header-content">
-                    {isValidElement(column.title) ? column.title : <span>{column.title}</span>}
+                    {isValidElement(column.title) ? (
+                      column.title
+                    ) : (
+                      <span title={truncateHeaders && typeof column.title === 'string' ? column.title : undefined}>
+                        {column.title}
+                      </span>
+                    )}
                     {column.sortable && (
                       <div className="table-sort-indicator">
                         {/* eslint-disable-next-line i18next/no-literal-string */}
