@@ -1,10 +1,10 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
-The Dashboard's **Governance** tab: three widgets that answer, for the accounts the user has picked, _how much of my
+The Dashboard's **Governance** tab: four widgets that answer, for the accounts the user has picked, _how much of my
 money is tied up in voting, when do I get it back, and what am I currently voting on_.
 
 Governance costs the user liquidity, and the cost is invisible on the chain explorer: a vote locks tokens for a period
@@ -17,6 +17,7 @@ from.
 | **Governance Overview** | How much is locked in governance, split by chain and drillable to account and track  |
 | **Unlock Schedule**     | What is claimable now, what is still pending, and on which days it unlocks           |
 | **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks |
+| **Governance Locks**    | Which account holds which lock, and which of them I can release right now            |
 
 ## Who can use it / when it applies
 
@@ -90,6 +91,35 @@ cancelled referendum releases at the end block. The detail modal marks each vote
 or **Shadowed**: shadowed means another, longer lock on the same track already covers this one, so releasing it alone
 would free nothing.
 
+## Governance Locks
+
+One row per **account × chain**: the account, the chain, the locked amount (the largest lock, never the sum), what is
+claimable, what is still pending with its estimated release date, what is delegated, the tracks behind it, and — the
+point of the widget — a button that releases it. The header carries a **Claimable only** toggle and a chain filter; rows
+arrive sorted by claimable, then by locked, so the money the user can take home is on top.
+
+**This is the only widget on the tab that acts rather than reports.** Everything else on the Governance tab explains a
+number; this one dispatches the unlock flow for the row's account, on the row's chain, for exactly the tracks that have
+expired.
+
+**The Action cell is a verdict, not a button that sometimes fails.** Each row says what can be done and why, so the user
+never clicks into a dead end:
+
+| Row                                     | Action cell                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| Nothing claimable, everything delegated | "No unlock date" — delegated balance releases only when the delegation does          |
+| Nothing claimable                       | "Nothing claimable", with the estimated release date when one is known               |
+| Claimable, but the key never signs      | "Watch-only" — a `remove_vote` is origin-bound and cannot be paid for by proxy       |
+| Claimable, signed by the account itself | **Unlock**                                                                           |
+| Claimable, signed by a multisig         | **Unlock** + "needs signatories" — signing opens a pending operation                 |
+| Claimable, released by a local payer    | **Unlock** (secondary) + "permissionless" — `unlock(track, target)` takes any origin |
+| Claimable, but nothing local can sign   | **Unlock**, disabled, naming the reason                                              |
+| Chain not connected                     | **Unlock**, disabled — nothing signs without a live connection                       |
+
+**The claim is re-derived at the moment of the click.** The row's figures come from a periodic snapshot; a referendum
+that ended in between adds a required `remove_vote`, so the schedule is recomputed against the live head before the flow
+opens, and the fresh actions are what gets signed.
+
 ## Lifecycle
 
 ```mermaid
@@ -100,6 +130,9 @@ flowchart TD
     LOCK --> OVER["Governance Overview: chain > account > track"]
     SCHED --> UNLOCK["Unlock Schedule: claimable / pending / by day"]
     CHAIN --> REFS["Referendums: active and ended"]
+    LOCK --> LOCKS["Governance Locks: one row per account x chain"]
+    SCHED --> LOCKS
+    LOCKS --> FLOW["Unlock flow: confirm > sign > submit"]
 ```
 
 Claim schedules are recomputed only when the block or the underlying voting data actually changes, so scrolling the tab
@@ -115,7 +148,8 @@ different account.
 ## Related
 
 - **Governance entities** (`entities/governance`) — voting, conviction and claim-schedule maths.
-- **Governance page** (`pages/Governance`) — the full governance surface these widgets summarise; unlocking itself
-  happens there, not here.
+- **Governance page** (`pages/Governance`) — the full governance surface these widgets summarise.
+- **Governance unlock flow** (`features/governance-unlock-flow`) — the confirm/sign/submit flow the Locks widget's
+  Unlock button dispatches.
 - [`dashboard-portfolio-overview`](../dashboard-portfolio-overview/README.md) — the Overview tab's balance card, where
   governance locks appear as part of the locked share.

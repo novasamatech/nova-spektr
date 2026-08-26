@@ -4,6 +4,7 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { dashboardGovernanceSlot, defineWidget } from '@/pages/Dashboard';
 
+import { GovernanceLocksWidget } from './ui/GovernanceLocksWidget';
 import { GovernanceOverviewWidget } from './ui/GovernanceOverviewWidget';
 import { ReferendumsWidget } from './ui/ReferendumsWidget';
 import { UnlockScheduleWidget } from './ui/UnlockScheduleWidget';
@@ -57,6 +58,23 @@ dashboardReferendumsFeature.inject(
     label: 'dashboard.activeReferendums.title',
     render: ReferendumsWidget,
     defaultSize: { w: 4, h: 5 },
+    minSize: { w: 2, h: 3 },
+  }),
+);
+
+export const dashboardGovernanceLocksFeature = createFeature({
+  name: 'dashboard/governance-locks',
+  input: createStore({}),
+  enable: enableFlag,
+});
+
+dashboardGovernanceLocksFeature.inject(
+  dashboardGovernanceSlot,
+  defineWidget({
+    order: 1,
+    label: 'dashboard.governanceLocks.title',
+    render: GovernanceLocksWidget,
+    defaultSize: { w: 4, h: 4 },
     minSize: { w: 2, h: 3 },
   }),
 );
