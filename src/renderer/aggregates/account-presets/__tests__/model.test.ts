@@ -68,6 +68,20 @@ describe('accountPresetsModel', () => {
     expect(scope.getState(accountPresetsModel.$presets)[0]!.name).toBe('New');
   });
 
+  it('clears the review flag once new filters are saved', async () => {
+    const scope = fork({
+      values: [[accountPresetsModel.$presets, [{ ...filterPreset(), needsReview: true }]]],
+    });
+    await allSettled(accountPresetsModel.presetUpdated, { scope, params: { id: '1', name: 'Renamed' } });
+    expect(scope.getState(accountPresetsModel.$presets)[0]!.needsReview).toBe(true);
+
+    await allSettled(accountPresetsModel.presetUpdated, {
+      scope,
+      params: { id: '1', filters: { ...EMPTY_FILTERS, sources: ['wallet'] } },
+    });
+    expect(scope.getState(accountPresetsModel.$presets)[0]!.needsReview).toBeUndefined();
+  });
+
   it('deletes a preset', async () => {
     const scope = fork({
       values: [[accountPresetsModel.$presets, [filterPreset()]]],

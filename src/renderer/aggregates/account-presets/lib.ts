@@ -43,6 +43,56 @@ export const normalizePresetFilters = (filters: Partial<PresetFilterCriteria>): 
   fields: filters.fields ?? [],
 });
 
+const RETIRED_FILTER_KEYS = ['entityNames', 'categoryNames', 'contactTypeNames', 'tags'];
+
+const isNonEmptyArray = (value: unknown): boolean => Array.isArray(value) && value.length > 0;
+
+/**
+ * Whether raw stored criteria carry a real constraint under a retired
+ * (name-keyed) key.
+ */
+const hasRetiredCriteria = (filters: object): boolean =>
+  RETIRED_FILTER_KEYS.some(key => isNonEmptyArray(Reflect.get(filters, key)));
+
+export const hasAnyCriteria = (filters: PresetFilterCriteria): boolean =>
+  filters.sources.length > 0 || filters.chainIds.length > 0 || filters.fields.some(f => f.options.length > 0);
+
+/**
+ * Bring a persisted preset to the current shape. Retired criteria are dropped;
+ * a Smart Filter that loses every constraint this way is flagged `needsReview`
+ * so it is not silently applied as "match all". Idempotent — the flag survives
+ * re-runs over the already normalized shape.
+ */
+export const migratePreset = (preset: AccountPreset): AccountPreset => {
+  const filters = normalizePresetFilters(preset.filters);
+  const needsReview =
+    preset.needsReview === true ||
+    (preset.type === 'filter' && hasRetiredCriteria(preset.filters) && !hasAnyCriteria(filters));
+
+  return { ...preset, filters, ...(needsReview && { needsReview: true }) };
+};
+
+const isStoredPreset = (value: unknown): value is AccountPreset =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof Reflect.get(value, 'id') === 'string' &&
+  typeof Reflect.get(value, 'filters') === 'object';
+
+/**
+ * Migrate the raw `localStorage` payload of the presets store. Returns the
+ * serialized migrated list, or `null` when the payload is not a preset list.
+ */
+export const migrateStoredPresets = (raw: string): string | null => {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.every(isStoredPreset)) return null;
+
+    return JSON.stringify(parsed.map(migratePreset));
+  } catch {
+    return null;
+  }
+};
+
 export function applyPresetFilter(filters: PresetFilterCriteria, entries: AccountEntry[]): AccountEntry[] {
   const { sources, chainIds, fields } = normalizePresetFilters(filters);
   // A criterion with no options selected constrains nothing.
@@ -76,6 +126,9 @@ export function matchPreset(preset: AccountPreset | null, entries: AccountEntry[
     const selected = new Set(preset.selectedIds);
     return entries.filter(e => selected.has(e.id));
   }
+
+  // Criteria lost to a retired schema — never widen to "everything".
+  if (preset.needsReview) return [];
 
   return applyPresetFilter(preset.filters, entries);
 }

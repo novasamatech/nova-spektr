@@ -6,7 +6,7 @@ import { type ComponentProps, useCallback, useEffect, useMemo, useRef, useState 
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, FootnoteText, IconButton } from '@/shared/ui';
+import { Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { ConfirmModal, Input, Modal, useNotification } from '@/shared/ui-kit';
 import {
   type PresetFilterCriteria,
@@ -158,6 +158,7 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
   };
 
   const isNewPreset = selectedId === null;
+  const needsReview = selectedId !== null && presetsById.get(selectedId)?.needsReview === true;
   const canSave = editName.trim().length > 0 && (editType === 'filter' || editSelectedIds.length > 0);
 
   const matchedEntries = useMemo(() => {
@@ -242,6 +243,14 @@ export const PresetManagementModal = ({ isOpen, onClose }: Props) => {
 
             {editType === 'filter' ? (
               <>
+                {needsReview && (
+                  <div className="flex items-start gap-x-2 rounded-sm bg-alert-background-warning px-3 py-2">
+                    <Icon name="warn" size={16} className="shrink-0 text-icon-warning" />
+                    <FootnoteText className="text-text-primary">
+                      {t('dashboard.presets.modal.needsReview')}
+                    </FootnoteText>
+                  </div>
+                )}
                 <PresetFilterEditor filters={editFilters} onFiltersChange={setEditFilters} />
                 <MatchedAccountsPreview matched={matchedEntries} totalEntries={allEntries.length} />
               </>

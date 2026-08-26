@@ -30,6 +30,12 @@ export type AccountPreset = {
   type: PresetType;
   filters: PresetFilterCriteria;
   selectedIds: string[]; // used when type === 'custom'
+  /**
+   * Set at hydration for a Smart Filter whose only criteria were saved by a
+   * retired schema and could not be migrated. Such a preset matches nothing
+   * until the user edits and saves it.
+   */
+  needsReview?: boolean;
 };
 
 export const EMPTY_FILTERS: PresetFilterCriteria = {

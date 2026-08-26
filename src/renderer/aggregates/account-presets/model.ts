@@ -12,6 +12,7 @@ import {
   type WalletEntrySeed,
   buildMergedEntries,
   matchPreset,
+  migrateStoredPresets,
 } from './lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria, type PresetType } from './types';
 
@@ -21,9 +22,11 @@ const LEGACY_PRESETS_KEY = 'dashboard_presets';
 const DASHBOARD_ACTIVE_KEY = 'dashboard_active_preset';
 const OPERATIONS_ACTIVE_KEY = 'operations_active_preset';
 
-// One-shot migration: move presets from the legacy `dashboard_presets` key to the shared
-// `account_presets` key. Runs synchronously at module load before `persist` hydrates the store.
-// Idempotent: if the new key already holds data, the legacy key is just cleaned up.
+// One-shot migrations, run synchronously at module load before `persist` hydrates the store.
+// 1. Move presets from the legacy `dashboard_presets` key to the shared `account_presets` key.
+//    Idempotent: if the new key already holds data, the legacy key is just cleaned up.
+// 2. Normalize persisted criteria to the current schema (retired name-keyed lists are dropped,
+//    Smart Filters left without any criteria are flagged `needsReview`) and persist that shape.
 try {
   if (typeof localStorage !== 'undefined') {
     const legacy = localStorage.getItem(LEGACY_PRESETS_KEY);
@@ -32,6 +35,12 @@ try {
         localStorage.setItem(PRESETS_KEY, legacy);
       }
       localStorage.removeItem(LEGACY_PRESETS_KEY);
+    }
+
+    const stored = localStorage.getItem(PRESETS_KEY);
+    const migrated = stored != null ? migrateStoredPresets(stored) : null;
+    if (migrated != null && migrated !== stored) {
+      localStorage.setItem(PRESETS_KEY, migrated);
     }
   }
 } catch {
@@ -87,13 +96,17 @@ $presets.on(presetUpdated, (presets, { id, name, type, filters, selectedIds }) =
   presets.map(p => {
     if (p.id !== id) return p;
 
-    return {
+    const next: AccountPreset = {
       ...p,
       ...(name !== undefined && { name: name.trim().slice(0, 30) }),
       ...(type !== undefined && { type }),
       ...(filters !== undefined && { filters }),
       ...(selectedIds !== undefined && { selectedIds }),
     };
+    // Saving new criteria (or switching type) resolves the legacy-schema review state.
+    if (filters !== undefined || type !== undefined) delete next.needsReview;
+
+    return next;
   }),
 );
 
