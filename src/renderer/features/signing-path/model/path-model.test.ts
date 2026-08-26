@@ -64,7 +64,7 @@ describe('path-model', () => {
 
   it('pathSeeded rejects invalid path', async () => {
     const scope = fork();
-    await allSettled(pathModel.pathSeeded, { scope, params: [signer(1)] });
+    await allSettled(pathModel.pathSeeded, { scope, params: [signer(1), signer(2)] });
     expect(scope.getState(pathModel.$path)).toEqual([]);
   });
 

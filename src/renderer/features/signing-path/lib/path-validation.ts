@@ -3,10 +3,10 @@ import { type PathNode } from '@/domains/backend';
 export const MAX_PATH_DEPTH = 6;
 
 /**
- * The shortest path that can actually be followed: a source and the signer it
- * ends at. The empty path is legal in the grammar (a regular account signs for
- * itself) and a one-node path is a half-picked draft — neither can be executed
- * as a route, so both are "no usable path" rather than "path with a problem".
+ * The shortest path that can be followed as a route: a source and the signer
+ * it ends at. The empty path and a lone `signer` node are legal in the grammar
+ * (a regular account signs for itself) but carry no route, so both are
+ * "no usable path" rather than "path with a problem".
  */
 export const MIN_PATH_LENGTH = 2;
 
@@ -24,8 +24,10 @@ export function isValidPath(path: PathNode[]): ValidationResult {
   }
 
   const first = path[0]!;
-  if (first.kind !== 'proxied' && first.kind !== 'multisig') {
-    return { ok: false, reason: 'must start with proxied or multisig' };
+  // A plain account signs for itself: a path of exactly one `signer` node.
+  // Anything longer must start from a delegating account.
+  if (first.kind === 'signer') {
+    return path.length === 1 ? { ok: true } : { ok: false, reason: 'a signer may only stand alone' };
   }
 
   const last = path[path.length - 1]!;
@@ -58,8 +60,10 @@ export function isValidPathPrefix(path: PathNode[]): ValidationResult {
   }
 
   const first = path[0]!;
-  if (first.kind !== 'proxied' && first.kind !== 'multisig') {
-    return { ok: false, reason: 'must start with proxied or multisig' };
+  // A plain account signs for itself: a path of exactly one `signer` node.
+  // Anything longer must start from a delegating account.
+  if (first.kind === 'signer') {
+    return path.length === 1 ? { ok: true } : { ok: false, reason: 'a signer may only stand alone' };
   }
 
   for (let i = 1; i < path.length - 1; i++) {
