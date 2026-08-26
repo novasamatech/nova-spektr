@@ -48,7 +48,9 @@ const createDetachedTimer = ({ start, cancel, timeout }: DetachedTimerParams) =>
   const fired = createEvent();
   const scheduled = createEvent<TimerHandle>();
 
-  const $handle = createStore<TimerHandle | null>(null, { serialize: 'ignore' }).on(scheduled, (_, handle) => handle);
+  const $handle = createStore<TimerHandle | null>(null, { serialize: 'ignore' })
+    .on(scheduled, (_, handle) => handle)
+    .reset(fired);
 
   const scheduleFx = attach({
     source: $handle,
@@ -70,6 +72,8 @@ const createDetachedTimer = ({ start, cancel, timeout }: DetachedTimerParams) =>
       }
     },
   });
+
+  $handle.reset(cancelFx.done);
 
   sample({ clock: start, fn: () => undefined, target: scheduleFx });
   sample({ clock: cancel, fn: () => undefined, target: cancelFx });
@@ -108,6 +112,25 @@ type Params = {
   timeout?: number;
 };
 
+const READY: OperationReadiness = { status: 'ready' };
+
+/**
+ * Turns a list of requirements ("this store must be non-null before the screen
+ * can open") into one `$readiness` verdict: `ready`, `pending` with the first
+ * outstanding step, or `blocked` with a typed reason.
+ *
+ * Verdicts arrive in three tiers. Tier 1 is a `blocked` store a requirement
+ * declares — deterministic, known without the network, but withheld for
+ * `settleDelay` so stores that are empty for a tick on flow start don't flash
+ * an error. Tier 2 is an `error` store — a real rejection, reported at once and
+ * classified by `classifyRpcError`. Tier 3 is the `timeout` backstop for a step
+ * that neither settles nor rejects; its reason comes from `timeoutReason`,
+ * which the consumer derives from connection status.
+ *
+ * Nothing is published while `active` is false. `retryRequested` re-arms both
+ * timers and fans out to every requirement's `retry`; a requirement without one
+ * is only re-checked, never re-run.
+ */
 export const createOperationReadiness = ({
   active,
   requirements,
@@ -140,7 +163,9 @@ export const createOperationReadiness = ({
 
   const activated = sample({ clock: active, filter: (isActive) => isActive });
   const deactivated = sample({ clock: active, filter: (isActive) => !isActive });
-  const armed = merge([activated, retryRequested]);
+  // A retry issued off screen must not arm a timer that fires into the next activation.
+  const retriedWhileActive = sample({ clock: retryRequested, filter: active });
+  const armed = merge([activated, retriedWhileActive]);
 
   // Each arm cancels the clock the previous one started, so a retry issued mid-window gets a
   // full fresh deadline instead of inheriting what was left of the old one. Closing the flow
@@ -153,7 +178,7 @@ export const createOperationReadiness = ({
 
   for (const requirement of requirements) {
     if (requirement.retry) {
-      sample({ clock: retryRequested, target: requirement.retry });
+      sample({ clock: retriedWhileActive, target: requirement.retry });
     }
   }
 
@@ -177,24 +202,30 @@ export const createOperationReadiness = ({
 
       // Tier 1 — deterministic. Withheld until the settle delay elapses because some of these
       // stores are momentarily empty on flow start, before their pre-select samples fire.
-      if (settleDelayElapsed) {
-        for (const block of blocks) {
-          if (nonNullable(block)) {
-            return { status: 'blocked', reason: block };
-          }
-        }
+      const blockedRequirement = requirements.find((_, index) => nonNullable(blocks[index]));
+      const block = nonNullable(blockedRequirement) ? blocks[requirements.indexOf(blockedRequirement)] : null;
+
+      if (settleDelayElapsed && nonNullable(block)) {
+        return { status: 'blocked', reason: block };
       }
 
       // Tier 2 — an actual rejection is definitive, no settle delay needed.
-      for (const [index, error] of errors.entries()) {
+      for (const [index, requirement] of requirements.entries()) {
+        const error = errors[index];
         if (nonNullable(error)) {
-          return { status: 'blocked', reason: classifyRpcError(error, requirements[index]!.key) };
+          return { status: 'blocked', reason: classifyRpcError(error, requirement.key) };
         }
       }
 
-      const pendingIndex = values.findIndex((value) => nullable(value));
-      if (pendingIndex === -1) {
-        return { status: 'ready' };
+      // A withheld block still counts as outstanding: a block whose paired store happens to
+      // be non-null must not read as `ready` for the length of the settle window.
+      if (nonNullable(blockedRequirement)) {
+        return { status: 'pending', step: blockedRequirement.key };
+      }
+
+      const pending = requirements.find((_, index) => nullable(values[index]));
+      if (nullable(pending)) {
+        return READY;
       }
 
       // Tier 3 — backstop for anything that never rejects at all.
@@ -202,7 +233,7 @@ export const createOperationReadiness = ({
         return { status: 'blocked', reason: timeoutReason };
       }
 
-      return { status: 'pending', step: requirements[pendingIndex]!.key };
+      return { status: 'pending', step: pending.key };
     },
   );
 

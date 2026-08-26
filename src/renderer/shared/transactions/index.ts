@@ -37,6 +37,7 @@ export {
   type OperationBlockReasonKind,
   type OperationStep,
   classifyRpcError,
+  isNetworkBlockReason,
 } from './operationBlockReason';
 export {
   type OperationReadiness,

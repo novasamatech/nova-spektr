@@ -3120,7 +3120,6 @@
       "syncRetry": "Try again",
       "extrinsicError": "Call data is invalid or incompatible with this chain",
       "internalPathError": "Signing path is invalid",
-      "signingPathUnresolved": "The signing path saved with this draft can no longer be resolved against your accounts. The draft cannot be submitted along the original route.",
       "signingPathMissing": "This draft has no signing path",
       "signingPathMissingHint": "It was created before drafts recorded how they are signed. Recreate it to submit.",
       "signingPathMissingTooltip": "This draft has no signing path — recreate it to submit",
@@ -3179,6 +3178,8 @@
       "rateLimitedTitle": "The network node is busy",
       "reload": "Reload app",
       "retry": "Try again",
+      "signingPathMissingDescription": "It was created before drafts recorded how they are signed. Recreate the draft to submit it.",
+      "signingPathMissingTitle": "This draft has no signing path",
       "signingPathUnresolvedDescription": "The accounts this operation was created for are no longer available in your wallets.",
       "signingPathUnresolvedTitle": "Signing account is unavailable"
     },

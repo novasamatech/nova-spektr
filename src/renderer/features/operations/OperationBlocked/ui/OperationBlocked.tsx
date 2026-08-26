@@ -4,29 +4,39 @@ import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { type OperationBlockReason } from '@/shared/transactions';
-import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { StatusPanel } from '@/shared/ui-kit';
 import { type ActionKind, ACTION_LABEL_KEYS, REASON_COPY_KEYS } from '../lib/copyKeys';
 
 type Props = {
+  /** Why the operation cannot proceed; picks the copy and the offered actions. */
   reason: OperationBlockReason;
+  /**
+   * Chain the operation targets, interpolated into the copy; `null` falls back
+   * to a generic name.
+   */
   chain: Chain | null;
+  /** Re-runs the failed preparation step. */
   onRetry: () => void;
+  /**
+   * Ends the flow: closes the modal and releases whatever the flow armed on
+   * entry.
+   */
   onClose: () => void;
 };
 
+/**
+ * Terminal "operation blocked" screen rendered in place of the "Preparing
+ * signing data…" spinner once preparation fails with a reason that cannot be
+ * waited out. Title, description and the action buttons all come from
+ * `REASON_COPY_KEYS`; the first action is the primary button.
+ */
 export const OperationBlocked = ({ reason, chain, onRetry, onClose }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   const chainName = chain?.name ?? t('operations.blocked.genericChain');
-
   const copyKeys = REASON_COPY_KEYS[reason.kind];
-  const copy = {
-    title: t(copyKeys.titleKey, { chain: chainName }),
-    description: t(copyKeys.descriptionKey, { chain: chainName }),
-    actions: copyKeys.actions,
-  };
 
   const runAction = (action: ActionKind) => {
     switch (action) {
@@ -57,34 +67,25 @@ export const OperationBlocked = ({ reason, chain, onRetry, onClose }: Props) => 
     }
   };
 
-  const label: Record<ActionKind, string> = {
-    retry: t(ACTION_LABEL_KEYS.retry),
-    enableNetwork: t(ACTION_LABEL_KEYS.enableNetwork),
-    changeNode: t(ACTION_LABEL_KEYS.changeNode),
-    reload: t(ACTION_LABEL_KEYS.reload),
-    close: t(ACTION_LABEL_KEYS.close),
-    cancel: t(ACTION_LABEL_KEYS.cancel),
-  };
-
   return (
-    // This markup replaces the "Preparing signing data…" spinner in place; role="alert"
-    // announces the failure to screen-reader users who otherwise get no signal that the
-    // wait ended. Box doesn't forward arbitrary HTML attributes, so the role lives on a
-    // plain wrapper div.
+    // role="alert" announces the failure to screen-reader users who otherwise get no
+    // signal that the wait ended. Box doesn't forward arbitrary HTML attributes, so
+    // the role lives on a plain wrapper div.
     <div role="alert">
-      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-        <Icon className="text-icon-warning" name="warnCutout" size={60} />
-        <SmallTitleText align="center">{copy.title}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">{copy.description}</FootnoteText>
+      <StatusPanel tone="warning">
+        <SmallTitleText align="center">{t(copyKeys.titleKey, { chain: chainName })}</SmallTitleText>
+        <FootnoteText className="text-center text-text-tertiary">
+          {t(copyKeys.descriptionKey, { chain: chainName })}
+        </FootnoteText>
 
         <div className="mt-2 flex gap-2">
-          {copy.actions.map((action, index) => (
+          {copyKeys.actions.map((action, index) => (
             <Button key={action} size="sm" variant={index === 0 ? 'fill' : 'text'} onClick={() => runAction(action)}>
-              {label[action]}
+              {t(ACTION_LABEL_KEYS[action])}
             </Button>
           ))}
         </div>
-      </Box>
+      </StatusPanel>
     </div>
   );
 };

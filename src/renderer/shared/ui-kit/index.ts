@@ -4,6 +4,7 @@ export { useTheme } from './Theme/useTheme';
 
 export { FilledIconButton } from './FilledIconButton/FilledIconButton';
 export { EmptyMessage } from './EmptyMessage/EmptyMessage';
+export { StatusPanel } from './StatusPanel/StatusPanel';
 export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';

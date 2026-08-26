@@ -3,7 +3,6 @@ import { type BN } from '@polkadot/util';
 import { type Store, combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type Wallet } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
@@ -50,42 +49,38 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
     target: activeOperationRoute.activeOperationChanged,
   });
 
-  const $confirms = combine($store, wallets, (store, wallets): ConfirmItem<Input>[] => {
-    if (!wallets.length) return [];
+  // An empty wallet list is startup state, not a failure — stay silent until it populates.
+  const $resolved = combine(
+    $store,
+    wallets,
+    (store, wallets): { confirms: ConfirmItem<Input>[]; dropped: string | null } => {
+      if (!wallets.length) return { confirms: [], dropped: null };
 
-    return store
-      .map((meta) => {
+      const confirms: ConfirmItem<Input>[] = [];
+      let dropped: string | null = null;
+
+      for (const meta of store) {
         const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
-        if (!initiatorWallet) return null;
+        if (!initiatorWallet) {
+          dropped ??= `initiator wallet ${meta.initiator.walletId} not found`;
+          continue;
+        }
 
         const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
-        if (!signatoryWallet) return null;
+        if (!signatoryWallet) {
+          dropped ??= `signatory wallet ${meta.signatory.walletId} not found`;
+          continue;
+        }
 
-        return {
-          ...meta,
-          signatoryWallet,
-          initiatorWallet,
-        };
-      })
-      .filter(nonNullable);
-  });
-
-  // An empty wallet list is startup state, not a failure — stay silent until it populates.
-  const $dropped = combine($store, wallets, (store, wallets): string | null => {
-    if (store.length === 0 || wallets.length === 0) return null;
-
-    for (const meta of store) {
-      if (!walletUtils.getWalletById(wallets, meta.initiator.walletId)) {
-        return `initiator wallet ${meta.initiator.walletId} not found`;
+        confirms.push({ ...meta, signatoryWallet, initiatorWallet });
       }
 
-      if (!walletUtils.getWalletById(wallets, meta.signatory.walletId)) {
-        return `signatory wallet ${meta.signatory.walletId} not found`;
-      }
-    }
+      return { confirms, dropped };
+    },
+  );
 
-    return null;
-  });
+  const $confirms = $resolved.map((resolved) => resolved.confirms);
+  const $dropped = $resolved.map((resolved) => resolved.dropped);
 
   sample({
     clock: addConfirms,
@@ -107,6 +102,7 @@ export const createExtrinsicConfirmStore = <Input extends ExtrinsicConfirmInfo>(
 
   return {
     $confirms,
+    /** Why the first confirm was dropped (wallet missing), `null` if none. */
     $dropped,
 
     init,

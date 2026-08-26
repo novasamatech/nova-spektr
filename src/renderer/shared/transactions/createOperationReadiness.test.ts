@@ -10,11 +10,16 @@ import {
 } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type OperationReadiness, createOperationReadiness } from './createOperationReadiness';
+import {
+  type OperationReadiness,
+  OPERATION_READINESS_TIMEOUT,
+  OPERATION_SETTLE_DELAY,
+  createOperationReadiness,
+} from './createOperationReadiness';
 import { type OperationBlockReason } from './operationBlockReason';
 
-const SETTLE = 500;
-const TIMEOUT = 15_000;
+const SETTLE = OPERATION_SETTLE_DELAY;
+const TIMEOUT = OPERATION_READINESS_TIMEOUT;
 
 const timeoutReason = createStore<OperationBlockReason>({ kind: 'network-unreachable' });
 
@@ -309,6 +314,60 @@ describe('createOperationReadiness', () => {
       status: 'blocked',
       reason: { kind: 'network-unreachable' },
     });
+  });
+
+  it('a retry issued while inactive arms nothing', async () => {
+    const $active = createStore(false);
+    const wrapRetry = createEvent();
+    const $wrapRetried = createStore(0).on(wrapRetry, (count) => count + 1);
+    const { $readiness, retryRequested } = createOperationReadiness({
+      active: $active,
+      requirements: [{ key: 'wrapping', store: createStore<string | null>(null), retry: wrapRetry }],
+      timeoutReason,
+    });
+
+    const scope = fork();
+    await emit(scope, retryRequested);
+
+    // Nothing fans out and no timer is running while the flow is off screen.
+    expect(scope.getState($wrapRetried)).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+
+    // Had the retry armed a timer, it would fire into the activation below and block it.
+    await vi.advanceTimersByTimeAsync(TIMEOUT);
+    await activate(scope, $active);
+
+    expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'wrapping' });
+    expect(scope.getState($wrapRetried)).toBe(0);
+  });
+
+  it('a muted block keeps the step pending even when its store is satisfied', async () => {
+    const $active = createStore(false);
+    const { $readiness } = createOperationReadiness({
+      active: $active,
+      requirements: [
+        {
+          key: 'confirming',
+          store: createStore<string | null>('x'),
+          blocked: createStore<OperationBlockReason | null>({ kind: 'no-signatory' }),
+        },
+      ],
+      timeoutReason,
+    });
+
+    const scope = fork();
+    const verdicts: OperationReadiness[] = [];
+    createWatch({ unit: $readiness, scope, fn: (value) => verdicts.push(value) });
+
+    await activate(scope, $active);
+
+    // The store is non-null, but a withheld block must not read as ready for the settle window.
+    expect(scope.getState($readiness)).toEqual({ status: 'pending', step: 'confirming' });
+
+    await vi.advanceTimersByTimeAsync(SETTLE);
+
+    expect(scope.getState($readiness)).toEqual({ status: 'blocked', reason: { kind: 'no-signatory' } });
+    expect(verdicts.map((verdict) => verdict.status)).not.toContain('ready');
   });
 
   it('does not arm any timer until the flow becomes active', async () => {

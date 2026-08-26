@@ -30,10 +30,14 @@ describe('classifyRpcError', () => {
     });
   });
 
-  it('classifies an RPC request timeout', () => {
+  it('classifies an RPC request timeout as a silent node, not a dead socket', () => {
     expect(classifyRpcError(new Error('No response received from RPC endpoint in 60s'), 'wrapping')).toMatchObject({
-      kind: 'network-unreachable',
+      kind: 'node-unresponsive',
     });
+  });
+
+  it('does not read an unrelated "timeout" word as a silent node', () => {
+    expect(classifyRpcError(new Error('Transaction timeout exceeded'), 'wrapping').kind).toBe('internal');
   });
 
   it('does not treat a bare -32603 internal error as rate limiting', () => {
@@ -72,9 +76,9 @@ describe('classifyRpcError', () => {
     ['disconnected from', 'network-unreachable'],
     ['connection closed', 'network-unreachable'],
     ['socket hang up', 'network-unreachable'],
-    ['no response received', 'network-unreachable'],
-    ['timeout', 'network-unreachable'],
-    ['timed out', 'network-unreachable'],
+    ['no response received', 'node-unresponsive'],
+    ['request timeout', 'node-unresponsive'],
+    ['timed out', 'node-unresponsive'],
   ] as const)('classifies "%s" as %s', (marker, kind) => {
     expect(classifyRpcError(new Error(marker), 'wrapping').kind).toBe(kind);
   });

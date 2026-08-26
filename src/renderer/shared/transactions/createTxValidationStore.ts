@@ -27,7 +27,7 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
   validator,
   calculateAvailable,
 }: Params<Validator>) => {
-  const { $, $isDefaultValue, $pending } = createStoreFromEffect({
+  const { $, $isDefaultValue, $pending, $error, retry } = createStoreFromEffect({
     params,
     defaultValue: { errors: [], balanceValidationResults: [], available: [] },
     fn: validator,
@@ -71,6 +71,15 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
      */
     $balanceValidationResults,
     $pending,
+    /**
+     * The validator itself threw (a code or data failure, not a validation
+     * error) — `$validationDone` stays false in that case.
+     */
+    $error,
+    /**
+     * Re-runs the validator with the current params.
+     */
+    retry,
     /**
      * True if validation is done, can be used to show loading state.
      *

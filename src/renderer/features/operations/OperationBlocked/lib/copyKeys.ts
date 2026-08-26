@@ -56,6 +56,11 @@ export const REASON_COPY_KEYS: Record<OperationBlockReasonKind, ReasonCopyKeys> 
     descriptionKey: 'operations.blocked.signingPathUnresolvedDescription',
     actions: ['close'],
   },
+  'signing-path-missing': {
+    titleKey: 'operations.blocked.signingPathMissingTitle',
+    descriptionKey: 'operations.blocked.signingPathMissingDescription',
+    actions: ['close'],
+  },
   'invalid-call-data': {
     titleKey: 'operations.blocked.invalidCallDataTitle',
     descriptionKey: 'operations.blocked.invalidCallDataDescription',

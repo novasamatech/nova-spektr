@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, type UnitValue, createEvent, createStore, sample } from 'effector';
+import { type Store, createEvent, createStore, sample } from 'effector';
 
-import { takeLast } from '@/shared/effector';
+import { isAbortError, takeLast } from '@/shared/effector';
 import { nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction, transactionService } from '@/domains/network';
 
@@ -11,6 +11,22 @@ type Params = {
   route: Store<AnyAccount[]>;
 };
 
+/**
+ * Wraps a transaction for its signing route (multisig / proxy layers) and keeps
+ * the result in sync with the inputs, re-wrapping whenever any of them change.
+ *
+ * @param params.api - Api of the transaction chain, `null` while disconnected.
+ * @param params.transaction - Inner transaction to wrap, `null` when the flow
+ *   has no transaction yet (or was closed).
+ * @param params.route - Signing route: accounts from the initiator up to the
+ *   signatory.
+ *
+ * @returns `$tx` - the wrapped transaction, `null` until wrapping succeeds or
+ *   after a failed re-wrap; `$error` - failure of the latest attempt, reset
+ *   when a new attempt starts or the transaction is cleared; `$pending` -
+ *   whether a wrap is in flight; `retry` - re-runs wrapping with the current
+ *   inputs.
+ */
 export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
   const $tx = createStore<AnyTransaction | null>(null);
   const $error = createStore<Error | null>(null);
@@ -35,9 +51,6 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     fn: wrapTransactionHandler,
     key: () => 'wrapTransaction',
   });
-
-  const isAbortError = (err: UnitValue<typeof wrapTransactionFx.failData>) =>
-    err && 'name' in err && err.name === 'AbortError';
 
   const wrapTransaction = sample({
     clock: [transaction, api, route, retry],
@@ -64,19 +77,23 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
     target: $tx,
   });
 
-  // Without this the store keeps a stale wrapped tx after a failed re-wrap, which
-  // would let the user sign a transaction built from outdated inputs. AbortError is
-  // filtered out because it marks a run superseded by takeLast, not a real failure.
-  sample({
+  // AbortError is filtered out because it marks a run superseded by takeLast, not a
+  // real failure. Without the `$tx` reset the store keeps a stale wrapped tx after a
+  // failed re-wrap, which would let the user sign a transaction built from outdated
+  // inputs.
+  const wrapFailed = sample({
     clock: wrapTransactionFx.failData,
     filter: (error) => !isAbortError(error),
+  });
+
+  sample({
+    clock: wrapFailed,
     fn: () => null,
     target: $tx,
   });
 
   sample({
-    clock: wrapTransactionFx.failData,
-    filter: (error) => !isAbortError(error),
+    clock: wrapFailed,
     target: $error,
   });
 

@@ -7,7 +7,7 @@ import { debounce } from 'patronum';
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
 import { normalizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Asset, type Chain, type ChainId, TransactionType } from '@/shared/core';
-import { takeLast } from '@/shared/effector';
+import { isAbortError, takeLast } from '@/shared/effector';
 import {
   TEST_ACCOUNTS,
   TEST_EVM_ADDRESS,
@@ -446,8 +446,6 @@ sample({
   filter: (params): params is FeeCalculationParams => params !== null,
   target: getXcmFeesFx,
 });
-
-const isAbortError = (err: unknown) => err && typeof err === 'object' && 'name' in err && err.name === 'AbortError';
 
 sample({
   clock: getXcmFeesWithFakeDataFx.doneData,

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import enLocale from '@/shared/i18n/locales/en.json';
-import { type OperationBlockReasonKind } from '@/shared/transactions';
-import { type ActionKind, ACTION_LABEL_KEYS, REASON_COPY_KEYS } from '../copyKeys';
+import { ACTION_LABEL_KEYS, REASON_COPY_KEYS } from '../copyKeys';
 
 /**
  * Locks the OperationBlocked -> i18n key mapping. `t()` is untyped against the
@@ -13,18 +12,22 @@ import { type ActionKind, ACTION_LABEL_KEYS, REASON_COPY_KEYS } from '../copyKey
  * `network-disabled` -> `networkDisabled*`), so it can't be inferred and needs
  * an explicit check.
  */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 function resolveKey(key: string): unknown {
   return key.split('.').reduce<unknown>((node, segment) => {
-    if (node !== null && typeof node === 'object' && segment in node) {
-      return (node as Record<string, unknown>)[segment];
-    }
-
-    return undefined;
+    return isRecord(node) ? node[segment] : undefined;
   }, enLocale);
 }
 
-const reasonKinds = Object.keys(REASON_COPY_KEYS) as OperationBlockReasonKind[];
-const actionKinds = Object.keys(ACTION_LABEL_KEYS) as ActionKind[];
+const keysOf = <K extends string>(record: Record<K, unknown>): K[] => {
+  return Object.keys(record).filter((key): key is K => key in record);
+};
+
+const reasonKinds = keysOf(REASON_COPY_KEYS);
+const actionKinds = keysOf(ACTION_LABEL_KEYS);
 
 describe('OperationBlocked copy keys', () => {
   it.each(reasonKinds)('reason "%s" resolves to a title and description string in en.json', (kind) => {
