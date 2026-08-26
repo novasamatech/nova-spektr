@@ -336,8 +336,8 @@ function hasSignedWithAllOwnSignatories(
  * Whether the operation still needs the user: it is collecting approvals and at
  * least one own signatory (see `findActionableSignatories`) has not acted yet —
  * the user can approve it, or add the call data it waits on. Shared by the
- * row's Approve button, the dashboard queue and the "Needs my signature" filter
- * so they can never disagree.
+ * row's Approve button, the dashboard queue and the "Signed → Not signed"
+ * filter so they can never disagree.
  */
 function needsUserSignature(
   op: Pick<MultisigOperation, 'events' | 'status' | 'awaitingOutcome'>,

@@ -16,9 +16,20 @@ import { type DateRange } from '@/shared/ui-kit';
 import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { type OperationSearchRow } from '@/aggregates/operations-search';
+import { type OperationSearchRow, type SignatureFilterValue } from '@/aggregates/operations-search';
 
 import { type StatusFilterValue, getOperationSection } from './operations-sections';
+
+// "Signed" filter: `not_signed` keeps operations a local signatory can still act
+// on (`multisigOperationService.needsUserSignature`), `signed` keeps the ones
+// every local signatory has already approved
+// (`multisigOperationService.hasSignedWithAllOwnSignatories`).
+export const SIGNATURE_FILTER_ORDER: readonly SignatureFilterValue[] = ['signed', 'not_signed'];
+
+export const SIGNATURE_FILTER_LABEL_KEYS: Record<SignatureFilterValue, string> = {
+  signed: 'operations.filters.signatureSigned',
+  not_signed: 'operations.filters.signatureNotSigned',
+};
 
 export interface OperationsFilterCriteria {
   network: string[];
@@ -27,7 +38,7 @@ export interface OperationsFilterCriteria {
   status: StatusFilterValue[];
   dateRange?: DateRange;
   searchQuery: string;
-  needsMySignature: boolean;
+  signature: SignatureFilterValue | null;
 }
 
 export type OperationsFilterTab = 'pending' | 'history' | 'hidden';
@@ -40,11 +51,10 @@ export interface OperationsFilterContext {
   // once for the whole list (see `buildOperationSearchRow`) rather than per
   // operation, because resolving display names is shared work.
   searchMatchedIds: Set<string> | null;
-  // Ids of operations a local signatory can still act on, or `null` when the
-  // "Needs my signature" toggle is off. Computed once for the whole list (see
-  // `multisigOperationService.needsUserSignature`) so `filterOperation` needs
-  // no wallets/chains.
-  needsMySignatureIds: Set<string> | null;
+  // Ids matching the "Signed" filter (see `SignatureFilterValue`), or `null`
+  // when no value is selected. Computed once for the whole list so
+  // `filterOperation` needs no wallets/chains.
+  signatureMatchedIds: Set<string> | null;
   // Any non-search filter active → tabs collapse to "All operations".
   isScopeMerged: boolean;
 }
@@ -150,15 +160,15 @@ export const matchesDateRange = (operation: MultisigOperation, dateRange: Operat
 };
 
 /**
- * Whether the filter narrows the list in any way: a search query, the
- * needs-my-signature toggle, a network/type/proxy-type selection, a date range,
- * or a status selection other than `in_progress`. Selecting only `in_progress`
- * matches the default view, so it narrows nothing.
+ * Whether the filter narrows the list in any way: a search query, the Signed
+ * selection, a network/type/proxy-type selection, a date range, or a status
+ * selection other than `in_progress`. Selecting only `in_progress` matches the
+ * default view, so it narrows nothing.
  */
 export const hasNarrowingFilter = (filters: OperationsFilterCriteria): boolean => {
   return (
     filters.searchQuery.trim().length > 0 ||
-    filters.needsMySignature ||
+    nonNullable(filters.signature) ||
     filters.network.length > 0 ||
     filters.type.length > 0 ||
     filters.proxyType.length > 0 ||
@@ -253,7 +263,7 @@ export const filterOperation = (
   account: MultisigAccount | FlexibleMultisigAccount,
   context: OperationsFilterContext,
 ) => {
-  const { filters, tab, hiddenIds, searchMatchedIds, needsMySignatureIds } = context;
+  const { filters, tab, hiddenIds, searchMatchedIds, signatureMatchedIds } = context;
 
   if (context.isScopeMerged) {
     const isHidden = hiddenIds.includes(operation.id);
@@ -273,7 +283,7 @@ export const filterOperation = (
   if (!matchesProxyType(filters.proxyType, account)) return false;
   if (!matchesDateRange(operation, filters.dateRange)) return false;
   if (searchMatchedIds !== null && !searchMatchedIds.has(operation.id)) return false;
-  if (needsMySignatureIds !== null && !needsMySignatureIds.has(operation.id)) return false;
+  if (signatureMatchedIds !== null && !signatureMatchedIds.has(operation.id)) return false;
 
   return true;
 };

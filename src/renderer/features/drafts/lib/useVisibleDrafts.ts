@@ -34,8 +34,8 @@ export function useVisibleDrafts(scope?: DraftListScope): { drafts: Draft[]; ava
     fn: (resolvers) => (hasQuery ? resolvers : null),
   });
 
-  const needsMySignature = Boolean(scope?.needsMySignature);
-  // Same idea: the account list is only consulted while the toggle is on.
+  const needsMySignature = scope?.signature === 'not_signed';
+  // Same idea: the account list is only consulted while "Not signed" is selected.
   const walletAccounts = useStoreMap({
     store: accounts.$list,
     keys: [needsMySignature],

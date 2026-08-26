@@ -12,12 +12,12 @@ right permissions) can review, edit, share, submit, or delete a draft.
 Drafts surface as a **Drafts group** inside the operations table on the
 [Operations view's](../multisig-operations/README.md) Pending tab — the first group, styled and column-aligned like
 operation rows, gated by the view's Status filter and narrowed by the filters a draft can evaluate (network, date range,
-search, and **Needs my signature**, which keeps only drafts the user can submit — `findSubmittableInitiator` in
+search, and **Signed**: **Not signed** keeps only drafts the user can submit — `findSubmittableInitiator` in
 `lib/draft-initiator.ts`, the same rule that enables Submit, so a draft nobody local can initiate or a legacy draft
-without a signing path is not "mine"; an active transaction-type or proxy-type filter hides all drafts — see the
-Operations view spec). Because it is the first visible group, its **heading (label and count) is drawn and its collapse
-state is owned by the Operations view**, not by this feature: `useDraftsSectionState` (in
-`lib/useDraftsSectionState.ts`) is the one source of truth for whether the group renders, its rows and the count the
+without a signing path is not "mine" — while **Signed** hides all drafts, as does an active transaction-type or
+proxy-type filter — see the Operations view spec). Because it is the first visible group, its **heading (label and
+count) is drawn and its collapse state is owned by the Operations view**, not by this feature: `useDraftsSectionState`
+(in `lib/useDraftsSectionState.ts`) is the one source of truth for whether the group renders, its rows and the count the
 heading shows (`0` for an empty group, like the In-progress group; no chip while the address book is unhealthy), and
 `DraftsSection` (`components/DraftsSection.tsx`) reads the same hook to render only the rows and the New-draft control,
 taking `isCollapsed` as a prop instead of drawing its own header. Search matches a draft's description and the names and

@@ -6,7 +6,11 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
-import { type OperationSearchRow, type SearchAccountRef } from '@/aggregates/operations-search';
+import {
+  type OperationSearchRow,
+  type SearchAccountRef,
+  type SignatureFilterValue,
+} from '@/aggregates/operations-search';
 
 import { findSubmittableInitiator } from './draft-initiator';
 
@@ -23,10 +27,11 @@ export type DraftListScope = {
   dateRange?: DateRange;
   searchQuery: string;
   /**
-   * "Needs my signature": keep only drafts the user can submit — see
-   * `findSubmittableInitiator`.
+   * "Signed" filter. `not_signed` keeps only drafts the user can submit — see
+   * `findSubmittableInitiator`; a draft carries no signatures, so `signed` puts
+   * every draft out of scope.
    */
-  needsMySignature?: boolean;
+  signature?: SignatureFilterValue | null;
 };
 
 const matchesNetwork = (draft: Draft, networkIds: string[]): boolean => {
@@ -120,7 +125,7 @@ export const buildDraftSearchRow = (
  *
  * `searchMatchedIds` comes from the caller because it needs resolved display
  * names; `null` means no query. `walletAccounts` is consulted only when
- * `scope.needsMySignature` is set.
+ * `scope.signature` is `not_signed`.
  */
 export const filterDraftsByScope = (
   drafts: Draft[],
@@ -128,13 +133,13 @@ export const filterDraftsByScope = (
   searchMatchedIds: Set<string> | null,
   walletAccounts: AnyAccount[],
 ): Draft[] => {
-  if (scope.type.length > 0 || scope.proxyType.length > 0) return [];
+  if (scope.type.length > 0 || scope.proxyType.length > 0 || scope.signature === 'signed') return [];
 
   return drafts.filter(
     (draft) =>
       matchesNetwork(draft, scope.network) &&
       matchesDateRange(draft, scope.dateRange) &&
       (searchMatchedIds === null || searchMatchedIds.has(draft.id)) &&
-      (!scope.needsMySignature || nonNullable(findSubmittableInitiator(draft, walletAccounts))),
+      (scope.signature !== 'not_signed' || nonNullable(findSubmittableInitiator(draft, walletAccounts))),
   );
 };

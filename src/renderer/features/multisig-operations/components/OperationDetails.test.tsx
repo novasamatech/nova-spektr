@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { TransactionType } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount, type Wallet, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation } from '@/domains/network';
 
@@ -48,6 +48,10 @@ vi.mock('@/entities/network', () => ({
   networkModel: { $chains: stores.chainsStore },
 }));
 
+vi.mock('@/entities/wallet', () => ({
+  accountUtils: { isFlexibleMultisigAccount: (account: { chainId?: string }) => 'chainId' in account },
+}));
+
 // The real `@/entities/transaction` barrel drags in QR/camera UI modules that
 // don't survive jsdom, so this stub reimplements `findCoreTransaction`'s
 // proxy-unwrap behaviour faithfully instead of importing the real module.
@@ -84,6 +88,11 @@ const depositor = '0xdepositor' as AccountId;
 const multisigId = '0xmultisig' as AccountId;
 const proxiedId = '0xproxied' as AccountId;
 
+const multisigAccount = { accountId: multisigId, walletId: 1 } as unknown as MultisigAccount;
+// A flexible multisig row renders its proxied (flexible) account, backed by `multisigId`.
+const flexibleAccount = { accountId: proxiedId, walletId: 1, chainId: '0x00' } as unknown as FlexibleMultisigAccount;
+const wallet = { id: 1, name: 'Wallet' } as unknown as Wallet;
+
 const baseOperation = {
   id: 'op',
   chainId: '0x00',
@@ -98,7 +107,7 @@ const baseOperation = {
 
 describe('OperationDetails', () => {
   it('renders the depositor with its wallet as a fallback name, never as an override', () => {
-    render(<OperationDetails operation={baseOperation} />);
+    render(<OperationDetails operation={baseOperation} account={multisigAccount} />);
 
     const row = screen.getByTestId('row-operation.details.depositor');
     expect(row).toHaveTextContent(depositor);
@@ -107,19 +116,28 @@ describe('OperationDetails', () => {
     expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
   });
 
-  it('renders the multisig and source rows in fallback mode too', () => {
-    render(<OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} />);
+  it('renders the Multisig row in fallback mode, and Source with the wallet like the Submitter cell', () => {
+    render(
+      <OperationDetails
+        operation={{ ...baseOperation, proxiedAccountId: proxiedId }}
+        account={flexibleAccount}
+        wallet={wallet}
+      />,
+    );
 
-    for (const label of ['row-operation.details.multisig', 'row-operation.details.source']) {
-      const row = screen.getByTestId(label);
-      expect(row.querySelector('[data-title]')).toBeNull();
-      expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
-    }
+    const multisigRow = screen.getByTestId('row-operation.details.multisig');
+    expect(multisigRow.querySelector('[data-title]')).toBeNull();
+    expect(multisigRow.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
+
+    const sourceRow = screen.getByTestId('row-operation.details.source');
+    expect(sourceRow.querySelector('[data-title]')).toBeNull();
+    expect(sourceRow.querySelector('[data-wallet="yes"]')).not.toBeNull();
+    expect(sourceRow.querySelector('[data-wallet-as]')).toBeNull();
   });
 
   it('renders Date & Time first, then Depositor, Multisig, Source, slot content, Operation type', () => {
     render(
-      <OperationDetails operation={baseOperation}>
+      <OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} account={flexibleAccount}>
         <div data-testid="row-slot">recipient</div>
       </OperationDetails>,
     );
@@ -137,34 +155,45 @@ describe('OperationDetails', () => {
     expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent('Balances · TransferKeepAlive');
   });
 
-  it('shows the Source row with the multisig account for a non-proxied operation', () => {
-    render(<OperationDetails operation={baseOperation} />);
+  it('shows only the Source row for a plain multisig — it is its own source', () => {
+    render(<OperationDetails operation={baseOperation} account={multisigAccount} wallet={wallet} />);
 
+    expect(screen.queryByTestId('row-operation.details.multisig')).toBeNull();
     const row = screen.getByTestId('row-operation.details.source');
     expect(row).toHaveTextContent(multisigId);
-    expect(row.querySelector('[data-title]')).toBeNull();
-    expect(row.querySelector('[data-wallet-as="fallback"]')).not.toBeNull();
+    expect(row.querySelector('[data-wallet="yes"]')).not.toBeNull();
   });
 
-  it('shows the Multisig row from multisigAccountId and the Source row from proxiedAccountId', () => {
-    render(<OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} />);
+  it('shows the Multisig row from multisigAccountId and the Source row as the flexible multisig account', () => {
+    render(
+      <OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} account={flexibleAccount} />,
+    );
 
     expect(screen.getByTestId('row-operation.details.multisig')).toHaveTextContent(multisigId);
     expect(screen.getByTestId('row-operation.details.source')).toHaveTextContent(proxiedId);
   });
 
   it('renders the Amount row only when an amount is provided', () => {
-    const { rerender } = render(<OperationDetails operation={baseOperation} />);
+    const { rerender } = render(<OperationDetails operation={baseOperation} account={multisigAccount} />);
     expect(screen.queryByTestId('row-operation.details.amount')).toBeNull();
 
     rerender(
-      <OperationDetails operation={baseOperation} amount={{ value: '320', asset: { symbol: 'DOT' } as never }} />,
+      <OperationDetails
+        operation={baseOperation}
+        account={multisigAccount}
+        amount={{ value: '320', asset: { symbol: 'DOT' } as never }}
+      />,
     );
     expect(screen.getByTestId('row-operation.details.amount')).toHaveTextContent('320');
   });
 
   it('omits the Operation type row when the call is unknown', () => {
-    render(<OperationDetails operation={{ ...baseOperation, transaction: null, section: null, method: null }} />);
+    render(
+      <OperationDetails
+        operation={{ ...baseOperation, transaction: null, section: null, method: null }}
+        account={multisigAccount}
+      />,
+    );
     expect(screen.queryByTestId('row-operation.details.operationType')).toBeNull();
   });
 
@@ -181,7 +210,7 @@ describe('OperationDetails', () => {
       },
     } as unknown as MultisigOperation;
 
-    render(<OperationDetails operation={proxyOperation} />);
+    render(<OperationDetails operation={proxyOperation} account={multisigAccount} />);
 
     expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent('Balances · TransferKeepAlive');
   });
@@ -189,7 +218,9 @@ describe('OperationDetails', () => {
   it('renders Depositor and Multisig rows even when the chain is unknown', () => {
     chainsFixture.current = {};
     try {
-      render(<OperationDetails operation={baseOperation} />);
+      render(
+        <OperationDetails operation={{ ...baseOperation, proxiedAccountId: proxiedId }} account={flexibleAccount} />,
+      );
       expect(screen.getByTestId('row-operation.details.depositor')).toHaveTextContent(depositor);
       expect(screen.getByTestId('row-operation.details.multisig')).toHaveTextContent(multisigId);
     } finally {

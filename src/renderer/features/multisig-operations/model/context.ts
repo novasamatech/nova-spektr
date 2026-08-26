@@ -4,6 +4,7 @@ import { interval, throttle } from 'patronum';
 
 import { type Done, persist } from '@/shared/api/storage';
 import {
+  type Chain,
   type ChainId,
   type FlexibleMultisigAccount,
   type MultisigAccount,
@@ -26,7 +27,12 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
-import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
+import {
+  type SignatureFilterValue,
+  $searchResolvers,
+  haveSameMatchedIds,
+  searchOperationRows,
+} from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bucketOperations } from '../lib/bucket-operations';
 import {
@@ -68,7 +74,7 @@ const initialFilter: SelectedFilters = {
   status: [],
   dateRange: undefined,
   searchQuery: '',
-  needsMySignature: false,
+  signature: null,
 };
 
 const setFilter = createEvent<Partial<SelectedFilters>>();
@@ -86,7 +92,7 @@ const $filter = createStore(initialFilter)
 // Any non-search filter active → tabs collapse to "All operations" (search alone doesn't merge scope).
 const $isScopeMerged = $filter.map(filter =>
   Boolean(
-    filter.needsMySignature ||
+    filter.signature ||
       filter.network.length ||
       filter.type.length ||
       filter.proxyType.length ||
@@ -314,19 +320,34 @@ const $searchMatchedOperationIds = createGuardedStore<Set<string> | null>(
   haveSameMatchedIds,
 );
 
-const $needsMySignatureIdsRaw = combine(
+// "Not signed" is the same rule that shows the row's Approve button, "Signed"
+// the one behind its Signed pill — so the filter and the row can never disagree.
+type SignaturePredicate = (
+  operation: MultisigOperation,
+  account: MultisigAccount | FlexibleMultisigAccount,
+  walletAccounts: AnyAccount[],
+  chain: Chain | undefined,
+) => boolean;
+
+const SIGNATURE_PREDICATES: Record<SignatureFilterValue, SignaturePredicate> = {
+  not_signed: multisigOperationService.needsUserSignature,
+  signed: multisigOperationService.hasSignedWithAllOwnSignatories,
+};
+
+const $signatureMatchedIdsRaw = combine(
   {
     operationsWithAccounts: $operationsWithAccounts,
-    enabled: $filter.map(filter => filter.needsMySignature),
+    signature: $filter.map(filter => filter.signature),
     walletAccounts: accounts.$list,
     chains: networkModel.$chains,
   },
-  ({ operationsWithAccounts, enabled, walletAccounts, chains }): Set<string> | null => {
-    if (!enabled) return null;
+  ({ operationsWithAccounts, signature, walletAccounts, chains }): Set<string> | null => {
+    if (!signature) return null;
 
+    const matches = SIGNATURE_PREDICATES[signature];
     const ids = new Set<string>();
     for (const { operation, account } of operationsWithAccounts) {
-      if (multisigOperationService.needsUserSignature(operation, account, walletAccounts, chains[operation.chainId])) {
+      if (matches(operation, account, walletAccounts, chains[operation.chainId])) {
         ids.add(operation.id);
       }
     }
@@ -337,7 +358,7 @@ const $needsMySignatureIdsRaw = combine(
 
 // `accounts.$list` churns on unrelated account edits; like the search ids, the
 // guard keeps an unchanged set from re-running the downstream filter chain.
-const $needsMySignatureIds = createGuardedStore<Set<string> | null>($needsMySignatureIdsRaw, null, haveSameMatchedIds);
+const $signatureMatchedIds = createGuardedStore<Set<string> | null>($signatureMatchedIdsRaw, null, haveSameMatchedIds);
 
 const $filteredOperations = combine(
   {
@@ -346,7 +367,7 @@ const $filteredOperations = combine(
     tab: $tab,
     hiddenIds: $hiddenOperationIds,
     searchMatchedIds: $searchMatchedOperationIds,
-    needsMySignatureIds: $needsMySignatureIds,
+    signatureMatchedIds: $signatureMatchedIds,
     isScopeMerged: $isScopeMerged,
   },
   ({
@@ -355,7 +376,7 @@ const $filteredOperations = combine(
     tab,
     hiddenIds,
     searchMatchedIds,
-    needsMySignatureIds,
+    signatureMatchedIds,
     isScopeMerged,
   }): OperationWithAccount[] => {
     return operationsWithAccounts.filter(({ operation, account }) =>
@@ -364,7 +385,7 @@ const $filteredOperations = combine(
         tab,
         hiddenIds,
         searchMatchedIds,
-        needsMySignatureIds,
+        signatureMatchedIds,
         isScopeMerged,
       }),
     );
@@ -585,7 +606,7 @@ export const operationsContextModel = {
   $filter,
   $isFiltersSelected,
   $isScopeMerged,
-  $needsMySignatureIds,
+  $signatureMatchedIds,
   $filteredOperations,
   $sectionedOperations,
   $multisigAccounts,

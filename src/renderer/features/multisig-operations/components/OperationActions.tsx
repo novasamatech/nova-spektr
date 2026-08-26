@@ -78,7 +78,7 @@ export const OperationActions = memo(({ operation, account, className }: Props) 
       return isDepositor && isOnChain && !accountUtils.isWatchOnlyAccount(a);
     });
 
-  // Same predicate as the "Needs my signature" filter and the dashboard queue;
+  // Same predicate as the "Signed → Not signed" filter and the dashboard queue;
   // it already covers the contact and awaiting-outcome cases.
   const hasApproveAccount = multisigOperationService.needsUserSignature(operation, account, allAccounts, chain);
 

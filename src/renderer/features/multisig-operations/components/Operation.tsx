@@ -259,6 +259,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
             <OperationFullInfo
               operation={operation}
               account={multisigAccount}
+              wallet={wallet}
               amount={titleData.amount}
               deepLink={deepLink}
             />
