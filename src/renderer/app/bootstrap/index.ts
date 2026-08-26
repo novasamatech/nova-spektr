@@ -152,6 +152,7 @@ export const bootstrap = () => {
 
     import('@/features/governance-operation-details').then(({ governanceOperationDetailFeature }) => governanceOperationDetailFeature),
     import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
+    import('@/features/governance-unlock-flow').then(({ governanceUnlockFlowFeature }) => governanceUnlockFlowFeature),
 
     import('@/features/transfer-operation-details').then(({ transferOperationDetailFeature }) => transferOperationDetailFeature),
     import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),

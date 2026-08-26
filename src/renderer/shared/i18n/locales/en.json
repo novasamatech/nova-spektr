@@ -2486,6 +2486,17 @@
       "title": "My votes"
     }
   },
+  "governanceUnlockFlow": {
+    "title": "Unlock governance lock",
+    "confirm": {
+      "releases": "Releases",
+      "target": "Unlocks for",
+      "calls": "Calls",
+      "callsCount_one": "{count} call",
+      "callsCount_other": "{count} calls",
+      "hint": "Releasing removes expired votes and unlocks the conviction lock. The network fee is paid by the signing account."
+    }
+  },
   "importDB": {
     "continueButton": "Continue",
     "deleteButton": "Erase all data",
