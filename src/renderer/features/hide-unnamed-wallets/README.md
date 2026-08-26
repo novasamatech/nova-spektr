@@ -1,6 +1,6 @@
 # Hide Unnamed Wallets
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 >
 > **Draft — pending author review.** Written from reading the code; needs sign-off from the feature owner before it is
 > treated as the source of product truth.
@@ -27,8 +27,10 @@ Within those types, a wallet counts as unnamed when nothing gives it a real name
 **Why the name is inspected and not just the "generated" flag.** Storage migration 14 stamped every account that
 predated the flag as user-named, including multisigs whose name had always been derived from their address. Trusting the
 flag alone left those wallets behind — on an older profile the toggle would hide a fraction of what it should. The rule
-therefore also treats a name that has the app's own generated _shape_ (a shortened address, or
-`<ProxyType> for pure <shortened address>`) as generated, whatever the flag says.
+therefore also treats a name that _is_ the app's own generated name for that account — its shortened address, or
+`<ProxyType> for <shortened address>` / `<ProxyType> for pure <shortened address>`, regenerated from the account's own
+address in every prefix and chunk size the app has ever used — as generated, whatever the flag says. Only an exact match
+counts: a user-typed name that merely looks like a shortened address (`Team...Fund`) is kept.
 
 ## States / scenarios
 

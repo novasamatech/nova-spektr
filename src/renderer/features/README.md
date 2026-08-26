@@ -11,7 +11,7 @@ notes.
 
 ## Wallets & Onboarding
 
-- `account-selector`
+- `account-selector` (no spec planned)
 - [`account-sync`](./account-sync/README.md)
 - `accounts-structure`
 - [`wallets`](./wallets/README.md)

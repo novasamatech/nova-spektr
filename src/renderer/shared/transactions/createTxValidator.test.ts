@@ -76,14 +76,37 @@ describe('createTxValidator', () => {
   });
 
   it('reports a fatal internal error when a rule throws synchronously', async () => {
+    stubSignatory();
+    vi.spyOn(transactionService, 'getTransactionFee').mockImplementationOnce(() => {
+      throw new Error('Unexpected call shape');
+    });
+
     const validator = createTxValidator();
 
-    // No signatory at the end of the route — `basicRules` asserts on it.
-    await expect(validator({ ...validatorParams, route: [] })).resolves.toEqual({
-      errors: [{ kind: 'internal', message: 'Signatory not found' }],
+    await expect(validator(validatorParams)).resolves.toEqual({
+      errors: [{ kind: 'internal', message: 'Unexpected call shape' }],
       balanceValidationResults: [],
       available: [],
     });
+  });
+
+  // Balances arrive over a subscription that is usually still filling when the
+  // confirm screen mounts. A missing record is "not yet", not "broken": there
+  // is no verdict to report, and none of the rules is asked.
+  it('gives no verdict while the signer balance is missing', async () => {
+    stubSignatory();
+    const getFee = vi.spyOn(transactionService, 'getTransactionFee');
+
+    const validator = createTxValidator();
+
+    await expect(validator({ ...validatorParams, balances: {} })).resolves.toBeNull();
+    expect(getFee).not.toHaveBeenCalled();
+  });
+
+  it('gives no verdict while the route has no signatory', async () => {
+    const validator = createTxValidator();
+
+    await expect(validator({ ...validatorParams, route: [] })).resolves.toBeNull();
   });
 
   // The consequence the fatal error exists for: the verdict is reported, so
@@ -116,5 +139,40 @@ describe('createTxValidator', () => {
     expect(scope.getState($errors)).toEqual([
       { kind: 'internal', message: 'No response received from RPC endpoint in 60s' },
     ]);
+  });
+
+  it('stays undecided until the signer balance arrives, then validates it', async () => {
+    stubSignatory();
+    vi.spyOn(transactionService, 'getTransactionFee').mockResolvedValue(new BN('1000000000'));
+    vi.spyOn(accountService, 'validateCallPermission').mockReturnValue([]);
+    vi.spyOn(accountService, 'validateRouteBalances').mockResolvedValue([]);
+
+    const $balances = createStore<Record<BalanceId, Balance> | null>({});
+
+    const { $validationDone, $valid, $failed, $errors, $error } = createTxValidationStore({
+      validator: createTxValidator(),
+      params: {
+        api: createStore<ApiPromise | null>(api),
+        asset: createStore(dotAsset),
+        route: createStore<AnyAccount[]>([signatory]),
+        balances: $balances,
+        transaction: createStore<AnyTransaction | null>(transaction),
+      },
+    });
+
+    const scope = fork();
+    await allSettled($balances, { scope, params: {} });
+
+    expect(scope.getState($validationDone)).toBe(false);
+    expect(scope.getState($valid)).toBe(false);
+    expect(scope.getState($failed)).toBe(false);
+    expect(scope.getState($errors)).toEqual([]);
+    expect(scope.getState($error)).toBeNull();
+
+    await allSettled($balances, { scope, params: { [balance.id]: balance } });
+
+    expect(scope.getState($validationDone)).toBe(true);
+    expect(scope.getState($valid)).toBe(true);
+    expect(scope.getState($errors)).toEqual([]);
   });
 });

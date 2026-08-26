@@ -42,7 +42,7 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 | Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit                                                                              |
 | Sign       | `Sign` on the confirm                            | The standard signing step                                                                                                                        |
 | Submit     | The signature is in                              | The standard submit step                                                                                                                         |
-| Draft      | Draft mode is on                                 | The form saves a draft instead of signing, and the flow ends there                                                                               |
+| Draft      | Draft mode is on                                 | `Continue` waits for a complete draft path, an amount and a valid destination; the picker's submit reads "Save as draft" and saves the operation |
 
 **Validation is the same pipeline the transfer flow runs**, not a private set of checks. From the first keystroke the
 form validates through `bondNominateValidator` — fee, existential deposit, multisig deposit, proxy permissions, "can the
@@ -117,9 +117,20 @@ event, never by navigation.
 
 ## Drafts
 
-Draft mode is the shared binding, as in every other staking flow: the form saves a draft instead of walking to the
-confirm, the draft is built from the draft path's own source account, and a saved draft ends the flow. The dashboard's
-draft toast names the operation `newPosition`.
+Draft mode is the shared binding, as in every other staking flow, but a bond has no call to save until the validators
+are picked — so, exactly as the Staking page's `staking-bond-nominate` does, the draft is saved **from the picker**, not
+from the form:
+
+- `Continue` on the form is gated on the draft alone — a complete draft path, a non-zero amount and a valid rewards
+  destination. The live validation, the fee and the route signer are all read against the connected wallet's initiator,
+  which is not who the draft spends from, so none of them may block a draft.
+- The picker opens scoped to the **draft path's source account** — the account the bond will spend from — with the
+  "draft" chip and the footer naming who will sign, read from the committed path.
+- The picker's submit reads **"Save as draft"**: the validator set completes the call, the draft is built from the
+  path's source, and the standard create-draft modal opens. A saved draft ends the flow; the confirm and the signing
+  step are never reached.
+
+The dashboard's draft toast names the operation `newPosition`.
 
 The figures follow the draft, too: **Available and `Max` read the draft path's source account** — the account the bond
 will actually spend from — not the connected wallet's pick, and no fee is subtracted, because the eventual signer pays
@@ -136,7 +147,7 @@ The basket signs the stored core call directly by its initiator — no multisig/
 context — so the button only appears when the staking account's own wallet is one the basket can sign with (Polkadot
 Vault or a single Parity Signer shard). Watch-only, multisig, proxied and WalletConnect accounts never see it. Basket
 and draft are mutually exclusive by nature — a draft is "somebody else signs later", the basket is "this wallet signs
-later" — and draft mode ends at the form screen, so it never reaches this confirm at all.
+later" — and draft mode saves from the picker, so it never reaches this confirm at all.
 
 As in the old flows, the gate deliberately ignores the confirm's validation verdict: the basket revalidates every stored
 transaction before it is signed, so a check that fails at this moment must not block storing the call for later.

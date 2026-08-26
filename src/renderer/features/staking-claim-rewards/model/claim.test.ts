@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { type Asset, type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { type UnclaimedPayout } from '@/domains/staking';
 import { MAX_PAYOUT_CALLS_PER_BATCH } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -60,6 +60,16 @@ const withWallets = async (accountList: AnyAccount[] = []) => {
     handlers: new Map().set(walletModel.populate, () => [wallet(1), wallet(2)]),
   });
   await allSettled(walletModel.populate, { scope });
+  // A chain-bound account (`chainId` set) lives on its own chain only; every
+  // other fixture is universal. Registered in-scope — DI handlers registered
+  // outside a fork are invisible to it.
+  await allSettled(accountService.accountAvailabilityOnChainAnyOf.registerHandler, {
+    scope,
+    params: {
+      body: ({ account, chain: target }) => !('chainId' in account) || account.chainId === target.chainId,
+      available: () => true,
+    },
+  });
 
   return scope;
 };
@@ -132,6 +142,27 @@ describe('claimRewardsModel · payer', () => {
     });
 
     expect(scope.getState(claimRewardsModel.$initiator)?.accountId).toBe(accountId(2));
+  });
+
+  /**
+   * A chain-bound key (WalletConnect, Ledger) is one account object per chain,
+   * all sharing the address. Resolving the picked source by address alone can
+   * land on a sibling from another chain, which has no route on this one — the
+   * confirm then reports "no account to sign with" for a key that signs here
+   * perfectly well.
+   */
+  it('resolves the picked source to the account on the claim chain, not a same-address sibling', async () => {
+    const otherChainKey = { ...account(2), chainId: chainId(9) } as unknown as AnyAccount;
+    const thisChainKey = { ...account(2), chainId: chainId(1) } as unknown as AnyAccount;
+    const scope = await withWallets([account(1), otherChainKey, thisChainKey]);
+
+    await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
+    await allSettled(claimRewardsModel.signingPathChanged, {
+      scope,
+      params: [{ kind: 'signer', accountId: accountId(2) }],
+    });
+
+    expect(scope.getState(claimRewardsModel.$initiator)).toBe(thisChainKey);
   });
 });
 

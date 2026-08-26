@@ -112,8 +112,8 @@ run through the **same validator** the primary uses and priced with its own netw
 those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate.
 That estimate is never signable: while quotes are pending the preparing gate blocks Sign, and an extra that never gets a
 quote fails closed — a failing extra (an unaffordable fee, a route that resolves without anyone able to sign, or a
-validation that failed outright and could not be checked) blocks Sign and surfaces in the same validation alert as a
-primary failure, rather than being silently dropped.
+validation that failed outright, or a signer whose balance is not yet known so no verdict could be reached) blocks Sign
+and surfaces in the same validation alert as a primary failure, rather than being silently dropped.
 
 The honest caveat that remains: **balance interactions _across_ plans from the same payer are not modeled.** The
 validator checks each transaction against current balances independently, so a payer with enough free balance for each
@@ -202,7 +202,10 @@ collect.
 The payer is always visible and always changeable: the confirm renders `SigningPathInline` with `editableInitiator`
 rather than `SigningPathSection`, because the section hides itself below two hops and a payout signed by a plain account
 has exactly one. Changing the source card rewrites the sender of every plan, and fee, route and validation follow from
-it.
+it. The picked source is an address; the payer is resolved to the account object **on the claim's chain**. Chain-bound
+keys (WalletConnect, Ledger) are one account per chain sharing that address, and a sibling from another chain has no
+route here — resolving by address alone turned the confirm into "No account to sign with" for a key that signs on this
+chain perfectly well.
 
 The choice is over **the keys this installation holds**: the flow asks the signing-path graph for own signers
 (`includeOwnSigners`), which lists them as a "My accounts" group next to the delegating accounts. Ordinarily the source

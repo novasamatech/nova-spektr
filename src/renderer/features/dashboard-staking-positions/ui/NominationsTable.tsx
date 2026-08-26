@@ -151,6 +151,7 @@ export const NominationsTable = ({ rows, counts, chain, asset }: Props) => {
         columns={columns}
         data={sortedRows}
         sort={sort}
+        truncateHeaders
         getRowKey={(row) => row.accountId}
         onSortChange={setSort}
       />

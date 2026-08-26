@@ -534,6 +534,7 @@
         "searchAccounts": "Search accounts...",
         "noMatches": "No accounts match these filters",
         "matchesAll": "This preset matches all accounts",
+        "needsReview": "The filters saved in this preset are no longer supported and it currently matches no accounts. Choose new filters and save the preset.",
         "delete": "Delete Preset",
         "deleteConfirmTitle": "Delete Preset",
         "deleteConfirmDescription": "Are you sure you want to delete \"{name}\"?",
@@ -3375,6 +3376,7 @@
     "all": "All",
     "searchPresets": "Search presets...",
     "manage": "Manage Presets",
+    "needsReview": "Filters no longer supported — edit this preset",
     "counterTooltip": {
       "title": "{count} of {total} accounts",
       "wallets_one": "{count} wallet account",

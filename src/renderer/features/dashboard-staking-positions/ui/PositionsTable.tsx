@@ -123,6 +123,7 @@ export const PositionsTable = ({ rows, sort, onSortChange, onRowClick }: Props) 
         data={rows}
         sort={sort}
         stickyHeader
+        truncateHeaders
         getRowKey={(row) => row.id}
         onSortChange={onSortChange}
         onRowClick={onRowClick}

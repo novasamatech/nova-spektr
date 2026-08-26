@@ -305,27 +305,24 @@ const FeeRow = () => {
 };
 
 /**
- * In draft mode this creates a draft and the flow ends there; otherwise it
- * walks on to the validators. Signing and draft creation never share a button.
+ * Walks on to the validators in both modes — a bond has no call to save until
+ * they are picked. In draft mode the picker's own submit is the one that saves
+ * the draft; the fee spinner stays off there, since no fee is being priced for
+ * the draft's source.
  */
 const SubmitButton = () => {
   const { t } = useI18n();
 
   const isDraftMode = useUnit(newPositionFlowModel.$isDraftMode);
   const canContinue = useUnit(newPositionFlowModel.$canContinue);
-  const canSaveAsDraft = useUnit(newPositionFlowModel.$canSaveAsDraft);
   const preparing = useUnit(newPositionFlowModel.$preparing);
 
-  if (isDraftMode) {
-    return (
-      <Button disabled={!canSaveAsDraft} onClick={() => newPositionFlowModel.saveAsDraftRequested()}>
-        {t('operations.drafts.initiateButton')}
-      </Button>
-    );
-  }
-
   return (
-    <Button disabled={!canContinue} isLoading={preparing} onClick={() => newPositionFlowModel.continueRequested()}>
+    <Button
+      disabled={!canContinue}
+      isLoading={!isDraftMode && preparing}
+      onClick={() => newPositionFlowModel.continueRequested()}
+    >
       {t('staking.newPosition.continueButton')}
     </Button>
   );
