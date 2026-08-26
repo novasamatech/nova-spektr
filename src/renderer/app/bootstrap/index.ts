@@ -16,12 +16,7 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardAccountsTableFeature } from '@/features/dashboard-accounts-table';
-import {
-  dashboardGovernanceFeature,
-  dashboardGovernanceLocksFeature,
-  dashboardReferendumsFeature,
-  dashboardUnlockScheduleFeature,
-} from '@/features/dashboard-governance';
+import { dashboardGovernanceFeature, dashboardGovernanceLocksFeature } from '@/features/dashboard-governance';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardOperationsQueueFeature } from '@/features/dashboard-operations-queue';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
@@ -89,9 +84,7 @@ export const bootstrap = () => {
     dashboardPriceChartsFeature,
     dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
-    dashboardReferendumsFeature,
     dashboardGovernanceLocksFeature,
-    dashboardUnlockScheduleFeature,
     dashboardStakingSummaryFeature,
     dashboardStakingTotalStakedFeature,
     dashboardStakingApyFeature,
