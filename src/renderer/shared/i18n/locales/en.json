@@ -1093,7 +1093,7 @@
             "staked": "Staked",
             "status": "Status",
             "apy": "Est. APY",
-            "share": "Share of chain",
+            "share": "Share",
             "unclaimed": "Unclaimed",
             "validators": "Validators",
             "nominators": "Nominators",

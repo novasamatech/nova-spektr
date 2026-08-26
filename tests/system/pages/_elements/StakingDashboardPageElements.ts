@@ -49,7 +49,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   emptyLearnMoreLabel = 'Learn how staking works';
 
   // --- Position detail drawer ----------------------------------------------
-  drawerStatLabels = ['Staked', 'Status', 'Est. APY', 'Share of chain', 'Unclaimed', 'Validators'];
+  drawerStatLabels = ['Staked', 'Status', 'Est. APY', 'Share', 'Unclaimed', 'Validators'];
   watchOnlyNote = 'Watch-only account — data only';
   nominationsSectionTitle = 'Nominations';
   nominationsFooterPattern = /\d+ nominations · \d+ active/;
