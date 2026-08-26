@@ -51,11 +51,6 @@ export type StakingKpiData = {
    */
   networkAvg: NetworkAvgBlend | null;
 
-  /** Nominated validators. */
-  activeValidatorCount: number;
-  positionCount: number;
-  /** One row per validator the selection nominates, most-nominated first. */
-
   /** Rewards. */
   rewardsWindowDays: number;
   rewardsFiat: string;
@@ -350,9 +345,6 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     weightedApy,
     earningPositionCount: summary.earningPositionCount,
     networkAvg,
-
-    activeValidatorCount: summary.activeValidatorCount,
-    positionCount: summary.positionCount,
 
     rewardsWindowDays: REWARDS_WINDOW_DAYS,
     rewardsFiat,
