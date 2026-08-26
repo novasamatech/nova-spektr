@@ -238,7 +238,7 @@ with no multisig hop) are covered the same way as multisig ones.
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | No signing path                 | The draft was saved without a usable path (legacy draft, or fewer than two nodes)                                                    | The row offers **Recreate** instead of Submit — a new draft seeded from this one, where the author picks the signing path. Reaching the submit flow from a stale surface explains the same thing                  |
 | Path unresolvable               | Any account on the saved path has no local counterpart (a wallet on the route was removed, or the draft was authored by a co-signer) | The flow is **blocked**: the submitter is shown _which_ account is missing — name and address — and told to add it to submit along this path. The transaction is never built, so there is no Sign button to press |
-| Extrinsic build failure         | Wrapping the call fails                                                                                                              | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)                                                                                                                             |
+| Extrinsic build failure         | Wrapping the call fails                                                                                                              | The blocked verdict for invalid call data (see below)                                                                                                                                                             |
 | No signatories                  | The wallet holds no account that can sign                                                                                            | An empty-account warning, with an add-account affordance for Polkadot Vault                                                                                                                                       |
 | Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
 | Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
@@ -266,7 +266,8 @@ Waiting is now a verdict with three outcomes — **ready**, **preparing** (namin
 | The node isn't responding     | The socket is up but nothing came back before the deadline — the shape a throttling node takes | Change node / Try again        |
 | The fee couldn't be estimated | Fee estimation itself failed                                                                   | Try again / Change node        |
 | No signatory is chosen        | Valid signatories exist but none is selected                                                   | A signatory picker, plus Close |
-| The signing path is unusable  | The saved path can't be re-resolved against the current wallets                                | Close                          |
+| The signing path is unusable  | An account on the saved path has no local counterpart — the screen names it when it can        | Close                          |
+| There is no signing path      | A legacy draft saved before paths were recorded                                                | Close                          |
 | The call data isn't valid     | The draft's call can't be decoded on this chain                                                | Close                          |
 | Something went wrong          | An internal state the flow can't recover from (e.g. an initiator belonging to no wallet)       | Reload app / Close             |
 
@@ -278,8 +279,9 @@ which the verdict is read off the connection: still connected means the node isn
 can't be reached.
 
 Blocking is not final. **Try again** re-runs the outstanding steps with a fresh deadline, and a chain that reconnects on
-its own while the flow sits blocked retries it automatically — but only while it is blocked, so a flapping node can't
-keep resetting the deadline of a flow that is still legitimately preparing.
+its own while the flow sits blocked _on the network_ retries it automatically — only then, so a flapping node can't keep
+resetting the deadline of a flow that is still legitimately preparing, nor flicker a local verdict such as "no
+signatory".
 
 **Validation counts as one of the steps.** It reads balances that arrive over the same node as everything else, so a
 quiet node strands it: previously that left the Sign button disabled with no spinner and no error — the same silent dead
@@ -289,8 +291,11 @@ problems (not enough to cover the fee) has reached a verdict: the confirm screen
 under the details, and Sign stays disabled. Only a validation that never finishes at all reaches the deadline and
 blocks.
 
-**Render order** on the submit modal: the empty-wallet screen (no signatories at all) → a blocked verdict → the
-preparing spinner → the confirm screen. A blocked verdict outranks the spinner because it is terminal for that attempt.
+**Render order** on the submit modal: the empty-wallet screen (no signatories at all, and nothing more specific wrong —
+an unresolvable path usually empties the signatory list too, and the specific message must not hide behind the generic
+one) → a blocked verdict → the preparing spinner → the confirm screen. A blocked verdict outranks the spinner because it
+is terminal for that attempt. The verdict is the single owner of every failure: an unresolvable path is rendered as the
+"add this account" screen when the verdict names the missing account, and as the generic blocked screen otherwise.
 
 > **Behaviour change.** A block that arrives _after_ the confirm screen has rendered — a node going quiet mid-review,
 > say — now replaces the confirm screen with the blocked verdict. Previously the confirm screen stayed on screen and the

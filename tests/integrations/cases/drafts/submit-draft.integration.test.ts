@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { type Event, allSettled, createStore } from 'effector';
+import { type Event, type Scope, allSettled, createStore } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -20,7 +20,7 @@ import { createAccountId, dotAsset } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { OPERATION_READINESS_TIMEOUT, OPERATION_SETTLE_DELAY, activeOperationRoute } from '@/shared/transactions';
 import { type Draft, type PathNode, draftsResource, draftsService, operationsService } from '@/domains/backend';
-import { type AnyAccount, type Extrinsic, accounts, transactionService } from '@/domains/network';
+import { type AnyAccount, type Extrinsic, accountService, accounts, transactionService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
@@ -1126,10 +1126,163 @@ describe('Submit Draft — submit & edit flows', () => {
         expect(readiness()).toEqual({ status: 'pending', step: 'confirming' });
 
         await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
-        expect(readiness()).toEqual({
+        expect(readiness()).toMatchObject({
           status: 'blocked',
-          reason: { kind: 'internal', detail: 'initiator wallet -2 not found' },
+          reason: { kind: 'internal', detail: expect.stringContaining('initiator wallet') },
         });
+      });
+    });
+
+    describe('local blocks', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'A block the network cannot fix waits for the user, not for a reconnect',
+        });
+      });
+
+      // An own multisig with two signable wallet accounts behind it, so the
+      // signatory picker has a real choice to make.
+      const multisigTwoSigners = {
+        id: 'multisig-two-signers',
+        accountId: MULTISIG_TOP_ID,
+        walletId: vaultWallet.id,
+        name: 'Multisig Two Signers',
+        type: 'universal',
+        accountType: AccountType.MULTISIG,
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.MULTISIG,
+        threshold: 1,
+        createdAt: 0,
+        signatories: [
+          { accountId: SIGNER_ID, name: 'Signer 1' },
+          { accountId: STRAY_SIGNER_ID, name: 'Signer 2' },
+        ],
+      } satisfies MultisigAccount as unknown as AnyAccount;
+
+      // Neither `seedAccountHandlers` nor the drafts feature registers the
+      // multisig children handler, so `$graphSignatories` would stay empty and
+      // `no-signatory` (which needs candidates to choose from) could never fire.
+      const registerMultisigChildren = (scope: Scope) =>
+        allSettled(accountService.accountCollectChildrenPipeline.registerHandler, {
+          scope,
+          params: {
+            body: (children, { account, accounts }) => {
+              if (!accountUtils.isMultisigAccount(account)) return children;
+
+              const signatoryIds = account.signatories.map((s) => s.accountId);
+
+              return accounts.filter((a) => a.id !== account.id && signatoryIds.includes(a.accountId));
+            },
+            available: () => true,
+          },
+        });
+
+      // No `initiatorAccountId`: the stored-initiator pre-select has nothing to
+      // match, the path-driven one finds no submittable initiator, and with two
+      // candidates the single-option auto-select stays out of it.
+      const unassignedDraft = makeDraft(
+        [
+          { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+          { kind: 'signer', accountId: SIGNER_ID },
+        ],
+        { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: null },
+      );
+
+      const buildNoSignatoryEnv = async () => {
+        seamSpies();
+        env = await buildEnv([multisigTwoSigners, signerAccount, straySignerAccount], (b) =>
+          b.withApi(polkadotChainId, fakeApi).withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED),
+        );
+        await registerMultisigChildren(env.scope);
+      };
+
+      it('blocks with no-signatory until the user picks one, and clears without a retry', async () => {
+        await buildNoSignatoryEnv();
+
+        useReadinessTimers();
+        await startConfirm(unassignedDraft, multisigTwoSigners);
+
+        expect(env.getState(submitDraftModel.$signatories).map((s) => s.accountId)).toEqual(
+          expect.arrayContaining([SIGNER_ID, STRAY_SIGNER_ID]),
+        );
+        expect(env.getState(submitDraftModel.$signatoryStore)).toBeNull();
+        // Tier 1 stays muted for the settle window even though nothing is loading.
+        expect(readiness()).toEqual({ status: 'pending', step: 'confirming' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'no-signatory' } });
+
+        // Picking a signatory is the fix — `retryReadiness` is never called.
+        await allSettled(submitDraftModel.signatoryChanged, { scope: env.scope, params: signerAccount });
+
+        expect(env.getState(submitDraftModel.confirmModel.$confirms)).not.toEqual([]);
+        expect(readiness().status).not.toBe('blocked');
+      });
+
+      // Contrast with "recovers on its own when the chain reconnects": the
+      // reconnect auto-retry is gated on a *network* block, so a local verdict
+      // must not flicker back to a spinner every time a flapping node says hello.
+      it('keeps a no-signatory block through a reconnect of the flow chain', async () => {
+        await buildNoSignatoryEnv();
+
+        useReadinessTimers();
+        await startConfirm(unassignedDraft, multisigTwoSigners);
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        const blocked = readiness();
+        expect(blocked).toEqual({ status: 'blocked', reason: { kind: 'no-signatory' } });
+
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+        });
+
+        // Same verdict by reference: the reconnect did not even recompute it.
+        expect(readiness()).toBe(blocked);
+      });
+
+      it('keeps a network-disabled block through a reconnect of the flow chain', async () => {
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b
+            .withConnectionStatus(polkadotChainId, ConnectionStatus.DISCONNECTED)
+            .withStoreValue(networkModel.$connections, { [polkadotChainId]: connection(ConnectionType.DISABLED) }),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        const blocked = readiness();
+        expect(blocked).toEqual({ status: 'blocked', reason: { kind: 'network-disabled' } });
+
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+        });
+
+        expect(readiness()).toBe(blocked);
+      });
+
+      it('blocks a legacy draft with no signing path with signing-path-missing', async () => {
+        seamSpies();
+        env = await buildEnv([multisigDirect, signerAccount], (b) => b.withApi(polkadotChainId, fakeApi));
+
+        // Saved before the field existed: nothing to follow, nothing to add locally.
+        const legacyDraft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+        useReadinessTimers();
+        await startConfirm(legacyDraft);
+
+        expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('signing-path-missing');
+        // The transaction gate and the verdict read the same store, so the
+        // wrapper never sees this draft.
+        expect(env.getState(submitDraftModel.$wrappedTx)).toBeNull();
+        expect(readiness()).toEqual({ status: 'pending', step: 'resolving-path' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'signing-path-missing' } });
       });
     });
 

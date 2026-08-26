@@ -315,12 +315,17 @@ describe('Submit Draft — signing path drives the route', () => {
       expect(env.getState(submitDraftModel.$route)).toEqual([]);
       expect(env.getState(submitDraftModel.$pathResolutionError)).toBe(true);
 
-      // Equivalent of the old `$wrappedTxErrorKind === 'signing-path-unresolved'`:
-      // the readiness verdict blocks on the same reason once it's allowed to speak.
+      // The readiness verdict is derived from `$wrappedTxErrorKind`, so the two
+      // can never disagree: the store names the reason at once, the verdict
+      // repeats it once the settle delay lets it speak, naming the node that
+      // failed to resolve so the screen can say which account to add.
+      expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('signing-path-unresolved');
+      expect(env.getState(submitDraftModel.$pathMissingAccountId)).toBe(MISSING_MULTISIG_ID);
+
       await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
       expect(env.getState(submitDraftModel.$readiness)).toEqual({
         status: 'blocked',
-        reason: { kind: 'signing-path-unresolved' },
+        reason: { kind: 'signing-path-unresolved', accountId: MISSING_MULTISIG_ID },
       });
     });
 

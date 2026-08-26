@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -19,11 +19,10 @@ import {
   SmallTitleText,
 } from '@/shared/ui';
 import { Address, TransactionValidationError, UnknownRecipientAckBox, WalletIcon } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select, StatusPanel } from '@/shared/ui-kit';
 import { Json } from '@/shared/ui-kit/Json/Json';
 import { JsonArgs } from '@/shared/ui-kit/JsonArgs/JsonArgs';
 import { accounts, transactionService } from '@/domains/network';
-import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { transactionService as entityTransactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -34,7 +33,6 @@ import { PathBreadcrumb, PathReviewPopover } from '@/features/signing-path';
 import { WalletDetails } from '@/features/wallet-details';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
-import { resolveSubmitDraftScreen } from '../lib/submit-draft-screen';
 import { submitDraftModel } from '../model/submit-draft-model';
 
 type Props = {
@@ -129,18 +127,21 @@ const CallDataStep = () => {
  * Lives above the readiness early-returns so it stays reachable while the flow
  * is blocked on `no-signatory` — that reason offers no retry button, so picking
  * an account here is the only remediation. Render it for that reason only: the
- * other seven have nothing to do with the signatory, and offering the select
+ * other kinds have nothing to do with the signatory, and offering the select
  * next to "can't reach the network" reads as a suggested fix.
  *
- * `retryReadiness` re-arms the readiness window rather than routinely rescuing
- * a pick. Usually it isn't needed — `confirmModel.init` is clocked on
- * `$signatoryStore` and reads `$wrappedTx`/`$fee` from `source`, so with those
- * already settled the pick resolves to `ready` in the same transaction. It
- * matters when some _other_ requirement is still unsettled at pick time (most
- * plausibly `$fee` stuck null with no error): `$timedOut` latches until
- * re-armed, so the pick would clear the tier-1 block only to drop straight
- * through to the tier-3 timeout verdict, reporting a timeout against a route
- * chosen a moment ago.
+ * `retryReadiness` is only issued while the flow is blocked: it fans out to
+ * every requirement's retry, and re-wrapping plus re-estimating the fee on a
+ * pick made from an already-ready confirm screen would be two needless round
+ * trips against exactly the node this screen worries about. While blocked it
+ * re-arms the readiness window rather than routinely rescuing a pick. Usually
+ * it isn't needed — `confirmModel.init` is clocked on `$signatoryStore` and
+ * reads `$wrappedTx`/`$fee` from `source`, so with those already settled the
+ * pick resolves to `ready` in the same transaction. It matters when some
+ * _other_ requirement is still unsettled at pick time (most plausibly `$fee`
+ * stuck null with no error): `$timedOut` latches until re-armed, so the pick
+ * would clear the tier-1 block only to drop straight through to the tier-3
+ * timeout verdict, reporting a timeout against a route chosen a moment ago.
  */
 const SignatoryPicker = () => {
   const { t } = useI18n();
@@ -148,6 +149,7 @@ const SignatoryPicker = () => {
   const signatories = useUnit(submitDraftModel.$signatories);
   const selectedSignatory = useUnit(submitDraftModel.$signatoryStore);
   const wallets = useUnit(walletModel.$wallets);
+  const readiness = useUnit(submitDraftModel.$readiness);
 
   if (signatories.length < 2) return null;
 
@@ -160,7 +162,7 @@ const SignatoryPicker = () => {
           value={selectedSignatory?.accountId ?? null}
           onChange={(accountId) => {
             submitDraftModel.signatoryChanged(signatories.find((s) => s.accountId === accountId) ?? null);
-            submitDraftModel.retryReadiness();
+            if (readiness.status === 'blocked') submitDraftModel.retryReadiness();
           }}
         >
           {signatories.map((account) => (
@@ -190,9 +192,6 @@ const ConfirmStep = () => {
   const multisigDepositPending = useUnit(submitDraftModel.$multisigDepositPending);
   const wrappedExtrinsic = useUnit(submitDraftModel.$wrappedExtrinsic);
   const wrappedTxError = useUnit(submitDraftModel.$wrappedTxError);
-  const wrappedTxErrorKind = useUnit(submitDraftModel.$wrappedTxErrorKind);
-  const missingAccountId = useUnit(submitDraftModel.$pathMissingAccountId);
-  const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const draft = useUnit(submitDraftModel.$draft);
   // Named apart from the `chain` destructured off `confirm` below — this one is the
@@ -211,24 +210,7 @@ const ConfirmStep = () => {
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
-  // Defer surfacing wrappedTx errors so a transient `true` during store init
-  // (chain set before accounts settle, etc.) doesn't flash the red error UI
-  // before the confirm view replaces it.
-  const [showWrappedTxError, setShowWrappedTxError] = useState(false);
-  useEffect(() => {
-    if (!wrappedTxError) {
-      setShowWrappedTxError(false);
-      return;
-    }
-    const timer = setTimeout(() => setShowWrappedTxError(true), 300);
-    return () => clearTimeout(timer);
-  }, [wrappedTxError]);
-
   const confirm = confirms.at(0) ?? null;
-
-  // `confirm` is null on the blocked-path screen, so the chain comes from the
-  // draft rather than from the confirm payload.
-  const missingAccountChain = draft ? (chains[draft.chainId] ?? null) : null;
 
   const wrappedArgs = useMemo(() => {
     if (!wrappedExtrinsic || !confirm?.chain) return null;
@@ -279,26 +261,20 @@ const ConfirmStep = () => {
 
   const canAddAccount = walletUtils.isPolkadotVault(activeWallet);
 
-  // The order of these screens is a rule of its own — see `resolveSubmitDraftScreen`.
-  const screen = resolveSubmitDraftScreen({
-    hasConfirm: nonNullable(confirm),
-    signatoryCount: signatories.length,
-    hasError: wrappedTxError,
-    showError: showWrappedTxError,
-    errorKind: wrappedTxErrorKind,
-    missingAccountId,
-    hasChain: nonNullable(missingAccountChain),
-  });
-
-  if (screen.kind === 'no-signatories') {
+  // Screen order is load-bearing. An unresolvable path usually also empties the
+  // signatory list (the wallet holds no account for the path's leaf), so "this
+  // wallet has no accounts" is only claimed when nothing more specific is wrong;
+  // the readiness verdict then owns every other failure, and it outranks the
+  // spinner because a blocked verdict is terminal for this attempt. What the
+  // model reports and what the user sees are one decision — `$readiness`.
+  if (signatories.length === 0 && !wrappedTxError) {
     return (
       <>
-        <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-          <Icon className="text-icon-warning" name="warnCutout" size={60} />
+        <StatusPanel tone="warning">
           <Alert active title={t('emptyState.accountDescription')} variant="warn">
             <EmptyAccountMessage walletType={activeWallet?.type} />
           </Alert>
-        </Box>
+        </StatusPanel>
 
         {canAddAccount && (
           <Modal.Footer>
@@ -317,62 +293,33 @@ const ConfirmStep = () => {
     );
   }
 
-  // Name the account the path needs: "add this one and the draft becomes
-  // submittable" is actionable, "the path is unresolvable" is not.
-  if (screen.kind === 'missing-account' && missingAccountChain) {
-    return (
-      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-        <Icon className="text-icon-negative" name="warnCutout" size={60} />
-        <Box gap={2} horizontalAlign="center">
-          <FootnoteText align="center" className="text-text-primary">
-            {t('operations.drafts.signingPathAccountMissing')}
-          </FootnoteText>
-          <NamedAccount variant="short" accountId={screen.accountId} chain={missingAccountChain} />
-          <FootnoteText align="center" className="text-text-tertiary">
-            {t('operations.drafts.signingPathAccountMissingHint')}
-          </FootnoteText>
-        </Box>
-      </Box>
-    );
-  }
-
-  // A draft saved without a signing path can't be submitted at all: there is no
-  // route to follow and discovering one would sign through a path nobody agreed
-  // on. Nothing to fix locally — say so and point at the way out.
-  if (screen.kind === 'missing-path') {
-    return (
-      <Box width="440px" verticalAlign="center" horizontalAlign="center" gap={4} padding={[10, 5]}>
-        <Icon className="text-icon-negative" name="warnCutout" size={60} />
-        <Box gap={2} horizontalAlign="center">
-          <FootnoteText align="center" className="text-text-primary">
-            {t('operations.drafts.signingPathMissing')}
-          </FootnoteText>
-          <FootnoteText align="center" className="text-text-tertiary">
-            {t('operations.drafts.signingPathMissingHint')}
-          </FootnoteText>
-        </Box>
-      </Box>
-    );
-  }
-
-  if (screen.kind === 'error') {
-    return (
-      <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
-        <Icon className="text-icon-negative" name="warnCutout" size={60} />
-        <FootnoteText className="text-text-tertiary">{t(screen.messageKey)}</FootnoteText>
-      </Box>
-    );
-  }
-
-  // After `noSignatories` (that screen is what keeps the model's `signatories.length > 0`
-  // guard on `no-signatory` honest) and before the spinner: a blocked verdict is terminal
-  // for this attempt, so it must win over "still preparing".
   if (readiness.status === 'blocked') {
+    const { reason } = readiness;
+
+    // Name the account the path needs: "add this one and the draft becomes
+    // submittable" is actionable, "the path is unresolvable" is not. Rendering
+    // the account needs a chain; without one the generic wording is still right.
+    if (reason.kind === 'signing-path-unresolved' && reason.accountId && flowChain) {
+      return (
+        <StatusPanel tone="negative">
+          <Box gap={2} horizontalAlign="center">
+            <FootnoteText align="center" className="text-text-primary">
+              {t('operations.drafts.signingPathAccountMissing')}
+            </FootnoteText>
+            <NamedAccount variant="short" accountId={reason.accountId} chain={flowChain} />
+            <FootnoteText align="center" className="text-text-tertiary">
+              {t('operations.drafts.signingPathAccountMissingHint')}
+            </FootnoteText>
+          </Box>
+        </StatusPanel>
+      );
+    }
+
     return (
       <>
-        {readiness.reason.kind === 'no-signatory' && <SignatoryPicker />}
+        {reason.kind === 'no-signatory' && <SignatoryPicker />}
         <OperationBlocked
-          reason={readiness.reason}
+          reason={reason}
           chain={flowChain}
           onRetry={() => submitDraftModel.retryReadiness()}
           onClose={() => submitDraftModel.flowFinished()}
@@ -381,7 +328,7 @@ const ConfirmStep = () => {
     );
   }
 
-  if (screen.kind === 'loading' || !confirm) {
+  if (!confirm) {
     return (
       <Box width="440px" height="200px" verticalAlign="center" horizontalAlign="center" gap={4}>
         <Loader color="primary" />
