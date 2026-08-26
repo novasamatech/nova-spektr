@@ -527,6 +527,47 @@ describe('graph-model', () => {
     });
   });
 
+  describe('pickDefaultPath for a plain account', () => {
+    const seedNone = () => fork({ values: makeValues([]) });
+    const pickFor = (initiator: AnyAccount, includeOwnSigners?: boolean) =>
+      graphModel.pickDefaultPath({
+        initiator,
+        chainId: CHAIN,
+        multisigByAccountId: seedNone().getState(graphModel.$multisigByAccountId),
+        proxies: {},
+        ownSignerAccountIds: new Set([initiator.accountId]),
+        resolveName: () => '',
+        includeOwnSigners,
+      });
+
+    it('seeds nothing for a plain account unless own signers were asked for', () => {
+      expect(pickFor(makeOwnAccount(acc(1)))).toEqual([]);
+    });
+
+    it('seeds a lone signer node for a plain signing account when own signers were asked for', () => {
+      expect(pickFor(makeOwnAccount(acc(1)), true)).toEqual([{ kind: 'signer', accountId: acc(1) }]);
+    });
+
+    it('seeds nothing for a watch-only account even when own signers were asked for', () => {
+      expect(pickFor(makeOwnAccount(acc(1), SigningType.WATCH_ONLY), true)).toEqual([]);
+    });
+
+    it('keys the $defaultPathFor cache on the flag, so the two seeds cannot be confused', () => {
+      const $initiator = createStore<AnyAccount | null>(makeOwnAccount(acc(1)));
+      const $chainId = createStore<ChainId | null>(CHAIN);
+      const scope = seedNone();
+
+      const $plain = graphModel.$defaultPathFor($initiator, $chainId);
+      const $seeded = graphModel.$defaultPathFor($initiator, $chainId, { includeOwnSigners: true });
+
+      // Identity check spelled out: a failing `toBe` would try to diff two
+      // effector stores, whose graph is circular enough to exhaust the worker.
+      expect(Object.is($plain, $seeded)).toBe(false);
+      expect(scope.getState($plain)).toEqual([]);
+      expect(scope.getState($seeded)).toEqual([{ kind: 'signer', accountId: acc(1) }]);
+    });
+  });
+
   describe('$defaultPathFor caching', () => {
     // Every flow that calls its store `$initiator` gets the same `shortName`,
     // and `createSigningPathModel` builds each caller's `$chainId` itself — so a

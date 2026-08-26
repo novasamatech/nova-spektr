@@ -14,7 +14,7 @@ import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { isEligibleInitiator } from '../lib/initiator-eligibility';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
-import { collectSignerAccountIds } from '../lib/signer-accounts';
+import { collectSignerAccountIds, isSignerAccount } from '../lib/signer-accounts';
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
@@ -539,6 +539,11 @@ type PickDefaultPathParams = {
   resolveName: AccountNameResolver;
   allowedProxyTypes?: readonly string[];
   /**
+   * Seed a plain signing initiator with its one-node path — see
+   * `GraphOptions.includeOwnSigners`.
+   */
+  includeOwnSigners?: boolean;
+  /**
    * When set, the BFS terminates only at this specific signer accountId. Used
    * to translate a dropdown signatory pick back into a concrete signing path.
    * Without it, the first reachable own signer wins.
@@ -550,8 +555,9 @@ type PickDefaultPathParams = {
  * Walks the graph from `initiator` picking the first valid `PathNextOption` at
  * each step until reaching a signer. Reuses `buildNextOptions` so the default
  * selection matches exactly what StepPath would offer the user — same
- * reachability, same proxyType filtering, same dedup. Returns [] when the
- * initiator is a regular account or no own-signer-terminating branch exists.
+ * reachability, same proxyType filtering, same dedup. Returns [] when no
+ * own-signer-terminating branch exists, or when the initiator is a regular
+ * account and `includeOwnSigners` is off.
  */
 function pickDefaultPath({
   initiator,
@@ -561,11 +567,17 @@ function pickDefaultPath({
   ownSignerAccountIds,
   resolveName,
   allowedProxyTypes,
+  includeOwnSigners,
   targetSigner,
 }: PickDefaultPathParams): PathNode[] {
   const isMultisig = accountUtils.isAnyMultisigAccount(initiator);
   const isProxied = accountUtils.isProxiedAccount(initiator);
-  if (!isMultisig && !isProxied) return [];
+  if (!isMultisig && !isProxied) {
+    // A plain key has no route to pick, only itself — and only where the caller
+    // offers own keys as sources at all; elsewhere the empty path keeps its
+    // meaning of "signs directly, nothing to show".
+    return includeOwnSigners && isSignerAccount(initiator) ? [{ kind: 'signer', accountId: initiator.accountId }] : [];
+  }
 
   const allowedProxyTypeSet = allowedProxyTypes ? new Set<string>(allowedProxyTypes) : null;
   // Reachability set: when targetSigner is set, restrict to paths reaching
@@ -796,9 +808,11 @@ function $defaultPathFor(
   opts?: GraphOptions,
 ): Store<PathNode[]> {
   const allowedProxyTypes = opts?.allowedProxyTypes;
+  const includeOwnSigners = opts?.includeOwnSigners ?? false;
   // Two callers passing the same input stores + opts share one combine — keeps
-  // graph traversal cheap when consumers re-render.
-  const optsKey = allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*';
+  // graph traversal cheap when consumers re-render. Every option that changes
+  // the answer is in the key, or one caller would read the other's seed.
+  const optsKey = `${allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*'}${includeOwnSigners ? '+signers' : ''}`;
 
   let byChainId = defaultPathCache.get(initiatorStore);
   if (!byChainId) {
@@ -835,6 +849,7 @@ function $defaultPathFor(
         ownSignerAccountIds,
         resolveName,
         allowedProxyTypes,
+        includeOwnSigners,
       });
     },
   );

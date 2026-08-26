@@ -200,6 +200,28 @@ describe('createSigningPathModel', () => {
     expect(scope.getState($signatoryFromPath)).toBeNull();
   });
 
+  it('seeds a plain signing initiator with its one-node path only when own signers are offered', async () => {
+    const formInitiated = createEvent<unknown>();
+    const initiator = makeAccount(acc(1));
+    const $initiator = createStore<AnyAccount | null>(initiator);
+    const $chain = createStore<Chain | null>(CHAIN);
+
+    const plain = createSigningPathModel({ initiator: $initiator, chain: $chain, resetOn: formInitiated });
+    const seeded = createSigningPathModel({
+      initiator: $initiator,
+      chain: $chain,
+      resetOn: formInitiated,
+      includeOwnSigners: true,
+    });
+
+    const scope = fork({ values: new Map<any, any>([[accounts.__test.$list, [initiator]]]) });
+    // The default path is read on form init, the way every form opens.
+    await allSettled(formInitiated, { scope, params: undefined });
+
+    expect(scope.getState(plain.$signingPath)).toEqual([]);
+    expect(scope.getState(seeded.$signingPath)).toEqual([signer(acc(1))]);
+  });
+
   it('signingPathChanged blocks subsequent default-path seeding (override flag)', async () => {
     // No graph data is wired in this scope, so $defaultPathFor would emit []
     // anyway. The key behaviour we exercise here is that the override flag
