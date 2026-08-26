@@ -48,7 +48,12 @@ type QueryParams<Params, Response, Cache> = {
   cache: {
     store: StoreWritable<Cache>;
     map: MapCacheFn<Params, Response, Cache>;
-    staleAfter?: number;
+    /**
+     * How long a response answers repeat requests, in ms — a number, or a
+     * function of the response for answers whose trustworthiness varies (a
+     * partial read that should be retried sooner than a complete one).
+     */
+    staleAfter?: number | ((response: Response) => number);
   };
   retry?: {
     count: number;

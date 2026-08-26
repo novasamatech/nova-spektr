@@ -63,13 +63,11 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     });
     await expect(stakingDashboardPage.getKpiSubline('apy')).toContainText(/stake-weighted · [1-9]\d* earning position/);
 
-    // --- Active nominations: a non-zero count over a non-zero position count
-    await expect(stakingDashboardPage.getKpiValue('nominations')).toHaveText(/^[1-9]\d*$/, {
+    // --- Min stake to enter the active set: a token amount and its delta vs seven eras ago
+    await expect(stakingDashboardPage.getKpiValue('minStake')).toContainText(elements.amountPattern, {
       timeout: LIVE_DATA_TIMEOUT,
     });
-    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(
-      /validators · [1-9]\d* backed this era/,
-    );
+    await expect(stakingDashboardPage.getKpiSubline('minStake')).toContainText(/vs era [\d,]+|· active/);
 
     // --- Rewards card renders its window subline
     await expect(stakingDashboardPage.getKpiSubline('rewards')).toContainText(/\d+d$/);
@@ -149,7 +147,7 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await expect(panel).toContainText(elements.rangeSummaries['90d']);
   });
 
-  test('S4: Est. APY and Active nominations cards open the breakdown modal', async ({ stakingDashboardPage }) => {
+  test('S4: Est. APY and Min stake cards open their drill-downs', async ({ stakingDashboardPage }) => {
     test.setTimeout(TEST_TIMEOUT);
 
     await expect(stakingDashboardPage.getKpiValue('apy')).toContainText(elements.percentPattern, {
@@ -166,11 +164,13 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await expect(modal).toContainText(new RegExp(`· ${elements.amountPattern.source}`));
     await stakingDashboardPage.closeOverlay(modal);
 
-    await stakingDashboardPage.clickKpiCard('nominations');
+    await stakingDashboardPage.clickKpiCard('minStake');
     await expect(modal).toBeVisible();
-    await expect(modal).toContainText(elements.nominationsBreakdownTitle);
-    await expect(modal.locator(elements.donutSelector)).toBeVisible();
-    await expect(modal).toContainText(/[1-9]\d* validators?/);
+    await expect(modal).toContainText(elements.minStakeDetailTitle);
+    await expect(modal.getByRole('group', { name: elements.minStakeRangeSwitchLabel })).toBeVisible();
+    // One table row per era, the active one labelled.
+    await expect(modal).toContainText(/[\d,]+ elected validators per era/, { timeout: LIVE_DATA_TIMEOUT });
+    await expect(modal.getByRole('button', { name: elements.minStakeExportLabel })).toBeEnabled();
     await stakingDashboardPage.closeOverlay(modal);
   });
 });
@@ -226,9 +226,12 @@ test.describe('Staking dashboard — empty state (watch-only)', { tag: '@staking
     await expect(stakingDashboardPage.getKpiValue('apy')).toHaveText(elements.emDash, { timeout: LIVE_DATA_TIMEOUT });
     await expect(stakingDashboardPage.getKpiSubline('totalStaked')).toHaveText(elements.emDash);
     await expect(stakingDashboardPage.getKpiValue('totalStaked')).toContainText('0');
-    await expect(stakingDashboardPage.getKpiSubline('nominations')).toContainText(/validators · 0 backed this era/);
+    // Network-level: the min stake card keeps its data with nothing selected.
+    await expect(stakingDashboardPage.getKpiValue('minStake')).toContainText(elements.amountPattern, {
+      timeout: LIVE_DATA_TIMEOUT,
+    });
 
-    for (const card of ['totalStaked', 'apy', 'nominations', 'rewards'] as const) {
+    for (const card of ['totalStaked', 'apy', 'minStake', 'rewards'] as const) {
       await expect(stakingDashboardPage.getKpiSkeletons(card)).toHaveCount(0);
     }
 

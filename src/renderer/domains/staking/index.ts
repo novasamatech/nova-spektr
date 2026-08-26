@@ -3,11 +3,11 @@ export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './consta
 export { stakingUtils } from './helpers';
 
 export type { EraAnchor } from './era/service';
-export type { EraProgress } from './era/resource';
+export type { ActiveEraAnchor, EraProgress } from './era/resource';
 export { era } from './era/store';
 export { eraService } from './era/service';
 export { getErasInDays } from './era/duration';
-export { useActiveEra, useEraProgress } from './era/hooks';
+export { useActiveEra, useEraAnchor, useEraProgress } from './era/hooks';
 
 export { staking } from './staking/store';
 export { stakingService } from './staking/service';
@@ -24,6 +24,12 @@ export { exposures } from './exposures/store';
 export { exposurePagesCacheKey } from './exposures/resource';
 export { exposureService } from './exposures/service';
 export { useExposurePages, useExposures } from './exposures/hooks';
+
+export type { EraThreshold, EraThresholdWindow } from './era-thresholds/types';
+export type { EraThresholdsResourceParams } from './era-thresholds/resource';
+export { eraThresholds } from './era-thresholds/store';
+export { eraThresholdsService } from './era-thresholds/service';
+export { useEraThresholds } from './era-thresholds/hooks';
 
 export type { ApyResourceParams, NetworkAvgRateParams } from './apy/resource';
 export type { NetworkAvgRate } from './apy/service';

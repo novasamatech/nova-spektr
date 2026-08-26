@@ -22,12 +22,8 @@ import { dashboardOperationsQueueFeature } from '@/features/dashboard-operations
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
 import { dashboardPriceChartsFeature } from '@/features/dashboard-price-charts';
 import { dashboardStakingSummaryFeature } from '@/features/dashboard-staking';
-import {
-  dashboardStakingApyFeature,
-  dashboardStakingNominationsFeature,
-  dashboardStakingRewardsFeature,
-  dashboardStakingTotalStakedFeature,
-} from '@/features/dashboard-staking-kpi';
+import { dashboardStakingApyFeature, dashboardStakingRewardsFeature, dashboardStakingTotalStakedFeature } from '@/features/dashboard-staking-kpi';
+import { dashboardStakingMinStakeFeature } from '@/features/dashboard-staking-min-stake';
 import { dashboardStakingPositionsFeature } from '@/features/dashboard-staking-positions';
 import { dashboardStakingRewardsChartFeature } from '@/features/dashboard-staking-rewards-chart';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
@@ -91,10 +87,10 @@ export const bootstrap = () => {
     dashboardStakingSummaryFeature,
     dashboardStakingTotalStakedFeature,
     dashboardStakingApyFeature,
-    dashboardStakingNominationsFeature,
     dashboardStakingRewardsFeature,
     dashboardStakingPositionsFeature,
     dashboardStakingRewardsChartFeature,
+    dashboardStakingMinStakeFeature,
     assetsNavigationFeature,
     fellowshipNavigationFeature,
     operationsNavigationFeature,

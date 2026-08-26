@@ -109,6 +109,7 @@ rather than as an error — the same behaviour the total-rewards figures elsewhe
 ## Related
 
 - `pages/Dashboard` — hosts the staking widget slot and owns the account selection.
-- `domains/staking` — the reward history (SubQuery, with Asset Hub → relay merging) and the era anchor.
+- `domains/staking` — the reward history (SubQuery, with Asset Hub → relay merging) and the era anchor (`useEraAnchor`).
+- `shared/ui-kit` — `SegmentedControl`, the asset and range toggles, shared with the min stake card.
 - `aggregates/staking-positions` — which chains the selection actually stakes on, used to pick the opening asset.
 - `features/dashboard-portfolio-overview` — the house pattern this card follows for a dashboard card.

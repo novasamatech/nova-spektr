@@ -4,7 +4,7 @@ import { type BasePageElements } from './BasePageElements';
  * The four cards of `features/dashboard-staking-kpi`, keyed by their
  * aria-label.
  */
-export type StakingKpiCard = 'totalStaked' | 'apy' | 'nominations' | 'rewards';
+export type StakingKpiCard = 'totalStaked' | 'apy' | 'minStake' | 'rewards';
 
 export type RewardsRange = '7d' | '30d' | '90d' | '1y';
 
@@ -20,7 +20,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   kpiTitles: Record<StakingKpiCard, string> = {
     totalStaked: 'Total staked',
     apy: 'Est. APY',
-    nominations: 'Nominated validators',
+    minStake: 'Min stake to enter the active set',
     rewards: 'Rewards',
   };
 
@@ -29,7 +29,9 @@ export class StakingDashboardPageElements implements BasePageElements {
   redeemLinkLabel = 'Redeem →';
 
   apyBreakdownTitle = 'Estimated APY breakdown';
-  nominationsBreakdownTitle = 'Nomination spread';
+  minStakeDetailTitle = 'Min stake to enter the active set';
+  minStakeExportLabel = 'Export CSV';
+  minStakeRangeSwitchLabel = 'Era range';
   positionsModalTitle = 'Staking positions';
   /** Green chip of a fully matured unbonding chunk: `{amount} ready`. */
   readyChipPattern = /ready/;

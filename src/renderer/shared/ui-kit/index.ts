@@ -36,6 +36,7 @@ export { type Step, StepIndicator } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Tabs } from './Tabs/Tabs';
+export { type SegmentedOption, SegmentedControl } from './SegmentedControl/SegmentedControl';
 export { Box } from './Box/Box';
 export { Json } from './Json/Json';
 export { ProgressWithDividers } from './ProgressWithDividers/ProgressWithDividers';

@@ -23,7 +23,10 @@ export type EraProgressResourceParams = {
  * `null` marks an era whose anchor the chain can't provide — the hook then
  * reports it as resolved-but-empty instead of spinning forever.
  */
-export type EraProgress = (EraAnchor & { era: EraIndex }) | null;
+/** A known era, the moment it started and how long an era lasts on that chain. */
+export type ActiveEraAnchor = EraAnchor & { era: EraIndex };
+
+export type EraProgress = ActiveEraAnchor | null;
 
 const $eraCache = createStore<Record<ChainId, EraIndex>>({});
 const $eraProgressCache = createStore<Record<ChainId, EraProgress>>({});

@@ -1,5 +1,6 @@
+import { type ActiveEraAnchor } from '@/domains/staking';
 import { buildBuckets } from '../buckets';
-import { type RewardsEraAnchor, deriveEraAt, resolveBucketEra } from '../era';
+import { deriveEraAt, resolveBucketEra } from '../era';
 import { type RangeKey } from '../types';
 
 const NOW = new Date(2026, 6, 22, 13, 37).getTime();
@@ -7,14 +8,14 @@ const NOW = new Date(2026, 6, 22, 13, 37).getTime();
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Polkadot-shaped anchor: era 1710 started at midday today, eras last a day. */
-const anchor: RewardsEraAnchor = {
+const anchor: ActiveEraAnchor = {
   era: 1710,
   eraStartMs: new Date(2026, 6, 22, 12, 0).getTime(),
   eraDurationMs: DAY,
 };
 
 /** Kusama-shaped anchor: four eras a day. */
-const shortAnchor: RewardsEraAnchor = { ...anchor, era: 8000, eraDurationMs: DAY / 4 };
+const shortAnchor: ActiveEraAnchor = { ...anchor, era: 8000, eraDurationMs: DAY / 4 };
 
 const build = (range: RangeKey) =>
   buildBuckets({ records: [], range, nowMs: NOW, resolveAccountId: (address) => address });
