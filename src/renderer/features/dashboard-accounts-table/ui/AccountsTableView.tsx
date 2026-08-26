@@ -148,12 +148,6 @@ export const AccountsTableView = ({ table, className, leadingAction }: Props) =>
               accounts: table.groups.length,
             })}
           </FootnoteText>
-
-          <div className="flex-1" />
-
-          <FootnoteText className="truncate text-text-tertiary">
-            {t('dashboard.accountsTable.footer.note')}
-          </FootnoteText>
         </div>
       ) : null}
     </div>
