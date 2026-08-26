@@ -4,7 +4,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
-import { type ChainId, type TrackInfo, type VotingMap } from '@/shared/core';
+import { type ChainId, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -19,6 +19,7 @@ import {
 import { useBlock, useBlockTime } from '@/domains/network';
 import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
+import { type AccountLockSummary, summarizeAccountLocks } from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 
@@ -27,8 +28,15 @@ type ClaimResult = {
   claimableByAccount: Record<string, BN>;
   unlockChunks: AccountUnlockChunk[];
   delegated: BN;
+  locksByAccount: Record<string, AccountLockSummary>;
 };
-const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, claimableByAccount: {}, unlockChunks: [], delegated: BN_ZERO };
+const EMPTY_CLAIM: ClaimResult = {
+  claimable: BN_ZERO,
+  claimableByAccount: {},
+  unlockChunks: [],
+  delegated: BN_ZERO,
+  locksByAccount: {},
+};
 
 export type AccountUnlockChunk = {
   accountId: string;
@@ -57,6 +65,17 @@ export type ChainGovernanceData = {
   pending: boolean;
   votingMap: VotingMap;
   tracks: Record<string, TrackInfo>;
+  /** Per selected account with governance activity on this chain. */
+  locksByAccount: Record<string, AccountLockSummary>;
+  /** Inputs a caller needs to re-run the claim schedule against the live head. */
+  scheduleInputs: {
+    referendums: Referendum[];
+    trackLocks: Record<string, Record<TrackId, BN>>;
+    undecidingTimeout: number;
+    voteLockingPeriod: number;
+  } | null;
+  /** Unthrottled head — `currentBlock` is a 5-minute snapshot. */
+  liveBlock: number | null;
 };
 
 function computeGovernanceStats(votingMap: VotingMap) {
@@ -64,8 +83,9 @@ function computeGovernanceStats(votingMap: VotingMap) {
   let totalLocked = new BN(0);
   let totalWeight = new BigNumber(0);
   let weightedConvictionSum = new BigNumber(0);
+  const maxLockByAccount: Record<string, BN> = {};
 
-  for (const [, trackVoting] of Object.entries(votingMap)) {
+  for (const [accountId, trackVoting] of Object.entries(votingMap)) {
     let accountMaxLock = new BN(0);
     let hasActivity = false;
 
@@ -111,13 +131,14 @@ function computeGovernanceStats(votingMap: VotingMap) {
 
     if (hasActivity) {
       activeVotingAccounts++;
+      maxLockByAccount[accountId] = accountMaxLock;
     }
     totalLocked = totalLocked.add(accountMaxLock);
   }
 
   const averageConviction = totalWeight.gt(0) ? weightedConvictionSum.div(totalWeight).toNumber() : 0;
 
-  return { activeVotingAccounts, totalLocked, averageConviction };
+  return { activeVotingAccounts, totalLocked, averageConviction, maxLockByAccount };
 }
 
 function collectChunks(schedule: Chunks[], accountId: string, target: AccountUnlockChunk[]) {
@@ -187,8 +208,11 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
-  const currentBlock = useThrottledSnapshot(useBlock(api).data, 300_000);
+  const liveBlock = useBlock(api).data;
+  const currentBlock = useThrottledSnapshot(liveBlock, 300_000);
   const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, 300_000);
+
+  const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 
   const claimData = useMemo(() => {
     if (
@@ -207,6 +231,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     let totalClaimable = BN_ZERO;
     let totalDelegated = BN_ZERO;
     const claimableByAccount: Record<string, BN> = {};
+    const locksByAccount: Record<string, AccountLockSummary> = {};
     const allChunks: AccountUnlockChunk[] = [];
 
     for (const accountId of typedAccountIds) {
@@ -232,6 +257,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       );
 
       collectChunks(schedule, accountId, allChunks);
+      locksByAccount[accountId] = summarizeAccountLocks(schedule, stats.maxLockByAccount[accountId] ?? BN_ZERO);
 
       let accountClaimable = BN_ZERO;
       for (const chunk of schedule) {
@@ -247,7 +273,13 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       }
     }
 
-    return { claimable: totalClaimable, claimableByAccount, unlockChunks: allChunks, delegated: totalDelegated };
+    return {
+      claimable: totalClaimable,
+      claimableByAccount,
+      unlockChunks: allChunks,
+      delegated: totalDelegated,
+      locksByAccount,
+    };
   }, [
     api,
     currentBlock,
@@ -258,9 +290,21 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     trackLocks,
     undecidingTimeout,
     referendumsFullyLoaded,
+    stats,
   ]);
 
-  const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
+  const scheduleInputs = useMemo(() => {
+    if (!api || !referendumsFullyLoaded || Object.keys(tracks).length === 0) {
+      return null;
+    }
+
+    return {
+      referendums,
+      trackLocks,
+      undecidingTimeout,
+      voteLockingPeriod: api.consts.convictionVoting.voteLockingPeriod.toNumber(),
+    };
+  }, [api, referendumsFullyLoaded, tracks, referendums, trackLocks, undecidingTimeout]);
 
   // Sticky pending — only show skeleton on initial load, not on account changes.
   // Flip when pending states resolve (not when data appears), so accounts with
@@ -299,5 +343,8 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     pending,
     votingMap,
     tracks,
+    locksByAccount: claimData.locksByAccount,
+    liveBlock: liveBlock ?? null,
+    scheduleInputs,
   } satisfies ChainGovernanceData;
 };
