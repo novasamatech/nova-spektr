@@ -1,6 +1,6 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -174,9 +174,11 @@ Five rules, all about making a hundred rows scannable:
 
 - **Total owns a surface.** It is the number a person scans a hundred rows for, so it is the one column with a hairline
   on its left edge and a tint that runs to the card's right edge. The grid therefore pads left only: a right pad would
-  leave a white gutter and the column would read as a floating box. A group header is laid out on that same grid — its
-  account block spans every column but the last — so an account's subtotal lands in the very track its rows' totals do,
-  at any width and with no number kept in sync by hand.
+  leave a white gutter and the column would read as a floating box. That tint — and the group header's — is a shade
+  lighter than the page behind the card: the two surfaces reach the card's edge, so a tint matching the page would erase
+  the card's outline wherever they touched it. A group header is laid out on that same grid — its account block spans
+  every column but the last — so an account's subtotal lands in the very track its rows' totals do, at any width and
+  with no number kept in sync by hand.
 - **A zero is muted.** `0` and `—` both say "nothing to see here"; only a number worth reading gets full contrast.
 - **Every cell keeps its fiat subline** — except under a zero, where the line could only ever read `$0` — and every
   numeric column keeps flexing (Total a shade wider than the rest). The redesign proposed dropping the sublines outright

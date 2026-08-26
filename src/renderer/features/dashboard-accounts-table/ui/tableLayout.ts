@@ -58,9 +58,15 @@ export const WIDE_ONLY_CLASS = 'hidden @[900px]:block';
  * that runs to the card's right edge. That last part is why the grid pads left
  * only — `pr-4` would leave a white gutter between the tint and the edge, and
  * the column would read as a floating box rather than the table's margin.
+ *
+ * Both this tint and the group header's are `extended-block-background`, not
+ * `block-background`: the latter is the very same colour as the page behind the
+ * card, and since both surfaces run to the card's edge the card's outline
+ * vanished wherever they touched it. The lighter tint keeps the card white
+ * against the page while still reading as a band over the plain rows.
  */
 export const TOTAL_CELL_CLASS =
-  'flex h-full flex-col items-end justify-center self-stretch border-l border-divider bg-block-background pr-4 whitespace-nowrap';
+  'flex h-full flex-col items-end justify-center self-stretch border-l border-divider bg-extended-block-background pr-4 whitespace-nowrap';
 
 export const NUMERIC_COLUMNS = ['transferable', 'staked', 'governance', 'other', 'total'] as const;
 
@@ -73,7 +79,7 @@ export const NUMERIC_COLUMNS = ['transferable', 'staked', 'governance', 'other',
  * other, and without a rule between them they read as one block instead of one
  * account per line.
  */
-export const GROUP_HEADER_CLASS = 'h-14 border-b border-divider bg-block-background';
+export const GROUP_HEADER_CLASS = 'h-14 border-b border-divider bg-extended-block-background';
 
 /**
  * The account block in a group header — everything left of the subtotal, laid
