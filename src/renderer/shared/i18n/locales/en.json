@@ -862,13 +862,11 @@
       "time": "Time",
       "tvl": "TVL",
       "detail": {
-        "title": "Referendum Details",
         "ourVotes": "Our Votes",
         "account": "Account",
         "vote": "Vote",
         "amount": "Amount",
-        "conviction": "Conviction",
-        "value": "Value (USD)"
+        "conviction": "Conviction"
       }
     },
     "priceCharts": {

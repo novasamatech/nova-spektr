@@ -80,16 +80,19 @@ referendum id and the chain name.
 - **Active** — id, track, title, the user's own votes as chips (aye / nay / abstain / split, with counts), the aye–nay
   split, time left, and the referendum's own TVL — the network's whole tally, ayes plus nays, which is the context the
   user's vote sits in rather than a figure about the user. Time left is colour-coded: under a day is critical, under a
-  week is a warning. Clicking a row opens the referendum's detail with the per-account votes.
+  week is a warning. Clicking a row opens the app's own referendum modal — the same one the Governance page uses, so the
+  proposal can be read and voted on without leaving the dashboard. That modal reads its chain from the single global
+  governance network selector, so the row's chain is selected first and a row whose chain has no live connection is
+  inert.
 - **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
   and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
   watching and exactly what keeps holding their tokens.
 
 **A vote's lock outlives the referendum, and only sometimes.** A lock extends past the end only for a vote that backed
 the winning side — conviction is the price of being right, not of participating — so a losing vote, an abstention or a
-cancelled referendum releases at the end block. The detail modal marks each vote **Unlockable**, **Locked until ~date**,
-or **Shadowed**: shadowed means another, longer lock on the same track already covers this one, so releasing it alone
-would free nothing.
+cancelled referendum releases at the end block. The Ended detail modal marks each vote **Unlockable**, **Locked until
+~date**, or **Shadowed**: shadowed means another, longer lock on the same track already covers this one, so releasing it
+alone would free nothing.
 
 ## Governance Locks
 

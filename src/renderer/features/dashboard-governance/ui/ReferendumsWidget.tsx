@@ -1,16 +1,19 @@
+import { useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
+import { type ChainId, type ReferendumId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { TrackInfo, VoteChart } from '@/shared/ui-entities';
 import { type Column, SearchInput, Select, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
 import { type EndedReferendum, useEndedReferendums } from '../hooks/useEndedReferendums';
 
+import { DashboardReferendumDetails } from './DashboardReferendumDetails';
 import { EndedReferendumDetailModal } from './EndedReferendumDetailModal';
-import { ReferendumDetailModal } from './ReferendumDetailModal';
 import { OUTCOME_I18N_KEY, OUTCOME_STYLES, formatEndDate } from './referendum-helpers';
 
 type Props = {
@@ -67,7 +70,8 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     pending: activePending,
     fiatFlag,
   } = useActiveReferendums(deferredAccountIds, allEntries);
-  const [selectedActive, setSelectedActive] = useState<ActiveReferendum | null>(null);
+  const [selected, setSelected] = useState<{ chainId: ChainId; referendumId: ReferendumId } | null>(null);
+  const apis = useUnit(networkModel.$apis);
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [endedCount, setEndedCount] = useState<number | null>(null);
@@ -161,9 +165,16 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     [t],
   );
 
-  const handleActiveRowClick = useCallback((_row: ReferendumRow) => {
-    setSelectedActive(_row);
-  }, []);
+  const handleActiveRowClick = useCallback(
+    (row: ReferendumRow) => {
+      // The details modal reads its chain from the governance network selector,
+      // which only resolves once the chain's api is up.
+      if (!apis[row.chainId]) return;
+
+      setSelected({ chainId: row.chainId, referendumId: row.id });
+    },
+    [apis],
+  );
 
   if (!fiatFlag) return null;
 
@@ -281,7 +292,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
         )}
       </DashboardWidget>
 
-      {selectedActive && <ReferendumDetailModal referendum={selectedActive} onClose={() => setSelectedActive(null)} />}
+      {selected && <DashboardReferendumDetails {...selected} onClose={() => setSelected(null)} />}
     </>
   );
 };
