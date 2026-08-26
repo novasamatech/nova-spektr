@@ -18,9 +18,11 @@ type Props = {
  *
  * The modal, its vote flows and every governance aggregate behind it read the
  * chain from `networkSelectorModel` — a single global selection — so the row's
- * chain is selected first and nothing renders until the selector agrees.
- * `$governanceChainId` is not persisted and the Governance page re-selects from
- * its URL on entry, so the switch leaves no residue.
+ * chain is selected first and nothing renders until the selector agrees. The
+ * selection is global and sticky, exactly as when the user switches chains on
+ * the Governance page itself: opening a Kusama referendum here means the
+ * sidebar's Governance link lands on Kusama next time. It is not persisted
+ * across restarts, and a chain-specific Governance URL still wins.
  */
 export const DashboardReferendumDetails = ({ chainId, referendumId, onClose }: Props) => {
   const [selectedChainId, network, selectNetwork] = useUnit([

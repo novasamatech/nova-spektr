@@ -83,7 +83,8 @@ referendum id and the chain name.
   week is a warning. Clicking a row opens the app's own referendum modal — the same one the Governance page uses, so the
   proposal can be read and voted on without leaving the dashboard. That modal reads its chain from the single global
   governance network selector, so the row's chain is selected first and a row whose chain has no live connection is
-  inert.
+  inert. That selection is sticky — the same way the Governance page remembers the chain the user last switched to — so
+  after opening a Kusama referendum here the Governance page opens on Kusama until another chain is chosen.
 - **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
   and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
   watching and exactly what keeps holding their tokens.
