@@ -25,10 +25,13 @@ multisig approve/reject, the vesting claim.
 Whether a path exists at all is decided by the **source account**, not by the operation:
 
 - A **regular account** — neither multisig nor proxied — signs for itself. Its path is either **empty** or a **lone
-  `signer` node** naming the account (both are valid paths), and by default nothing is shown. This is the rule most
-  easily got wrong: a signatory derived from an empty path _alone_ is `null` for a regular account, so **every caller
-  must fall back to the initiator**. A form that does not gets an empty route, and an empty route builds no transaction,
-  quotes no fee, and cannot be signed — with nothing on screen to say why.
+  `signer` node** naming the account (both are valid paths), and by default nothing is shown. A flow that wants the
+  payer named anyway passes the account as `directInitiator`: only a **plain** account — neither multisig nor proxied —
+  is then drawn as a read-only lone signer card; a delegating account without a path stays hidden, so it is never
+  mistaken for a direct signer. This is the rule most easily got wrong: a signatory derived from an empty path _alone_
+  is `null` for a regular account, so **every caller must fall back to the initiator**. A form that does not gets an
+  empty route, and an empty route builds no transaction, quotes no fee, and cannot be signed — with nothing on screen to
+  say why.
 - A **multisig** or **proxied** source needs at least one hop, so it has a path, and the user is shown it.
 - The path UI appears only once a path has **two or more hops**. Anything shorter is direct signing, and there is
   nothing to visualise or choose between.
@@ -92,7 +95,8 @@ flowchart TD
 | State                    | When it appears                                                                                                        | What the user sees                                                                                                                     |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | No path                  | Source is a regular account                                                                                            | Nothing by default. It signs directly; its path is empty or a lone `signer` node                                                       |
-| Direct initiator card    | A dashboard flow (bond more, unbond, redeem, payee) opens on a plain stash and asks for `directInitiatorAccountId`     | A read-only INITIATOR card naming the signing account, so the payer is never invisible even though there is nothing to edit            |
+| Direct initiator card    | A dashboard flow (bond more, unbond, redeem, payee) opens on a plain stash and passes it as `directInitiator`          | A read-only INITIATOR card naming the signing account, so the payer is never invisible even though there is nothing to edit            |
+| Delegating, no path      | `directInitiator` is a multisig or proxied account whose route is still empty                                          | Nothing — a delegating account is never drawn as a lone signer                                                                         |
 | Own keys as sources      | The caller asked for them (claim rewards, start staking)                                                               | The eligible keys of this installation, offered as a "My accounts" group alongside the delegating ones; picking one completes the path |
 | Default path             | Source is multisig/proxied and some branch ends at an account the user can sign with                                   | The route, as a breadcrumb of hops, chosen for them                                                                                    |
 | Step-by-step chooser     | "Edit signing path" opened                                                                                             | One hop at a time — "Select a source account", then "Pick a wallet to sign via" / "Pick an initiator" — until "Path complete"          |
