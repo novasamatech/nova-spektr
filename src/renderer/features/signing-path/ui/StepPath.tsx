@@ -17,9 +17,13 @@ import { NextOptionRow } from './NextOptionRow';
 import { PathBreadcrumb } from './PathBreadcrumb';
 import { SectionCard } from './SectionCard';
 
+const NEUTRAL_CHIP_CLASS = 'bg-shade-4 border-shade-12 text-text-tertiary';
+
+// `walletType` is a fallback for sources that carry none; a signer source
+// always brings its own wallet's type, so it has no entry here.
 const SOURCE_PRESENTATION: Record<
   PathSourceKind,
-  { walletType: WalletType; group: string; label: string; chip: string }
+  { walletType?: WalletType; group: string; label: string; chip: string }
 > = {
   proxied: {
     walletType: WalletType.POLKADOT_VAULT,
@@ -31,13 +35,12 @@ const SOURCE_PRESENTATION: Record<
     walletType: WalletType.MULTISIG,
     group: 'signingPath.multisigsGroup',
     label: 'signingPath.label.multisig',
-    chip: 'bg-shade-4 border-shade-12 text-text-tertiary',
+    chip: NEUTRAL_CHIP_CLASS,
   },
   signer: {
-    walletType: WalletType.POLKADOT_VAULT,
     group: 'signingPath.ownAccountsGroup',
     label: 'signingPath.label.account',
-    chip: 'bg-shade-4 border-shade-12 text-text-tertiary',
+    chip: NEUTRAL_CHIP_CLASS,
   },
 };
 
@@ -177,7 +180,7 @@ export const StepPath = ({
           >
             {filteredSources.map((source) => {
               const presentation = SOURCE_PRESENTATION[source.kind];
-              const walletType = source.walletType ?? presentation.walletType;
+              const walletType = source.walletType ?? presentation.walletType ?? WalletType.POLKADOT_VAULT;
 
               return (
                 <Select.Item key={source.accountId} value={source.accountId}>

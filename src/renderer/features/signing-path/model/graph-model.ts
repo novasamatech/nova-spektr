@@ -819,9 +819,11 @@ function $defaultPathFor(
   const allowedProxyTypes = opts?.allowedProxyTypes;
   const includeOwnSigners = opts?.includeOwnSigners ?? false;
   // Two callers passing the same input stores + opts share one combine — keeps
-  // graph traversal cheap when consumers re-render. Every option that changes
-  // the answer is in the key, or one caller would read the other's seed.
-  const optsKey = `${allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*'}${includeOwnSigners ? '+signers' : ''}`;
+  // graph traversal cheap when consumers re-render. The key is built by the
+  // same encoder `$sourcesFor` uses, so an option that changes the answer can
+  // never be added to one cache and forgotten in the other. `restrictToOwn`
+  // is not an input here, so it encodes as 'all' for every caller.
+  const optsKey = optsCacheSegment({ allowedProxyTypes, includeOwnSigners });
 
   let byChainId = defaultPathCache.get(initiatorStore);
   if (!byChainId) {

@@ -25,7 +25,7 @@ const watchWallet: Wallet = { id: 2, name: 'Watch only', type: WalletType.WATCH_
 const key = createVaultBaseAccount('key', { walletId: 1, accountId: KEY });
 
 describe('isEligibleInitiator', () => {
-  it('accepts a signing key on the chain in a wallet that may stake', () => {
+  it('accepts a signing key on the chain in a wallet that can sign', () => {
     expect(isEligibleInitiator(key, vaultWallet, polkadotAssetHubChain)).toBe(true);
   });
 
@@ -39,7 +39,7 @@ describe('isEligibleInitiator', () => {
     expect(isEligibleInitiator({ ...key, name: 'off-chain' }, vaultWallet, polkadotAssetHubChain)).toBe(false);
   });
 
-  it('rejects a key whose wallet may not stake, and a key with no wallet', () => {
+  it('rejects a key of a watch-only wallet, and a key with no wallet', () => {
     expect(isEligibleInitiator(key, watchWallet, polkadotAssetHubChain)).toBe(false);
     expect(isEligibleInitiator(key, null, polkadotAssetHubChain)).toBe(false);
   });

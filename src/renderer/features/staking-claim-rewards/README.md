@@ -195,9 +195,9 @@ rewards.
 So the flow treats the nominator as a **preference**, not a requirement. The default payer is picked in order: the
 nominator, when it is a key we hold; otherwise an eligible key of the wallet selected in wallet management; otherwise
 any eligible key on the chain. Eligible means `isEligibleInitiator` — a signing key, available on the chain, in a wallet
-that may stake — so watch-only wallets are skipped. For an address-book position we merely track this means an account
-of ours pays and the rewards still land on the tracked address; refusing there would abandon money we are perfectly able
-to collect.
+that can sign — so watch-only wallets are skipped. For an address-book position we merely track this means an account of
+ours pays and the rewards still land on the tracked address; refusing there would abandon money we are perfectly able to
+collect.
 
 The payer is always visible and always changeable: the confirm renders `SigningPathInline` with `editableInitiator`
 rather than `SigningPathSection`, because the section hides itself below two hops and a payout signed by a plain account

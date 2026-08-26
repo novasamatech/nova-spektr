@@ -2,7 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type ChainId, type Validator, RewardsDestination } from '@/shared/core';
+import { type Chain, type ChainId, type ID, type Validator, type Wallet, RewardsDestination } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -36,9 +36,9 @@ import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance 
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MINIMUM_BOND_RULE, bondNominateValidator } from '@/features/operations/OperationsValidation';
-import { createSigningPathModel, isEligibleInitiator } from '@/features/signing-path';
+import { createSigningPathModel, pickDefaultInitiator } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
-import { getAvailableToBond, pickSeedAccount } from '../lib';
+import { getAvailableToBond } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
 
 import { confirmModel } from './confirm';
@@ -131,21 +131,20 @@ export const createNewPositionFlowModel = () => {
   );
 
   /**
+   * Which account the "Stake from" field seeds itself with — the signing path's
+   * own default-initiator rule with no preferred account: the selected wallet's
+   * key when the chain can hold one, otherwise the first eligible key.
+   *
    * Only a key we can actually sign with may seed the field: a watch-only
    * account seeds an empty path and the field vanishes with it, leaving the
    * error and no picker. `$availableAccounts` stays wider on purpose — the
    * destination field reads it too, and a watch-only key is a fine payee.
    */
-  const $seedCandidates = combine(
-    { available: $availableAccounts, wallets: walletModel.$wallets, chain: $chain },
-    ({ available, wallets, chain }) => {
-      if (!chain) return [];
-
-      const walletById = new Map(wallets.map((wallet) => [wallet.id, wallet]));
-
-      return available.filter((account) => isEligibleInitiator(account, walletById.get(account.walletId), chain));
-    },
-  );
+  const pickSeed = (available: AnyAccount[], wallets: Wallet[], chain: Chain | null, selectedWalletId: ID | null) =>
+    chain
+      ? (pickDefaultInitiator({ preferred: [], chain, accounts: available, wallets, selectedWalletId })?.account ??
+        null)
+      : null;
 
   const $initiator = createStore<AnyAccount | null>(null)
     .on(initiatorChanged, (_, account) => account)
@@ -172,21 +171,22 @@ export const createNewPositionFlowModel = () => {
    * Continue button that can never light up.
    */
   sample({
-    clock: [$seedCandidates, newPositionRequested],
+    clock: [$availableAccounts, walletModel.$wallets, newPositionRequested],
     source: {
       available: $availableAccounts,
-      candidates: $seedCandidates,
+      wallets: walletModel.$wallets,
+      chain: $chain,
       initiator: $initiator,
       selectedWalletId: walletSelect.$selectedWalletId,
     },
-    fn: ({ available, candidates, initiator, selectedWalletId }) => {
+    fn: ({ available, wallets, chain, initiator, selectedWalletId }) => {
       // Kept against the wider list on purpose: a hand-picked multisig or
       // proxied source is a legitimate initiator that is never a seed candidate,
       // and a wallet rename must not throw it away.
       const stillAvailable = initiator && available.some((account) => account.id === initiator.id);
       if (stillAvailable) return initiator;
 
-      return pickSeedAccount(candidates, selectedWalletId);
+      return pickSeed(available, wallets, chain, selectedWalletId);
     },
     target: $initiator,
   });
@@ -219,8 +219,8 @@ export const createNewPositionFlowModel = () => {
    */
   sample({
     clock: walletSwitchedInForm,
-    source: $seedCandidates,
-    fn: (available, walletId) => pickSeedAccount(available, walletId),
+    source: { available: $availableAccounts, wallets: walletModel.$wallets, chain: $chain },
+    fn: ({ available, wallets, chain }, walletId) => pickSeed(available, wallets, chain, walletId),
     target: $initiator,
   });
 

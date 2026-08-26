@@ -76,9 +76,9 @@ instead of the wallet.
 proxied accounts whose delegation reaches a multisig, are offered: the operation runs from a specific account and the
 path merely says how a signature reaches it, so a plain key is no source at all. A caller whose operation may run from
 any key of ours — a permissionless staking payout, or starting a new stake — asks for **own keys** too. Those are judged
-by `isEligibleInitiator` (a signing key, available on the chain, in a wallet that may stake) and offered as a **"My
-accounts"** group next to the delegating ones; picking one completes the path at once, as a lone `signer` node. The
-claim confirm and the start-staking form are the screens that ask.
+by `isEligibleInitiator` (a signing key, available on the chain, in a wallet that can sign — watch-only wallets are
+skipped) and offered as a **"My accounts"** group next to the delegating ones; picking one completes the path at once,
+as a lone `signer` node. The claim confirm and the start-staking form are the screens that ask.
 
 ```mermaid
 flowchart TD
