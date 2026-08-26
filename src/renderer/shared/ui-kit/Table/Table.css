@@ -80,22 +80,33 @@
   background-color: var(--action-background-hover);
 }
 
-/*
- * A header names its column on one line. Left to wrap, a header that is a few
- * pixels short of its label folds in half and pushes the whole table down —
- * and, because the sort glyphs are not all the same width, it could do that in
- * one sort state and not another. Over-long labels now clip instead, which is
- * a visible, stable failure rather than a layout that moves under the user.
- */
 .table-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+
+/*
+ * Opt-in single-line headers (`truncateHeaders`).
+ *
+ * A header names its column on one line. Left to wrap, a header that is a few
+ * pixels short of its label folds in half and pushes the whole table down —
+ * and, because the sort glyphs are not all the same width, it could do that in
+ * one sort state and not another. Over-long labels clip instead, which is a
+ * visible, stable failure rather than a layout that moves under the user.
+ *
+ * Opt-in rather than default: `overflow: hidden` on the header children also
+ * clips anything that overhangs the cell (an info-icon tooltip trigger, a
+ * multi-line label a preview table relies on), so tables that were laid out to
+ * wrap keep wrapping.
+ */
+.table-container--truncate-header .table-header-content {
   gap: 4px;
   white-space: nowrap;
 }
 
-.table-header-content > * {
+.table-container--truncate-header .table-header-content > * {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

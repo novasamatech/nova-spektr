@@ -137,3 +137,10 @@ export const WithCustomRender: Story = {
     ],
   },
 };
+
+export const TruncatedHeaders: Story = {
+  args: {
+    truncateHeaders: true,
+    columns: columns.map(column => ({ ...column, width: '90px', title: `${String(column.title)} (a longer label)` })),
+  },
+};

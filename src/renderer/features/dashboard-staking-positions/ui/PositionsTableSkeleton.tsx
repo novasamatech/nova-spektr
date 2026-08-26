@@ -60,5 +60,5 @@ export const PositionsTableSkeleton = () => {
 
   // Same stickiness as the loaded table — the header must not gain a divider
   // and start pinning only when the data lands.
-  return <Table columns={columns} data={rows} getRowKey={(row) => row.id} stickyHeader />;
+  return <Table columns={columns} data={rows} getRowKey={(row) => row.id} stickyHeader truncateHeaders />;
 };

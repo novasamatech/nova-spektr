@@ -756,6 +756,7 @@ export const ClaimModal = memo(
                         columns={columns}
                         data={tableRows}
                         sort={tableSort}
+                        truncateHeaders
                         // A third click reports `null` — treat it as back to default,
                         // never as "whatever order the rows happen to be in".
                         getRowKey={(item) => item.key}

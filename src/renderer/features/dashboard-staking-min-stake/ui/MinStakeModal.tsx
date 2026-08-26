@@ -277,7 +277,7 @@ export const MinStakeModal = memo(({ assets, selected, showFiat, onChainChange, 
             </HelpText>
           )}
 
-          {series && <Table columns={columns} data={tableRows} />}
+          {series && <Table columns={columns} data={tableRows} truncateHeaders />}
         </div>
       </Modal.Content>
       <Modal.Footer align="between">
