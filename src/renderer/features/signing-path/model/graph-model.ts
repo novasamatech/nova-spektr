@@ -1,6 +1,6 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type Chain, type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, type Wallet, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { entries, nullable } from '@/shared/lib/utils';
@@ -11,9 +11,10 @@ import { type AnyAccount, accountService, accounts, identity, multisigOperation 
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { isEligibleInitiator } from '../lib/initiator-eligibility';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
-import { collectSignerAccountIds, isSignerAccount } from '../lib/signer-accounts';
+import { collectSignerAccountIds } from '../lib/signer-accounts';
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
@@ -287,6 +288,8 @@ type BuildSourcesParams = {
   resolveName: AccountNameResolver;
   /** Set only when the caller asked for own signing keys as roots — see pass 4. */
   ownSignerChain: Chain | null;
+  /** Pass 4 judges a key by the wallet it belongs to, not only by the account. */
+  wallets: Wallet[];
 };
 
 function buildSources({
@@ -298,6 +301,7 @@ function buildSources({
   allowedSet,
   resolveName,
   ownSignerChain,
+  wallets,
 }: BuildSourcesParams): PathSource[] {
   const sources: PathSource[] = [];
   const seenAccounts = new Set<AccountId>();
@@ -398,19 +402,21 @@ function buildSources({
   //    them. Every pass above answers "who can this operation run from, given
   //    that somebody else holds the key" — a delegation question, which a plain
   //    account has no part in. A permissionless call inverts that: the operation
-  //    may run from anyone, so the roots are exactly the keys we hold.
+  //    may run from anyone, so the roots are exactly the keys we hold — and
+  //    only those whose wallet is allowed to act, which the account alone
+  //    cannot tell.
   if (ownSignerChain) {
     for (const account of accountList) {
       if (seenAccounts.has(account.accountId)) continue;
-      if (!isSignerAccount(account)) continue;
-      if (!accountService.isAccountAvailableOnChain(account, ownSignerChain)) continue;
+      const wallet = wallets.find((w) => w.id === account.walletId);
+      if (!wallet || !isEligibleInitiator(account, wallet, ownSignerChain)) continue;
 
       seenAccounts.add(account.accountId);
       sources.push({
         accountId: account.accountId,
         name: resolveName(account.accountId, chainId),
         kind: 'signer',
-        walletType: null,
+        walletType: wallet.type,
       });
     }
   }
@@ -689,6 +695,7 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
       allowedSet: $allowedSet,
       resolveName: $nameResolver,
       ownSignerChain: $ownSignerChain,
+      wallets: walletModel.$wallets,
     },
     ({ proxies, ...rest }) =>
       buildSources({

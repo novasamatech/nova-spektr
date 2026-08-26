@@ -6,6 +6,7 @@ export { type PathResolution, createPathResolutionStore, createPathRouteStore } 
 export { createSyntheticProxiedAccount, scopeProxiedAccount } from './lib/path-account-resolution';
 export { pathToTxWrappers } from './lib/pathToTxWrappers';
 export { collectSignerAccountIds, isSignerAccount } from './lib/signer-accounts';
+export { isEligibleInitiator } from './lib/initiator-eligibility';
 export {
   MAX_PATH_DEPTH,
   MIN_PATH_LENGTH,

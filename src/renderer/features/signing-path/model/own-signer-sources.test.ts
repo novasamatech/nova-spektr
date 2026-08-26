@@ -1,8 +1,8 @@
 import { fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { SigningType } from '@/shared/core';
-import { createAccountId, createVaultBaseAccount, polkadotAssetHubChain } from '@/shared/mocks';
+import { type Wallet, SigningType, WalletType } from '@/shared/core';
+import { createAccountId, createPolkadotWallet, createVaultBaseAccount, polkadotAssetHubChain } from '@/shared/mocks';
 
 /**
  * Whether an account fits a chain is decided by a DI `anyOf` registry, and a
@@ -22,16 +22,24 @@ vi.mock('@/domains/network/account/service', async (importOriginal) => {
 const { graphModel } = await import('./graph-model');
 const { accounts } = await import('@/domains/network');
 const { networkModel } = await import('@/entities/network');
+const { walletModel } = await import('@/entities/wallet');
 
 const CHAIN = polkadotAssetHubChain.chainId;
 const VAULT_KEY = createAccountId('own-vault-key');
 const WATCHED = createAccountId('own-watched-key');
+const WATCH_WALLET_KEY = createAccountId('own-watch-wallet-key');
+
+const vaultWallet = createPolkadotWallet(1, { rootAccountId: VAULT_KEY });
+const watchWallet: Wallet = { id: 2, name: 'Watch only', type: WalletType.WATCH_ONLY, accounts: [] };
 
 const vaultKey = createVaultBaseAccount('vault', { walletId: 1, accountId: VAULT_KEY });
 const watched = {
   ...createVaultBaseAccount('watched', { walletId: 1, accountId: WATCHED }),
   signingType: SigningType.WATCH_ONLY,
 };
+// Signable on paper, yet its wallet may not act — the wallet-level rule has
+// to catch what the account-level one lets through.
+const watchWalletKey = createVaultBaseAccount('watch-wallet', { walletId: 2, accountId: WATCH_WALLET_KEY });
 
 // Mirrors the `Map<any, any>` seed helper the sibling graph-model suite uses —
 // `fork` takes a heterogeneous store→value map that no single generic describes.
@@ -39,7 +47,8 @@ const seeded = () =>
   fork({
     values: new Map<any, any>([
       [networkModel.$chains, { [CHAIN]: polkadotAssetHubChain }],
-      [accounts.__test.$list, [vaultKey, watched]],
+      [walletModel.__test.$rawWallets, [vaultWallet, watchWallet]],
+      [accounts.__test.$list, [vaultKey, watched, watchWalletKey]],
     ]),
   });
 
@@ -68,6 +77,21 @@ describe('graph-model · own signing accounts as sources', () => {
     const sources = scope.getState(graphModel.$sourcesFor(CHAIN, { includeOwnSigners: true }));
 
     expect(sources.map((source) => source.accountId)).not.toContain(WATCHED);
+  });
+
+  it('never offers a key whose wallet may not stake', () => {
+    const scope = seeded();
+    const sources = scope.getState(graphModel.$sourcesFor(CHAIN, { includeOwnSigners: true }));
+
+    expect(sources.map((source) => source.accountId)).not.toContain(WATCH_WALLET_KEY);
+  });
+
+  it('marks an own key as a signer source', () => {
+    const scope = seeded();
+    const sources = scope.getState(graphModel.$sourcesFor(CHAIN, { includeOwnSigners: true }));
+
+    expect(sources).toHaveLength(1);
+    expect(sources[0]).toMatchObject({ accountId: VAULT_KEY, kind: 'signer', walletType: WalletType.POLKADOT_VAULT });
   });
 
   it('keys the store cache on the option, so the two lists cannot be confused', () => {
