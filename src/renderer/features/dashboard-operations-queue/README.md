@@ -72,7 +72,7 @@ current selection, and the user controls at least one signatory that can still a
 load-bearing one — it excludes operations the user has _already_ approved, operations where they hold no signatory at
 all, and signatories on chains the account cannot use. Watch-only signatories never count: they cannot sign, so
 surfacing the operation as actionable would be a lie. The rule is `multisigOperationService.needsUserSignature` in
-`domains/network` — the same predicate behind the Operations view's Approve button and its **Needs my signature**
+`domains/network` — the same predicate behind the Operations view's Approve button and its **Signed → Not signed**
 filter, so the three surfaces cannot disagree.
 
 Rows show the operation's method, chain, multisig name, description, transfer amount where one can be extracted, and the

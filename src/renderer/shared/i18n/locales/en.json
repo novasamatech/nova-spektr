@@ -3207,6 +3207,7 @@
       "operationTypePlaceholder": "Operation type",
       "operationTypeSummary": "Operation types",
       "proxyTypePlaceholder": "Proxy type",
+      "signatureAll": "All",
       "signatureNotSigned": "Not signed",
       "signaturePlaceholder": "Signed",
       "signatureSigned": "Signed",

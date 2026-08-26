@@ -8,9 +8,14 @@ import { performSearch } from '@/shared/lib/utils';
 import { Button, Icon, MultiSelect } from '@/shared/ui';
 import { DateRangePicker, Select } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { type SignatureFilterValue, SIGNATURE_FILTER_ORDER } from '../lib/operations-filter';
+import { type SignatureFilterValue } from '@/aggregates/operations-search';
+import { SIGNATURE_FILTER_LABEL_KEYS, SIGNATURE_FILTER_ORDER } from '../lib/operations-filter';
 import { STATUS_FILTER_LABEL_KEYS, STATUS_FILTER_ORDER, isStatusFilterValue } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
+
+// Selecting it clears the Signed filter — the ui-kit Select has no clear affordance of its own.
+const SIGNATURE_FILTER_ALL = 'all';
+type SignatureFilterOption = SignatureFilterValue | typeof SIGNATURE_FILTER_ALL;
 
 export const OperationsFilter = memo(() => {
   const { t } = useI18n();
@@ -90,11 +95,14 @@ export const OperationsFilter = memo(() => {
         />
       </div>
       <div className="w-[136px]">
-        <Select
+        <Select<SignatureFilterOption>
           placeholder={t('operations.filters.signaturePlaceholder')}
           value={selectedOptions.signature}
-          onChange={value => operationsContextModel.setFilter({ signature: value })}
+          onChange={value =>
+            operationsContextModel.setFilter({ signature: value === SIGNATURE_FILTER_ALL ? null : value })
+          }
         >
+          <Select.Item value={SIGNATURE_FILTER_ALL}>{t('operations.filters.signatureAll')}</Select.Item>
           {SIGNATURE_FILTER_ORDER.map(value => (
             <Select.Item key={value} value={value}>
               {t(SIGNATURE_FILTER_LABEL_KEYS[value])}
@@ -142,11 +150,6 @@ export const OperationsFilter = memo(() => {
     </div>
   );
 });
-
-const SIGNATURE_FILTER_LABEL_KEYS: Record<SignatureFilterValue, string> = {
-  signed: 'operations.filters.signatureSigned',
-  not_signed: 'operations.filters.signatureNotSigned',
-};
 
 const getTransactionOptions = (t: TFunction) => {
   return [

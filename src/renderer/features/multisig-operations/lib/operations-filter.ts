@@ -16,19 +16,20 @@ import { type DateRange } from '@/shared/ui-kit';
 import { type AnyAccount, type IdentityMap, type MultisigOperation, accountService } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { type OperationSearchRow } from '@/aggregates/operations-search';
+import { type OperationSearchRow, type SignatureFilterValue } from '@/aggregates/operations-search';
 
 import { type StatusFilterValue, getOperationSection } from './operations-sections';
 
-/**
- * "Signed" filter: `not_signed` keeps operations a local signatory can still
- * act on (`multisigOperationService.needsUserSignature`), `signed` keeps the
- * ones every local signatory has already approved
- * (`multisigOperationService.hasSignedWithAllOwnSignatories`).
- */
-export type SignatureFilterValue = 'signed' | 'not_signed';
-
+// "Signed" filter: `not_signed` keeps operations a local signatory can still act
+// on (`multisigOperationService.needsUserSignature`), `signed` keeps the ones
+// every local signatory has already approved
+// (`multisigOperationService.hasSignedWithAllOwnSignatories`).
 export const SIGNATURE_FILTER_ORDER: readonly SignatureFilterValue[] = ['signed', 'not_signed'];
+
+export const SIGNATURE_FILTER_LABEL_KEYS: Record<SignatureFilterValue, string> = {
+  signed: 'operations.filters.signatureSigned',
+  not_signed: 'operations.filters.signatureNotSigned',
+};
 
 export interface OperationsFilterCriteria {
   network: string[];

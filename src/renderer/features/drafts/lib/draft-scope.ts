@@ -6,7 +6,11 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type DateRange } from '@/shared/ui-kit';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
-import { type OperationSearchRow, type SearchAccountRef } from '@/aggregates/operations-search';
+import {
+  type OperationSearchRow,
+  type SearchAccountRef,
+  type SignatureFilterValue,
+} from '@/aggregates/operations-search';
 
 import { findSubmittableInitiator } from './draft-initiator';
 
@@ -27,7 +31,7 @@ export type DraftListScope = {
    * `findSubmittableInitiator`; a draft carries no signatures, so `signed` puts
    * every draft out of scope.
    */
-  signature?: 'signed' | 'not_signed' | null;
+  signature?: SignatureFilterValue | null;
 };
 
 const matchesNetwork = (draft: Draft, networkIds: string[]): boolean => {

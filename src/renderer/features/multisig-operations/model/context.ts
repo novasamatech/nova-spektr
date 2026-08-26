@@ -27,12 +27,16 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { accountPresetsModel } from '@/aggregates/account-presets';
-import { $searchResolvers, haveSameMatchedIds, searchOperationRows } from '@/aggregates/operations-search';
+import {
+  type SignatureFilterValue,
+  $searchResolvers,
+  haveSameMatchedIds,
+  searchOperationRows,
+} from '@/aggregates/operations-search';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { bucketOperations } from '../lib/bucket-operations';
 import {
   type OperationsFilterCriteria,
-  type SignatureFilterValue,
   type WalletSearchEntry,
   buildOperationSearchRow,
   filterOperation,
