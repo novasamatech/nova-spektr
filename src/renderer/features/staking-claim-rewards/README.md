@@ -112,8 +112,8 @@ run through the **same validator** the primary uses and priced with its own netw
 those per-transaction quotes; until the extras' quotes land it briefly shows the old per-transaction × count estimate.
 That estimate is never signable: while quotes are pending the preparing gate blocks Sign, and an extra that never gets a
 quote fails closed — a failing extra (an unaffordable fee, a route that resolves without anyone able to sign, or a
-validation that failed outright and could not be checked) blocks Sign and surfaces in the same validation alert as a
-primary failure, rather than being silently dropped.
+validation that failed outright, or a signer whose balance is not yet known so no verdict could be reached) blocks Sign
+and surfaces in the same validation alert as a primary failure, rather than being silently dropped.
 
 The honest caveat that remains: **balance interactions _across_ plans from the same payer are not modeled.** The
 validator checks each transaction against current balances independently, so a payer with enough free balance for each
