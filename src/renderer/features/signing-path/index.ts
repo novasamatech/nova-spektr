@@ -7,6 +7,7 @@ export { createSyntheticProxiedAccount, scopeProxiedAccount } from './lib/path-a
 export { pathToTxWrappers } from './lib/pathToTxWrappers';
 export { collectSignerAccountIds, isSignerAccount } from './lib/signer-accounts';
 export { isEligibleInitiator } from './lib/initiator-eligibility';
+export { type DefaultInitiator, pickDefaultInitiator } from './lib/pick-default-initiator';
 export {
   MAX_PATH_DEPTH,
   MIN_PATH_LENGTH,
