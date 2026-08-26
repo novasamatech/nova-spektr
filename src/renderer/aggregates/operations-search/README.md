@@ -1,6 +1,6 @@
 # Operations Search
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-21
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -87,3 +87,5 @@ the row displayed the proxied one, so pasting the visible address returned nothi
 - `docs/content/docs/code/style/search.md` — the "search what the user sees" convention this aggregate implements.
 - An active **type** or **proxy type** filter puts every draft out of scope, so a search combined with those filters
   returns operations only.
+- The Operations view's **Signed** filter value (`SignatureFilterValue`: `signed` / `not_signed`) is declared here so
+  the operations list and the drafts scope share one definition; the matching rules themselves live in those features.
