@@ -13,19 +13,30 @@ type TabCounterProps = {
   label: string;
   entries: AccountEntry[];
   total: number;
+  needsReview?: boolean;
 };
 
-const TabCounter = ({ label, entries, total }: TabCounterProps) => {
+const TabCounter = ({ label, entries, total, needsReview = false }: TabCounterProps) => {
+  const { t } = useI18n();
+
   return (
     <Tooltip side="bottom">
       <Tooltip.Trigger>
         <span className="inline-flex items-center gap-x-1.5">
           {label}
-          <Counter variant="neutral">{entries.length}</Counter>
+          {needsReview ? (
+            <Icon name="warn" size={14} className="text-icon-warning" />
+          ) : (
+            <Counter variant="neutral">{entries.length}</Counter>
+          )}
         </span>
       </Tooltip.Trigger>
       <Tooltip.Content className="w-[260px] max-w-[260px] px-3 py-2.5">
-        <SourceBreakdownBar entries={entries} total={total} tone="dark" />
+        {needsReview ? (
+          <FootnoteText className="text-white">{t('presets.needsReview')}</FootnoteText>
+        ) : (
+          <SourceBreakdownBar entries={entries} total={total} tone="dark" />
+        )}
       </Tooltip.Content>
     </Tooltip>
   );
@@ -104,7 +115,12 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
               </Tabs.Trigger>
               {segmentPresets.map((preset) => (
                 <Tabs.Trigger key={preset.id} value={preset.id}>
-                  <TabCounter label={preset.name} entries={entriesByPresetId[preset.id] ?? []} total={totalCount} />
+                  <TabCounter
+                    label={preset.name}
+                    entries={entriesByPresetId[preset.id] ?? []}
+                    total={totalCount}
+                    needsReview={preset.needsReview}
+                  />
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
@@ -141,7 +157,11 @@ export const AccountSelectorSwitcher = ({ $activePresetId, onActivate }: Props) 
                         onClick={() => handleOverflowActivate(preset.id)}
                       >
                         <FootnoteText className="text-text-primary">{preset.name}</FootnoteText>
-                        <Counter variant="neutral">{matched.length}</Counter>
+                        {preset.needsReview ? (
+                          <Icon name="warn" size={14} className="shrink-0 text-icon-warning" />
+                        ) : (
+                          <Counter variant="neutral">{matched.length}</Counter>
+                        )}
                       </button>
                     );
                   })}

@@ -1,6 +1,6 @@
 # Account presets
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -60,9 +60,11 @@ remain), otherwise the current selection stays put.
 5. Delete: see "Deleting a preset" above.
 
 Presets and per-surface activation are stored locally (localStorage) and sync across windows. Presets saved by older app
-versions may lack newer criteria fields — they are treated as having those criteria empty. Criteria saved by retired
-schema versions (name-keyed Entity/Category/Contact Type/tag lists) are dropped on read: they were produced against a
-mapping that never matched, so no working preset relies on them.
+versions are normalized once at startup and persisted in the current shape: missing criteria fields are treated as
+empty, and criteria saved by retired schema versions (name-keyed Entity/Category/Contact Type/tag lists) are dropped. A
+Smart Filter that loses every criterion this way is flagged as needing review: it matches no accounts (never silently
+"all"), the surface tab tooltip / overflow row and the editor show a "filters no longer supported" notice, and the flag
+clears once the user saves new filters. Presets that also carried current criteria keep those and are applied as usual.
 
 ## Related
 

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Address, type ContactField, WalletType } from '@/shared/core';
-import { applyPresetFilter, buildMergedEntries, matchPreset, normalizePresetFilters } from '../lib';
+import {
+  applyPresetFilter,
+  buildMergedEntries,
+  matchPreset,
+  migratePreset,
+  migrateStoredPresets,
+  normalizePresetFilters,
+} from '../lib';
 import { type AccountEntry, type AccountPreset, type PresetFilterCriteria } from '../types';
 
 const entityField = (values: { optionId: string; value: string }[]): ContactField => ({
@@ -194,15 +201,15 @@ describe('applyPresetFilter', () => {
     expect(applyPresetFilter(filters, entries)).toEqual([backendContact, backendContact2]);
   });
 
-  it('accepts legacy criteria objects with retired name-keyed lists', () => {
+  it('tolerates criteria objects that still carry retired name-keyed lists', () => {
     const legacy = {
-      sources: [],
+      sources: ['local-contact' as const],
       entityNames: ['W3F'],
       categoryNames: [],
       contactTypeNames: [],
       tags: [],
     } as unknown as PresetFilterCriteria;
-    expect(applyPresetFilter(legacy, entries)).toEqual(entries);
+    expect(applyPresetFilter(legacy, entries)).toEqual([localContact]);
   });
 
   it('returns empty array when nothing matches', () => {
@@ -231,6 +238,74 @@ describe('normalizePresetFilters', () => {
   });
 });
 
+const legacyFilters = (overrides: object): PresetFilterCriteria =>
+  ({ sources: [], entityNames: ['W3F'], categoryNames: [], tags: [], ...overrides }) as unknown as PresetFilterCriteria;
+
+describe('migratePreset', () => {
+  const base: AccountPreset = { id: 'p1', name: 'W3F', type: 'filter', filters: empty, selectedIds: [] };
+
+  it('flags a filter preset whose only criteria were saved under retired keys', () => {
+    expect(migratePreset({ ...base, filters: legacyFilters({}) })).toEqual({
+      ...base,
+      filters: empty,
+      needsReview: true,
+    });
+  });
+
+  it('keeps surviving criteria and drops retired ones without flagging', () => {
+    const filters = legacyFilters({ sources: ['wallet'] });
+    expect(migratePreset({ ...base, filters })).toEqual({ ...base, filters: { ...empty, sources: ['wallet'] } });
+  });
+
+  it('does not flag when retired keys are present but empty', () => {
+    expect(migratePreset({ ...base, filters: legacyFilters({ entityNames: [] }) })).toEqual({
+      ...base,
+      filters: empty,
+    });
+  });
+
+  it('leaves a modern preset unchanged', () => {
+    const modern: AccountPreset = {
+      ...base,
+      filters: {
+        sources: ['wallet'],
+        chainIds: ['0xdot'],
+        fields: [entityCriterion([{ id: 'fo-w3f', value: 'W3F' }])],
+      },
+    };
+    expect(migratePreset(modern)).toEqual(modern);
+  });
+
+  it('never flags custom presets', () => {
+    const custom: AccountPreset = { ...base, type: 'custom', filters: legacyFilters({}), selectedIds: ['w1'] };
+    expect(migratePreset(custom)).toEqual({ ...custom, filters: empty });
+  });
+
+  it('is idempotent — the flag survives a second run over the normalized shape', () => {
+    const once = migratePreset({ ...base, filters: legacyFilters({}) });
+    expect(migratePreset(once)).toEqual(once);
+  });
+});
+
+describe('migrateStoredPresets', () => {
+  it('migrates the raw localStorage payload', () => {
+    const raw = JSON.stringify([
+      { id: 'p1', name: 'W3F', type: 'filter', filters: { sources: [], entityNames: ['W3F'] }, selectedIds: [] },
+      { id: 'p2', name: 'Mixed', type: 'filter', filters: { sources: ['wallet'], tags: ['x'] }, selectedIds: [] },
+    ]);
+    expect(JSON.parse(migrateStoredPresets(raw)!)).toEqual([
+      { id: 'p1', name: 'W3F', type: 'filter', filters: empty, selectedIds: [], needsReview: true },
+      { id: 'p2', name: 'Mixed', type: 'filter', filters: { ...empty, sources: ['wallet'] }, selectedIds: [] },
+    ]);
+  });
+
+  it('returns null for payloads that are not a preset list', () => {
+    expect(migrateStoredPresets('{"broken":')).toBeNull();
+    expect(migrateStoredPresets('{"id":"x"}')).toBeNull();
+    expect(migrateStoredPresets('[{"name":"no id"}]')).toBeNull();
+  });
+});
+
 describe('matchPreset', () => {
   const preset = (overrides: Partial<AccountPreset>): AccountPreset => ({
     id: 'p1',
@@ -239,6 +314,10 @@ describe('matchPreset', () => {
     filters: empty,
     selectedIds: [],
     ...overrides,
+  });
+
+  it('a preset flagged for review matches nothing instead of everything', () => {
+    expect(matchPreset(preset({ needsReview: true }), entries)).toEqual([]);
   });
 
   it('returns all entries when preset is null (no scoping)', () => {
