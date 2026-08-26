@@ -5,7 +5,7 @@ import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable } from '@/share
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayout, type UnclaimedPayouts, payoutsCacheKey } from '@/domains/staking';
-import { isSignerAccount, pickDefaultInitiator } from '@/features/signing-path';
+import { type DefaultInitiator, isSignerAccount, pickDefaultInitiator } from '@/features/signing-path';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type RedeemTarget } from '@/features/staking-confirm-flow';
@@ -27,10 +27,7 @@ export type ResolutionSources = {
   selectedWalletId: ID | null;
 };
 
-export type ResolvedAccount = {
-  account: AnyAccount;
-  wallet: Wallet;
-};
+export type ResolvedAccount = DefaultInitiator;
 
 /**
  * The local account behind an address on a given chain, with its wallet.
@@ -134,7 +131,7 @@ export function resolveClaimRequests(entries: KpiClaimEntry[], sources: Resoluti
     }
 
     // The payer's mode, not the nominator's: `resolveClaimPayer` only returns
-    // an account `isSignerAccount` accepts, so the request is signable here.
+    // an account `isEligibleInitiator` accepts, so the request is signable here.
     requests.push({
       chain,
       asset,

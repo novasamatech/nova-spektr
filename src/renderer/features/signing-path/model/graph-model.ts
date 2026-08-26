@@ -406,9 +406,10 @@ function buildSources({
   //    only those whose wallet is allowed to act, which the account alone
   //    cannot tell.
   if (ownSignerChain) {
+    const walletById = new Map(wallets.map((w) => [w.id, w]));
     for (const account of accountList) {
       if (seenAccounts.has(account.accountId)) continue;
-      const wallet = wallets.find((w) => w.id === account.walletId);
+      const wallet = walletById.get(account.walletId);
       if (!wallet || !isEligibleInitiator(account, wallet, ownSignerChain)) continue;
 
       seenAccounts.add(account.accountId);
@@ -576,6 +577,10 @@ function pickDefaultPath({
     // A plain key has no route to pick, only itself — and only where the caller
     // offers own keys as sources at all; elsewhere the empty path keeps its
     // meaning of "signs directly, nothing to show".
+    //
+    // `isSignerAccount` rather than the stricter `isEligibleInitiator`: the
+    // initiator store is fed only eligible, available accounts by the form,
+    // and no wallet is at hand here to run the stricter check anyway.
     return includeOwnSigners && isSignerAccount(initiator) ? [{ kind: 'signer', accountId: initiator.accountId }] : [];
   }
 
