@@ -1,10 +1,11 @@
 import { type Store, createStore } from 'effector';
-import { and, not } from 'patronum';
+import { and } from 'patronum';
 
 import { type Balance } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
+import { nonNullable } from '@/shared/lib/utils';
 
-import { type Validator } from './createTxValidator';
+import { type ValidationResult, type Validator } from './createTxValidator';
 
 type AnyValidator = Validator<any>;
 
@@ -27,15 +28,18 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
   validator,
   calculateAvailable,
 }: Params<Validator>) => {
-  const { $, $isDefaultValue, $pending, $error, retry } = createStoreFromEffect({
+  // `null` is "no verdict": the params are incomplete, the run is in flight, or
+  // the validator itself reported that its inputs (signer, fee balance) are not
+  // there yet. Every derived flag reads as "not done" in that state.
+  const { $, $pending, $error, retry } = createStoreFromEffect<ValidatorParams<Validator>, ValidationResult | null>({
     params,
-    defaultValue: { errors: [], balanceValidationResults: [], available: [] },
+    defaultValue: null,
     fn: validator,
   });
 
-  const $errors = $.map((v) => v.errors);
-  const $balanceValidationResults = $.map((v) => v.balanceValidationResults);
-  const $validationDone = not($isDefaultValue);
+  const $errors = $.map((v) => v?.errors ?? []);
+  const $balanceValidationResults = $.map((v) => v?.balanceValidationResults ?? []);
+  const $validationDone = $.map(nonNullable);
   const $valid = and(
     $validationDone,
     $errors.map((errors) => errors.length === 0),
@@ -47,18 +51,21 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
 
   let $available: Store<Balance[]>;
   if (calculateAvailable) {
-    const { $: $localAvailable } = createStoreFromEffect({
+    const { $: $localAvailable } = createStoreFromEffect<
+      ValidatorParams<Validator> & { excludeActions: string[] },
+      ValidationResult | null
+    >({
       params: {
         ...params,
         excludeActions: createStore(calculateAvailable.exclude),
       },
-      defaultValue: { errors: [], balanceValidationResults: [], available: [] },
+      defaultValue: null,
       fn: validator,
     });
 
-    $available = $localAvailable.map((v) => v.available);
+    $available = $localAvailable.map((v) => v?.available ?? []);
   } else {
-    $available = $.map((v) => v.available);
+    $available = $.map((v) => v?.available ?? []);
   }
 
   return {
@@ -72,8 +79,11 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
     $balanceValidationResults,
     $pending,
     /**
-     * The validator itself threw (a code or data failure, not a validation
-     * error) — `$validationDone` stays false in that case.
+     * The validator rejected outright — `$validationDone` stays false then.
+     * `createTxValidator` catches its own failures and reports them as an
+     * `internal` error with `$validationDone` true, so for those this stays
+     * null; a missing signer or fee balance is no verdict at all
+     * (`$validationDone` false, no error) until the inputs arrive.
      */
     $error,
     /**
@@ -81,7 +91,8 @@ export const createTxValidationStore = <Validator extends AnyValidator>({
      */
     retry,
     /**
-     * True if validation is done, can be used to show loading state.
+     * True if validation reached a verdict, can be used to show loading state.
+     * Stays false while the signer's fee balance is not known yet.
      *
      * ATTENTION! This is not the same as $valid, validation can be in failed
      * state.

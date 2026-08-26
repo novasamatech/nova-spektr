@@ -59,7 +59,13 @@ export type ValidationResult = {
   available: Balance[];
 };
 
-export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationResult>;
+/**
+ * Resolves to `null` when there is no verdict yet: the signer or its fee
+ * balance is not known, typically because balances are still being fetched.
+ * That is neither a pass nor a failure — the caller keeps waiting and re-runs
+ * once the inputs change.
+ */
+export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationResult | null>;
 
 export function createTxValidator<A>(params?: {
   additionalBalanceRules?: ValidatorRule<A>[];
@@ -115,6 +121,22 @@ export function createTxValidator<A>(params?: {
       const acceptedAction = (result: TransactionValidationBalanceError) => {
         return !excludeActions.includes(result.action);
       };
+
+      // Readiness gate. The signer and its fee balance are inputs every rule
+      // below depends on; while they are missing nothing can be checked yet,
+      // which is not a failure — the balance record usually just has not
+      // arrived. No verdict is reported, so `$valid` stays at its default and
+      // the store re-runs when the balances update.
+
+      const signatory = accountService.findSignatory(baseParams.route);
+      if (!signatory) {
+        return null;
+      }
+
+      const chainId = baseParams.api.genesisHash.toHex();
+      if (!getBalance(signatory.accountId, chainId, baseParams.asset.assetId)) {
+        return null;
+      }
 
       // Common data preparation
 
@@ -185,8 +207,8 @@ export function createTxValidator<A>(params?: {
       return result;
     } catch (error) {
       // Fail closed: a thrown validation must never read as "valid". Returning
-      // a zero-error result here would flip `$valid` to true for any transient
-      // failure (missing signatory/balance asserts, RPC fee-quote errors).
+      // a zero-error result here would flip `$valid` to true for any failure
+      // (RPC fee-quote errors, a rule hitting a bad state).
       //
       // `internal`, not a dry-run failure: nothing was checked, so the user is
       // told the check could not run rather than being handed a JS message

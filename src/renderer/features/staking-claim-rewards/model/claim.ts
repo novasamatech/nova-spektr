@@ -400,7 +400,7 @@ const validateExtrasFx = createEffect(
     const validated: ExtraValidation[] = [];
 
     for (const entry of wrapped) {
-      const { errors, balanceValidationResults } = await validator({
+      const verdict = await validator({
         api,
         asset,
         balances,
@@ -411,15 +411,20 @@ const validateExtrasFx = createEffect(
       // The validator already asked the node to price this very transaction for
       // its fee-affordability rule; `required` on the `fee` action is that
       // quote, so reading it back avoids a second `paymentInfo` round trip.
-      const fee =
-        getActionRequiredAmount(balanceValidationResults, 'fee', entry.signatory.accountId).at(0)?.required ?? null;
+      const fee = nonNullable(verdict)
+        ? (getActionRequiredAmount(verdict.balanceValidationResults, 'fee', entry.signatory.accountId).at(0)
+            ?.required ?? null)
+        : null;
+      const errors = verdict?.errors ?? [];
 
       // A clean verdict always carries the fee quote its affordability rule
-      // computed, so "no errors AND no priced fee" means the validation never
-      // actually ran to completion (the validator itself now fails closed on
-      // throws, so this is a belt-and-braces guard for any other path that
-      // yields a feeless clean verdict). Fail closed: an extra that could not
-      // be checked must block signing and say so, not pass by silence.
+      // computed, so "no verdict" (the extra's signer balance is not known) or
+      // "no errors AND no priced fee" means the validation never actually ran to
+      // completion (the validator itself fails closed on throws, so the latter
+      // is a belt-and-braces guard for any other path that yields a feeless
+      // clean verdict). This runs once per wrapping, so there is nothing to wait
+      // for. Fail closed: an extra that could not be checked must block signing
+      // and say so, not pass by silence.
       if (errors.length === 0 && nullable(fee)) {
         validated.push({
           errors: [
