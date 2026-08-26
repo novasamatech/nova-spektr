@@ -202,7 +202,10 @@ collect.
 The payer is always visible and always changeable: the confirm renders `SigningPathInline` with `editableInitiator`
 rather than `SigningPathSection`, because the section hides itself below two hops and a payout signed by a plain account
 has exactly one. Changing the source card rewrites the sender of every plan, and fee, route and validation follow from
-it.
+it. The picked source is an address; the payer is resolved to the account object **on the claim's chain**. Chain-bound
+keys (WalletConnect, Ledger) are one account per chain sharing that address, and a sibling from another chain has no
+route here — resolving by address alone turned the confirm into "No account to sign with" for a key that signs on this
+chain perfectly well.
 
 The choice is over **the keys this installation holds**: the flow asks the signing-path graph for own signers
 (`includeOwnSigners`), which lists them as a "My accounts" group next to the delegating accounts. Ordinarily the source
