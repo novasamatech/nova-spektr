@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -192,20 +192,24 @@ A payout is **permissionless**: `payout_stakers_by_page` names the _validator_, 
 reaches each nominator's own payee whoever submits the call. The payer is therefore a free choice, not a property of the
 rewards.
 
-So the flow treats the nominator as a **preference**, not a requirement. When it is an account we hold, it pays. When it
-is an address-book position we merely track, any account of ours that can sign on that chain pays instead — and the
-rewards still land on the tracked address. Refusing there would abandon money we are perfectly able to collect.
+So the flow treats the nominator as a **preference**, not a requirement. The default payer is picked in order: the
+nominator, when it is a key we hold; otherwise an eligible key of the wallet selected in wallet management; otherwise
+any eligible key on the chain. Eligible means `isEligibleInitiator` — a signing key, available on the chain, in a wallet
+that may stake — so watch-only wallets are skipped. For an address-book position we merely track this means an account
+of ours pays and the rewards still land on the tracked address; refusing there would abandon money we are perfectly able
+to collect.
 
 The payer is always visible and always changeable: the confirm renders `SigningPathInline` with `editableInitiator`
 rather than `SigningPathSection`, because the section hides itself below two hops and a payout signed by a plain account
 has exactly one. Changing the source card rewrites the sender of every plan, and fee, route and validation follow from
 it.
 
-The choice is over **the keys this installation holds**, and this is the one screen in the app where a plain signing
-account is offered as a path _source_. Everywhere else the source is fixed by the operation and the path only says how a
-signature reaches it, so the graph offers only delegating accounts — which for a while left this picker listing
-multisigs and proxies while refusing the very vault account most users would pay with. A permissionless call inverts the
-question, so it asks the graph for own signers too.
+The choice is over **the keys this installation holds**: the flow asks the signing-path graph for own signers
+(`includeOwnSigners`), which lists them as a "My accounts" group next to the delegating accounts. Ordinarily the source
+is fixed by the operation and the path only says how a signature reaches it, so the graph offers only delegating
+accounts — which for a while left this picker listing multisigs and proxies while refusing the very vault account most
+users would pay with. A permissionless call inverts the question. The signing-path model seeds a plain initiator with
+its one-node `signer` path itself; the flow no longer builds a synthetic path of its own.
 
 **Validation is `createTxValidator()` with no extra rules.** A payout moves nothing out of the sender, so there is no
 amount rule to write; fee affordability, the existential-deposit guard, per-hop route balances, the multisig deposit and

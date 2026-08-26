@@ -1,6 +1,6 @@
 # Signing path
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -24,11 +24,11 @@ multisig approve/reject, the vesting claim.
 
 Whether a path exists at all is decided by the **source account**, not by the operation:
 
-- A **regular account** — neither multisig nor proxied — signs for itself. It has **no path** (the empty path is a valid
-  path), and nothing is shown. This is the rule most easily got wrong: a signatory derived from the path _alone_ is
-  `null` for a regular account, so **every caller must fall back to the initiator**. A form that does not gets an empty
-  route, and an empty route builds no transaction, quotes no fee, and cannot be signed — with nothing on screen to say
-  why.
+- A **regular account** — neither multisig nor proxied — signs for itself. Its path is either **empty** or a **lone
+  `signer` node** naming the account (both are valid paths), and by default nothing is shown. This is the rule most
+  easily got wrong: a signatory derived from an empty path _alone_ is `null` for a regular account, so **every caller
+  must fall back to the initiator**. A form that does not gets an empty route, and an empty route builds no transaction,
+  quotes no fee, and cannot be signed — with nothing on screen to say why.
 - A **multisig** or **proxied** source needs at least one hop, so it has a path, and the user is shown it.
 - The path UI appears only once a path has **two or more hops**. Anything shorter is direct signing, and there is
   nothing to visualise or choose between.
@@ -42,7 +42,9 @@ Three kinds of node — `proxied`, `multisig`, `signer` — and a grammar the ap
 - it **ends** at a `signer` — a key the user owns;
 - **no account appears twice**, so a path can never loop;
 - it is at most **six hops** deep;
-- and the **empty path** is legal: that is a regular account.
+- the **empty path** is legal: that is a regular account;
+- and so is a **lone `signer` node**: a regular account signing for itself, spelled out — the shape a plain key gets
+  when it is picked as a source.
 
 Each hop becomes a transaction wrapper — a `multisig` node an `asMulti`, a `proxied` node a `proxy.proxy` — so the path
 _is_ the wrapping, read left to right. A **flexible multisig** is the one special case: its facade is a pure proxy
@@ -67,16 +69,18 @@ is worse than no screen at all. **Drafts are the exception**: a draft may be fin
 machine, so branches that _this_ user cannot complete are still offered, and the sources come from the address book
 instead of the wallet.
 
-**Which accounts may be a source is a delegation question, not an ownership one.** Only multisigs, and proxied accounts
-whose delegation reaches a multisig, are offered: everywhere else the operation runs from a specific account and the
-path merely says how a signature reaches it, so a plain key is no source at all. A **permissionless** call inverts that
-— a staking payout names the validator and may be submitted by anybody — and there, and only there, a caller may ask for
-the keys this installation holds to be offered as roots too. The claim confirm is the one screen that does.
+**Which accounts may be a source is a delegation question, not an ownership one.** By default only multisigs, and
+proxied accounts whose delegation reaches a multisig, are offered: the operation runs from a specific account and the
+path merely says how a signature reaches it, so a plain key is no source at all. A caller whose operation may run from
+any key of ours — a permissionless staking payout, or starting a new stake — asks for **own keys** too. Those are judged
+by `isEligibleInitiator` (a signing key, available on the chain, in a wallet that may stake) and offered as a **"My
+accounts"** group next to the delegating ones; picking one completes the path at once, as a lone `signer` node. The
+claim confirm and the start-staking form are the screens that ask.
 
 ```mermaid
 flowchart TD
     START["Form opens with a source account"] --> Q1{"Multisig or proxied?"}
-    Q1 -- "no — regular account" --> NONE["No path · signs for itself · nothing shown"]
+    Q1 -- "no — regular account" --> NONE["Empty path or lone signer node · signs for itself · nothing shown unless the flow asks for the initiator card"]
     Q1 -- "yes" --> Q2{"Any branch ending at an own signer?"}
     Q2 -- "no" --> DEAD["Not offered as a source — it could never be signed"]
     Q2 -- "yes" --> DEF["Default path picked automatically"]
@@ -85,19 +89,20 @@ flowchart TD
     EDIT -- "yes" --> PICK["Step-by-step chooser · path is now the user's"]
 ```
 
-| State                    | When it appears                                                                                                        | What the user sees                                                                                                             |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| No path                  | Source is a regular account                                                                                            | Nothing. It signs directly                                                                                                     |
-| Own keys as sources      | The caller asked for them, for a permissionless call                                                                   | The accounts this installation can sign with, offered as path roots alongside the delegating ones                              |
-| Default path             | Source is multisig/proxied and some branch ends at an account the user can sign with                                   | The route, as a breadcrumb of hops, chosen for them                                                                            |
-| Step-by-step chooser     | "Edit signing path" opened                                                                                             | One hop at a time — "Select a source account", then "Pick a wallet to sign via" / "Pick an initiator" — until "Path complete"  |
-| User-overridden path     | A hop was picked by hand                                                                                               | Their path, kept as-is; the automatic default no longer overwrites it until the form resets                                    |
-| Option disabled          | The proxy's type cannot perform _this_ operation (a non-`Any` proxy adding a proxy, a proxy type that cannot transfer) | The option stays visible, greyed, with a tooltip saying why — never silently dropped                                           |
-| Branch not offered       | No account the user can sign with terminates that subtree (watch-only cannot sign); drafts opt out                     | The source or hop is absent: offering it would lead to a path that cannot be completed                                         |
-| Proxy verification badge | The hop is a delegate of a pure proxy                                                                                  | Verified / pending verification / not verified, so an unverified delegation is not mistaken for a safe one                     |
-| Hop in error             | The form's validation blames an account on the route — it cannot cover the fee or the deposit                          | That hop is marked on the path itself, so the problem is attached to the account causing it rather than to the form as a whole |
-| Dead end                 | A hop has nothing beneath it                                                                                           | "No options available for this hop"                                                                                            |
-| Unresolvable path        | A saved draft's path has a node with no local account (a wallet was removed, or it was never added)                    | Resolution names the first such node, so the draft can say _which_ account to add rather than that the route is unusable       |
+| State                    | When it appears                                                                                                        | What the user sees                                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| No path                  | Source is a regular account                                                                                            | Nothing by default. It signs directly; its path is empty or a lone `signer` node                                                       |
+| Direct initiator card    | A dashboard flow (bond more, unbond, redeem, payee) opens on a plain stash and asks for `directInitiatorAccountId`     | A read-only INITIATOR card naming the signing account, so the payer is never invisible even though there is nothing to edit            |
+| Own keys as sources      | The caller asked for them (claim rewards, start staking)                                                               | The eligible keys of this installation, offered as a "My accounts" group alongside the delegating ones; picking one completes the path |
+| Default path             | Source is multisig/proxied and some branch ends at an account the user can sign with                                   | The route, as a breadcrumb of hops, chosen for them                                                                                    |
+| Step-by-step chooser     | "Edit signing path" opened                                                                                             | One hop at a time — "Select a source account", then "Pick a wallet to sign via" / "Pick an initiator" — until "Path complete"          |
+| User-overridden path     | A hop was picked by hand                                                                                               | Their path, kept as-is; the automatic default no longer overwrites it until the form resets                                            |
+| Option disabled          | The proxy's type cannot perform _this_ operation (a non-`Any` proxy adding a proxy, a proxy type that cannot transfer) | The option stays visible, greyed, with a tooltip saying why — never silently dropped                                                   |
+| Branch not offered       | No account the user can sign with terminates that subtree (watch-only cannot sign); drafts opt out                     | The source or hop is absent: offering it would lead to a path that cannot be completed                                                 |
+| Proxy verification badge | The hop is a delegate of a pure proxy                                                                                  | Verified / pending verification / not verified, so an unverified delegation is not mistaken for a safe one                             |
+| Hop in error             | The form's validation blames an account on the route — it cannot cover the fee or the deposit                          | That hop is marked on the path itself, so the problem is attached to the account causing it rather than to the form as a whole         |
+| Dead end                 | A hop has nothing beneath it                                                                                           | "No options available for this hop"                                                                                                    |
+| Unresolvable path        | A saved draft's path has a node with no local account (a wallet was removed, or it was never added)                    | Resolution names the first such node, so the draft can say _which_ account to add rather than that the route is unusable               |
 
 ## Lifecycle
 

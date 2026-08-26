@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -60,6 +60,10 @@ whole transaction after the user has paid to find out. Exactly the minimum is le
 **The minimum is read against the resolved chain**, not the requested one. A requested network the running config does
 not have falls back to the first staking chain, and a minimum looked up under the request would read as zero — which is
 "no floor", the one answer that lets an invalid bond through.
+
+**"Stake from" offers our own plain keys as well as delegating accounts.** The picker asks the signing-path graph for
+own signers, so eligible keys of this installation (a signing key, on the chain, in a wallet that may stake) appear as a
+"My accounts" group next to the multisigs and proxied accounts; picking a plain key completes the path at once.
 
 **"Stake from" follows the active wallet.** The field seeds itself with the selected wallet's account (falling back to
 the first candidate the chain can hold), and a wallet switch — mid-form or between opens — re-seeds it the same way, so
