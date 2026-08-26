@@ -6,7 +6,9 @@ import { type Asset, type Balance, type Chain } from '@/shared/core';
 import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
 
 import { SigningPathInline } from './SigningPathInline';
 
@@ -34,12 +36,12 @@ type Props = {
    */
   balanceExtractor?: (balance: Balance | null | undefined) => BN | string | null;
   /**
-   * Show a read-only initiator card when the path is trivial (a plain account
-   * signing for itself). Off by default — most forms have nothing to draw for a
-   * direct signer; the dashboard flows always name who the operation runs
-   * from.
+   * The account the operation runs from, when the caller wants it shown even
+   * without a route. Only a plain account — one that is neither multisig nor
+   * proxied — is drawn as a lone signer card; a delegating account with no path
+   * yet stays hidden, so it is never mistaken for a direct signer.
    */
-  directInitiatorAccountId?: AccountId;
+  directInitiator?: AnyAccount | null;
   onChange: (path: PathNode[]) => void;
 };
 
@@ -61,7 +63,7 @@ export const SigningPathSection = ({
   allowedProxyTypes,
   disabledProxyReason,
   balanceExtractor = defaultBalanceExtractor,
-  directInitiatorAccountId,
+  directInitiator,
   onChange,
 }: Props) => {
   const balances = useUnit(balanceModel.$balanceMap);
@@ -79,11 +81,17 @@ export const SigningPathSection = ({
 
   if (!chain || !asset) return null;
 
+  // An empty path is also what a multisig / proxied stash has while its route
+  // is unseeded or unreachable — never draw such an account as a lone signer.
+  const isPlainInitiator =
+    !!directInitiator &&
+    !accountUtils.isAnyMultisigAccount(directInitiator) &&
+    !accountUtils.isProxiedAccount(directInitiator);
   const displayedPath: PathNode[] =
     signingPath.length >= 2
       ? signingPath
-      : directInitiatorAccountId
-        ? [{ kind: 'signer', accountId: directInitiatorAccountId }]
+      : isPlainInitiator
+        ? [{ kind: 'signer', accountId: directInitiator.accountId }]
         : [];
   if (displayedPath.length === 0) return null;
 

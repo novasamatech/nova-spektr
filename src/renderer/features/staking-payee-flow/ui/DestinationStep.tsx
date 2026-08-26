@@ -201,7 +201,7 @@ const SigningRoute = () => {
       chain={chain}
       asset={asset}
       txErrors={errors}
-      directInitiatorAccountId={initiator?.accountId}
+      directInitiator={initiator}
       onChange={payeeFlowModel.signingPathChanged}
     />
   );

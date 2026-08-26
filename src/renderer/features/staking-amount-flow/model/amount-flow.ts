@@ -193,12 +193,6 @@ export const createAmountFlowModel = () => {
    */
   const $routeSignatory = combine($signatoryFromPath, $initiator, (fromPath, initiator) => fromPath ?? initiator);
 
-  /**
-   * A direct signer has no route to draw — `SigningPathSection` renders nothing
-   * below two nodes — so the amount screen shows the bare account instead.
-   */
-  const $isDirectSigner = $signingPath.map((path) => path.length < 2);
-
   // --- chain constants -----------------------------------------------------
 
   type ChainConsts = { bondingDuration: number; maxUnlockingChunks: number | null };
@@ -739,7 +733,6 @@ export const createAmountFlowModel = () => {
     $signatory,
     $route,
     $signingPath,
-    $isDirectSigner,
 
     $amount: readonly($amount),
     $amountPlanck,
