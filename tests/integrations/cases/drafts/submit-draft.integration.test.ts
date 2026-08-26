@@ -1,24 +1,29 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { type Event, allSettled, createStore } from 'effector';
+import { type Event, type Scope, allSettled, createStore } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  type Connection,
   type HexString,
   type MultisigAccount,
   type ProxyAccount,
   AccountType,
+  ConnectionStatus,
+  ConnectionType,
   CryptoType,
   SigningType,
 } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { toAddress } from '@/shared/lib/utils';
-import { createAccountId } from '@/shared/mocks';
+import { createAccountId, dotAsset } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { activeOperationRoute } from '@/shared/transactions';
+import { OPERATION_READINESS_TIMEOUT, OPERATION_SETTLE_DELAY, activeOperationRoute } from '@/shared/transactions';
 import { type Draft, type PathNode, draftsResource, draftsService, operationsService } from '@/domains/backend';
-import { type AnyAccount, type Extrinsic, accounts, transactionService } from '@/domains/network';
+import { type AnyAccount, type Extrinsic, accountService, accounts, transactionService } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
+import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
@@ -31,7 +36,7 @@ import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { graphModel } from '@/features/signing-path';
-import { polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
+import { createBalance, kusamaChainId, polkadotChain, polkadotChainId, vaultWallet } from '../../fixtures/index';
 import {
   type FeatureTestEnvironment,
   FeatureTestBuilder,
@@ -187,6 +192,8 @@ const fakeApi = {
   createType: () => fakeCall,
   registry: { createType: () => fakeCall },
   consts: { multisig: { depositBase: new BN(20), depositFactor: new BN(1) } },
+  // The tx validator keys its balance lookups on the chain id it reads here.
+  genesisHash: { toHex: () => polkadotChainId },
 } as unknown as ApiPromise;
 
 const wrappedSentinel = {
@@ -262,6 +269,11 @@ describe('Submit Draft — submit & edit flows', () => {
       });
     });
 
+    // Runs before the outer afterEach, so `env.cleanup()` sees real timers.
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('feeds the wrapper engine the resolved saved path and adopts its output as the submit extrinsic', async () => {
       const spies = seamSpies();
       // A stray signable account sits in the wallet next to the authored path —
@@ -278,6 +290,8 @@ describe('Submit Draft — submit & edit flows', () => {
         ],
         { multisigAccountId: MULTISIG_MID_ID, initiatorAccountId: SIGNER_ID },
       );
+
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
 
       await allSettled(submitDraftModel.flowStarted, {
         scope: env.scope,
@@ -299,7 +313,15 @@ describe('Submit Draft — submit & edit flows', () => {
       const lastExtrinsicCall = spies.createExtrinsic.mock.calls.at(-1);
       expect(lastExtrinsicCall![0]).toBe(wrappedSentinel);
       expect(env.getState(submitDraftModel.$wrappedExtrinsic)).toBe(extrinsicSentinel);
-      expect(env.getState(submitDraftModel.$wrappedTxError)).toBe(false);
+
+      // Equivalent of the old `$wrappedTxError === false`: once the tier-1 settle
+      // delay elapses the flow has advanced past every requirement up to and
+      // including `confirming` — proving neither wrapping-failure reason
+      // (`signing-path-unresolved`, `invalid-call-data`) is blocking it. It stops
+      // at `validating` because no balances are seeded here, which is the
+      // requirement's own case below.
+      await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+      expect(env.getState(submitDraftModel.$readiness)).toEqual({ status: 'pending', step: 'validating' });
     });
   });
 
@@ -887,6 +909,462 @@ describe('Submit Draft — submit & edit flows', () => {
 
       expect(env.getState(submitDraftModel.$draft)).toEqual(serverDraft);
       expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+    });
+  });
+
+  // The confirm step used to have exactly one observable state while it waited:
+  // "Preparing signing data…", with no timeout, no retry and no error surface.
+  // These cases pin each way of failing to a typed verdict on `$readiness`.
+  //
+  // `$readiness` is a plain store, so the verdict is observable without rendering
+  // SubmitDraftModal — the modal only picks a component per `status`.
+  describe('confirm-step readiness', () => {
+    // The readiness timers are bare `setTimeout`s scheduled outside any effect
+    // (see createDetachedTimer), so faking timers is the only way to drive them —
+    // the real 15s deadline exceeds this suite's own testTimeout. Faking *only*
+    // setTimeout/clearTimeout leaves Date, intervals and effector's promise
+    // plumbing on real behaviour, so Dexie/fake-indexeddb are untouched and
+    // `await allSettled` still resolves normally.
+    const useReadinessTimers = () => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
+    const connection = (connectionType: ConnectionType): Connection => ({
+      id: 1,
+      chainId: polkadotChainId,
+      connectionType,
+      customNodes: [],
+    });
+
+    const readiness = () => env.getState(submitDraftModel.$readiness);
+
+    // Same shape the other cases use: an own multisig whose only signatory is a
+    // wallet account, so path resolution and signatory pre-selection both settle.
+    const signablePathDraft = makeDraft(
+      [
+        { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+        { kind: 'signer', accountId: SIGNER_ID },
+      ],
+      { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID },
+    );
+
+    const startConfirm = (draft = signablePathDraft, initiator: AnyAccount | null = multisigDirect) =>
+      allSettled(submitDraftModel.flowStarted, {
+        scope: env.scope,
+        params: { draft, initiator, chain: polkadotChain },
+      });
+
+    afterEach(() => {
+      // Runs before the outer afterEach, so `env.cleanup()` sees real timers.
+      vi.useRealTimers();
+    });
+
+    describe('network verdicts', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'A stuck network yields a typed block that clears itself on reconnect',
+        });
+      });
+
+      const buildStalledNetworkEnv = (status: ConnectionStatus) =>
+        // No `withApi`: the chain never hands the flow an ApiPromise, which is
+        // exactly what an unreachable node looks like from here.
+        buildEnv([multisigDirect, signerAccount], (b) =>
+          b.withConnectionStatus(polkadotChainId, status).withStoreValue(networkModel.$connections, {
+            [polkadotChainId]: connection(ConnectionType.AUTO_BALANCE),
+          }),
+        );
+
+      it('blocks with network-unreachable instead of spinning forever on a dead chain', async () => {
+        env = await buildStalledNetworkEnv(ConnectionStatus.ERROR);
+
+        useReadinessTimers();
+        await startConfirm();
+
+        expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+        // The old, permanent state — now only the first 15 seconds of it.
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT - 1);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'network-unreachable' } });
+      });
+
+      it('recovers on its own when the chain reconnects, with no manual retry', async () => {
+        env = await buildStalledNetworkEnv(ConnectionStatus.ERROR);
+
+        useReadinessTimers();
+        await startConfirm();
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'network-unreachable' } });
+
+        // Another chain coming back says nothing about this flow's chain.
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: kusamaChainId, status: ConnectionStatus.CONNECTED },
+        });
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'network-unreachable' } });
+
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+        });
+
+        // `retryReadiness` was never called: the reconnect alone re-armed the flow.
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+      });
+
+      // Regression guard for the version of `$networkBlock` that read
+      // `$connectionStatuses` and treated DISCONNECTED as "turned off".
+      // DISCONNECTED is both the seed value for every chain and the state right
+      // after a socket drop, so that version would send a healthy, still-connecting
+      // chain to the settings page instead of offering retry / change node.
+      const expectEnabledChainIsNeverCalledDisabled = async (status: ConnectionStatus) => {
+        env = await buildStalledNetworkEnv(status);
+
+        useReadinessTimers();
+        await startConfirm();
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'network-unreachable' } });
+      };
+
+      it('never reports an enabled but freshly disconnected chain as network-disabled', async () => {
+        await expectEnabledChainIsNeverCalledDisabled(ConnectionStatus.DISCONNECTED);
+      });
+
+      it('never reports an enabled chain that is still connecting as network-disabled', async () => {
+        await expectEnabledChainIsNeverCalledDisabled(ConnectionStatus.CONNECTING);
+      });
+
+      // The reporter's scenario: OnFinality accepted the socket and then throttled
+      // every request. The chain stays CONNECTED, so nothing ever rejects and no
+      // status change arrives — only the tier-3 backstop speaks. Folding that into
+      // `internal` would offer "Reload app", discarding the session without touching
+      // the cause; `node-unresponsive` leads with "Change node", the one remedy that
+      // helps. Tier 2 reaches the same verdict when WsProvider's own pending-request
+      // timeout rejects, but not before t≈60s.
+      it('blocks with node-unresponsive when a CONNECTED chain never answers', async () => {
+        env = await buildStalledNetworkEnv(ConnectionStatus.CONNECTED);
+
+        useReadinessTimers();
+        await startConfirm();
+
+        // Connected, enabled, and stuck on the very first requirement: no api ever
+        // arrives, so this is a live socket that simply stopped answering.
+        expect(env.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT - 1);
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'node-unresponsive' } });
+      });
+
+      it('control: a connection the user actually turned off blocks with network-disabled', async () => {
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b
+            .withConnectionStatus(polkadotChainId, ConnectionStatus.DISCONNECTED)
+            .withStoreValue(networkModel.$connections, { [polkadotChainId]: connection(ConnectionType.DISABLED) }),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+
+        // Tier 1 stays muted until the settle delay elapses.
+        expect(readiness()).toEqual({ status: 'pending', step: 'connecting' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'network-disabled' } });
+      });
+    });
+
+    describe('dropped confirm item', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'A confirm item dropped for an unresolvable wallet surfaces as an internal block',
+        });
+      });
+
+      it('blocks with internal when the resolved initiator belongs to no wallet', async () => {
+        seamSpies();
+        env = await buildEnv([multisigDirect, signerAccount], (b) => b.withApi(polkadotChainId, fakeApi));
+
+        // The path's top node is an external pure proxy — no local account carries
+        // that accountId, so `createPathRouteStore` synthesises a ProxiedAccount
+        // with walletId -2 (SYNTHETIC_PROXY_WALLET_ID). `createExtrinsicConfirmStore`
+        // cannot resolve that wallet and drops the confirm item, which used to
+        // vanish silently into its `.filter(nonNullable)` and leave the modal
+        // "preparing signing data" for good.
+        const draft = makeDraft(
+          [
+            { kind: 'proxied', accountId: CONTACT_PROXY_ID, proxyType: 'Any' },
+            { kind: 'signer', accountId: SIGNER_ID },
+          ],
+          { proxyAccountId: CONTACT_PROXY_ID, initiatorAccountId: SIGNER_ID },
+        );
+
+        useReadinessTimers();
+        await startConfirm(draft, null);
+
+        // The synthetic initiator is what the real flow produces here — nothing
+        // upstream rejects it, which is why the drop had to be caught downstream.
+        expect(env.getState(submitDraftModel.$initiator)?.walletId).toBe(-2);
+        // Every earlier requirement is genuinely satisfied, so `confirming` is the
+        // only step left and the verdict below cannot come from a stalled fee.
+        expect(env.getState(submitDraftModel.$wrappedTx)).toBe(wrappedSentinel);
+        expect(env.getState(submitDraftModel.$fee)).not.toBeNull();
+        expect(env.getState(submitDraftModel.confirmModel.$confirms)).toEqual([]);
+        expect(readiness()).toEqual({ status: 'pending', step: 'confirming' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toMatchObject({
+          status: 'blocked',
+          reason: { kind: 'internal', detail: expect.stringContaining('initiator wallet') },
+        });
+      });
+    });
+
+    describe('local blocks', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'A block the network cannot fix waits for the user, not for a reconnect',
+        });
+      });
+
+      // An own multisig with two signable wallet accounts behind it, so the
+      // signatory picker has a real choice to make.
+      const multisigTwoSigners = {
+        id: 'multisig-two-signers',
+        accountId: MULTISIG_TOP_ID,
+        walletId: vaultWallet.id,
+        name: 'Multisig Two Signers',
+        type: 'universal',
+        accountType: AccountType.MULTISIG,
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.MULTISIG,
+        threshold: 1,
+        createdAt: 0,
+        signatories: [
+          { accountId: SIGNER_ID, name: 'Signer 1' },
+          { accountId: STRAY_SIGNER_ID, name: 'Signer 2' },
+        ],
+      } satisfies MultisigAccount as unknown as AnyAccount;
+
+      // Neither `seedAccountHandlers` nor the drafts feature registers the
+      // multisig children handler, so `$graphSignatories` would stay empty and
+      // `no-signatory` (which needs candidates to choose from) could never fire.
+      const registerMultisigChildren = (scope: Scope) =>
+        allSettled(accountService.accountCollectChildrenPipeline.registerHandler, {
+          scope,
+          params: {
+            body: (children, { account, accounts }) => {
+              if (!accountUtils.isMultisigAccount(account)) return children;
+
+              const signatoryIds = account.signatories.map((s) => s.accountId);
+
+              return accounts.filter((a) => a.id !== account.id && signatoryIds.includes(a.accountId));
+            },
+            available: () => true,
+          },
+        });
+
+      // No `initiatorAccountId`: the stored-initiator pre-select has nothing to
+      // match, the path-driven one finds no submittable initiator, and with two
+      // candidates the single-option auto-select stays out of it.
+      const unassignedDraft = makeDraft(
+        [
+          { kind: 'multisig', accountId: MULTISIG_TOP_ID },
+          { kind: 'signer', accountId: SIGNER_ID },
+        ],
+        { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: null },
+      );
+
+      const buildNoSignatoryEnv = async () => {
+        seamSpies();
+        env = await buildEnv([multisigTwoSigners, signerAccount, straySignerAccount], (b) =>
+          b.withApi(polkadotChainId, fakeApi).withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED),
+        );
+        await registerMultisigChildren(env.scope);
+      };
+
+      it('blocks with no-signatory until the user picks one, and clears without a retry', async () => {
+        await buildNoSignatoryEnv();
+
+        useReadinessTimers();
+        await startConfirm(unassignedDraft, multisigTwoSigners);
+
+        expect(env.getState(submitDraftModel.$signatories).map((s) => s.accountId)).toEqual(
+          expect.arrayContaining([SIGNER_ID, STRAY_SIGNER_ID]),
+        );
+        expect(env.getState(submitDraftModel.$signatoryStore)).toBeNull();
+        // Tier 1 stays muted for the settle window even though nothing is loading.
+        expect(readiness()).toEqual({ status: 'pending', step: 'confirming' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'no-signatory' } });
+
+        // Picking a signatory is the fix — `retryReadiness` is never called.
+        await allSettled(submitDraftModel.signatoryChanged, { scope: env.scope, params: signerAccount });
+
+        expect(env.getState(submitDraftModel.confirmModel.$confirms)).not.toEqual([]);
+        expect(readiness().status).not.toBe('blocked');
+      });
+
+      // Contrast with "recovers on its own when the chain reconnects": the
+      // reconnect auto-retry is gated on a *network* block, so a local verdict
+      // must not flicker back to a spinner every time a flapping node says hello.
+      it('keeps a no-signatory block through a reconnect of the flow chain', async () => {
+        await buildNoSignatoryEnv();
+
+        useReadinessTimers();
+        await startConfirm(unassignedDraft, multisigTwoSigners);
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        const blocked = readiness();
+        expect(blocked).toEqual({ status: 'blocked', reason: { kind: 'no-signatory' } });
+
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+        });
+
+        // Same verdict by reference: the reconnect did not even recompute it.
+        expect(readiness()).toBe(blocked);
+      });
+
+      it('keeps a network-disabled block through a reconnect of the flow chain', async () => {
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b
+            .withConnectionStatus(polkadotChainId, ConnectionStatus.DISCONNECTED)
+            .withStoreValue(networkModel.$connections, { [polkadotChainId]: connection(ConnectionType.DISABLED) }),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        const blocked = readiness();
+        expect(blocked).toEqual({ status: 'blocked', reason: { kind: 'network-disabled' } });
+
+        await allSettled(networkModel.output.connectionStatusChanged, {
+          scope: env.scope,
+          params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+        });
+
+        expect(readiness()).toBe(blocked);
+      });
+
+      it('blocks a legacy draft with no signing path with signing-path-missing', async () => {
+        seamSpies();
+        env = await buildEnv([multisigDirect, signerAccount], (b) => b.withApi(polkadotChainId, fakeApi));
+
+        // Saved before the field existed: nothing to follow, nothing to add locally.
+        const legacyDraft = makeDraft([], { multisigAccountId: MULTISIG_TOP_ID, initiatorAccountId: SIGNER_ID });
+
+        useReadinessTimers();
+        await startConfirm(legacyDraft);
+
+        expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('signing-path-missing');
+        // The transaction gate and the verdict read the same store, so the
+        // wrapper never sees this draft.
+        expect(env.getState(submitDraftModel.$wrappedTx)).toBeNull();
+        expect(readiness()).toEqual({ status: 'pending', step: 'resolving-path' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'signing-path-missing' } });
+      });
+    });
+
+    describe('validation as a requirement', () => {
+      beforeEach(async () => {
+        await allureMetadata({
+          epic: 'Drafts',
+          feature: 'Submit Draft',
+          story: 'Validation that cannot finish times out instead of disabling Sign in silence',
+        });
+      });
+
+      // Native DOT balance for the only account the draft flow asks about — the
+      // signatory, which is also the multisig's next hop.
+      const signerBalance = createBalance(SIGNER_ID, polkadotChainId, dotAsset.assetId, '10000000000000');
+
+      // Validation waits on balances that arrive over the same node as everything
+      // else, so a quiet node strands it. Before it became a requirement this was
+      // the flow's remaining silent dead end: every readiness step satisfied,
+      // `$validationDone` false forever, and a Sign button disabled with
+      // `$validationPending` false — no spinner, no error, nothing to act on.
+      it('blocks with the timeout reason when validation never reaches a verdict', async () => {
+        seamSpies();
+        // No balances seeded: `$validationBalances` stays null, so the validator's
+        // params never complete and it is never even invoked.
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b.withApi(polkadotChainId, fakeApi).withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+
+        // Everything ahead of validation is genuinely settled, which is what makes
+        // `validating` the reported step rather than a stand-in for a stalled fee.
+        expect(env.getState(submitDraftModel.$wrappedTx)).toBe(wrappedSentinel);
+        expect(env.getState(submitDraftModel.$fee)).not.toBeNull();
+        expect(env.getState(submitDraftModel.confirmModel.$confirms)).not.toEqual([]);
+        expect(env.getState(submitDraftModel.$validationDone)).toBe(false);
+        expect(readiness()).toEqual({ status: 'pending', step: 'validating' });
+
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT - 1);
+        expect(readiness()).toEqual({ status: 'pending', step: 'validating' });
+
+        // The chain is CONNECTED, so the backstop names the throttling signature.
+        await vi.advanceTimersByTimeAsync(1);
+        expect(readiness()).toEqual({ status: 'blocked', reason: { kind: 'node-unresponsive' } });
+      });
+
+      // The regression guard for the line between the two: a validation that
+      // *finishes* and reports real errors (not enough for the fee) is a verdict,
+      // so readiness is satisfied and the confirm screen keeps rendering — the
+      // errors belong inline under `TransactionValidationError`, with Sign
+      // disabled by `$validationValid`. Turning them into a blocked screen would
+      // replace an actionable message with "change node".
+      it('stays ready and surfaces the errors inline when validation fails on balance', async () => {
+        seamSpies();
+        // Far more than the seeded balance, so `tryWithdraw` reports a shortfall.
+        vi.spyOn(transactionService, 'getTransactionFee').mockResolvedValue(new BN('99999000000000000'));
+
+        env = await buildEnv([multisigDirect, signerAccount], (b) =>
+          b
+            .withApi(polkadotChainId, fakeApi)
+            .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+            .withStoreValue(balanceModel.__test.$balanceMap, { [signerBalance.id]: signerBalance }),
+        );
+
+        useReadinessTimers();
+        await startConfirm();
+
+        await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+
+        expect(env.getState(submitDraftModel.$validationDone)).toBe(true);
+        expect(env.getState(submitDraftModel.$validationValid)).toBe(false);
+        expect(env.getState(submitDraftModel.$validationErrors).length).toBeGreaterThan(0);
+
+        // Not blocked — the confirm screen renders and the errors go inline.
+        expect(readiness()).toEqual({ status: 'ready' });
+
+        // And it stays that way: the tier-3 backstop has nothing left to catch.
+        await vi.advanceTimersByTimeAsync(OPERATION_READINESS_TIMEOUT);
+        expect(readiness()).toEqual({ status: 'ready' });
+      });
     });
   });
 });

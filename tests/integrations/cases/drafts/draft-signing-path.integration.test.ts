@@ -1,5 +1,5 @@
 import { type Event, allSettled, createStore } from 'effector';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type MultisigAccount,
@@ -12,6 +12,7 @@ import {
 } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { OPERATION_SETTLE_DELAY } from '@/shared/transactions';
 import { type Draft, type PathNode } from '@/domains/backend';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
@@ -261,6 +262,11 @@ describe('Submit Draft — signing path drives the route', () => {
       });
     });
 
+    // Runs before the outer afterEach, so `env.cleanup()` sees real timers.
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('mirrors the full signingPath for a nested multisig draft', async () => {
       env = await buildEnv([multisigTop, multisigMid, signerAccount]);
 
@@ -295,6 +301,12 @@ describe('Submit Draft — signing path drives the route', () => {
         { multisigAccountId: MISSING_MULTISIG_ID, initiatorAccountId: SIGNER_ID },
       );
 
+      // The readiness verdict's `signing-path-unresolved` block is tier-1
+      // (deterministic), but is withheld until the settle delay elapses — see
+      // `createOperationReadiness`. Fake timers are the only way to drive that
+      // window (the timer is a bare `setTimeout` outside any effect).
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+
       await allSettled(submitDraftModel.flowStarted, {
         scope: env.scope,
         params: { draft, initiator: null, chain: polkadotChain },
@@ -302,7 +314,19 @@ describe('Submit Draft — signing path drives the route', () => {
 
       expect(env.getState(submitDraftModel.$route)).toEqual([]);
       expect(env.getState(submitDraftModel.$pathResolutionError)).toBe(true);
+
+      // The readiness verdict is derived from `$wrappedTxErrorKind`, so the two
+      // can never disagree: the store names the reason at once, the verdict
+      // repeats it once the settle delay lets it speak, naming the node that
+      // failed to resolve so the screen can say which account to add.
       expect(env.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('signing-path-unresolved');
+      expect(env.getState(submitDraftModel.$pathMissingAccountId)).toBe(MISSING_MULTISIG_ID);
+
+      await vi.advanceTimersByTimeAsync(OPERATION_SETTLE_DELAY);
+      expect(env.getState(submitDraftModel.$readiness)).toEqual({
+        status: 'blocked',
+        reason: { kind: 'signing-path-unresolved', accountId: MISSING_MULTISIG_ID },
+      });
     });
 
     it('ignores stray wallet accounts outside the saved path', async () => {

@@ -10,5 +10,6 @@ export { createFlow, useFlow } from './createFlow';
 export { createQueuedEffect } from './createQueuedEffect';
 export { createStoreFromEffect } from './createStoreFromEffect';
 export { takeLast } from './takeLast';
+export { isAbortError } from './isAbortError';
 export { createSubscription } from './createSubscription';
 export { pairwise } from './pairwise';

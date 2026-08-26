@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { type BN } from '@polkadot/util';
-import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
+import { type Store, createEvent, createStore, sample } from 'effector';
 
-import { takeLast } from '@/shared/effector';
+import { isAbortError, takeLast } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 
@@ -21,6 +21,8 @@ type FeeCalculationRequest = {
 export const createFeeCalculator = ({ active = createStore(true), extrinsic, api }: Params) => {
   const $fee = createStore<BN | null>(null);
   const $api = api ?? createStore<ApiPromise | null>(null);
+  const $error = createStore<Error | null>(null);
+  const retry = createEvent();
 
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic, api }: FeeCalculationRequest): Promise<BN | null> => {
@@ -32,26 +34,18 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
     key: () => 'feeCalculation',
   });
 
-  const isAbortError = (err: UnitValue<typeof fetchFeeFx.failData>) =>
-    err && 'name' in err && err.name === 'AbortError';
-
-  const logErrorFx = createEffect((err: UnitValue<typeof fetchFeeFx.failData>) => {
-    if (isAbortError(err)) {
-      return;
-    }
-
-    console.error('fee calculation failed', err);
-  });
+  // Clearing the extrinsic ends the attempt outright — the flow closed, or its inputs
+  // went away.
+  const extrinsicCleared = sample({ clock: extrinsic, filter: nullable });
 
   sample({
-    clock: extrinsic,
-    filter: nullable,
+    clock: extrinsicCleared,
     fn: () => null,
     target: $fee,
   });
 
   const feeRequested = sample({
-    clock: [extrinsic.updates, active.updates, $api.updates],
+    clock: [extrinsic.updates, active.updates, $api.updates, retry],
     source: { active, extrinsic, api: $api },
   }).filterMap(({ active, extrinsic, api }) => {
     if (!active) return undefined;
@@ -70,20 +64,36 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic, api
     target: $fee,
   });
 
-  sample({
+  // Aborts are the normal outcome of a superseded recalculation, not a failure
+  // (see createWrappedTxStore for the reasoning behind resetting the value store).
+  const feeFailed = sample({
     clock: fetchFeeFx.failData,
     filter: (error) => !isAbortError(error),
+  });
+
+  sample({
+    clock: feeFailed,
     fn: () => null,
     target: $fee,
   });
 
   sample({
-    clock: fetchFeeFx.failData,
-    target: logErrorFx,
+    clock: feeFailed,
+    target: $error,
   });
+
+  // The error dies with the attempt it describes, on both of the ways an attempt can
+  // end: superseded by a new call, or cleared outright. Resetting only on `.done` left
+  // the last failure readable for the whole gap until a new estimate landed — long
+  // enough for the next flow to open and read it as `fee-unavailable`. `extrinsicCleared`
+  // is what covers the gap a call-only reset leaves: a flow that reopens before its
+  // inputs are complete never calls the effect at all.
+  $error.reset(fetchFeeFx, retry, extrinsicCleared);
 
   return {
     $: $fee,
+    $error,
     $pending: fetchFeeFx.pending,
+    retry,
   };
 };

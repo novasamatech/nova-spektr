@@ -196,7 +196,7 @@ operation every co-signer then sees in the operations table.
   call (when one can be decoded), description, an external decode link, expandable call args, the **fee**, the
   **multisig deposit** when the route contains a multisig, and **validation errors** from a balance-aware validator that
   checks every account that must pay along the route. The Sign button stays disabled until the wrapped extrinsic and fee
-  are ready, validation passes, and the initiator is available.
+  are ready and validation passes.
 - **Sign / Submit** — hands off to the shared `OperationSign` and `OperationSubmit` flows. A draft is only ever signed
   along a **fully resolved** path: every node of the saved path must map to a local account before a transaction is
   built at all (see [States / scenarios](#states--scenarios)). On success it shows a success toast and records a backend
@@ -238,15 +238,68 @@ with no multisig hop) are covered the same way as multisig ones.
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | No signing path                 | The draft was saved without a usable path (legacy draft, or fewer than two nodes)                                                    | The row offers **Recreate** instead of Submit — a new draft seeded from this one, where the author picks the signing path. Reaching the submit flow from a stale surface explains the same thing                  |
 | Path unresolvable               | Any account on the saved path has no local counterpart (a wallet on the route was removed, or the draft was authored by a co-signer) | The flow is **blocked**: the submitter is shown _which_ account is missing — name and address — and told to add it to submit along this path. The transaction is never built, so there is no Sign button to press |
-| Extrinsic build failure         | Wrapping the call fails                                                                                                              | A generic extrinsic error (debounced ~300ms so transient init states don't flash red)                                                                                                                             |
+| Extrinsic build failure         | Wrapping the call fails                                                                                                              | The blocked verdict for invalid call data (see below)                                                                                                                                                             |
 | No signatories                  | The wallet holds no account that can sign                                                                                            | An empty-account warning, with an add-account affordance for Polkadot Vault                                                                                                                                       |
-| Initiator unavailable           | The draft's stored initiator can no longer sign                                                                                      | A banner asking the user to pick a replacement signatory; signing disabled until they do                                                                                                                          |
 | Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
 | Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
 | Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                                                         | A toast with a **Retry** action; the draft stays visible and retryable                                                                                                                                            |
 | Source picker, book offline     | Draft mode is on and the address book was connected before but is unreachable now                                                    | No picker at all — the mode card carries the Reconnect prompt, and a dead list under it would only contradict it                                                                                                  |
 | Source picker, nothing to offer | The book is reachable but no address in it can start a draft here — a pinned position that is a plain contact, or no multisig at all | "No account available to create this draft" and the reason (naming the pinned address); **Open address book** only if the host passes `onLeaveFlow` (global-slot modals outlive navigation)                       |
 | Source picker, no permission    | The user lacks `operation-draft:write` but the flow opened in draft mode anyway                                                      | A notice instead of the picker: nothing can be prepared from the account; to act on it, add its key to a wallet                                                                                                   |
+
+### Why the confirm step can't open
+
+Reaching the confirm screen needs several things to line up: a live connection, a re-resolvable signing path, a wrapped
+extrinsic, a fee estimate, a chosen signatory, and a completed balance validation. Any one of them can fail to arrive —
+a node that is down, throttling or simply silent; a path whose accounts are gone; call data that no longer decodes. The
+step used to have a single observable state for all of it, "Preparing signing data…", with no timeout and no way out: a
+throttled node left the modal spinning until the user gave up.
+
+Waiting is now a verdict with three outcomes — **ready**, **preparing** (naming the step still outstanding) and
+**blocked** (naming a reason and offering the remediation that matches it):
+
+| Blocked because…              | When it appears                                                                                | What the user is offered       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------ |
+| The network is turned off     | The user disabled this chain in settings                                                       | Open network settings / Cancel |
+| The network can't be reached  | The socket is down or dropped, or a request failed on a disconnect                             | Try again / Change node        |
+| The node is busy              | The node refused a request with a rate-limit error                                             | Change node / Try again        |
+| The node isn't responding     | The socket is up but nothing came back before the deadline — the shape a throttling node takes | Change node / Try again        |
+| The fee couldn't be estimated | Fee estimation itself failed                                                                   | Try again / Change node        |
+| No signatory is chosen        | Valid signatories exist but none is selected                                                   | A signatory picker, plus Close |
+| The signing path is unusable  | An account on the saved path has no local counterpart — the screen names it when it can        | Close                          |
+| There is no signing path      | A legacy draft saved before paths were recorded                                                | Close                          |
+| The call data isn't valid     | The draft's call can't be decoded on this chain                                                | Close                          |
+| Something went wrong          | An internal state the flow can't recover from (e.g. an initiator belonging to no wallet)       | Reload app / Close             |
+
+Three things decide when a verdict lands. Answers known without asking the network (disabled chain, unusable path,
+invalid call data, no signatory) are held back for a moment first, so a state that is merely still settling never
+flashes an error. An outright rejection from the node is reported as soon as it arrives, classified by what it says
+(rate limit, disconnect, fee failure). Anything that neither succeeds nor fails gets a **15-second deadline**, after
+which the verdict is read off the connection: still connected means the node isn't responding, otherwise the network
+can't be reached.
+
+Blocking is not final. **Try again** re-runs the outstanding steps with a fresh deadline, and a chain that reconnects on
+its own while the flow sits blocked _on the network_ retries it automatically — only then, so a flapping node can't keep
+resetting the deadline of a flow that is still legitimately preparing, nor flicker a local verdict such as "no
+signatory".
+
+**Validation counts as one of the steps.** It reads balances that arrive over the same node as everything else, so a
+quiet node strands it: previously that left the Sign button disabled with no spinner and no error — the same silent dead
+end, one screen later. It is the last requirement checked, because it waits on balances and is normally the last to
+finish, so naming it is only informative once everything else is in. A validation that _finishes_ and reports real
+problems (not enough to cover the fee) has reached a verdict: the confirm screen stays, the problems are listed inline
+under the details, and Sign stays disabled. Only a validation that never finishes at all reaches the deadline and
+blocks.
+
+**Render order** on the submit modal: the empty-wallet screen (no signatories at all, and nothing more specific wrong —
+an unresolvable path usually empties the signatory list too, and the specific message must not hide behind the generic
+one) → a blocked verdict → the preparing spinner → the confirm screen. A blocked verdict outranks the spinner because it
+is terminal for that attempt. The verdict is the single owner of every failure: an unresolvable path is rendered as the
+"add this account" screen when the verdict names the missing account, and as the generic blocked screen otherwise.
+
+> **Behaviour change.** A block that arrives _after_ the confirm screen has rendered — a node going quiet mid-review,
+> say — now replaces the confirm screen with the blocked verdict. Previously the confirm screen stayed on screen and the
+> failure was only visible as a Sign button that would not enable.
 
 ## Sync & reconnect
 

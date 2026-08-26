@@ -5,19 +5,23 @@ import { t } from 'i18next';
 import { readonly } from 'patronum';
 import { toast } from 'sonner';
 
-import { type CallData, type Chain } from '@/shared/core';
+import { type CallData, type Chain, ConnectionStatus } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type ExtrinsicConfirmInfo,
+  type OperationBlockReason,
+  type OperationReadiness,
   createExtrinsicConfirmStore,
   createFeeCalculator,
   createMultisigDeposit,
+  createOperationReadiness,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  createWrappedTxStore,
+  isNetworkBlockReason,
 } from '@/shared/transactions';
-import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
   type Draft,
   type PathNode,
@@ -35,7 +39,7 @@ import {
   transactionService,
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
@@ -45,10 +49,9 @@ import { type TransactionSigningPayload, signModel } from '@/features/operations
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { findLocalInitiator, findSubmittableInitiator } from '../lib/draft-initiator';
+import { findSubmittableInitiator } from '../lib/draft-initiator';
 import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
 import { preserveSigningPath } from '../lib/preserve-signing-path';
-import { type SubmitDraftErrorKind } from '../lib/submit-draft-screen';
 
 import './drafts-model'; // side-effect: orchestration wiring
 
@@ -261,14 +264,18 @@ const $transactionToWrap = combine(
   ({ transaction, pathError }) => (pathError ? null : transaction),
 );
 
-const { $tx: $wrappedTx } = createWrappedTxStore({
+const {
+  $tx: $wrappedTx,
+  $error: $wrappedTxFailure,
+  retry: retryWrappedTx,
+} = createWrappedTxStore({
   api: $api,
   transaction: $transactionToWrap,
   route: $route,
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(flowFinished);
-type WrappedTxErrorKind = SubmitDraftErrorKind;
+type WrappedTxErrorKind = 'extrinsic' | 'signing-path-unresolved' | 'signing-path-missing';
 const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStarted);
 // Derived so it always reflects the current path-resolution and extrinsic
 // state. A sample-based "set once" store would stick after a transient init
@@ -333,7 +340,11 @@ sample({
   target: $wrappedExtrinsic,
 });
 
-const { $: $fee } = createFeeCalculator({
+const {
+  $: $fee,
+  $error: $feeFailure,
+  retry: retryFee,
+} = createFeeCalculator({
   extrinsic: $wrappedExtrinsic,
 });
 
@@ -429,6 +440,8 @@ const {
   $valid: $validationValid,
   $pending: $validationPending,
   $validationDone,
+  $error: $validationFailure,
+  retry: retryValidation,
 } = createTxValidationStore({
   validator: draftSubmitValidator,
   params: {
@@ -441,28 +454,6 @@ const {
 });
 
 // --- Initiator rehydration from signingPath ---
-
-/**
- * True iff the draft has an initiatorAccountId but the user can no longer sign
- * with it (so they must pick a replacement). The canonical signer is the path's
- * leaf — accept it if it matches any wallet account, independent of the
- * wallet's account-graph traversal.
- */
-const $initiatorUnavailable = combine(
-  {
-    draft: $draft,
-    availableAccounts: walletModel.$availableAccounts,
-    signatory: $signatoryStore,
-  },
-  ({ draft, availableAccounts, signatory }) => {
-    if (!draft?.initiatorAccountId) return false;
-    // A valid signatory was already picked (auto-selected or by the user) —
-    // the banner has nothing left to ask for.
-    if (signatory !== null) return false;
-
-    return nullable(findLocalInitiator(draft, availableAccounts));
-  },
-);
 
 // Pre-select the stored initiator when it is still a valid signatory
 sample({
@@ -504,6 +495,209 @@ const confirmModel = {
   init: confirmStore.init,
   startSigning: confirmStore.startSigning,
 };
+
+// The confirm store is only ever written by `init`, so without this it still holds the
+// previous flow's item when the next one opens: the confirm screen would render the
+// last draft's account, fee and call args, and — now that `$confirms` is a readiness
+// requirement — the flow would report `ready` off that stale item instead of waiting.
+// Declared above the `confirmModel.init` sample so the reset lands first when
+// `flowStarted` fans out.
+sample({
+  clock: flowStarted,
+  target: confirmStore.resetConfirm,
+});
+
+// --- Readiness of the confirm screen ---
+
+// Tier 1 blocks: answers we already know without waiting for any RPC.
+//
+// `network-disabled` MUST come from the connection type, NOT from
+// `$connectionStatuses`. `ConnectionStatus.DISCONNECTED` is both the initial value
+// for every chain (`network-model.ts:65` seeds the whole dictionary with it) and
+// the state after a socket drop (`:381`). Reading it here would claim "this network
+// is turned off" for a healthy chain that simply has not finished connecting yet,
+// and would hijack a genuine disconnect into the settings-page remediation instead
+// of retry/change-node. Only `connectionType === DISABLED` means the user turned it
+// off, and `networkUtils.isDisabledConnection` is the canonical check.
+//
+// Everything else — CONNECTING, DISCONNECTED, ERROR on an *enabled* chain — is
+// deliberately NOT a tier-1 block. It resolves itself on reconnect, or falls through
+// to the tier-3 timeout, which reports `network-unreachable` with the right actions.
+const $networkBlock = combine(
+  { chain: $chain, connections: networkModel.$connections },
+  ({ chain, connections }): OperationBlockReason | null => {
+    if (nullable(chain)) return null;
+
+    const connection = connections[chain.chainId];
+
+    return nonNullable(connection) && networkUtils.isDisabledConnection(connection)
+      ? { kind: 'network-disabled' }
+      : null;
+  },
+);
+
+// Both path-and-call-data blocks derive from `$wrappedTxErrorKind` so the
+// readiness verdict and the transaction gate (`$transactionToWrap`) can never
+// disagree about *why* the transaction was withheld. The missing account rides
+// along so the blocked screen can name it instead of saying "unresolvable".
+const $pathBlock = combine(
+  { kind: $wrappedTxErrorKind, accountId: $pathMissingAccountId },
+  ({ kind, accountId }): OperationBlockReason | null => {
+    if (kind === 'signing-path-missing') return { kind };
+    if (kind === 'signing-path-unresolved') return accountId ? { kind, accountId } : { kind };
+
+    return null;
+  },
+);
+
+const $callDataBlock = $wrappedTxErrorKind.map((kind): OperationBlockReason | null =>
+  kind === 'extrinsic' ? { kind: 'invalid-call-data' } : null,
+);
+
+// One block per step. A missing signatory comes first: with nothing selected the
+// confirm item can't exist, so a dropped item is only meaningful once a signatory
+// was picked. Gate the drop on BOTH stores: a non-null `$dropped` does not imply
+// `$confirms` is empty — with several items one can drop while another stays
+// usable, and blocking on `$dropped` alone would hide a working confirm screen.
+// (Every call site inits a single item today, so this is defensive.)
+const $confirmingBlock = combine(
+  {
+    signatories: $signatories,
+    signatory: $signatoryStore,
+    dropped: confirmStore.$dropped,
+    confirms: confirmStore.$confirms,
+  },
+  ({ signatories, signatory, dropped, confirms }): OperationBlockReason | null => {
+    if (nullable(signatory) && signatories.length > 0) return { kind: 'no-signatory' };
+    if (nonNullable(dropped) && confirms.length === 0) return { kind: 'internal', detail: dropped };
+
+    return null;
+  },
+);
+
+// The factory is pure and cannot read connection status itself.
+//
+// A CONNECTED chain that still hasn't answered after the full deadline is the
+// throttling signature: the node accepted the socket and then went quiet. That is
+// `node-unresponsive`, whose remediation leads with "change node" — the only thing
+// that actually helps. It must not fold into `internal` ("reload app", which throws
+// the session away and does not address the cause) nor into `network-unreachable`
+// (the socket is up). Tier 2 reaches the same conclusion once WsProvider's own
+// pending-request timeout rejects at t≈60s; this gets there 45 seconds sooner.
+const $timeoutReason = combine(
+  { chain: $chain, statuses: networkModel.$connectionStatuses },
+  ({ chain, statuses }): OperationBlockReason => {
+    const status = nonNullable(chain) ? statuses[chain.chainId] : null;
+
+    return status === ConnectionStatus.CONNECTED ? { kind: 'node-unresponsive' } : { kind: 'network-unreachable' };
+  },
+);
+
+const $confirmReady = confirmModel.$confirms.map((confirms) => confirms.at(0) ?? null);
+
+// Validation reads balances that arrive over the same node as everything else, so
+// when the node goes quiet it never reaches a verdict at all: `$validationDone`
+// stays false, the Sign button stays disabled with `$validationPending` false, and
+// nothing on screen explains why. Folding it into readiness gives that dead end the
+// same tier-3 timeout treatment as the rest of the flow.
+//
+// Null means "no verdict yet"; `true` covers both a clean pass and a validation that
+// finished with real errors — those belong inline on the confirm screen via
+// `TransactionValidationError`, never as a block.
+const $validationSettled = $validationDone.map((done) => (done ? true : null));
+
+// A plain store, NOT `$step.map(...)`. The factory uses `active` as a `sample`
+// clock, and a derived store used as a clock does not emit under `fork()` —
+// the readiness timers would silently never arm in tests. `stepChanged` is an
+// event, so clocking on it is safe.
+const $confirmActive = createStore(false);
+
+sample({
+  clock: stepChanged,
+  fn: (step) => step === Step.CONFIRM,
+  target: $confirmActive,
+});
+
+const { $readiness, retryRequested } = createOperationReadiness({
+  active: $confirmActive,
+  timeoutReason: $timeoutReason,
+  requirements: [
+    { key: 'connecting', store: $api, blocked: $networkBlock },
+    { key: 'resolving-path', store: $initiator, blocked: $pathBlock },
+    { key: 'wrapping', store: $wrappedTx, error: $wrappedTxFailure, blocked: $callDataBlock, retry: retryWrappedTx },
+    { key: 'estimating-fee', store: $fee, error: $feeFailure, retry: retryFee },
+    { key: 'confirming', store: $confirmReady, blocked: $confirmingBlock },
+    // Last on purpose. Order only decides the reported `pending.step` and the
+    // tier-1 scan order, and this requirement declares no `blocked` store at all;
+    // validation is the habitual laggard because it waits on balances, so naming
+    // it only once everything else is satisfied is the informative choice.
+    { key: 'validating', store: $validationSettled, error: $validationFailure, retry: retryValidation },
+  ],
+});
+
+// The socket can come back on its own while the user reads the error — `$apis`
+// keeps the same api object across a reconnect, so only the call needs repeating.
+//
+// Gated on the flow being blocked *by the network*. `providerReconnected` only passes
+// when the status is not CONNECTED/CONNECTING and `autoConnectMs` is 5000, so a
+// flapping testnet emits a CONNECTED every 5-10s; retrying on each one re-arms both
+// readiness timers (resetting `$timedOut`), so the tier-3 backstop could be postponed
+// forever while the screen oscillated between blocked and spinner and the app
+// hammered a throttled node. A *pending* flow needs no rescue — it is already waiting
+// and its own timers are running — and a local verdict (no signatory, unusable path,
+// disabled chain) has nothing to gain from a reconnect but the same flicker.
+//
+// Reading `$readiness` in `source` while targeting `retryRequested`, which feeds the
+// readiness factory, is not a cycle: `source` is sampled, never a clock, so the
+// resulting recomputation of `$readiness` does not re-fire this sample.
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: { chain: $chain, step: $step, readiness: $readiness },
+  filter: ({ chain, step, readiness }, { chainId, status }) =>
+    step === Step.CONFIRM &&
+    readiness.status === 'blocked' &&
+    isNetworkBlockReason(readiness.reason) &&
+    nonNullable(chain) &&
+    chain.chainId === chainId &&
+    status === ConnectionStatus.CONNECTED,
+  target: retryRequested,
+});
+
+// --- Diagnostics ---
+
+// The original report of this flow hanging came with nothing but the reporter's
+// console, so the blocked verdict — kind plus the raw `detail` threaded through the
+// taxonomy — is logged there. `detail` is deliberately console-only: it is
+// untranslated and can carry an endpoint URL, so it never reaches the UI.
+const logReadinessTransitionFx = createEffect((readiness: OperationReadiness) => {
+  if (readiness.status !== 'blocked') return;
+
+  const { kind, detail } = readiness.reason;
+  console.error(`[submit-draft] readiness blocked: ${kind}${detail ? ` — ${detail}` : ''}`);
+});
+
+// Effector dedupes store updates by reference, which is not enough here: blocked
+// verdicts are fresh objects on every recompute, and tier 2 re-runs
+// `classifyRpcError` each time, so any unrelated upstream update while the flow
+// stays blocked would re-emit an identical reason. Log on the transition only,
+// keyed by the verdict's content; clearing on recovery lets a later re-block speak up.
+//
+// Clocked on `$readiness` itself (a `combine`, not a `.map`) — see the note on
+// `$confirmActive` for why a mapped store must not be a clock here.
+const getBlockSignature = (readiness: OperationReadiness) =>
+  readiness.status === 'blocked' ? `${readiness.reason.kind}|${readiness.reason.detail ?? ''}` : null;
+
+const $loggedBlockSignature = createStore<string | null>(null, { serialize: 'ignore' });
+
+sample({
+  clock: $readiness,
+  source: $loggedBlockSignature,
+  filter: (logged, readiness) => getBlockSignature(readiness) !== logged,
+  fn: (_, readiness) => readiness,
+  target: logReadinessTransitionFx,
+});
+
+$loggedBlockSignature.on(logReadinessTransitionFx, (_, readiness) => getBlockSignature(readiness));
 
 // --- Flow lifecycle ---
 
@@ -852,7 +1046,6 @@ export const submitDraftModel = {
   $initiator,
   $signatoryStore,
   $signatories,
-  $initiatorUnavailable,
   $fee,
   $wrappedTx,
   $wrappedExtrinsic,
@@ -878,6 +1071,8 @@ export const submitDraftModel = {
   $isRiskAcknowledged,
   $recipientRiskAccepted,
   $savingCallData: submitCallDataFx.pending,
+  $readiness,
+  retryReadiness: retryRequested,
 
   flowStarted,
   flowFinished,
