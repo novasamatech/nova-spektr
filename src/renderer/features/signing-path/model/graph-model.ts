@@ -17,10 +17,17 @@ import { collectSignerAccountIds, isSignerAccount } from '../lib/signer-accounts
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
+export type PathSourceKind = 'proxied' | 'multisig' | 'signer';
+
 export type PathSource = {
   accountId: AccountId;
   name: string;
-  isProxy: boolean;
+  /**
+   * What the source opens the path with. A plain key of ours is a `signer` and
+   * the path ends where it starts; the other two are delegating accounts the
+   * path must continue from.
+   */
+  kind: PathSourceKind;
   walletType?: WalletType | null;
 };
 
@@ -340,7 +347,7 @@ function buildSources({
     sources.push({
       accountId: account.accountId,
       name: resolveName(account.accountId, chainId),
-      isProxy: true,
+      kind: 'proxied',
       walletType: WalletType.FLEXIBLE_MULTISIG,
     });
   }
@@ -365,7 +372,7 @@ function buildSources({
     sources.push({
       accountId,
       name: resolveName(accountId, chainId),
-      isProxy: false,
+      kind: 'multisig',
       walletType: null,
     });
   }
@@ -382,7 +389,7 @@ function buildSources({
     sources.push({
       accountId: contact.accountId,
       name: resolveName(contact.accountId, chainId),
-      isProxy: true,
+      kind: 'proxied',
       walletType: null,
     });
   }
@@ -402,7 +409,7 @@ function buildSources({
       sources.push({
         accountId: account.accountId,
         name: resolveName(account.accountId, chainId),
-        isProxy: false,
+        kind: 'signer',
         walletType: null,
       });
     }

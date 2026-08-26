@@ -198,10 +198,10 @@ describe('graph-model', () => {
     expect(accountIds).toContain(A2);
 
     const a1Source = sources.find((s) => s.accountId === A1);
-    expect(a1Source?.isProxy).toBe(true);
+    expect(a1Source?.kind).toBe('proxied');
 
     const a2Source = sources.find((s) => s.accountId === A2);
-    expect(a2Source?.isProxy).toBe(false);
+    expect(a2Source?.kind).toBe('multisig');
   });
 
   // Regression: a proxy whose signer has no contact entry should not crash

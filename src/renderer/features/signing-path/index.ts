@@ -1,5 +1,6 @@
 export { pathModel } from './model/path-model';
-export { type PathNextOption, type PathSource, graphModel } from './model/graph-model';
+export { type PathNextOption, type PathSource, type PathSourceKind, graphModel } from './model/graph-model';
+export { sourceToNode } from './lib/source-node';
 export { createSigningPathModel } from './lib/createSigningPathModel';
 export { type PathResolution, createPathResolutionStore, createPathRouteStore } from './lib/createPathRouteStore';
 export { createSyntheticProxiedAccount, scopeProxiedAccount } from './lib/path-account-resolution';

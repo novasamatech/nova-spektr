@@ -7,7 +7,7 @@ import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
 import { networkModel } from '@/entities/network';
-import { SigningPathInline, StepPath, pathModel } from '@/features/signing-path';
+import { SigningPathInline, StepPath, pathModel, sourceToNode } from '@/features/signing-path';
 import { useDraftAvailability } from '../lib/useDraftAvailability';
 import { useDraftSources } from '../lib/useDraftSources';
 
@@ -114,14 +114,12 @@ export const DraftSigningPath = memo(
       [allDraftSources, pinnedSourceAccountId],
     );
 
-    // The node kind comes from the graph, not from the caller: a flexible
-    // multisig enters as `proxied` and a plain one as `multisig`, and the path
-    // grammar rejects the wrong one.
+    // The node kind comes from the graph, not from the caller.
     const pinnedNode = useMemo<PathNode | null>(() => {
       const source = pinnedSourceAccountId ? draftSources.at(0) : undefined;
       if (!source) return null;
 
-      return { kind: source.isProxy ? 'proxied' : 'multisig', accountId: source.accountId };
+      return sourceToNode(source);
     }, [draftSources, pinnedSourceAccountId]);
 
     // `pathModel` is a singleton the edit modal and the host flow both reset,
