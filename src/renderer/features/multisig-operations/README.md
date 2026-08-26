@@ -171,15 +171,15 @@ three panels:
 - **Details** — a signer's verification sheet, account-first. Rows in fixed order: **Date & Time**; **Depositor** — the
   individual signatory account that reserved the multisig deposit, resolved like any account (custom name → contact →
   identity → the owning wallet's name → stored account name → short address) — the wallet name only ever fills in for a
-  key the address book doesn't know, it never overrides a contact name; **Multisig** — the multisig account itself (for
-  a flexible multisig, the backing multisig); **Source** — the account the call executes from: for a proxied operation
-  the proxied account (for a flexible multisig, its pure proxy), otherwise the multisig itself — always shown, so the
-  origin of funds is stated even when it repeats the Multisig row; then the recognised transaction's specifics
-  (Recipient, networks, validators…); **Operation type** — the raw `Pallet · Call` of the core call in a monospace chip
-  (verification data, not a title; omitted when the call is unknown); **Amount** when the row's Value cell shows one;
-  and the shared **operation description** as full wrapped text under a hairline (descriptions past 620 characters
-  collapse behind _Show more_), with an Edit action when editing is allowed. Special shapes render their bespoke details
-  here.
+  key the address book doesn't know, it never overrides a contact name; **Multisig** — the backing multisig account,
+  shown only when it differs from the Source (a flexible multisig), since a plain multisig is its own source; **Source**
+  — the account the call executes from, rendered exactly as the row's Submitter cell renders it (same resolved name,
+  wallet and address format): the flexible multisig itself for a flexible multisig, otherwise the multisig; then the
+  recognised transaction's specifics (Recipient, networks, validators…); **Operation type** — the raw `Pallet · Call` of
+  the core call in a monospace chip (verification data, not a title; omitted when the call is unknown); **Amount** when
+  the row's Value cell shows one; and the shared **operation description** as full wrapped text under a hairline
+  (descriptions past 620 characters collapse behind _Show more_), with an Edit action when editing is allowed. Special
+  shapes render their bespoke details here.
 - **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
   remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
@@ -397,14 +397,14 @@ The list is split into three tabs, and an operation belongs to exactly one:
 The view opens on **Pending**; a deep link switches to the tab holding the focused operation; unhiding the last hidden
 operation switches back to Pending.
 
-**Merged scope.** When any **non-search filter** is active (Needs my signature, status, network, type, proxy type, or
-date range), the tabs collapse into a single **"All operations"** pill showing the total matching count (drafts rows
-included when the drafts section is in scope), and the filter applies across all statuses at once — pending and resolved
-results appear together, each under its status section. Activating such a filter also normalizes the underlying tab to
-Pending, regardless of which tab was active beforehand — so the merged scope always includes the drafts section (subject
-to the Status filter, below). Hidden operations join the merged scope only when the Status filter selects **Hidden** —
-they then appear under a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab.
-Search alone does not merge the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on
+**Merged scope.** When any **non-search filter** is active (Signed, status, network, type, proxy type, or date range),
+the tabs collapse into a single **"All operations"** pill showing the total matching count (drafts rows included when
+the drafts section is in scope), and the filter applies across all statuses at once — pending and resolved results
+appear together, each under its status section. Activating such a filter also normalizes the underlying tab to Pending,
+regardless of which tab was active beforehand — so the merged scope always includes the drafts section (subject to the
+Status filter, below). Hidden operations join the merged scope only when the Status filter selects **Hidden** — they
+then appear under a trailing **Hidden** section; otherwise they remain reachable only through the Hidden tab. Search
+alone does not merge the scope — it narrows the current tab. Clearing the filters restores the tabs, reopening on
 Pending.
 
 ### Sections, sorting, and navigation
@@ -434,12 +434,18 @@ never toggles a sort.
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and six **filters**:
 
-- **Needs my signature** — a checkbox, first in the filter bar. Keeps only operations still collecting approvals that a
-  local signatory can still act on — approve, or add the call data the final signing is waiting for. An operation every
-  local signatory has already signed (the row shows **Signed**), one awaiting its on-chain outcome, a contact-backed
-  multisig (no local keys), and any resolved operation never match. It is the same rule that shows the row's **Approve**
-  button, so the filter and the row can never disagree. Like every other non-search filter it merges the tabs into **All
-  operations**, is cleared by **Clear filters**, and is not remembered across app restarts.
+- **Signed** — a single-value dropdown, first in the filter bar, with two options:
+  - **Not signed** keeps only operations still collecting approvals that a local signatory can still act on — approve,
+    or add the call data the final signing is waiting for. An operation every local signatory has already signed, one
+    awaiting its on-chain outcome, a contact-backed multisig (no local keys), and any resolved operation never match. It
+    is the same rule that shows the row's **Approve** button, so the filter and the row can never disagree.
+  - **Signed** keeps only operations every local signatory has already approved — the rule behind the row's **Signed**
+    pill — in any status, so operations the user signed that have since executed or been rejected match too. A
+    contact-backed multisig never matches.
+
+  Like every other non-search filter it merges the tabs into **All operations**, is cleared by **Clear filters**, and is
+  not remembered across app restarts.
+
 - **Search** — matches the names and addresses the row displays: the submitter (as shown in the Submitter column,
   resolved through custom name → contact → identity, not the raw stored name), the **initiator** — who submitted an
   operation, or who is assigned to submit a draft — and the call hash. Addresses are matched with the prefix the row
@@ -454,10 +460,10 @@ The list can be narrowed by **search** and six **filters**:
   the filters a draft can evaluate — network (the draft's chain), date range (creation date), and search (submitter,
   initiator, description or address) — while an active transaction-type or proxy-type filter puts every draft out of
   scope (a draft's call may be absent or undecoded), so the drafts section and the merged "All operations" count stay
-  consistent with the filtered list. With **Needs my signature** on, the drafts section keeps only drafts the user can
-  actually submit — the assigned initiator is a local account that can sign and the draft carries a signing path (the
-  same rule that enables **Submit**); a draft nobody local can initiate, or a legacy draft that has to be recreated, is
-  not "mine".
+  consistent with the filtered list. With **Signed → Not signed** selected, the drafts section keeps only drafts the
+  user can actually submit — the assigned initiator is a local account that can sign and the draft carries a signing
+  path (the same rule that enables **Submit**); a draft nobody local can initiate, or a legacy draft that has to be
+  recreated, is not "mine". **Signed → Signed** puts every draft out of scope — a draft carries no signatures.
 - **Proxy type** — for flexible multisigs, filters by the proxy's access type.
 - **Network** — matches the operation's chain or, for XCM, its destination chain.
 - **Transaction type** — Transfer, Cross-chain, the staking / governance / proxy types, or Unknown.

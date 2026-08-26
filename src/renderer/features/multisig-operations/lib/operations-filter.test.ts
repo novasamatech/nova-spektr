@@ -63,12 +63,12 @@ const emptyContext: OperationsFilterContext = {
     proxyType: [],
     status: [],
     searchQuery: '',
-    needsMySignature: false,
+    signature: null,
   },
   tab: 'pending',
   hiddenIds: [],
   searchMatchedIds: null,
-  needsMySignatureIds: null,
+  signatureMatchedIds: null,
   isScopeMerged: false,
 };
 
@@ -621,24 +621,24 @@ describe('operations-filter', () => {
       expect(filterOperation(visibleOp, mockMultisigAccount, ctx)).toBe(false);
     });
 
-    test('needs-my-signature ids: keeps only listed operations', () => {
+    test('signature ids: keeps only listed operations', () => {
       const mine = createMockOperation({ id: 'op-mine', status: 'pending' });
       const signed = createMockOperation({ id: 'op-signed', status: 'pending' });
       const ctx: OperationsFilterContext = {
         ...emptyContext,
-        filters: { ...emptyContext.filters, needsMySignature: true },
+        filters: { ...emptyContext.filters, signature: 'not_signed' },
         isScopeMerged: true,
-        needsMySignatureIds: new Set(['op-mine']),
+        signatureMatchedIds: new Set(['op-mine']),
       };
 
       expect(filterOperation(mine, mockMultisigAccount, ctx)).toBe(true);
       expect(filterOperation(signed, mockMultisigAccount, ctx)).toBe(false);
     });
 
-    test('needs-my-signature ids: null applies no narrowing', () => {
+    test('signature ids: null applies no narrowing', () => {
       const op = createMockOperation({ id: 'op-1', status: 'pending' });
 
-      expect(filterOperation(op, mockMultisigAccount, { ...emptyContext, needsMySignatureIds: null })).toBe(true);
+      expect(filterOperation(op, mockMultisigAccount, { ...emptyContext, signatureMatchedIds: null })).toBe(true);
     });
   });
 
@@ -710,15 +710,16 @@ describe('operations-filter', () => {
       status: [],
       dateRange: undefined,
       searchQuery: '',
-      needsMySignature: false,
+      signature: null,
     };
 
     test('empty filter narrows nothing', () => {
       expect(hasNarrowingFilter(emptyFilter)).toBe(false);
     });
 
-    test('needs my signature narrows the list', () => {
-      expect(hasNarrowingFilter({ ...emptyFilter, needsMySignature: true })).toBe(true);
+    test('signature selection narrows the list', () => {
+      expect(hasNarrowingFilter({ ...emptyFilter, signature: 'signed' })).toBe(true);
+      expect(hasNarrowingFilter({ ...emptyFilter, signature: 'not_signed' })).toBe(true);
     });
 
     test('blank search query narrows nothing', () => {
@@ -754,7 +755,7 @@ describe('operations-filter', () => {
       status: [],
       dateRange: undefined,
       searchQuery: '',
-      needsMySignature: false,
+      signature: null,
     };
 
     test('kept on the pending tab with no filter', () => {

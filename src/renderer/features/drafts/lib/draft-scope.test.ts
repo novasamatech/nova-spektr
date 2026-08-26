@@ -299,7 +299,7 @@ describe('filterDraftsByScope', () => {
     });
   });
 
-  describe('needs my signature', () => {
+  describe('signature', () => {
     const makeAccount = (accountId: string, signingType = SigningType.POLKADOT_VAULT): AnyAccount =>
       ({
         id: `account-${accountId}`,
@@ -352,29 +352,36 @@ describe('filterDraftsByScope', () => {
     });
 
     test('on: keeps only drafts assigned to a local signer', () => {
-      const scope = { ...emptyScope, needsMySignature: true };
+      const scope: DraftListScope = { ...emptyScope, signature: 'not_signed' };
       const result = filterWithSearch([mineDraft, foreignDraft, unassignedDraft], scope, walletAccounts);
       expect(result.map((d) => d.id)).toEqual(['draft-mine']);
     });
 
     test('on: a draft nobody local can initiate is not mine', () => {
-      const scope = { ...emptyScope, needsMySignature: true };
+      const scope: DraftListScope = { ...emptyScope, signature: 'not_signed' };
       expect(filterWithSearch([foreignDraft, unassignedDraft], scope, walletAccounts)).toEqual([]);
     });
 
     test('on: a legacy draft without a signing path is not mine even if the initiator is local', () => {
-      const scope = { ...emptyScope, needsMySignature: true };
+      const scope: DraftListScope = { ...emptyScope, signature: 'not_signed' };
       expect(filterWithSearch([legacyDraft], scope, walletAccounts)).toEqual([]);
     });
 
     test('on: a watch-only initiator cannot sign, so the draft is not mine', () => {
-      const scope = { ...emptyScope, needsMySignature: true };
+      const scope: DraftListScope = { ...emptyScope, signature: 'not_signed' };
       const watchOnly = [makeAccount(BOB_ACCOUNT_ID, SigningType.WATCH_ONLY)];
       expect(filterWithSearch([mineDraft], scope, watchOnly)).toEqual([]);
     });
 
+    test('signed: a draft carries no signatures, so every draft is out of scope', () => {
+      const scope: DraftListScope = { ...emptyScope, signature: 'signed' };
+      expect(filterWithSearch([mineDraft, foreignDraft, unassignedDraft, legacyDraft], scope, walletAccounts)).toEqual(
+        [],
+      );
+    });
+
     test('on: combines with the other scope filters', () => {
-      const scope = { ...emptyScope, needsMySignature: true, network: [KUSAMA_CHAIN_ID] };
+      const scope: DraftListScope = { ...emptyScope, signature: 'not_signed', network: [KUSAMA_CHAIN_ID] };
       expect(filterWithSearch([mineDraft], scope, walletAccounts)).toEqual([]);
     });
   });

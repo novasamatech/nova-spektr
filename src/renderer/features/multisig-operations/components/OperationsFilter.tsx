@@ -6,8 +6,9 @@ import { ProxyTypeOrder, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Button, Icon, MultiSelect } from '@/shared/ui';
-import { Checkbox, DateRangePicker } from '@/shared/ui-kit';
+import { DateRangePicker, Select } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
+import { type SignatureFilterValue, SIGNATURE_FILTER_ORDER } from '../lib/operations-filter';
 import { STATUS_FILTER_LABEL_KEYS, STATUS_FILTER_ORDER, isStatusFilterValue } from '../lib/operations-sections';
 import { operationsContextModel } from '../model/context';
 
@@ -81,13 +82,18 @@ export const OperationsFilter = memo(() => {
           {t('operations.filters.clearFilters')}
         </Button>
       )}
-      <div className="shrink-0 whitespace-nowrap">
-        <Checkbox
-          checked={selectedOptions.needsMySignature}
-          onChange={checked => operationsContextModel.setFilter({ needsMySignature: checked })}
+      <div className="w-[136px]">
+        <Select
+          placeholder={t('operations.filters.signaturePlaceholder')}
+          value={selectedOptions.signature}
+          onChange={value => operationsContextModel.setFilter({ signature: value })}
         >
-          {t('operations.filters.needsMySignature')}
-        </Checkbox>
+          {SIGNATURE_FILTER_ORDER.map(value => (
+            <Select.Item key={value} value={value}>
+              {t(SIGNATURE_FILTER_LABEL_KEYS[value])}
+            </Select.Item>
+          ))}
+        </Select>
       </div>
       <div className="w-[136px]">
         <DateRangePicker
@@ -136,6 +142,11 @@ export const OperationsFilter = memo(() => {
     </div>
   );
 });
+
+const SIGNATURE_FILTER_LABEL_KEYS: Record<SignatureFilterValue, string> = {
+  signed: 'operations.filters.signatureSigned',
+  not_signed: 'operations.filters.signatureNotSigned',
+};
 
 const getTransactionOptions = (t: TFunction) => {
   return [

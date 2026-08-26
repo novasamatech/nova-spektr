@@ -664,14 +664,14 @@ describe('operations context model', () => {
       expect(scope.getState(operationsContextModel.$isFiltersSelected)).toBe(true);
     });
 
-    it('should start with the needs-my-signature toggle off', () => {
+    it('should start with no signature selection', () => {
       const scope = fork();
 
-      expect(scope.getState(operationsContextModel.$filter).needsMySignature).toBe(false);
+      expect(scope.getState(operationsContextModel.$filter).signature).toBeNull();
     });
   });
 
-  describe('Needs my signature', () => {
+  describe('Signed filter', () => {
     const signerId = aId(1);
     const otherSignerId = aId(2);
     const multisigId = aId(3);
@@ -709,30 +709,48 @@ describe('operations context model', () => {
       return scope;
     };
 
-    it('should compute no ids while the toggle is off', async () => {
+    it('should compute no ids while nothing is selected', async () => {
       const scope = await createScope([createTestOperation('0xmine')]);
 
-      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toBeNull();
+      expect(scope.getState(operationsContextModel.$signatureMatchedIds)).toBeNull();
       expect(scope.getState(operationsContextModel.$filteredOperations)).toHaveLength(1);
     });
 
-    it('should keep only operations a local signatory can still act on', async () => {
+    it('not signed: should keep only operations a local signatory can still act on', async () => {
       const needsMe = createTestOperation('0xmine');
       const signedByMe = createTestOperation('0xsigned', [approveEvent(signerId)]);
       const awaiting = { ...createTestOperation('0xawaiting'), awaitingOutcome: true };
       const scope = await createScope([needsMe, signedByMe, awaiting]);
 
-      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+      await allSettled(operationsContextModel.setFilter, { scope, params: { signature: 'not_signed' } });
 
-      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toEqual(new Set([needsMe.id]));
+      expect(scope.getState(operationsContextModel.$signatureMatchedIds)).toEqual(new Set([needsMe.id]));
       expect(scope.getState(operationsContextModel.$filteredOperations).map(o => o.operation.id)).toEqual([needsMe.id]);
+    });
+
+    it('signed: should keep only operations every local signatory has approved, whatever their status', async () => {
+      const needsMe = createTestOperation('0xmine');
+      const signedByMe = createTestOperation('0xsigned', [approveEvent(signerId)]);
+      const signedByOther = createTestOperation('0xother', [approveEvent(otherSignerId)]);
+      const executedByMe = { ...createTestOperation('0xdone', [approveEvent(signerId)]), status: 'executed' };
+      const scope = await createScope([needsMe, signedByMe, signedByOther, executedByMe]);
+
+      await allSettled(operationsContextModel.setFilter, { scope, params: { signature: 'signed' } });
+
+      expect(scope.getState(operationsContextModel.$signatureMatchedIds)).toEqual(
+        new Set([signedByMe.id, executedByMe.id]),
+      );
+      expect(scope.getState(operationsContextModel.$filteredOperations).map(o => o.operation.id)).toEqual([
+        signedByMe.id,
+        executedByMe.id,
+      ]);
     });
 
     it('should merge the scope and normalize the tab to pending', async () => {
       const scope = await createScope([]);
       await allSettled(operationsContextModel.setTab, { scope, params: 'history' });
 
-      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+      await allSettled(operationsContextModel.setFilter, { scope, params: { signature: 'not_signed' } });
 
       expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(true);
       expect(scope.getState(operationsContextModel.$isFiltersSelected)).toBe(true);
@@ -743,21 +761,21 @@ describe('operations context model', () => {
       const executed = { ...createTestOperation('0xdone'), status: 'executed' };
       const scope = await createScope([createTestOperation('0xmine'), executed]);
 
-      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+      await allSettled(operationsContextModel.setFilter, { scope, params: { signature: 'not_signed' } });
 
       expect(scope.getState(operationsContextModel.$filteredOperations).map(o => o.operation.status)).toEqual([
         'pending',
       ]);
     });
 
-    it('should clear the toggle on resetFilters', async () => {
+    it('should clear the selection on resetFilters', async () => {
       const scope = await createScope([createTestOperation('0xmine')]);
-      await allSettled(operationsContextModel.setFilter, { scope, params: { needsMySignature: true } });
+      await allSettled(operationsContextModel.setFilter, { scope, params: { signature: 'not_signed' } });
 
       await allSettled(operationsContextModel.resetFilters, { scope });
 
-      expect(scope.getState(operationsContextModel.$filter).needsMySignature).toBe(false);
-      expect(scope.getState(operationsContextModel.$needsMySignatureIds)).toBeNull();
+      expect(scope.getState(operationsContextModel.$filter).signature).toBeNull();
+      expect(scope.getState(operationsContextModel.$signatureMatchedIds)).toBeNull();
       expect(scope.getState(operationsContextModel.$isScopeMerged)).toBe(false);
     });
   });
