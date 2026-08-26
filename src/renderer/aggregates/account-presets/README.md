@@ -1,6 +1,6 @@
 # Account presets
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
