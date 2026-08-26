@@ -434,7 +434,7 @@ never toggles a sort.
 With sorting off, operations are ordered **newest first** by their creation time (block and extrinsic index break ties).
 The list can be narrowed by **search** and six **filters**:
 
-- **Signed** — a single-value dropdown, first in the filter bar, with two options:
+- **Signed** — a single-value dropdown, after Date range in the filter bar, with two options:
   - **Not signed** keeps only operations still collecting approvals that a local signatory can still act on — approve,
     or add the call data the final signing is waiting for. An operation every local signatory has already signed, one
     awaiting its on-chain outcome, a contact-backed multisig (no local keys), and any resolved operation never match. It

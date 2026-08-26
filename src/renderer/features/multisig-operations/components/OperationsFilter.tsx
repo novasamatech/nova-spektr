@@ -83,6 +83,13 @@ export const OperationsFilter = memo(() => {
         </Button>
       )}
       <div className="w-[136px]">
+        <DateRangePicker
+          value={selectedOptions.dateRange}
+          placeholder={t('operations.filters.dateRangePlaceholder')}
+          onChange={range => operationsContextModel.setFilter({ dateRange: range })}
+        />
+      </div>
+      <div className="w-[136px]">
         <Select
           placeholder={t('operations.filters.signaturePlaceholder')}
           value={selectedOptions.signature}
@@ -94,13 +101,6 @@ export const OperationsFilter = memo(() => {
             </Select.Item>
           ))}
         </Select>
-      </div>
-      <div className="w-[136px]">
-        <DateRangePicker
-          value={selectedOptions.dateRange}
-          placeholder={t('operations.filters.dateRangePlaceholder')}
-          onChange={range => operationsContextModel.setFilter({ dateRange: range })}
-        />
       </div>
       <MultiSelect
         showSelectAll
