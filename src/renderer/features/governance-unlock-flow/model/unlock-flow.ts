@@ -14,6 +14,7 @@ import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -24,7 +25,12 @@ import { confirmModel } from './confirm';
 
 const unlockRequested = createEvent<UnlockRequest>();
 const flowFinished = createEvent();
-/** A landed extrinsic. The host refreshes what it shows off this. */
+/**
+ * A landed extrinsic that actually released the lock. A multisig initiation
+ * landing is not this — nothing is released until the remaining signatories
+ * approve — so it does not fire this event. The host refreshes what it shows
+ * off this.
+ */
 const flowCompleted = createEvent();
 const stepChanged = createEvent<Step>();
 
@@ -261,29 +267,47 @@ const $redirectAfterSubmitPath = createStore<string | null>(null).reset(unlockRe
 const findSuccessResult = (results: (SuccessResult | { result: ExtrinsicResult })[]) =>
   results.find((result): result is SuccessResult => result.result === ExtrinsicResult.SUCCESS) ?? null;
 
+/**
+ * What the multisig redirect link is built from.
+ *
+ * The multisig isn't necessarily the initiator — a proxied initiator's proxy
+ * can itself be a multisig, in which case the multisig sits deeper in `$route`
+ * and `$coreTx.accountId` is the proxied account, not the multisig. The
+ * multisig account is therefore found in the route rather than assumed to be
+ * the initiator, mirroring `remove-proxy-model.ts`'s `submitModel.done`
+ * handling.
+ */
+const $multisigLinkParams = combine(
+  { route: $route, coreTx: $coreTx, wrappedTx: $tx },
+  ({ route, coreTx, wrappedTx }) => {
+    const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+
+    if (!multisigAccount || !coreTx || !wrappedTx) return null;
+
+    return {
+      chainId: coreTx.chainId,
+      callHash: wrappedTx.args.callHash,
+      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount),
+    };
+  },
+);
+
 sample({
   clock: submitModel.done,
-  source: {
-    step: $step,
-    hasMultisigAccount: $hasMultisigAccount,
-    coreTx: $coreTx,
-    wrappedTx: $tx,
-  },
-  filter: ({ step, hasMultisigAccount, coreTx, wrappedTx }, results) =>
-    step === Step.SUBMIT &&
-    hasMultisigAccount &&
-    nonNullable(coreTx) &&
-    nonNullable(wrappedTx) &&
-    nonNullable(findSuccessResult(results)),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { step: $step, linkParams: $multisigLinkParams },
+  filter: ({ step, linkParams }, results) =>
+    step === Step.SUBMIT && nonNullable(linkParams) && nonNullable(findSuccessResult(results)),
+  fn: ({ linkParams }, results) => {
     const success = findSuccessResult(results);
 
+    if (!linkParams || !success) return null;
+
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
-      blockCreated: success!.params.timepoint.height,
-      indexCreated: success!.params.timepoint.index,
+      chainId: linkParams.chainId,
+      callHash: linkParams.callHash,
+      multisigAccountId: linkParams.multisigAccountId,
+      blockCreated: success.params.timepoint.height,
+      indexCreated: success.params.timepoint.index,
     });
   },
   target: $redirectAfterSubmitPath,
@@ -296,10 +320,17 @@ sample({
   target: navigationModel.events.navigateTo,
 });
 
+/**
+ * A multisig initiation isn't a release — the extrinsic lands, but the funds
+ * stay locked until the remaining signatories approve. Gated on
+ * `$hasMultisigAccount` being false so `flowCompleted` only fires once the lock
+ * is actually released.
+ */
 sample({
   clock: submitModel.done,
-  source: $step,
-  filter: (step, results) => step === Step.SUBMIT && nonNullable(findSuccessResult(results)),
+  source: { step: $step, hasMultisigAccount: $hasMultisigAccount },
+  filter: ({ step, hasMultisigAccount }, results) =>
+    step === Step.SUBMIT && !hasMultisigAccount && nonNullable(findSuccessResult(results)),
   fn: () => undefined,
   target: flowCompleted,
 });
