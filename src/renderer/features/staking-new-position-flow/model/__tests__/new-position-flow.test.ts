@@ -155,6 +155,7 @@ const { newPositionFlowModel } = await import('../new-position-flow');
 const { networkModel } = await import('@/entities/network');
 const { walletModel } = await import('@/entities/wallet');
 const { accounts } = await import('@/domains/network');
+const { walletSelect } = await import('@/aggregates/wallet-select');
 const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 
@@ -213,6 +214,18 @@ const validator = (index: number) => ({ accountId: accountId(index), address: `a
 
 /** The wallet behind `ACCOUNT` (`walletId: 1`) — the basket can sign for it. */
 const VAULT_WALLET: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
+
+/** Holds a key nobody here can sign with. */
+const WATCH_ONLY_WALLET: Wallet = { id: 2, name: 'Watch only', type: WalletType.WATCH_ONLY, accounts: [] };
+
+const WATCHED_ACCOUNT = {
+  ...ACCOUNT,
+  id: 'account-2',
+  name: 'Watched',
+  walletId: WATCH_ONLY_WALLET.id,
+  accountId: accountId(2),
+  signingType: SigningType.WATCH_ONLY,
+} as unknown as Wallet['accounts'][number];
 
 /** Signs interactively — the basket cannot sign for it later. */
 const WALLET_CONNECT_WALLET: Wallet = { id: 1, name: 'WalletConnect', type: WalletType.WALLET_CONNECT, accounts: [] };
@@ -276,6 +289,25 @@ describe('staking-new-position-flow · entry', () => {
   it('seeds the initiator from accounts that were already loaded', async () => {
     const scope = fork({
       values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]).set(accounts.__test.$list, [ACCOUNT]),
+    });
+
+    await allSettled(newPositionFlowModel.newPositionRequested, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$initiator)).toEqual(ACCOUNT);
+  });
+
+  /**
+   * A watch-only account seeds an empty signing path, and the "Stake from"
+   * field is rendered off that path — so it would vanish along with the only
+   * way to pick another account. The seed skips such keys even when they belong
+   * to the selected wallet.
+   */
+  it('never seeds a watch-only key, even from the selected wallet', async () => {
+    const scope = fork({
+      values: seeded()
+        .set(walletModel.__test.$rawWallets, [VAULT_WALLET, WATCH_ONLY_WALLET])
+        .set(accounts.__test.$list, [ACCOUNT, WATCHED_ACCOUNT])
+        .set(walletSelect.__test.$selectedWalletId, WATCH_ONLY_WALLET.id),
     });
 
     await allSettled(newPositionFlowModel.newPositionRequested, { scope });

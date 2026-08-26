@@ -36,7 +36,7 @@ import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance 
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MINIMUM_BOND_RULE, bondNominateValidator } from '@/features/operations/OperationsValidation';
-import { createSigningPathModel } from '@/features/signing-path';
+import { createSigningPathModel, isEligibleInitiator } from '@/features/signing-path';
 import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { getAvailableToBond, pickSeedAccount } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
@@ -130,6 +130,23 @@ export const createNewPositionFlowModel = () => {
     chain ? list.filter((account) => accountService.isAccountAvailableOnChain(account, chain)) : [],
   );
 
+  /**
+   * Only a key we can actually sign with may seed the field: a watch-only
+   * account seeds an empty path and the field vanishes with it, leaving the
+   * error and no picker. `$availableAccounts` stays wider on purpose — the
+   * destination field reads it too, and a watch-only key is a fine payee.
+   */
+  const $seedCandidates = combine(
+    { available: $availableAccounts, wallets: walletModel.$wallets, chain: $chain },
+    ({ available, wallets, chain }) => {
+      if (!chain) return [];
+
+      const walletById = new Map(wallets.map((wallet) => [wallet.id, wallet]));
+
+      return available.filter((account) => isEligibleInitiator(account, walletById.get(account.walletId), chain));
+    },
+  );
+
   const $initiator = createStore<AnyAccount | null>(null)
     .on(initiatorChanged, (_, account) => account)
     .reset(flowClosed);
@@ -155,17 +172,21 @@ export const createNewPositionFlowModel = () => {
    * Continue button that can never light up.
    */
   sample({
-    clock: [$availableAccounts, newPositionRequested],
+    clock: [$seedCandidates, newPositionRequested],
     source: {
       available: $availableAccounts,
+      candidates: $seedCandidates,
       initiator: $initiator,
       selectedWalletId: walletSelect.$selectedWalletId,
     },
-    fn: ({ available, initiator, selectedWalletId }) => {
+    fn: ({ available, candidates, initiator, selectedWalletId }) => {
+      // Kept against the wider list on purpose: a hand-picked multisig or
+      // proxied source is a legitimate initiator that is never a seed candidate,
+      // and a wallet rename must not throw it away.
       const stillAvailable = initiator && available.some((account) => account.id === initiator.id);
       if (stillAvailable) return initiator;
 
-      return pickSeedAccount(available, selectedWalletId);
+      return pickSeedAccount(candidates, selectedWalletId);
     },
     target: $initiator,
   });
@@ -198,7 +219,7 @@ export const createNewPositionFlowModel = () => {
    */
   sample({
     clock: walletSwitchedInForm,
-    source: $availableAccounts,
+    source: $seedCandidates,
     fn: (available, walletId) => pickSeedAccount(available, walletId),
     target: $initiator,
   });

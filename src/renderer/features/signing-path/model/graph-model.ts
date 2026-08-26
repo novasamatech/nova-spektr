@@ -698,6 +698,10 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
     ? networkModel.$chains.map((chains) => chains[chainId] ?? null)
     : createStore<Chain | null>(null);
 
+  // Only the own-signer pass reads wallets — every other caller must not
+  // re-run its source builder on a wallet rename or hide.
+  const $wallets = opts?.includeOwnSigners ? walletModel.$wallets : createStore<Wallet[]>([]);
+
   // `null` unless the caller narrowed the branches to what this installation
   // can finish signing. One store either way, so the two readings of the source
   // builder stay a single `combine` rather than two that must be edited in step.
@@ -712,7 +716,7 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
       allowedSet: $allowedSet,
       resolveName: $nameResolver,
       ownSignerChain: $ownSignerChain,
-      wallets: walletModel.$wallets,
+      wallets: $wallets,
     },
     ({ proxies, ...rest }) =>
       buildSources({

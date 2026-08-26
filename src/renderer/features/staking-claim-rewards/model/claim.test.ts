@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { type Asset, type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { type UnclaimedPayout } from '@/domains/staking';
 import { MAX_PAYOUT_CALLS_PER_BATCH } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -54,8 +54,11 @@ const confirm = (n: number): ClaimRewardsConfirm => ({
  * `walletModel.$wallets` is derived, so it cannot be seeded through fork
  * values. Filling it through the populate effect is the supported route.
  */
-const withWallets = async () => {
-  const scope = fork({ handlers: new Map().set(walletModel.populate, () => [wallet(1), wallet(2)]) });
+const withWallets = async (accountList: AnyAccount[] = []) => {
+  const scope = fork({
+    values: new Map().set(accounts.__test.$list, accountList),
+    handlers: new Map().set(walletModel.populate, () => [wallet(1), wallet(2)]),
+  });
   await allSettled(walletModel.populate, { scope });
 
   return scope;
@@ -111,6 +114,24 @@ describe('claimRewardsModel · entry', () => {
 
     expect(scope.getState(claimRewardsModel.$step)).toBe(Step.NONE);
     expect(scope.getState(claimRewardsModel.$requests)).toEqual([]);
+  });
+});
+
+describe('claimRewardsModel · payer', () => {
+  /**
+   * A payout is permissionless, so the source card of the signing path is the
+   * payer field: picking another key we hold moves who signs and pays.
+   */
+  it('follows the signing path source to another own key', async () => {
+    const scope = await withWallets([account(1), account(2)]);
+
+    await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
+    await allSettled(claimRewardsModel.signingPathChanged, {
+      scope,
+      params: [{ kind: 'signer', accountId: accountId(2) }],
+    });
+
+    expect(scope.getState(claimRewardsModel.$initiator)?.accountId).toBe(accountId(2));
   });
 });
 
