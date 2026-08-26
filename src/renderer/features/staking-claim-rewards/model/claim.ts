@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample, scopeBind } fr
 import { t } from 'i18next';
 import { readonly } from 'patronum';
 
-import { type Asset, type Balance, type BalanceId, type Transaction } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, type Chain, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -17,6 +17,7 @@ import {
   getActionRequiredAmount,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
+import { type PathNode } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { type PayoutsResourceParams, type UnclaimedPayout, era, payouts } from '@/domains/staking';
 import { balanceModel } from '@/entities/balance';
@@ -181,16 +182,29 @@ const $primaryCoreTx = combine($primaryPlan, $isChainConnected, (plan, isConnect
  * The source card of the path _is_ the payer field, so editing it moves who
  * pays. No loop: the path model marks a hand-picked path as a user override and
  * stops recomputing defaults for it.
+ *
+ * The picked source is an address; the payer has to be the account object that
+ * lives on the claim's chain. Chain-bound keys (WalletConnect, Ledger) are one
+ * account per chain sharing that address, and a sibling from another chain has
+ * no route here — it would turn the confirm into "no account to sign with" for
+ * a key that signs on this chain perfectly well.
  */
+const findPayerForSource = (available: AnyAccount[], chain: Chain | null, path: PathNode[]): AnyAccount | null => {
+  const source = path.at(0);
+  if (nullable(source) || nullable(chain)) return null;
+
+  return (
+    available.find(
+      (account) => account.accountId === source.accountId && accountService.isAccountAvailableOnChain(account, chain),
+    ) ?? null
+  );
+};
+
 sample({
   clock: signingPathChanged,
-  source: accounts.$list,
-  filter: (available, path) => {
-    const source = path.at(0);
-
-    return nonNullable(source) && available.some((account) => account.accountId === source.accountId);
-  },
-  fn: (available, path) => available.find((account) => account.accountId === path[0]?.accountId) ?? null,
+  source: { available: accounts.$list, chain: $chain },
+  filter: ({ available, chain }, path) => nonNullable(findPayerForSource(available, chain, path)),
+  fn: ({ available, chain }, path) => findPayerForSource(available, chain, path),
   target: payerChanged,
 });
 

@@ -129,7 +129,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
               itself below two hops, and the payer is the whole point of this
               control — it must be visible even when there is no route to draw. */}
           {!isDraftMode && (
-            <Box padding={[0, 5]}>
+            <Box padding={[canUseDraftMode ? 4 : 0, 5, 0]}>
               <SigningPathInline
                 editableInitiator
                 restrictToOwnAccounts
