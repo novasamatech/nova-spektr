@@ -30,7 +30,8 @@ page-welded form.
 
 ## States / scenarios
 
-The form is a radio pair under the account and network chips:
+The form is a radio pair under the signing route and the network chip (the route names the initiator, so no separate
+account chip):
 
 | Option                      | What is set on chain     | Extra input                                     |
 | --------------------------- | ------------------------ | ----------------------------------------------- |
