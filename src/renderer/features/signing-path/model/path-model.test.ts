@@ -68,6 +68,12 @@ describe('path-model', () => {
     expect(scope.getState(pathModel.$path)).toEqual([]);
   });
 
+  it('pathSeeded accepts a lone signer', async () => {
+    const scope = fork();
+    await allSettled(pathModel.pathSeeded, { scope, params: [signer(1)] });
+    expect(scope.getState(pathModel.$path)).toEqual([signer(1)]);
+  });
+
   it('pathSeeded accepts a valid prefix (proxied → multisig)', async () => {
     const scope = fork();
     await allSettled(pathModel.pathSeeded, { scope, params: [proxied(1), multisig(2)] });

@@ -114,7 +114,6 @@ export const DraftSigningPath = memo(
       [allDraftSources, pinnedSourceAccountId],
     );
 
-    // The node kind comes from the graph, not from the caller.
     const pinnedNode = useMemo<PathNode | null>(() => {
       const source = pinnedSourceAccountId ? draftSources.at(0) : undefined;
       if (!source) return null;
