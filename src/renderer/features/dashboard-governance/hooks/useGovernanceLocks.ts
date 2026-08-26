@@ -17,6 +17,8 @@ import { type UnlockBlockReason, resolveUnlockAccount } from '../lib/resolveUnlo
 import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { type ChainGovernanceData, useChainGovernanceData } from './useChainGovernanceData';
 
+const DAY_MS = 86_400_000;
+
 export type GovernanceLockRow = {
   key: string;
   accountId: AccountId;
@@ -39,6 +41,8 @@ export type GovernanceLockRow = {
   pending: BN;
   /** Estimated ms timestamp of the next pending release; `null` when unknown. */
   nextUnlockAtMs: number | null;
+  /** Days until `nextUnlockAtMs`, rounded and floored at 0; `null` when unknown. */
+  daysUntilNextUnlock: number | null;
   delegated: BN;
   delegatedFiat: string | null;
   tracks: string[];
@@ -85,6 +89,8 @@ function buildRows(
       summary.nextUnlockBlock !== null && data.blockTimeMs !== null && data.currentBlock !== null
         ? now + (summary.nextUnlockBlock - data.currentBlock) * data.blockTimeMs
         : null;
+    const daysUntilNextUnlock =
+      nextUnlockAtMs !== null ? Math.max(0, Math.round((nextUnlockAtMs - now) / DAY_MS)) : null;
 
     rows.push({
       key: `${data.chainId}:${accountId}`,
@@ -103,6 +109,7 @@ function buildRows(
       claimableActions: summary.claimableActions,
       pending: summary.pending,
       nextUnlockAtMs,
+      daysUntilNextUnlock,
       delegated: summary.delegated,
       delegatedFiat: summary.delegated.isZero() ? null : fiat(summary.delegated),
       tracks: summary.tracks,

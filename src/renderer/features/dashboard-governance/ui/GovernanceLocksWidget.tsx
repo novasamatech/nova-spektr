@@ -24,7 +24,6 @@ type Props = {
 };
 
 const ALL_CHAINS = '__all__';
-const DAY_MS = 86_400_000;
 
 const formatToken = (amount: BN, precision: number, symbol: string) => {
   const { value, suffix } = formatBalance(amount, precision);
@@ -73,12 +72,13 @@ const PendingCell = memo(
   ({ row, showFiat, currency }: { row: GovernanceLockRow; showFiat: boolean; currency: CurrencyItem | null }) => {
     const { t } = useI18n();
 
-    const releaseLine = row.nextUnlockAtMs
-      ? t('dashboard.governanceLocks.inDays', {
-          count: Math.max(0, Math.round((row.nextUnlockAtMs - Date.now()) / DAY_MS)),
-          date: new Date(row.nextUnlockAtMs).toLocaleDateString(),
-        })
-      : t('dashboard.governanceLocks.dateUnavailable');
+    const releaseLine =
+      row.nextUnlockAtMs && row.daysUntilNextUnlock !== null
+        ? t('dashboard.governanceLocks.inDays', {
+            count: row.daysUntilNextUnlock,
+            date: new Date(row.nextUnlockAtMs).toLocaleDateString(),
+          })
+        : t('dashboard.governanceLocks.dateUnavailable');
 
     return (
       <AmountCell
@@ -107,7 +107,7 @@ const TracksCell = memo(({ tracks }: { tracks: string[] }) => {
   return (
     <Tooltip open={rest.length > 0 ? undefined : false}>
       <Tooltip.Trigger>
-        <div className="flex items-center gap-1">
+        <div tabIndex={0} className="flex items-center gap-1">
           <TrackInfo trackId={first} />
           {rest.length > 0 && (
             <span className="rounded bg-input-background-disabled px-1.5 py-0.5 text-help-text font-medium text-text-tertiary">
@@ -196,7 +196,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       {
         key: 'accountId',
         title: t('dashboard.governanceLocks.account'),
-        width: '220px',
+        width: '180px',
         render: (_value, row) => (
           <NamedAccount
             accountId={row.accountId}
@@ -210,7 +210,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       {
         key: 'chainName',
         title: t('dashboard.governanceLocks.chain'),
-        width: '150px',
+        width: '120px',
         render: (_value, row) => (
           <div className="flex items-center gap-1.5">
             <img src={row.chainIcon} alt={row.chainName} className="h-5 w-5" />
@@ -227,7 +227,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
           />
         ),
         sortable: true,
-        width: '130px',
+        width: '120px',
         render: (_value, row) => (
           <AmountCell
             amount={row.locked}
@@ -248,7 +248,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
           />
         ),
         sortable: true,
-        width: '130px',
+        width: '120px',
         render: (_value, row) => (
           <AmountCell
             amount={row.claimable}
@@ -269,7 +269,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
             hint={t('dashboard.governanceLocks.hint.pendingTooltip')}
           />
         ),
-        width: '160px',
+        width: '150px',
         render: (_value, row) => <PendingCell row={row} showFiat={fiatFlag} currency={currency} />,
       },
       {
@@ -280,7 +280,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
             hint={t('dashboard.governanceLocks.hint.delegatedTooltip')}
           />
         ),
-        width: '130px',
+        width: '110px',
         render: (_value, row) => (
           <AmountCell
             amount={row.delegated}
@@ -295,13 +295,13 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       {
         key: 'tracks',
         title: t('dashboard.governanceLocks.tracks'),
-        width: '170px',
+        width: '140px',
         render: (_value, row) => <TracksCell tracks={row.tracks} />,
       },
       {
         key: 'claimableActions',
         title: t('dashboard.governanceLocks.action'),
-        width: '170px',
+        width: '150px',
         render: (_value, row) => (
           <LockActionCell
             row={row}
@@ -329,7 +329,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
   return (
     <DashboardWidget>
       <div className="flex h-full min-h-0 flex-col">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 gap-y-2">
           <FootnoteText className="text-text-tertiary">{t('dashboard.governanceLocks.title')}</FootnoteText>
           {rows.length > 0 && (
             <FootnoteText className="text-text-tertiary">
@@ -381,13 +381,15 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
 
         {rows.length > 0 && visibleRows.length === 0 && (
           <div className="flex flex-col items-center gap-y-1 py-6">
-            <BodyText className="text-text-tertiary">{t('dashboard.governanceLocks.noLocks')}</BodyText>
+            <BodyText className="text-text-tertiary">{t('dashboard.governanceLocks.noResults')}</BodyText>
           </div>
         )}
 
         {visibleRows.length > 0 && (
           <div className="mt-3 min-h-0 flex-1 overflow-auto">
-            <Table columns={columns} data={visibleRows} getRowKey={(row) => row.key} stickyHeader />
+            <div className="min-w-[1090px]">
+              <Table columns={columns} data={visibleRows} getRowKey={(row) => row.key} stickyHeader />
+            </div>
           </div>
         )}
       </div>

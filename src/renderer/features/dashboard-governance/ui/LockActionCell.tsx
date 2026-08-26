@@ -24,7 +24,7 @@ type HintProps = {
 const HintText = memo(({ text, hint }: HintProps) => (
   <Tooltip>
     <Tooltip.Trigger>
-      <div className="flex items-center justify-end gap-1 text-text-tertiary">
+      <div tabIndex={0} className="flex items-center justify-end gap-1 text-text-tertiary">
         <FootnoteText className="whitespace-nowrap text-inherit">{text}</FootnoteText>
         <Icon name="info" size={14} className="shrink-0 text-inherit" />
       </div>

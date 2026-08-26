@@ -75,6 +75,6 @@ dashboardGovernanceLocksFeature.inject(
     label: 'dashboard.governanceLocks.title',
     render: GovernanceLocksWidget,
     defaultSize: { w: 4, h: 4 },
-    minSize: { w: 2, h: 3 },
+    minSize: { w: 3, h: 3 },
   }),
 );
