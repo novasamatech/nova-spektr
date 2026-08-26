@@ -36,8 +36,8 @@ import { createDraftModeBinding, wireDraftCloseRedirect, wireDraftSourceBalance 
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MINIMUM_BOND_RULE, bondNominateValidator } from '@/features/operations/OperationsValidation';
-import { createSigningPathModel, pickDefaultInitiator } from '@/features/signing-path';
-import { getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
+import { createSigningPathModel, graphModel, pickDefaultInitiator } from '@/features/signing-path';
+import { getDraftSigningInfo, getSigningMode, validatorSelectionModel } from '@/features/validator-selection';
 import { getAvailableToBond } from '../lib';
 import { type NewPositionConfirm, Step } from '../types';
 
@@ -618,10 +618,17 @@ export const createNewPositionFlowModel = () => {
    * The amount step is gated by the same verdict the confirm is: over the
    * balance and under the chain minimum both come out of `$isTxValid`, which
    * runs against the fee probe until the real call exists.
+   *
+   * Draft mode skips that verdict, as `staking-bond-nominate` does: the fee,
+   * the route signer and the live validation all read the connected wallet's
+   * initiator, which is not who the draft spends from. What a draft needs to
+   * walk on to the picker is a complete path, an amount and a valid destination
+   * — the eventual signer answers for the rest at submit time.
    */
   const $canContinue = combine(
     {
       isDraftMode: draftMode.$isDraftMode,
+      isPathComplete: draftMode.$isDraftPathComplete,
       amount: $amountPlanck,
       txValid: $isTxValid,
       destinationValid: $isDestinationValid,
@@ -629,14 +636,11 @@ export const createNewPositionFlowModel = () => {
       preparing: $preparing,
       noRouteSigner: $noRouteSigner,
     },
-    ({ isDraftMode, amount, txValid, destinationValid, initiator, preparing, noRouteSigner }) =>
-      !isDraftMode &&
-      !amount.isZero() &&
-      txValid &&
-      destinationValid &&
-      nonNullable(initiator) &&
-      !preparing &&
-      !noRouteSigner,
+    ({ isDraftMode, isPathComplete, amount, txValid, destinationValid, initiator, preparing, noRouteSigner }) => {
+      if (isDraftMode) return isPathComplete && !amount.isZero() && destinationValid;
+
+      return !amount.isZero() && txValid && destinationValid && nonNullable(initiator) && !preparing && !noRouteSigner;
+    },
   );
 
   /**
@@ -644,9 +648,10 @@ export const createNewPositionFlowModel = () => {
    *
    * `nonNullable(tx)` matters on its own: validation passing says nothing about
    * the wrapped transaction still being there — a route change can drop it
-   * while the last verdict is still `true`. The draft term is symmetry with the
-   * siblings; this flow's draft mode ends at the form screen (`$canContinue`
-   * refuses to walk further), so it can never actually be `true` here.
+   * while the last verdict is still `true`. The draft term is a real gate: in
+   * draft mode the picker's submit saves the draft and the flow never reaches
+   * the confirm, but should the step ever be forced there, nothing local may
+   * sign an operation that was explicitly handed to somebody else.
    */
   const $canSign = combine(
     {
@@ -716,17 +721,50 @@ export const createNewPositionFlowModel = () => {
    * The picker is a singleton shared with the Staking page's own flows, so it
    * is opened with this flow's chain and account explicitly — otherwise it
    * would still be scoped to whatever opened it last.
+   *
+   * In draft mode the acting account is the draft path's source, not the
+   * connected wallet's initiator: that is the account the bond will spend from,
+   * and the one the picker's header chip must name. The committed path also
+   * tells the picker who will eventually sign, the same way
+   * `staking-bond-nominate` hands it over.
    */
   sample({
     clock: validatorsStepEntered,
-    source: draftMode.$isDraftMode,
-    fn: (isDraftMode, { chain, asset, initiator, wallet }) => ({
-      chain: chain!,
-      asset: asset!,
-      signingMode: getSigningMode({ isDraftMode, wallet }),
-      initiator: initiator ?? undefined,
-      initiatorWallet: wallet ?? undefined,
-    }),
+    source: {
+      isDraftMode: draftMode.$isDraftMode,
+      draftPath: draftMode.$draftSigningPath,
+      allAccounts: accounts.$list,
+      wallets: walletModel.$wallets,
+      multisigByAccountId: graphModel.$multisigByAccountId,
+      resolveName: graphModel.$nameResolver,
+    },
+    fn: ({ isDraftMode, draftPath, allAccounts, wallets, multisigByAccountId, resolveName }, entered) => {
+      const chain = entered.chain!;
+      const asset = entered.asset!;
+
+      if (!isDraftMode) {
+        return {
+          chain,
+          asset,
+          signingMode: getSigningMode({ isDraftMode, wallet: entered.wallet }),
+          initiator: entered.initiator ?? undefined,
+          initiatorWallet: entered.wallet ?? undefined,
+        };
+      }
+
+      const sourceAccountId = draftPath.at(0)?.accountId;
+      const source = allAccounts.find((account) => account.accountId === sourceAccountId);
+      const sourceWallet = source ? wallets.find((wallet) => wallet.id === source.walletId) : undefined;
+
+      return {
+        chain,
+        asset,
+        signingMode: getSigningMode({ isDraftMode, wallet: sourceWallet }),
+        initiator: source,
+        initiatorWallet: sourceWallet,
+        signingInfo: getDraftSigningInfo({ path: draftPath, chainId: chain.chainId, multisigByAccountId, resolveName }),
+      };
+    },
     target: validatorSelectionModel.events.formInitiated,
   });
 
@@ -746,8 +784,24 @@ export const createNewPositionFlowModel = () => {
 
   sample({
     clock: validatorsSubmitted,
+    source: draftMode.$isDraftMode,
+    filter: (isDraftMode) => !isDraftMode,
     fn: () => Step.CONFIRM,
     target: stepChanged,
+  });
+
+  /**
+   * Draft mode never reaches the confirm: the picker's own submit reads "Save
+   * as draft", and the set it hands back completes the call — so the save fires
+   * right here, as `staking-bond-nominate` does. The flow stays at the
+   * validators step underneath the draft modal and closes once the draft is
+   * created (`wireDraftCloseRedirect`).
+   */
+  sample({
+    clock: validatorsSubmitted,
+    source: draftMode.$isDraftMode,
+    filter: (isDraftMode) => isDraftMode,
+    target: draftMode.saveAsDraftRequested,
   });
 
   sample({

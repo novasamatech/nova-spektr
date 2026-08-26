@@ -143,7 +143,8 @@ vi.mock('@/features/validator-selection', async () => {
   const { createEvent } = await import('effector');
 
   return {
-    getSigningMode: () => 'local',
+    getSigningMode: ({ isDraftMode }: { isDraftMode: boolean }) => (isDraftMode ? 'draft' : 'local'),
+    getDraftSigningInfo: () => undefined,
     validatorSelectionModel: {
       events: { formInitiated: createEvent<unknown>(), formCleared: createEvent() },
       output: { formSubmitted: createEvent<unknown[]>() },
@@ -158,6 +159,7 @@ const { accounts } = await import('@/domains/network');
 const { walletSelect } = await import('@/aggregates/wallet-select');
 const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
+const { createDraftModel } = await import('@/features/drafts');
 
 /**
  * The real module types `formSubmitted` as a derived `Event`, which
@@ -211,6 +213,9 @@ const ACCOUNT = {
 } as unknown as Wallet['accounts'][number];
 
 const validator = (index: number) => ({ accountId: accountId(index), address: `address-${index}` });
+
+/** A draft path of one: the source signs for itself. */
+const DRAFT_PATH = [{ kind: 'signer' as const, accountId: ALICE }];
 
 /** The wallet behind `ACCOUNT` (`walletId: 1`) — the basket can sign for it. */
 const VAULT_WALLET: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
@@ -521,5 +526,125 @@ describe('staking-new-position-flow · sign gate', () => {
     await fillForm(scope);
 
     expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
+  });
+});
+
+describe('staking-new-position-flow · draft mode', () => {
+  /** Draft mode on, the path committed and an amount typed — the form is done. */
+  async function fillDraftForm(scope: ReturnType<typeof fork>, amount = '100') {
+    await allSettled(newPositionFlowModel.newPositionRequested, { scope });
+    await allSettled(newPositionFlowModel.toggleDraftMode, { scope, params: true });
+    await allSettled(newPositionFlowModel.draftPathCommitted, { scope, params: DRAFT_PATH });
+    await allSettled(newPositionFlowModel.amountChanged, { scope, params: amount });
+  }
+
+  it('continues to the validators step without a live verdict, fee or route signer', async () => {
+    // Everything the live gate reads — the validation, the fee, the route
+    // signer — is about the connected wallet's initiator, not the draft's
+    // source. Here the validator even rejects, and the draft still walks on.
+    const scope = fork({ values: seeded().set($txErrors(), [OVER_BALANCE_ERROR]) });
+    await fillDraftForm(scope);
+
+    expect(scope.getState(newPositionFlowModel.$initiator)).toBeNull();
+    expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(true);
+
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.VALIDATORS);
+  });
+
+  it('refuses to continue until the draft path is complete', async () => {
+    const scope = fork({ values: seeded() });
+    await allSettled(newPositionFlowModel.newPositionRequested, { scope });
+    await allSettled(newPositionFlowModel.toggleDraftMode, { scope, params: true });
+    await allSettled(newPositionFlowModel.amountChanged, { scope, params: '100' });
+
+    expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(false);
+
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.INIT);
+  });
+
+  it('refuses to continue without an amount', async () => {
+    const scope = fork({ values: seeded() });
+    await fillDraftForm(scope, '');
+
+    expect(scope.getState(newPositionFlowModel.$canContinue)).toBe(false);
+  });
+
+  it('opens the picker scoped to the draft path’s source, in draft mode', async () => {
+    const scope = fork({
+      values: seeded().set(walletModel.__test.$rawWallets, [VAULT_WALLET]).set(accounts.__test.$list, [ACCOUNT]),
+    });
+    const initiated: unknown[] = [];
+    createWatch({ unit: picker.events.formInitiated, scope, fn: (p) => initiated.push(p) });
+
+    await fillDraftForm(scope);
+    // The connected wallet's own pick must not leak into the picker's scope.
+    await allSettled(newPositionFlowModel.initiatorChanged, { scope, params: WATCHED_ACCOUNT });
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+
+    expect(initiated).toHaveLength(1);
+    expect(initiated[0]).toMatchObject({
+      chain: CHAIN,
+      asset: ASSET,
+      signingMode: 'draft',
+      initiator: ACCOUNT,
+      initiatorWallet: { id: VAULT_WALLET.id, type: WalletType.POLKADOT_VAULT },
+    });
+  });
+
+  it('saves the draft off the picker’s submit instead of walking to the confirm', async () => {
+    const scope = fork({ values: seeded() });
+    const requested: unknown[] = [];
+    createWatch({ unit: createDraftModel.createDraftRequested, scope, fn: (seed) => requested.push(seed) });
+
+    await fillDraftForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+
+    // Nothing to save before the validators are known.
+    expect(scope.getState(newPositionFlowModel.$canSaveAsDraft)).toBe(false);
+
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7), validator(8)] });
+
+    expect(scope.getState(newPositionFlowModel.$validators)).toEqual([validator(7), validator(8)]);
+    expect(scope.getState(newPositionFlowModel.$canSaveAsDraft)).toBe(true);
+    expect(scope.getState(newPositionFlowModel.$draftCoreTx)).toMatchObject({ chainId: CHAIN_ID, accountId: ALICE });
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.VALIDATORS);
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
+
+    expect(requested).toHaveLength(1);
+    expect(requested[0]).toMatchObject({
+      callData: '0xdeadbeef',
+      chainId: CHAIN_ID,
+      path: DRAFT_PATH,
+      source: 'staking-new-position-flow-draft-mode',
+    });
+  });
+
+  it('closes once the draft is created', async () => {
+    const scope = fork({ values: seeded() });
+    await fillDraftForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    await allSettled(createDraftModel.draftCreated, { scope });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.NONE);
+  });
+
+  it('leaves the live flow alone: a submit outside draft mode still walks to the confirm', async () => {
+    const scope = fork({ values: seeded() });
+    const requested: unknown[] = [];
+    createWatch({ unit: createDraftModel.createDraftRequested, scope, fn: (seed) => requested.push(seed) });
+
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(scope.getState(newPositionFlowModel.$canSaveAsDraft)).toBe(false);
+    expect(requested).toHaveLength(0);
   });
 });
