@@ -643,12 +643,12 @@ describe('Submit Draft — submit & edit flows', () => {
 
       // Backend-contact multisig surfaces even though the user owns none of
       // its signatories — drafts are proposal flows, someone else may sign.
-      expect(byId.get(CONTACT_MULTISIG_ID)).toMatchObject({ isProxy: false });
+      expect(byId.get(CONTACT_MULTISIG_ID)).toMatchObject({ kind: 'multisig' });
       // Own multisig account surfaces without a matching contact entry.
-      expect(byId.get(MULTISIG_TOP_ID)).toMatchObject({ isProxy: false });
+      expect(byId.get(MULTISIG_TOP_ID)).toMatchObject({ kind: 'multisig' });
       // Non-multisig contact surfaces as a proxy source only because its
       // delegate is a multisig (hasReachableMultisigDelegate).
-      expect(byId.get(CONTACT_PROXY_ID)).toMatchObject({ isProxy: true });
+      expect(byId.get(CONTACT_PROXY_ID)).toMatchObject({ kind: 'proxied' });
       // Non-multisig contact whose delegate is not a multisig stays out.
       expect(byId.has(CONTACT_PLAIN_ID)).toBe(false);
       expect(sources).toHaveLength(3);
