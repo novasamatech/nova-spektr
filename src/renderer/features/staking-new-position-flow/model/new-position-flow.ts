@@ -234,6 +234,8 @@ export const createNewPositionFlowModel = () => {
     initiator: $initiator,
     chain: $chain,
     resetOn: [newPositionRequested, flowClosed],
+    // Start staking runs from any key of ours, so a plain key is a path of one.
+    includeOwnSigners: true,
     // A wallet switch re-seeds the initiator (see `walletSwitchedInForm`), and
     // a hand-picked path must not pin the field to the previous wallet — the
     // same reset a chain change performs for the same reason. The gated event,

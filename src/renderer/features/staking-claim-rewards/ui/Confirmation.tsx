@@ -126,10 +126,8 @@ export const Confirmation = ({ onGoBack }: Props) => {
           {/* The signatory pays the fee and reserves the deposit, so the route is
               the user's to choose whenever their wallet offers more than one. */}
           {/* `SigningPathInline`, not `SigningPathSection`: the section hides
-              itself below two hops, and a payout signed by a plain account has
-              exactly one. The payer is the whole point of this control here —
-              a payout is permissionless, so it may be any account of ours, and
-              it must be visible even when there is no route to draw. */}
+              itself below two hops, and the payer is the whole point of this
+              control — it must be visible even when there is no route to draw. */}
           {!isDraftMode && (
             <Box padding={[0, 5]}>
               <SigningPathInline
@@ -140,7 +138,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
                 // graph offers for origin-bound calls.
                 includeOwnSigners
                 chainId={chain.chainId}
-                path={signingPath.length > 0 ? signingPath : [{ kind: 'signer', accountId: initiator.accountId }]}
+                path={signingPath}
                 asset={asset}
                 errorAccountIds={errorAccountIds}
                 getBalance={getBalance}

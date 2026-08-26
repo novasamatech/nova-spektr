@@ -154,6 +154,9 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, $pathRoute } = cre
   initiator: $initiator,
   chain: $chain,
   resetOn: flowFinished,
+  // A payout is permissionless: the payer is any key we hold, so the path
+  // starts from the initiator itself when it is a plain key.
+  includeOwnSigners: true,
 });
 
 const buildPayoutTx = (plan: ClaimPlan, accountId: AccountId): Transaction =>
