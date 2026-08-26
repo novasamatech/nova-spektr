@@ -1,11 +1,11 @@
 import { BN } from '@polkadot/util';
 
-import { type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, type ID, type Wallet } from '@/shared/core';
 import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayout, type UnclaimedPayouts, payoutsCacheKey } from '@/domains/staking';
-import { isSignerAccount } from '@/features/signing-path';
+import { type DefaultInitiator, isSignerAccount, pickDefaultInitiator } from '@/features/signing-path';
 import { type AmountFlowTarget } from '@/features/staking-amount-flow';
 import { type ClaimRequest } from '@/features/staking-claim-rewards';
 import { type RedeemTarget } from '@/features/staking-confirm-flow';
@@ -23,12 +23,11 @@ export type ResolutionSources = {
   chains: Record<ChainId, Chain>;
   accounts: AnyAccount[];
   wallets: Wallet[];
+  /** The wallet open in wallet management — `null` when none is. */
+  selectedWalletId: ID | null;
 };
 
-export type ResolvedAccount = {
-  account: AnyAccount;
-  wallet: Wallet;
-};
+export type ResolvedAccount = DefaultInitiator;
 
 /**
  * The local account behind an address on a given chain, with its wallet.
@@ -65,37 +64,32 @@ export type KpiClaimEntry = {
  * permissionless — the reward lands on each nominator's own payee whoever
  * submits it. So the nominator is a _preference_, not a requirement: when it is
  * an account we hold we use it, and when it is an address-book contact we fall
- * back to any account of ours that can sign on that chain rather than
- * abandoning rewards we are perfectly able to claim.
+ * back to a key of ours rather than abandoning rewards we are perfectly able to
+ * claim.
  *
- * Who counts as able to sign is `isSignerAccount`'s call and nothing else's —
- * the same predicate the signing-path graph terminates at, so this screen never
- * refuses a payer the flow behind it would have accepted.
+ * The order is the nominator itself → an eligible key of the wallet open in
+ * wallet management → any eligible key on the chain. Who counts as eligible is
+ * `isEligibleInitiator`'s call and nothing else's — the same predicate the
+ * initiator picker offers roots by, so this screen never refuses a payer the
+ * flow behind it would have accepted.
  *
- * `null` only when this installation holds no signing key for the chain at all.
- * A signer whose wallet is not in `wallets` is still passed over, because the
- * claim flow is handed a `{ account, wallet }` pair and there is no honest
- * wallet to pair such an account with.
+ * `null` only when this installation holds no eligible key for the chain at
+ * all. A key whose wallet is not in `wallets` is passed over, because the claim
+ * flow is handed a `{ account, wallet }` pair and there is no honest wallet to
+ * pair such an account with.
  */
 export function resolveClaimPayer(
   nominators: AccountId[],
   chain: Chain,
   sources: ResolutionSources,
 ): ResolvedAccount | null {
-  for (const accountId of nominators) {
-    const own = resolveAccount(accountId, chain, sources);
-    if (nonNullable(own) && isSignerAccount(own.account)) return own;
-  }
-
-  for (const account of sources.accounts) {
-    if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
-    if (!isSignerAccount(account)) continue;
-
-    const wallet = sources.wallets.find((w) => w.id === account.walletId);
-    if (nonNullable(wallet)) return { account, wallet };
-  }
-
-  return null;
+  return pickDefaultInitiator({
+    preferred: nominators,
+    chain,
+    accounts: sources.accounts,
+    wallets: sources.wallets,
+    selectedWalletId: sources.selectedWalletId,
+  });
 }
 
 /** Why a claim entry produced no request — reported, never swallowed. */
@@ -137,7 +131,7 @@ export function resolveClaimRequests(entries: KpiClaimEntry[], sources: Resoluti
     }
 
     // The payer's mode, not the nominator's: `resolveClaimPayer` only returns
-    // an account `isSignerAccount` accepts, so the request is signable here.
+    // an account `isEligibleInitiator` accepts, so the request is signable here.
     requests.push({
       chain,
       asset,

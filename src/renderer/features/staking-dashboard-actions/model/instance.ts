@@ -7,6 +7,7 @@ import { era, payouts } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { stakingPositions } from '@/aggregates/staking-positions';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { dashboardStakingKpiActions } from '@/features/dashboard-staking-kpi';
 import { positionActions } from '@/features/dashboard-staking-positions';
 import { createDraftModel } from '@/features/drafts';
@@ -34,6 +35,7 @@ export const stakingDashboardActions = createStakingDashboardActions({
     $chains: networkModel.$chains,
     $accounts: accounts.$list,
     $wallets: walletModel.$wallets,
+    $selectedWalletId: walletSelect.$selectedWalletId,
     $positions: stakingPositions.$positions,
     $eras: era.eraResource.$cache,
     $payoutsCache: payouts.payoutsResource.$cache,

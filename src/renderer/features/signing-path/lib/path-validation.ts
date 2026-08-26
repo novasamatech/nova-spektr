@@ -3,10 +3,10 @@ import { type PathNode } from '@/domains/backend';
 export const MAX_PATH_DEPTH = 6;
 
 /**
- * The shortest path that can actually be followed: a source and the signer it
- * ends at. The empty path is legal in the grammar (a regular account signs for
- * itself) and a one-node path is a half-picked draft — neither can be executed
- * as a route, so both are "no usable path" rather than "path with a problem".
+ * The shortest path that can be followed as a route: a source and the signer it
+ * ends at. The empty path and a lone `signer` node are legal in the grammar (a
+ * regular account signs for itself) but carry no route, so both are "no usable
+ * path" rather than "path with a problem".
  */
 export const MIN_PATH_LENGTH = 2;
 
@@ -16,6 +16,19 @@ export function isUsablePath(path: PathNode[] | undefined | null): boolean {
 
 type ValidationResult = { ok: true } | { ok: false; reason: string };
 
+/**
+ * Settles a path by its head alone. A plain account signs for itself: a path of
+ * exactly one `signer` node is complete, and a `signer` may head nothing
+ * longer. A delegating head (`proxied` / `multisig`) settles nothing — the
+ * caller continues with its own rules.
+ */
+function checkPathHead(path: PathNode[]): ValidationResult | null {
+  const first = path[0]!;
+  if (first.kind !== 'signer') return null;
+
+  return path.length === 1 ? { ok: true } : { ok: false, reason: 'a signer may only stand alone' };
+}
+
 export function isValidPath(path: PathNode[]): ValidationResult {
   if (path.length === 0) return { ok: true };
 
@@ -23,10 +36,8 @@ export function isValidPath(path: PathNode[]): ValidationResult {
     return { ok: false, reason: `depth exceeds ${MAX_PATH_DEPTH}` };
   }
 
-  const first = path[0]!;
-  if (first.kind !== 'proxied' && first.kind !== 'multisig') {
-    return { ok: false, reason: 'must start with proxied or multisig' };
-  }
+  const headResult = checkPathHead(path);
+  if (headResult) return headResult;
 
   const last = path[path.length - 1]!;
   if (last.kind !== 'signer') {
@@ -57,10 +68,8 @@ export function isValidPathPrefix(path: PathNode[]): ValidationResult {
     return { ok: false, reason: `depth exceeds ${MAX_PATH_DEPTH}` };
   }
 
-  const first = path[0]!;
-  if (first.kind !== 'proxied' && first.kind !== 'multisig') {
-    return { ok: false, reason: 'must start with proxied or multisig' };
-  }
+  const headResult = checkPathHead(path);
+  if (headResult) return headResult;
 
   for (let i = 1; i < path.length - 1; i++) {
     if (path[i]!.kind !== 'multisig') {

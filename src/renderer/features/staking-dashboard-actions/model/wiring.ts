@@ -1,6 +1,6 @@
 import { type Event, type EventCallable, type Store, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, type ID, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { type StakingPosition, type UnclaimedPayouts } from '@/domains/staking';
@@ -43,6 +43,8 @@ export type StakingDashboardActionsDeps = {
     $chains: Store<Record<ChainId, Chain>>;
     $accounts: Store<AnyAccount[]>;
     $wallets: Store<Wallet[]>;
+    /** The wallet open in wallet management — the claim payer's second choice. */
+    $selectedWalletId: Store<ID | null>;
     $positions: Store<StakingPosition[]>;
     /** Active era per chain — half of the unclaimed-payout cache key. */
     $eras: Store<Record<ChainId, number>>;
@@ -177,6 +179,7 @@ export const createStakingDashboardActions = ({
       chains: sources.$chains,
       accounts: sources.$accounts,
       wallets: sources.$wallets,
+      selectedWalletId: sources.$selectedWalletId,
     },
     fn: (resolution, { requests }) => resolveClaimRequests(requests, resolution),
   });
@@ -218,6 +221,7 @@ export const createStakingDashboardActions = ({
       chains: sources.$chains,
       accounts: sources.$accounts,
       wallets: sources.$wallets,
+      selectedWalletId: sources.$selectedWalletId,
       eras: sources.$eras,
       cache: sources.$payoutsCache,
     },
@@ -269,6 +273,7 @@ export const createStakingDashboardActions = ({
       chains: sources.$chains,
       accounts: sources.$accounts,
       wallets: sources.$wallets,
+      selectedWalletId: sources.$selectedWalletId,
       positions: sources.$positions,
     },
     fn: ({ positions: allPositions, ...resolution }, payload) =>
@@ -291,6 +296,7 @@ export const createStakingDashboardActions = ({
       chains: sources.$chains,
       accounts: sources.$accounts,
       wallets: sources.$wallets,
+      selectedWalletId: sources.$selectedWalletId,
       positions: sources.$positions,
     },
     fn: ({ positions: allPositions, ...resolution }, payload) => resolveRedeemTarget(payload, allPositions, resolution),

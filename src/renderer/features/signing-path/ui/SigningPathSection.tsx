@@ -6,7 +6,9 @@ import { type Asset, type Balance, type Chain } from '@/shared/core';
 import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathNode } from '@/domains/backend';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
 
 import { SigningPathInline } from './SigningPathInline';
 
@@ -33,6 +35,13 @@ type Props = {
    * `balance.free` for governance flows where locked stake is relevant.
    */
   balanceExtractor?: (balance: Balance | null | undefined) => BN | string | null;
+  /**
+   * The account the operation runs from, when the caller wants it shown even
+   * without a route. Only a plain account — one that is neither multisig nor
+   * proxied — is drawn as a lone signer card; a delegating account with no path
+   * yet stays hidden, so it is never mistaken for a direct signer.
+   */
+  directInitiator?: AnyAccount | null;
   onChange: (path: PathNode[]) => void;
 };
 
@@ -40,9 +49,10 @@ const defaultBalanceExtractor: NonNullable<Props['balanceExtractor']> = (b) => (
 
 /**
  * Smart wrapper around `SigningPathInline`. Gates rendering on
- * `signingPath.length >= 2` (direct signing has nothing to visualize) and
- * absorbs the boilerplate previously duplicated across every form that wires up
- * a signing path: error→accountId derivation and per-hop balance lookup.
+ * `signingPath.length >= 2` (direct signing has nothing to visualize) or on a
+ * caller-named direct initiator (drawn alone, read-only) and absorbs the
+ * boilerplate previously duplicated across every form that wires up a signing
+ * path: error→accountId derivation and per-hop balance lookup.
  */
 export const SigningPathSection = ({
   signingPath,
@@ -53,6 +63,7 @@ export const SigningPathSection = ({
   allowedProxyTypes,
   disabledProxyReason,
   balanceExtractor = defaultBalanceExtractor,
+  directInitiator,
   onChange,
 }: Props) => {
   const balances = useUnit(balanceModel.$balanceMap);
@@ -68,7 +79,21 @@ export const SigningPathSection = ({
     return ids;
   }, [txErrors]);
 
-  if (signingPath.length < 2 || !chain || !asset) return null;
+  if (!chain || !asset) return null;
+
+  // An empty path is also what a multisig / proxied stash has while its route
+  // is unseeded or unreachable — never draw such an account as a lone signer.
+  const isPlainInitiator =
+    !!directInitiator &&
+    !accountUtils.isAnyMultisigAccount(directInitiator) &&
+    !accountUtils.isProxiedAccount(directInitiator);
+  const displayedPath: PathNode[] =
+    signingPath.length >= 2
+      ? signingPath
+      : isPlainInitiator
+        ? [{ kind: 'signer', accountId: directInitiator.accountId }]
+        : [];
+  if (displayedPath.length === 0) return null;
 
   // Non-native operation assets (e.g. KSM on Polkadot Asset Hub where DOT is
   // native) settle the amount on the source but pay fees / multisig deposit
@@ -87,7 +112,7 @@ export const SigningPathSection = ({
   return (
     <SigningPathInline
       chainId={chain.chainId}
-      path={signingPath}
+      path={displayedPath}
       asset={asset}
       feeAsset={feeAsset}
       getBalance={getBalance}

@@ -1,6 +1,6 @@
 # Staking payee flow (change reward destination)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -23,12 +23,15 @@ page-welded form.
 - Opened only from a dashboard position — nominator **or** validator; every stash has a payee.
 - **Signing** requires an account of the current wallet that reaches a signer on the position's chain. Multisig and
   proxied accounts are wrapped automatically; the **signing route** can be changed on the form and on the confirm.
+- The signing path section always names the initiator: a plain stash is drawn as a read-only single INITIATOR card, a
+  multisig or proxied stash through the route editor above, with its source locked to the position.
 - **Without a local signer**, the operation can still leave as a **draft** for somebody else to sign — see _Drafts_.
 - Watch-only accounts can do neither, and the dashboard does not offer them the action in the first place.
 
 ## States / scenarios
 
-The form is a radio pair under the account and network chips:
+The form is a radio pair under the signing route and the network chip (the route names the initiator, so no separate
+account chip):
 
 | Option                      | What is set on chain     | Extra input                                     |
 | --------------------------- | ------------------------ | ----------------------------------------------- |

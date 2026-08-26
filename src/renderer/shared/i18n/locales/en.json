@@ -3679,6 +3679,7 @@
     "signingPath": "Signing path",
     "multisigsGroup": "Multisigs",
     "proxiedAccountsGroup": "Proxied accounts",
+    "ownAccountsGroup": "My accounts",
     "hopsCount": "{count} hops",
     "openOverview": "Open overview",
     "fullSigningPath": "Full signing path",
@@ -3699,6 +3700,7 @@
       "proxiedWithType": "Proxied · {type}",
       "viaMultisig": "via Multisig",
       "multisig": "Multisig",
+      "account": "Account",
       "multisigThreshold": "Multisig {current} of {total}",
       "thresholdRatio": "{current} of {total}",
       "initiator": "Initiator"

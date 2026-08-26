@@ -14,6 +14,7 @@ import {
   type Asset,
   type Chain,
   type ChainId,
+  type ID,
   type Validator,
   type Wallet,
   SigningType,
@@ -106,10 +107,16 @@ const universalAccount = (n: number, signingType?: SigningType): AnyAccount =>
 
 type Harness = ReturnType<typeof createHarness>;
 
-/** The accounts this installation holds. Overridden where signing is the topic. */
-type HarnessOptions = { accounts?: AnyAccount[] };
+/**
+ * The accounts this installation holds, and the wallet open in wallet
+ * management. Overridden where signing or the payer's choice is the topic.
+ */
+type HarnessOptions = { accounts?: AnyAccount[]; selectedWalletId?: ID | null };
 
-function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }: HarnessOptions = {}) {
+function createHarness({
+  accounts = [universalAccount(1), universalAccount(2)],
+  selectedWalletId = null,
+}: HarnessOptions = {}) {
   const kpiClaimRequested = createEvent<ClaimRequestPayload>();
   const kpiRedeemRequested = createEvent<RedeemRequestPayload>();
   const kpiUnbondRequested = createEvent<UnbondRequestPayload>();
@@ -140,6 +147,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
   });
   const $accounts = createStore<AnyAccount[]>(accounts);
   const $wallets = createStore<Wallet[]>([wallet(1), wallet(2)]);
+  const $selectedWalletId = createStore<ID | null>(selectedWalletId);
   // Account 1 has something withdrawable, account 2 has not — the two halves of
   // the redeem routing.
   const $positions = createStore<StakingPosition[]>([position(1, 1, REDEEMABLE), position(2, 2)]);
@@ -163,7 +171,7 @@ function createHarness({ accounts = [universalAccount(1), universalAccount(2)] }
   const $payeeFlowEnabled = createStore(true);
 
   const model = createStakingDashboardActions({
-    sources: { $chains, $accounts, $wallets, $positions, $eras, $payoutsCache },
+    sources: { $chains, $accounts, $wallets, $selectedWalletId, $positions, $eras, $payoutsCache },
     kpi: {
       claimRequested: kpiClaimRequested,
       redeemRequested: kpiRedeemRequested,
@@ -323,6 +331,23 @@ describe('staking dashboard actions wiring', () => {
 
       expect(dispatched).toHaveLength(1);
       expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(1));
+    });
+
+    it('pays for an address-book nominator with the wallet open in wallet management', async () => {
+      // Two eligible payers in two wallets: the one the user is looking at
+      // wins over the first in the list.
+      const harness: Harness = createHarness({ selectedWalletId: 2 });
+      const scope = await forkWithAccountAvailability();
+      const dispatched = collect(harness.events.claimDispatched, scope);
+
+      await allSettled(harness.events.kpiClaimRequested, {
+        scope,
+        params: { requests: [{ nominators: [accountId(7)], chainId: chainId(1), payouts: [payout(10)] }] },
+      });
+
+      expect(dispatched).toHaveLength(1);
+      expect(dispatched[0]?.[0]?.account.accountId).toBe(accountId(2));
+      expect(dispatched[0]?.[0]?.wallet.id).toBe(2);
     });
 
     it('prefers the nominator itself when we hold it', async () => {

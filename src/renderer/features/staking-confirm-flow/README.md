@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -34,6 +34,8 @@ feature is its sibling for the actions that need no amount.
 - A regular account signs for itself. For one the signing path is empty by design, and the flow falls back to the
   initiator — without that fallback the wrapping step refuses the transaction and the confirm waits forever on a fee
   that can never arrive.
+- The signing path section always names the initiator: a plain stash is drawn as a read-only single INITIATOR card, a
+  multisig or proxied stash through the route editor above, with its source locked to the position.
 - **Both calls act on the origin's own ledger.** Unlike a payout, nobody can nominate or withdraw on another stash's
   behalf, so the transaction is always built from the position's own account — never from the signatory.
 - **Without a local signer**, the operation can still leave as a **draft** for somebody else to sign — see _Drafts_.

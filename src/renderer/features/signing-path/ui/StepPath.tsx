@@ -9,12 +9,40 @@ import { BodyText, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { type PathNextOption, type PathSource, graphModel } from '../model/graph-model';
+import { sourceToNode } from '../lib/source-node';
+import { type PathNextOption, type PathSource, type PathSourceKind, graphModel } from '../model/graph-model';
 import { pathModel } from '../model/path-model';
 
 import { NextOptionRow } from './NextOptionRow';
 import { PathBreadcrumb } from './PathBreadcrumb';
 import { SectionCard } from './SectionCard';
+
+const NEUTRAL_CHIP_CLASS = 'bg-shade-4 border-shade-12 text-text-tertiary';
+
+// `walletType` is a fallback for sources that carry none; a signer source
+// always brings its own wallet's type, so it has no entry here.
+const SOURCE_PRESENTATION: Record<
+  PathSourceKind,
+  { walletType?: WalletType; group: string; label: string; chip: string }
+> = {
+  proxied: {
+    walletType: WalletType.POLKADOT_VAULT,
+    group: 'signingPath.proxiedAccountsGroup',
+    label: 'signingPath.label.proxied',
+    chip: 'border-icon-accent/30 bg-icon-accent/8 text-icon-accent',
+  },
+  multisig: {
+    walletType: WalletType.MULTISIG,
+    group: 'signingPath.multisigsGroup',
+    label: 'signingPath.label.multisig',
+    chip: NEUTRAL_CHIP_CLASS,
+  },
+  signer: {
+    group: 'signingPath.ownAccountsGroup',
+    label: 'signingPath.label.account',
+    chip: NEUTRAL_CHIP_CLASS,
+  },
+};
 
 type Props = {
   chainId: ChainId;
@@ -114,10 +142,7 @@ export const StepPath = ({
     if (!source) return;
 
     pathModel.pathReset();
-    pathModel.pathNodeAppended({
-      kind: source.isProxy ? 'proxied' : 'multisig',
-      accountId: source.accountId,
-    });
+    pathModel.pathNodeAppended(sourceToNode(source));
   };
 
   const getPickerTitle = (): string => {
@@ -154,8 +179,8 @@ export const StepPath = ({
             onSearch={setSourceQuery}
           >
             {filteredSources.map((source) => {
-              const walletType =
-                source.walletType ?? (source.isProxy ? WalletType.POLKADOT_VAULT : WalletType.MULTISIG);
+              const presentation = SOURCE_PRESENTATION[source.kind];
+              const walletType = source.walletType ?? presentation.walletType ?? WalletType.POLKADOT_VAULT;
 
               return (
                 <Select.Item key={source.accountId} value={source.accountId}>
@@ -163,19 +188,12 @@ export const StepPath = ({
                     <WalletAccountIcon address={source.address} type={walletType} size={24} iconSize={12} />
                     <span className="flex min-w-0 flex-1 flex-col overflow-hidden">
                       <FootnoteText className="w-fit max-w-full truncate text-text-primary">{source.name}</FootnoteText>
-                      <HelpText className="truncate text-text-tertiary">
-                        {source.isProxy ? t('signingPath.proxiedAccountsGroup') : t('signingPath.multisigsGroup')}
-                      </HelpText>
+                      <HelpText className="truncate text-text-tertiary">{t(presentation.group)}</HelpText>
                     </span>
                     <span
-                      className={cnTw(
-                        'shrink-0 rounded-full border px-2 py-0.5 text-help-text',
-                        source.isProxy
-                          ? 'border-icon-accent/30 bg-icon-accent/8 text-icon-accent'
-                          : 'bg-shade-4 border-shade-12 text-text-tertiary',
-                      )}
+                      className={cnTw('shrink-0 rounded-full border px-2 py-0.5 text-help-text', presentation.chip)}
                     >
-                      {source.isProxy ? t('signingPath.label.proxied') : t('signingPath.label.multisig')}
+                      {t(presentation.label)}
                     </span>
                   </span>
                 </Select.Item>

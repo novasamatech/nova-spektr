@@ -174,6 +174,9 @@ const StakeFromField = () => {
       <SigningPathInline
         editableInitiator
         restrictToOwnAccounts
+        // Start staking runs from any key of ours, so the picker offers plain
+        // keys next to the delegating accounts the graph knows about.
+        includeOwnSigners
         chainId={chain.chainId}
         path={signingPath}
         asset={asset}

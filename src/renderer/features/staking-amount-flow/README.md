@@ -1,6 +1,6 @@
 # Staking amount flow (unbond / add stake)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -33,6 +33,8 @@ Unbond layout verbatim, which is also what the design review asked for.
 - A regular account signs for itself. For one the signing path is empty by design, and the flow falls back to the
   initiator — without that fallback the wrapping step refuses the transaction and the confirm waits forever on a fee
   that can never arrive.
+- The signing path section always names the initiator: a plain stash is drawn as a read-only single INITIATOR card, a
+  multisig or proxied stash through the route editor above, with its source locked to the position.
 - **Without a local signer**, the operation can still leave as a **draft** for somebody else to sign — see _Drafts_
   below.
 - Watch-only accounts can do neither, and the dashboard does not offer them the action in the first place.
@@ -41,16 +43,16 @@ Unbond layout verbatim, which is also what the design review asked for.
 
 The amount screen is one layout in both modes:
 
-| Element              | Unbond                                                                                                                                                     | Add stake                                                 |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Title                | "Unbond"                                                                                                                                                   | "Add stake"                                               |
-| Header               | Signing route (or the bare account when it signs directly) + network chip; in draft mode the network chip alone — the draft path picker follows the toggle | same                                                      |
-| Amount label (right) | `Staked: 1.2M DOT` — the position's **active** stake                                                                                                       | `Available: …` — spendable balance, minus the network fee |
-| `Max`                | the whole active stake                                                                                                                                     | everything available after the fee                        |
-| Helper line          | `≈ $6.24M · remaining staked: 100 DOT ($520)`                                                                                                              | `≈ $6.24M`                                                |
-| Warning callout      | amber, when the remainder falls below the minimum active bond                                                                                              | never                                                     |
-| Info callout         | unbonding period and the projected unlock date                                                                                                             | "funds start earning next era"                            |
-| Footer               | `Cancel` / `Continue`                                                                                                                                      | same                                                      |
+| Element              | Unbond                                                                                                                                                                | Add stake                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Title                | "Unbond"                                                                                                                                                              | "Add stake"                                               |
+| Header               | Signing route (a single INITIATOR card when the stash signs directly) + network chip; in draft mode the network chip alone — the draft path picker follows the toggle | same                                                      |
+| Amount label (right) | `Staked: 1.2M DOT` — the position's **active** stake                                                                                                                  | `Available: …` — spendable balance, minus the network fee |
+| `Max`                | the whole active stake                                                                                                                                                | everything available after the fee                        |
+| Helper line          | `≈ $6.24M · remaining staked: 100 DOT ($520)`                                                                                                                         | `≈ $6.24M`                                                |
+| Warning callout      | amber, when the remainder falls below the minimum active bond                                                                                                         | never                                                     |
+| Info callout         | unbonding period and the projected unlock date                                                                                                                        | "funds start earning next era"                            |
+| Footer               | `Cancel` / `Continue`                                                                                                                                                 | same                                                      |
 
 **The below-minimum warning does not block `Continue`.** Leaving a stub too small to nominate is legal — merely
 suboptimal — and the user may well mean it. The callout names both figures and the two ways out ("unbond everything, or

@@ -155,6 +155,9 @@ export const SigningPathInline = ({
     closeModal();
   };
 
+  // A transient empty path must not draw a header with no cards under it.
+  if (path.length === 0) return null;
+
   const inlineNodes = path;
 
   // Flag the chip only when an error lands on a node in the current path.

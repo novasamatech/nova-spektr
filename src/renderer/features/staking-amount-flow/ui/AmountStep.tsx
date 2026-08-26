@@ -9,7 +9,6 @@ import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
-import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
 import { projectUnlockAt } from '../lib/amount-rules';
 import { amountFlowModel } from '../model/amount-flow';
@@ -28,11 +27,8 @@ export const AmountStep = () => {
   const mode = useUnit(amountFlowModel.$mode);
   const chain = useUnit(amountFlowModel.$chain);
   const asset = useUnit(amountFlowModel.$asset);
-  const initiator = useUnit(amountFlowModel.$initiator);
   const position = useUnit(amountFlowModel.$position);
-  const wallet = useUnit(amountFlowModel.$wallet);
   const isDraftMode = useUnit(amountFlowModel.$isDraftMode);
-  const isDirectSigner = useUnit(amountFlowModel.$isDirectSigner);
   const errors = useUnit(amountFlowModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
 
@@ -44,14 +40,9 @@ export const AmountStep = () => {
         <div className="flex flex-col gap-4 px-5 pb-4">
           {!isDraftMode && <SigningRoute />}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Who acts, once: the signing route above when there is one to
-                draw, this bare account for a direct signer, and in draft mode
-                the draft path picker below the toggle. */}
-            {initiator && !isDraftMode && isDirectSigner && (
-              <div className="flex min-w-0 items-center rounded-lg border border-container-border px-2.5 py-1.5">
-                <NamedAccount accountId={initiator.accountId} chain={chain} wallet={wallet} iconSize={20} />
-              </div>
-            )}
+            {/* Who acts, once: the signing route above always names the
+                initiator (alone when it signs directly), and in draft mode the
+                draft path picker below the toggle takes over. */}
             <div className="flex items-center gap-x-1.5 rounded-lg border border-container-border px-2.5 py-1.5">
               <ChainIcon chain={chain} size={16} />
               <FootnoteText className="text-text-secondary">{chain.name}</FootnoteText>
@@ -289,6 +280,7 @@ const ConsequenceCallout = () => {
 
 const SigningRoute = () => {
   const chain = useUnit(amountFlowModel.$chain);
+  const initiator = useUnit(amountFlowModel.$initiator);
   const asset = useUnit(amountFlowModel.$asset);
   const signingPath = useUnit(amountFlowModel.$signingPath);
   const errors = useUnit(amountFlowModel.$errors);
@@ -299,6 +291,7 @@ const SigningRoute = () => {
       chain={chain}
       asset={asset}
       txErrors={errors}
+      directInitiator={initiator}
       onChange={amountFlowModel.signingPathChanged}
     />
   );

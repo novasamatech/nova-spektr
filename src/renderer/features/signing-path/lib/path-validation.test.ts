@@ -25,8 +25,16 @@ describe('path-validation', () => {
       expect(isValidPath(path).ok).toBe(false);
     });
 
-    it('rejects path starting with signer', () => {
+    it('accepts a lone signer — a plain account signing for itself', () => {
       const path: PathNode[] = [{ kind: 'signer', accountId: acc(1) }];
+      expect(isValidPath(path)).toEqual({ ok: true });
+    });
+
+    it('rejects a signer as the first of several nodes', () => {
+      const path: PathNode[] = [
+        { kind: 'signer', accountId: acc(1) },
+        { kind: 'signer', accountId: acc(2) },
+      ];
       expect(isValidPath(path).ok).toBe(false);
     });
 
@@ -97,8 +105,16 @@ describe('path-validation', () => {
       expect(isValidPathPrefix([{ kind: 'multisig', accountId: acc(1) }]).ok).toBe(true);
     });
 
-    it('rejects single signer', () => {
-      expect(isValidPathPrefix([{ kind: 'signer', accountId: acc(1) }]).ok).toBe(false);
+    it('accepts a lone signer as a complete prefix', () => {
+      expect(isValidPathPrefix([{ kind: 'signer', accountId: acc(1) }])).toEqual({ ok: true });
+    });
+
+    it('rejects a signer followed by anything', () => {
+      const path: PathNode[] = [
+        { kind: 'signer', accountId: acc(1) },
+        { kind: 'multisig', accountId: acc(2) },
+      ];
+      expect(isValidPathPrefix(path).ok).toBe(false);
     });
 
     it('accepts proxied → multisig (incomplete prefix)', () => {

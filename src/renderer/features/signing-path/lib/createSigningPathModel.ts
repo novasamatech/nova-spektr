@@ -22,6 +22,11 @@ type Params = {
    */
   resetUserOverrideOn?: Event<unknown> | Event<unknown>[];
   allowedProxyTypes?: readonly string[];
+  /**
+   * Offer own keys as path roots and seed a plain signing initiator with its
+   * one-node path. See `GraphOptions.includeOwnSigners`.
+   */
+  includeOwnSigners?: boolean;
 };
 
 const toEvents = (input: Event<unknown> | Event<unknown>[] | undefined): Event<unknown>[] => {
@@ -44,7 +49,14 @@ const toEvents = (input: Event<unknown> | Event<unknown>[] | undefined): Event<u
  * shape would erase those markers and trigger the "derived units are not
  * allowed in target" guard at every consumer.
  */
-export function createSigningPathModel({ initiator, chain, resetOn, resetUserOverrideOn, allowedProxyTypes }: Params) {
+export function createSigningPathModel({
+  initiator,
+  chain,
+  resetOn,
+  resetUserOverrideOn,
+  allowedProxyTypes,
+  includeOwnSigners,
+}: Params) {
   const resetEvents = toEvents(resetOn);
   const overrideResetEvents = [...resetEvents, ...toEvents(resetUserOverrideOn)];
 
@@ -75,7 +87,7 @@ export function createSigningPathModel({ initiator, chain, resetOn, resetUserOve
   }
 
   const $chainId = chain.map((c) => c?.chainId ?? null);
-  const $defaultSigningPath = graphModel.$defaultPathFor(initiator, $chainId, { allowedProxyTypes });
+  const $defaultSigningPath = graphModel.$defaultPathFor(initiator, $chainId, { allowedProxyTypes, includeOwnSigners });
 
   sample({
     clock: $defaultSigningPath,

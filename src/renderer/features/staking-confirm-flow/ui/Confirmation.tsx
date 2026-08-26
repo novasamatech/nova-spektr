@@ -154,6 +154,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
               chain={chain}
               asset={asset}
               txErrors={errors}
+              directInitiator={initiator}
               onChange={confirmFlowModel.signingPathChanged}
             />
           )}

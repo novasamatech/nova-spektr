@@ -1,6 +1,6 @@
 import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type Chain, type ChainId, type DecodedTransaction, WalletType } from '@/shared/core';
+import { type Chain, type ChainId, type DecodedTransaction, type Wallet, WalletType } from '@/shared/core';
 import { type BackendContact } from '@/shared/core/types/contact';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { entries, nullable } from '@/shared/lib/utils';
@@ -11,16 +11,24 @@ import { type AnyAccount, accountService, accounts, identity, multisigOperation 
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
+import { isEligibleInitiator } from '../lib/initiator-eligibility';
 import { MAX_PATH_DEPTH } from '../lib/path-validation';
 import { collectSignerAccountIds, isSignerAccount } from '../lib/signer-accounts';
 
 export type ProxyEdgeStatus = 'verified' | 'not_verified' | 'pending_verification';
 
+export type PathSourceKind = 'proxied' | 'multisig' | 'signer';
+
 export type PathSource = {
   accountId: AccountId;
   name: string;
-  isProxy: boolean;
+  /**
+   * What the source opens the path with. A plain key of ours is a `signer` and
+   * the path ends where it starts; the other two are delegating accounts the
+   * path must continue from.
+   */
+  kind: PathSourceKind;
   walletType?: WalletType | null;
 };
 
@@ -280,6 +288,8 @@ type BuildSourcesParams = {
   resolveName: AccountNameResolver;
   /** Set only when the caller asked for own signing keys as roots — see pass 4. */
   ownSignerChain: Chain | null;
+  /** Pass 4 judges a key by the wallet it belongs to, not only by the account. */
+  wallets: Wallet[];
 };
 
 function buildSources({
@@ -291,6 +301,7 @@ function buildSources({
   allowedSet,
   resolveName,
   ownSignerChain,
+  wallets,
 }: BuildSourcesParams): PathSource[] {
   const sources: PathSource[] = [];
   const seenAccounts = new Set<AccountId>();
@@ -340,7 +351,7 @@ function buildSources({
     sources.push({
       accountId: account.accountId,
       name: resolveName(account.accountId, chainId),
-      isProxy: true,
+      kind: 'proxied',
       walletType: WalletType.FLEXIBLE_MULTISIG,
     });
   }
@@ -365,7 +376,7 @@ function buildSources({
     sources.push({
       accountId,
       name: resolveName(accountId, chainId),
-      isProxy: false,
+      kind: 'multisig',
       walletType: null,
     });
   }
@@ -382,7 +393,7 @@ function buildSources({
     sources.push({
       accountId: contact.accountId,
       name: resolveName(contact.accountId, chainId),
-      isProxy: true,
+      kind: 'proxied',
       walletType: null,
     });
   }
@@ -391,19 +402,22 @@ function buildSources({
   //    them. Every pass above answers "who can this operation run from, given
   //    that somebody else holds the key" — a delegation question, which a plain
   //    account has no part in. A permissionless call inverts that: the operation
-  //    may run from anyone, so the roots are exactly the keys we hold.
+  //    may run from anyone, so the roots are exactly the keys we hold — and
+  //    only those whose wallet is allowed to act, which the account alone
+  //    cannot tell.
   if (ownSignerChain) {
+    const walletById = new Map(wallets.map((w) => [w.id, w]));
     for (const account of accountList) {
       if (seenAccounts.has(account.accountId)) continue;
-      if (!isSignerAccount(account)) continue;
-      if (!accountService.isAccountAvailableOnChain(account, ownSignerChain)) continue;
+      const wallet = walletById.get(account.walletId);
+      if (!wallet || !isEligibleInitiator(account, wallet, ownSignerChain)) continue;
 
       seenAccounts.add(account.accountId);
       sources.push({
         accountId: account.accountId,
         name: resolveName(account.accountId, chainId),
-        isProxy: false,
-        walletType: null,
+        kind: 'signer',
+        walletType: wallet.type,
       });
     }
   }
@@ -526,6 +540,11 @@ type PickDefaultPathParams = {
   resolveName: AccountNameResolver;
   allowedProxyTypes?: readonly string[];
   /**
+   * Seed a plain signing initiator with its one-node path — see
+   * `GraphOptions.includeOwnSigners`.
+   */
+  includeOwnSigners?: boolean;
+  /**
    * When set, the BFS terminates only at this specific signer accountId. Used
    * to translate a dropdown signatory pick back into a concrete signing path.
    * Without it, the first reachable own signer wins.
@@ -537,8 +556,9 @@ type PickDefaultPathParams = {
  * Walks the graph from `initiator` picking the first valid `PathNextOption` at
  * each step until reaching a signer. Reuses `buildNextOptions` so the default
  * selection matches exactly what StepPath would offer the user — same
- * reachability, same proxyType filtering, same dedup. Returns [] when the
- * initiator is a regular account or no own-signer-terminating branch exists.
+ * reachability, same proxyType filtering, same dedup. Returns [] when no
+ * own-signer-terminating branch exists, or when the initiator is a regular
+ * account and `includeOwnSigners` is off.
  */
 function pickDefaultPath({
   initiator,
@@ -548,11 +568,21 @@ function pickDefaultPath({
   ownSignerAccountIds,
   resolveName,
   allowedProxyTypes,
+  includeOwnSigners,
   targetSigner,
 }: PickDefaultPathParams): PathNode[] {
   const isMultisig = accountUtils.isAnyMultisigAccount(initiator);
   const isProxied = accountUtils.isProxiedAccount(initiator);
-  if (!isMultisig && !isProxied) return [];
+  if (!isMultisig && !isProxied) {
+    // A plain key has no route to pick, only itself — and only where the caller
+    // offers own keys as sources at all; elsewhere the empty path keeps its
+    // meaning of "signs directly, nothing to show".
+    //
+    // `isSignerAccount` rather than the stricter `isEligibleInitiator`: the
+    // initiator store is fed only eligible, available accounts by the form,
+    // and no wallet is at hand here to run the stricter check anyway.
+    return includeOwnSigners && isSignerAccount(initiator) ? [{ kind: 'signer', accountId: initiator.accountId }] : [];
+  }
 
   const allowedProxyTypeSet = allowedProxyTypes ? new Set<string>(allowedProxyTypes) : null;
   // Reachability set: when targetSigner is set, restrict to paths reaching
@@ -668,6 +698,10 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
     ? networkModel.$chains.map((chains) => chains[chainId] ?? null)
     : createStore<Chain | null>(null);
 
+  // Only the own-signer pass reads wallets — every other caller must not
+  // re-run its source builder on a wallet rename or hide.
+  const $wallets = opts?.includeOwnSigners ? walletModel.$wallets : createStore<Wallet[]>([]);
+
   // `null` unless the caller narrowed the branches to what this installation
   // can finish signing. One store either way, so the two readings of the source
   // builder stay a single `combine` rather than two that must be edited in step.
@@ -682,6 +716,7 @@ function $sourcesFor(chainId: ChainId, opts?: GraphOptions): Store<PathSource[]>
       allowedSet: $allowedSet,
       resolveName: $nameResolver,
       ownSignerChain: $ownSignerChain,
+      wallets: $wallets,
     },
     ({ proxies, ...rest }) =>
       buildSources({
@@ -782,9 +817,13 @@ function $defaultPathFor(
   opts?: GraphOptions,
 ): Store<PathNode[]> {
   const allowedProxyTypes = opts?.allowedProxyTypes;
+  const includeOwnSigners = opts?.includeOwnSigners ?? false;
   // Two callers passing the same input stores + opts share one combine — keeps
-  // graph traversal cheap when consumers re-render.
-  const optsKey = allowedProxyTypes ? [...allowedProxyTypes].sort().join(',') : '*';
+  // graph traversal cheap when consumers re-render. The key is built by the
+  // same encoder `$sourcesFor` uses, so an option that changes the answer can
+  // never be added to one cache and forgotten in the other. `restrictToOwn`
+  // is not an input here, so it encodes as 'all' for every caller.
+  const optsKey = optsCacheSegment({ allowedProxyTypes, includeOwnSigners });
 
   let byChainId = defaultPathCache.get(initiatorStore);
   if (!byChainId) {
@@ -821,6 +860,7 @@ function $defaultPathFor(
         ownSignerAccountIds,
         resolveName,
         allowedProxyTypes,
+        includeOwnSigners,
       });
     },
   );

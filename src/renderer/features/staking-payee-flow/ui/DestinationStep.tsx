@@ -9,7 +9,6 @@ import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
 import { SigningPathSection } from '@/features/signing-path';
-import { NamedAccount } from '@/widgets/NameResolver';
 import { RecipientCombobox } from '@/widgets/RecipientPicker';
 import { payeeFlowModel } from '../model/payee-flow';
 import { type PayeeOption } from '../types';
@@ -17,16 +16,15 @@ import { type PayeeOption } from '../types';
 /**
  * The one question this flow asks: restake, or pay out to which account.
  *
- * Same frame as the amount flow's form — account and network chips, the draft
- * toggle, the signing route — with the amount field swapped for a radio pair.
+ * Same frame as the amount flow's form — signing route and network chip, the
+ * draft toggle, the signing route — with the amount field swapped for a radio
+ * pair.
  */
 export const DestinationStep = () => {
   const { t } = useI18n();
 
   const chain = useUnit(payeeFlowModel.$chain);
   const asset = useUnit(payeeFlowModel.$asset);
-  const initiator = useUnit(payeeFlowModel.$initiator);
-  const wallet = useUnit(payeeFlowModel.$wallet);
   const isDraftMode = useUnit(payeeFlowModel.$isDraftMode);
   const errors = useUnit(payeeFlowModel.$errors);
   const wallets = useUnit(walletModel.$wallets);
@@ -38,12 +36,11 @@ export const DestinationStep = () => {
     <>
       <ScrollArea>
         <div className="flex flex-col gap-4 px-5 pb-4">
+          {!isDraftMode && <SigningRoute />}
           <div className="flex flex-wrap items-center gap-2">
-            {initiator && (
-              <div className="flex min-w-0 items-center rounded-lg border border-container-border px-2.5 py-1.5">
-                <NamedAccount accountId={initiator.accountId} chain={chain} wallet={wallet} iconSize={20} />
-              </div>
-            )}
+            {/* Who acts, once: the signing route above always names the
+                initiator (alone when it signs directly), and in draft mode the
+                draft path picker below the toggle takes over. */}
             <div className="flex items-center gap-x-1.5 rounded-lg border border-container-border px-2.5 py-1.5">
               <ChainIcon chain={chain} size={16} />
               <FootnoteText className="text-text-secondary">{chain.name}</FootnoteText>
@@ -77,7 +74,6 @@ export const DestinationStep = () => {
               <NoSignerError />
               <DestinationField />
               <UnchangedHint />
-              {!isDraftMode && <SigningRoute />}
             </div>
           </DraftFormBody>
         </div>
@@ -190,6 +186,7 @@ const NoSignerError = () => {
 
 const SigningRoute = () => {
   const chain = useUnit(payeeFlowModel.$chain);
+  const initiator = useUnit(payeeFlowModel.$initiator);
   const asset = useUnit(payeeFlowModel.$asset);
   const signingPath = useUnit(payeeFlowModel.$signingPath);
   const errors = useUnit(payeeFlowModel.$errors);
@@ -200,6 +197,7 @@ const SigningRoute = () => {
       chain={chain}
       asset={asset}
       txErrors={errors}
+      directInitiator={initiator}
       onChange={payeeFlowModel.signingPathChanged}
     />
   );

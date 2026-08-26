@@ -22,6 +22,7 @@ import {
   deriveInitiatorAccountId,
   deriveMultisigAccountId,
   graphModel,
+  isUsablePath,
   isValidPath,
   pathModel,
 } from '@/features/signing-path';
@@ -172,9 +173,13 @@ export const CreateDraftModal = () => {
   const handleCreateDraft = async () => {
     if (!backendUrl || !selectedChain || !isRecipientRiskAccepted) return;
 
+    // A lone `signer` is grammatically valid, but a draft along it could never
+    // be submitted — the signing path needs at least one delegation hop.
     const validation = isValidPath(path);
-    if (!validation.ok) {
-      toast.error(t('operations.drafts.internalPathError'), { description: validation.reason });
+    if (!validation.ok || !isUsablePath(path)) {
+      toast.error(t('operations.drafts.internalPathError'), {
+        description: validation.ok ? undefined : validation.reason,
+      });
 
       return;
     }

@@ -1,6 +1,6 @@
 # Staking Dashboard Actions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-23
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
 
 ## Overview
 
@@ -139,11 +139,13 @@ the row through `claimBlocked`. The row also prevents the case up front: a Claim
 holds no signing key for is disabled and says so.
 
 **The payer is resolved, not assumed.** A payout is permissionless, so the nominator is only the first candidate: the
-position's own account pays when it can sign, and otherwise any account of ours that can sign on that chain is used
-instead. See the claim flow's own spec for the reasoning. This holds for the position drawer's Claim chip as well as for
-the KPI selection — the chip used to bail on a position without a local account, a silent no-op for exactly the
-address-book positions the Rewards modal claims fine. A position claim is skipped only when the chain has no signer of
-ours at all (the drawer disables the chip up front and says so) or when the payout cache holds nothing for it.
+position's own account pays when it is an eligible key we hold, otherwise an eligible key of the wallet selected in
+wallet management, otherwise any eligible key on that chain (eligibility is the signing path's `isEligibleInitiator`;
+watch-only wallets never qualify). See the claim flow's own spec for the reasoning. This holds for the position drawer's
+Claim chip as well as for the KPI selection — the chip used to bail on a position without a local account, a silent
+no-op for exactly the address-book positions the Rewards modal claims fine. A position claim is skipped only when the
+chain has no signer of ours at all (the drawer disables the chip up front and says so) or when the payout cache holds
+nothing for it.
 
 **The signing mode travels with the request.** Every target this feature dispatches carries a `signingMode`, so a flow
 opened for an address-book position starts in draft mode instead of making the user discover the toggle. The drawer's
