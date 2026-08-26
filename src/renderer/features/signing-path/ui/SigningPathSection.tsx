@@ -33,6 +33,13 @@ type Props = {
    * `balance.free` for governance flows where locked stake is relevant.
    */
   balanceExtractor?: (balance: Balance | null | undefined) => BN | string | null;
+  /**
+   * Show a read-only initiator card when the path is trivial (a plain account
+   * signing for itself). Off by default — most forms have nothing to draw for a
+   * direct signer; the dashboard flows always name who the operation runs
+   * from.
+   */
+  directInitiatorAccountId?: AccountId;
   onChange: (path: PathNode[]) => void;
 };
 
@@ -40,9 +47,10 @@ const defaultBalanceExtractor: NonNullable<Props['balanceExtractor']> = (b) => (
 
 /**
  * Smart wrapper around `SigningPathInline`. Gates rendering on
- * `signingPath.length >= 2` (direct signing has nothing to visualize) and
- * absorbs the boilerplate previously duplicated across every form that wires up
- * a signing path: error→accountId derivation and per-hop balance lookup.
+ * `signingPath.length >= 2` (direct signing has nothing to visualize) or on a
+ * caller-named direct initiator (drawn alone, read-only) and absorbs the
+ * boilerplate previously duplicated across every form that wires up a signing
+ * path: error→accountId derivation and per-hop balance lookup.
  */
 export const SigningPathSection = ({
   signingPath,
@@ -53,6 +61,7 @@ export const SigningPathSection = ({
   allowedProxyTypes,
   disabledProxyReason,
   balanceExtractor = defaultBalanceExtractor,
+  directInitiatorAccountId,
   onChange,
 }: Props) => {
   const balances = useUnit(balanceModel.$balanceMap);
@@ -68,7 +77,15 @@ export const SigningPathSection = ({
     return ids;
   }, [txErrors]);
 
-  if (signingPath.length < 2 || !chain || !asset) return null;
+  if (!chain || !asset) return null;
+
+  const displayedPath: PathNode[] =
+    signingPath.length >= 2
+      ? signingPath
+      : directInitiatorAccountId
+        ? [{ kind: 'signer', accountId: directInitiatorAccountId }]
+        : [];
+  if (displayedPath.length === 0) return null;
 
   // Non-native operation assets (e.g. KSM on Polkadot Asset Hub where DOT is
   // native) settle the amount on the source but pay fees / multisig deposit
@@ -87,7 +104,7 @@ export const SigningPathSection = ({
   return (
     <SigningPathInline
       chainId={chain.chainId}
-      path={signingPath}
+      path={displayedPath}
       asset={asset}
       feeAsset={feeAsset}
       getBalance={getBalance}

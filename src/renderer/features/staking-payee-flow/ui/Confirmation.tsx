@@ -63,6 +63,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           chain={chain}
           asset={asset}
           txErrors={errors}
+          directInitiatorAccountId={initiator?.accountId}
           onChange={payeeFlowModel.signingPathChanged}
         />
 

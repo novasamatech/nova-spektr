@@ -190,6 +190,7 @@ const NoSignerError = () => {
 
 const SigningRoute = () => {
   const chain = useUnit(payeeFlowModel.$chain);
+  const initiator = useUnit(payeeFlowModel.$initiator);
   const asset = useUnit(payeeFlowModel.$asset);
   const signingPath = useUnit(payeeFlowModel.$signingPath);
   const errors = useUnit(payeeFlowModel.$errors);
@@ -200,6 +201,7 @@ const SigningRoute = () => {
       chain={chain}
       asset={asset}
       txErrors={errors}
+      directInitiatorAccountId={initiator?.accountId}
       onChange={payeeFlowModel.signingPathChanged}
     />
   );
