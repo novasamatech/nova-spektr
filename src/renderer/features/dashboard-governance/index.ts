@@ -10,6 +10,9 @@ import { ReferendumsWidget } from './ui/ReferendumsWidget';
 import { UnlockScheduleWidget } from './ui/UnlockScheduleWidget';
 
 const enableFlag = $features.map(({ dashboard }) => dashboard);
+// The Locks widget dispatches into `governance-unlock-flow`, which is mounted only
+// when governance is on too — an Unlock button without its flow would click into nothing.
+const locksEnableFlag = $features.map(({ dashboard, governance }) => dashboard && governance);
 
 export const dashboardGovernanceFeature = createFeature({
   name: 'dashboard/governance',
@@ -65,7 +68,7 @@ dashboardReferendumsFeature.inject(
 export const dashboardGovernanceLocksFeature = createFeature({
   name: 'dashboard/governance-locks',
   input: createStore({}),
-  enable: enableFlag,
+  enable: locksEnableFlag,
 });
 
 dashboardGovernanceLocksFeature.inject(

@@ -210,7 +210,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       {
         key: 'chainName',
         title: t('dashboard.governanceLocks.chain'),
-        width: '120px',
+        width: '150px',
         render: (_value, row) => (
           <div className="flex items-center gap-1.5">
             <img src={row.chainIcon} alt={row.chainName} className="h-5 w-5" />
@@ -295,13 +295,13 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       {
         key: 'tracks',
         title: t('dashboard.governanceLocks.tracks'),
-        width: '140px',
+        width: '160px',
         render: (_value, row) => <TracksCell tracks={row.tracks} />,
       },
       {
         key: 'claimableActions',
         title: t('dashboard.governanceLocks.action'),
-        width: '150px',
+        width: '170px',
         render: (_value, row) => (
           <LockActionCell
             row={row}
@@ -387,7 +387,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
 
         {visibleRows.length > 0 && (
           <div className="mt-3 min-h-0 flex-1 overflow-auto">
-            <div className="min-w-[1090px]">
+            <div className="min-w-[1160px]">
               <Table columns={columns} data={visibleRows} getRowKey={(row) => row.key} stickyHeader />
             </div>
           </div>
