@@ -110,6 +110,16 @@ describe('OperationAdvancedDetails', () => {
     );
   });
 
+  it('is driven by the flag alone — the mapper and cache guarantee call data is null on a mismatch', () => {
+    render(
+      <OperationAdvancedDetails
+        operation={makeOperation({ callData: '0x0500' as HexString, callDataMismatch: true })}
+      />,
+    );
+
+    expect(screen.getByText('operation.callData.indexerMismatch')).toBeInTheDocument();
+  });
+
   it('shows no mismatch warning when call data is simply missing', () => {
     render(<OperationAdvancedDetails operation={makeOperation()} />);
 

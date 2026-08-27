@@ -1,7 +1,8 @@
 import { allSettled, createEvent, fork, sample } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { type ChainId, AccountType } from '@/shared/core';
+import { type ChainId, type HexString, AccountType } from '@/shared/core';
+import { getCallHash } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '../account/store';
 
@@ -222,6 +223,84 @@ describe('multisigOperation store', () => {
       await allSettled(nukeAccounts, { scope, params: [plainMultisig] });
 
       expect(scope.getState(multisigOperation.__test.$cachedOperations)).toBe(original);
+    });
+  });
+
+  describe('cached-operation hydration', () => {
+    const validCallData = '0x0500' as HexString;
+    const validOp = {
+      id: 'v1',
+      multisigAccountId: '0xms' as AccountId,
+      callHash: getCallHash(validCallData),
+      callData: validCallData,
+      transaction: { section: 'balances', method: 'transfer' },
+      section: 'balances',
+      method: 'transfer',
+    } as unknown as MultisigOperation;
+    const staleOp = {
+      id: 's1',
+      multisigAccountId: '0xms' as AccountId,
+      callHash: '0xdeadbeef',
+      callData: validCallData,
+      transaction: { section: 'balances', method: 'transfer' },
+      section: 'balances',
+      method: 'transfer',
+    } as unknown as MultisigOperation;
+    const emptyOp = {
+      id: 'e1',
+      multisigAccountId: '0xms' as AccountId,
+      callHash: '0xdeadbeef',
+      callData: null,
+      transaction: null,
+      section: null,
+      method: null,
+    } as unknown as MultisigOperation;
+
+    // The owning multisig must be live, or the orphan eviction (also clocked
+    // by hydration) would empty the cache before the assertion.
+    const owner = {
+      id: 'acc-ms',
+      type: 'universal',
+      accountType: AccountType.MULTISIG,
+      accountId: '0xms' as AccountId,
+      walletId: 1,
+      name: 'ms',
+    } as any;
+
+    const hydrate = (value: MultisigOperation[]) => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [multisigOperation.__test.$cachedOperations, value],
+          [accounts.__test.$list, [owner]],
+        ]),
+      });
+
+      return allSettled(multisigOperation.__test.cachedOperationsLoaded, {
+        scope,
+        params: { key: 'multisig-operations', keyPrefix: '', operation: 'get', value },
+      }).then(() => scope.getState(multisigOperation.__test.$cachedOperations));
+    };
+
+    it('discards persisted call data whose hash no longer matches and flags the row', async () => {
+      const cached = await hydrate([validOp, staleOp, emptyOp]);
+
+      expect(cached).toEqual([
+        validOp,
+        { ...staleOp, callData: null, transaction: null, section: null, method: null, callDataMismatch: true },
+        emptyOp,
+      ]);
+    });
+
+    it('keeps the same array reference when every cached row is consistent', async () => {
+      const original = [validOp, emptyOp];
+
+      expect(await hydrate(original)).toBe(original);
+    });
+
+    it('still clears the cache entirely for pre-multisigAccountId rows', async () => {
+      const legacy = { id: 'old', callHash: '0x00', callData: null } as unknown as MultisigOperation;
+
+      expect(await hydrate([legacy, validOp])).toEqual([]);
     });
   });
 

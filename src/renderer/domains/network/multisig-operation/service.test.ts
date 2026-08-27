@@ -277,7 +277,13 @@ describe('multisig operation service', () => {
       const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
 
       expect(merged?.callData).toBe('0x0500');
-      expect(merged?.callDataMismatch).toBeUndefined();
+      expect(merged).not.toHaveProperty('callDataMismatch');
+    });
+
+    it('omits the mismatch key entirely when neither side flagged one', () => {
+      const [merged] = multisigOperationService.mergeMultisigOperations([makeOperation()], [makeOperation()]);
+
+      expect(merged).not.toHaveProperty('callDataMismatch');
     });
 
     it('clears awaitingOutcome once the merged status is resolved', () => {

@@ -179,14 +179,18 @@ three panels:
   the core call in a monospace chip (verification data, not a title; omitted when the call is unknown); **Amount** when
   the row's Value cell shows one; and the shared **operation description** as full wrapped text under a hairline
   (descriptions past 620 characters collapse behind _Show more_), with an Edit action when editing is allowed. Special
-  shapes render their bespoke details here.
+  shapes render their bespoke details here. When the call is unknown _because_ the indexer's call data failed the
+  call-hash check, the Operation type row is not omitted but carries a short warning that the indexer call data did not
+  match the hash and was discarded — the signer sees why the call is unreadable without opening Advanced.
 - **Signatories** — the signatory list and the operation's activity **Log**, plus the header actions (including **Notify
   remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
   link, and the **hide / unhide** control. When the outer and core calls differ (proxy/batch wrappers), the labels
   switch to "Core call hash" / "Core call data". Call data coming from the indexer is checked against the call hash
-  before it is ever decoded; on a mismatch it is discarded and the call data row instead states that indexer call data
-  did not match the hash, so the user knows why the call is unreadable and where the data came from.
+  before it is ever decoded; on a mismatch it is discarded — along with the indexer's own section/method labels, so the
+  row title falls back to "Unknown Operation" — and the call data row instead states that indexer call data did not
+  match the hash, so the user knows why the call is unreadable and where the data came from. The same check is re-run on
+  operations restored from the local cache, so data persisted by an older build is discarded the same way.
 
 ### Description in the row
 
@@ -260,8 +264,11 @@ are re-synced; an optional operation description is posted to the address book a
 ### Adding call data
 
 When the final signer faces a missing/invalid call, the **Add call data** modal accepts pasted hex, validates it live
-(must be hex, must hash-match the call hash, must decode), previews the decoded call, and stores it. Once valid call
-data exists, the operation decodes throughout the view and the **Approve** button appears for the final signer.
+(must be hex, must hash-match the call hash, must decode), previews the decoded call, and stores it. The modal opens
+with an info hint explaining that the call data may not have been included at creation; when the call is missing because
+the indexer's call data failed the call-hash check, that hint is replaced by a warning stating the indexer data was
+discarded. Once valid call data exists, the operation decodes throughout the view and the **Approve** button appears for
+the final signer.
 
 ### Rejecting
 

@@ -14,7 +14,7 @@ import {
   AccountType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, groupBy, keys, nonNullable, nullable } from '@/shared/lib/utils';
+import { entries, groupBy, keys, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
@@ -388,11 +388,38 @@ const $populated = restore(
 
 persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
 
-// Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
+/**
+ * Normalise what IndexedDB hands back:
+ *
+ * - Rows without `multisigAccountId` predate the field — the whole cache is
+ *   thrown away;
+ * - Rows persisted before the indexer call-hash check may still carry call data
+ *   (and decoded semantics) unrelated to their hash — that data is discarded
+ *   and the row flagged, exactly as a fresh indexer response would be, so the
+ *   UI never shows a stale mismatching call.
+ *
+ * Returns the same array when nothing needs changing so the store skips the
+ * update.
+ */
+const sanitiseCachedOperations = (value: MultisigOperation[]): MultisigOperation[] => {
+  if (value.some(op => !op.multisigAccountId)) return [];
+
+  let changed = false;
+  const sanitised = value.map(op => {
+    if (!op.callData || validateCallData(op.callData, op.callHash)) return op;
+
+    changed = true;
+
+    return { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true };
+  });
+
+  return changed ? sanitised : value;
+};
+
 sample({
   clock: cachedOperationsLoaded,
-  filter: ({ value }) => Array.isArray(value) && value.some(op => !op.multisigAccountId),
-  fn: () => [],
+  filter: ({ value }) => Array.isArray(value),
+  fn: ({ value }) => sanitiseCachedOperations(value),
   target: $cachedOperations,
 });
 
@@ -565,6 +592,7 @@ export const multisigOperation = {
     $list: $allOperations,
     $populated,
     $cachedOperations,
+    cachedOperationsLoaded,
     $expectedChainIds: $chainIdsWithMultisigSupport,
     $fetchedChainIds: $initializedChainIds,
     $offChainReady: $offChainFetched,

@@ -155,7 +155,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           </DetailRow>
         )}
 
-        {!callData && callDataMismatch && (
+        {callDataMismatch && (
           <DetailRow label={t(callDetailsLabelKeys.callData)} className="text-text-secondary">
             <FootnoteText className="text-text-negative">{t('operation.callData.indexerMismatch')}</FootnoteText>
           </DetailRow>
