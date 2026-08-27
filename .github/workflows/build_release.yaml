@@ -10,12 +10,14 @@ env:
   BUILD_SOURCE: 'github'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release-build:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    permissions:
+      contents: read
 
     strategy:
       fail-fast: false
@@ -30,12 +32,12 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Get tag name
-        uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable
+        uses: olegtarasov/get-tag@53af8e1e538a0ffab949cdde3e332d8e58e8630f # v2.1 # Put version in GIT_TAG_NAME environment variable
         with:
           tagRegex: '^.(.*)$'
 
       - name: Update package.json version
-        uses: jossef/action-set-json-field@v2
+        uses: jossef/action-set-json-field@2a0f7d953b580b828717daf4de7fafc7e4135e97 # v2
         with:
           file: package.json
           field: version
@@ -76,6 +78,8 @@ jobs:
     name: Release Nova Spektr build-project
     runs-on: ubuntu-latest
     needs: release-build
+    permissions:
+      contents: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -88,7 +92,7 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Replace space by "-"
         run: |
@@ -108,7 +112,7 @@ jobs:
           done
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1 (v0.1.15)
         with:
           name: 'Release ${{ steps.get_version.outputs.VERSION }}'
           tag_name: ${{ github.ref }}

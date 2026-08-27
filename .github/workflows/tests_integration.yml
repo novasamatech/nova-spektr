@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Install allurectl
-        uses: allure-framework/setup-allurectl@v1
+        uses: allure-framework/setup-allurectl@2d89ee0b7ba2f59dbe9849b6df5763cab78e14db # v1.0.3
 
       - name: 🧪 Run integration tests
         id: vitest_tests
@@ -68,7 +68,7 @@ jobs:
 
       - name: 📄 Post results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: ./junit.xml
           check_name: 'Integration Test Results'
@@ -94,7 +94,7 @@ jobs:
 
       - name: Notify Telegram channel
         if: always()
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}

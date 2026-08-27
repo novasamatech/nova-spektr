@@ -1,4 +1,28 @@
 # build_stage.yaml
+#
+# Trust boundary
+# --------------
+# This workflow is triggered by labelling a pull request, i.e. by code that has
+# not been reviewed yet. It is split so that PR code never runs next to release
+# credentials:
+#
+#   build (untrusted)  -> checks out the PR head and compiles it. Holds no
+#                         secrets and only `contents: read`. Its only outputs
+#                         are the compiled bundle (release/build, minus
+#                         package.json) and a validated version string.
+#   package (trusted)  -> checks out the repository default branch, not the PR,
+#                         so every script it executes (install-pnpm action,
+#                         add_cert_in_keychain.sh, scripts/postbuild.js,
+#                         electron-builder.js, package.json scripts) is reviewed
+#                         code. It downloads the compiled bundle as plain data
+#                         and signs/notarizes/packages it.
+#   distribute         -> uploads installers to S3 and notifies Telegram. No
+#                         checkout at all; only pinned third-party actions.
+#
+# `package` and `distribute` run in the `internal-build` GitHub environment.
+# The environment must be created in repository settings with required
+# reviewers, and the signing / notarization / S3 / Telegram secrets should be
+# scoped to that environment so they are unavailable to any job outside it.
 ---
 name: Build and deploy
 
@@ -6,66 +30,85 @@ on:
   pull_request:
     types: [labeled]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  CSC_FOR_PULL_REQUEST: true
   CI: true
   S3_BUCKET: s3://spektr-stage-releases
   STORING_DAYS: 60
 
 jobs:
-  internal-version-increment:
-    if: contains(github.event.label.name, 'internal-build')
+  # Untrusted: runs PR code. Must never receive secrets.
+  build:
+    if: github.event.label.name == 'internal-build'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - name: ⚙️Checkout
+      - name: ⚙️Checkout PR head
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Get version from package.json
-        id: pkg
-        run: echo "::set-output name=version::$(node -p "require('./package.json').version")"
-
-      - name: Update version from secret
-        id: update_version
+      - name: Derive internal build version
+        id: version
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PKG_VERSION=${{ steps.pkg.outputs.version }}
-          INTERNAL_BUILD_VERSION=${{ secrets.INTERNAL_BUILD_VERSION }}
-          INTERNAL_BUILD_VERSION_BASE=${INTERNAL_BUILD_VERSION%-*}
-          if [[ $PKG_VERSION == "$INTERNAL_BUILD_VERSION_BASE" ]]; then
-            # Increment the last number of INTERNAL_BUILD_VERSION
-            NEW_VERSION=$(echo $INTERNAL_BUILD_VERSION | awk 'BEGIN{FS=OFS="-"} {n=split($NF, a, "."); if(n>1) $NF=a[1]"."a[2]+1; else $NF++;} 1')
-          else
-            NEW_VERSION="${PKG_VERSION}-1"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [[ ! "$PKG_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::package.json version '$PKG_VERSION' is not a plain x.y.z version"
+            exit 1
           fi
-          echo "::set-output name=new_version::$NEW_VERSION"
+          echo "version=${PKG_VERSION}-pr${PR_NUMBER}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      - name: Write app version to secrets
-        uses: hmanzur/actions-set-secret@v2.0.0
-        with:
-          name: 'INTERNAL_BUILD_VERSION'
-          value: ${{ steps.update_version.outputs.new_version }}
-          repository: novasamatech/nova-spektr
-          token: ${{ secrets.WRITE_SECRET_PAT }}
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
 
-      - name: Save nev version to artifacts
-        run: |
-          echo "${{ steps.update_version.outputs.new_version }}" > internal_version.txt
+      - name: Update package.json version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: jq --arg v "$VERSION" '.version = $v' package.json > temp.json && mv temp.json package.json
+        shell: bash
 
-      - name: Upload artifact with version
+      - name: Build bundle
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          # A repository variable, not a secret: it is embedded in the bundle anyway and
+          # variables are readable by pull_request runs, so the untrusted job can have it.
+          WALLET_CONNECT_PROJECT_ID: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
+        run: pnpm build:staging
+
+      # Only the compiled bundle is handed over. release/build/package.json is
+      # regenerated by the trusted job from the trusted checkout.
+      - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:
-          name: internal-version
+          name: stage-bundle
+          if-no-files-found: error
           path: |
-            internal_version.txt
+            release/build
+            !release/build/package.json
 
-  internal-release-build:
+  # Trusted: signs and packages the bundle. Executes only code from the default branch.
+  package:
+    needs: build
     runs-on: ${{ matrix.os }}
-    needs: internal-version-increment
     timeout-minutes: 60
+    environment: internal-build
+    permissions:
+      contents: read
+    env:
+      CSC_FOR_PULL_REQUEST: true
 
     strategy:
       fail-fast: false
@@ -73,18 +116,11 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
-      - name: ⚙️Checkout
+      - name: ⚙️Checkout trusted ref
         uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
         with:
-          name: internal-version
-
-      - name: Read internal-build version
-        id: internal-version
-        run: |
-          echo "::set-output name=version::$(cat internal_version.txt)"
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
 
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
@@ -96,39 +132,48 @@ jobs:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
-      - name: Update package.json
-        run: |
-          jq '.version = "${{ steps.internal-version.outputs.version }}"' package.json > temp.json && mv temp.json package.json
+      - name: Update package.json version
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: jq --arg v "$VERSION" '.version = $v' package.json > temp.json && mv temp.json package.json
         shell: bash
 
-      - name: Build app
+      - name: Download bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: stage-bundle
+          path: release/build
+
+      - name: Generate release/build/package.json from trusted checkout
+        run: pnpm postbuild:staging
+
+      - name: Package app
         env:
           # secrets for notarization
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           NODE_OPTIONS: "--max-old-space-size=8192"
-          WALLET_CONNECT_PROJECT_ID: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
-        run: |
-          pnpm staging:sequence
+        run: pnpm dist:staging
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-${{ matrix.os }}
+          if-no-files-found: error
           path: |
             release/dist/*.exe
             release/dist/*.dmg
             release/dist/*.AppImage
 
-  internal-release-distribute:
-    needs: internal-release-build
+  distribute:
+    needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment: internal-build
+    permissions:
+      contents: read
     steps:
-      - name: ⚙️Checkout
-        uses: actions/checkout@v4
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -150,31 +195,35 @@ jobs:
             fi
           done
 
-      - name: ⚙️Install dependencies
-        uses: ./.github/workflows/setup-s3cmd
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@702f629ce32a0c60522075f4bc211aa02989adea # v1.9.0
         with:
-          s3_region: pl-waw
-          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
-          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+          provider: scaleway
+          region: pl-waw
+          access_key: ${{ secrets.S3_ACCESS_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
 
       - name: Interact with object storage
         id: interact_with_storage
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           declare -A artifacts=(["windows_app"]="*.exe" ["macos_64_app"]="*arm64.dmg" ["linux_app"]="*.AppImage" ["macos_app"]="*[!arm64].dmg")
           for artifact_name in "${!artifacts[@]}"; do
             artifact_pattern=${artifacts[$artifact_name]}
             for artifact in $artifact_pattern; do
               if [ -f "$artifact" ]; then
-                s3cmd sync "$artifact" --acl-public --multipart-chunk-size-mb=150 "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact"
-                url=$(s3cmd signurl "${{ env.S3_BUCKET }}/pr-${{ github.event.pull_request.number }}/$artifact" $(echo "`date +%s` + 3600 * 24 * ${{ env.STORING_DAYS }}" | bc))
+                s3cmd sync "$artifact" --acl-public --multipart-chunk-size-mb=150 "${S3_BUCKET}/pr-${PR_NUMBER}/$artifact"
+                expires_at=$(( $(date +%s) + 3600 * 24 * STORING_DAYS ))
+                url=$(s3cmd signurl "${S3_BUCKET}/pr-${PR_NUMBER}/$artifact" "$expires_at")
                 # Escape the URL and format it differently
-                echo "::set-output name=$artifact_name::<a href=\"$url\">$artifact</a>"
+                echo "$artifact_name=<a href=\"$url\">$artifact</a>" >> "$GITHUB_OUTPUT"
               fi
             done
           done
 
       - name: Notify Telegram channel
-        uses: appleboy/telegram-action@master
+        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
