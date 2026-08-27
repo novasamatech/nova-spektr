@@ -1,4 +1,11 @@
-import { type DecodedTransaction, type MultisigAccount, AccountType, CryptoType, SigningType } from '@/shared/core';
+import {
+  type DecodedTransaction,
+  type HexString,
+  type MultisigAccount,
+  AccountType,
+  CryptoType,
+  SigningType,
+} from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { createAccountId, kusamaChainId, polkadotChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -252,6 +259,25 @@ describe('multisig operation service', () => {
       const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
 
       expect(merged?.status).toBe('cancelled');
+    });
+
+    it('keeps the indexer call-data mismatch flag when the live side has no call data', () => {
+      const offChain = makeOperation({ callDataMismatch: true });
+      const live = makeOperation();
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.callDataMismatch).toBe(true);
+    });
+
+    it('drops the call-data mismatch flag once valid call data is known', () => {
+      const offChain = makeOperation({ callDataMismatch: true });
+      const live = makeOperation({ callData: '0x0500' as HexString });
+
+      const [merged] = multisigOperationService.mergeMultisigOperations([offChain], [live]);
+
+      expect(merged?.callData).toBe('0x0500');
+      expect(merged?.callDataMismatch).toBeUndefined();
     });
 
     it('clears awaitingOutcome once the merged status is resolved', () => {

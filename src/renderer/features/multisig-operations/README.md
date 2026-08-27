@@ -184,7 +184,9 @@ three panels:
   remaining signers** when applicable). Detailed below.
 - **Advanced** — call hash, call data with a formatted JSON view (once known), the on-chain time point with an explorer
   link, and the **hide / unhide** control. When the outer and core calls differ (proxy/batch wrappers), the labels
-  switch to "Core call hash" / "Core call data".
+  switch to "Core call hash" / "Core call data". Call data coming from the indexer is checked against the call hash
+  before it is ever decoded; on a mismatch it is discarded and the call data row instead states that indexer call data
+  did not match the hash, so the user knows why the call is unreadable and where the data came from.
 
 ### Description in the row
 

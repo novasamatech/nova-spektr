@@ -166,6 +166,8 @@ const mergeMultisigOperations = (
         // timepoint.
         events: uniqBy([...a.events, ...b.events], event => event.id),
         callData: b.callData ?? a.callData,
+        // Only meaningful while no side supplied valid call data.
+        callDataMismatch: (b.callData ?? a.callData) ? undefined : (b.callDataMismatch ?? a.callDataMismatch),
         callHash: b.callHash ?? a.callHash,
         transaction: b.transaction ?? a.transaction,
         section: b.section ?? a.section,
