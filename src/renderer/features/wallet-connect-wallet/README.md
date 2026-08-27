@@ -1,6 +1,6 @@
 # WalletConnect & Nova Wallet
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-28
 >
 > **Draft — pending author review.** Written from reading the code; needs sign-off from the feature owner before it is
 > treated as the source of product truth.
@@ -19,6 +19,10 @@ WalletConnect app".
 
 Applies to every account created through a WalletConnect pairing, in both flavours (generic WalletConnect and Nova
 Wallet). Availability of the pairing itself is handled by `wallet-connect-wallet-pairing`.
+
+The whole feature depends on a WalletConnect Cloud project id supplied at build time (`WALLET_CONNECT_PROJECT_ID`). A
+development build without it hides the feature and never starts the sign client (a console warning explains why);
+staging and production builds refuse to build without it, so a released app always has WalletConnect available.
 
 ## States / scenarios
 

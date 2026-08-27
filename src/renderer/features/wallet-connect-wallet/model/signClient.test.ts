@@ -3,17 +3,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const coreMock = vi.hoisted(() => vi.fn());
 const clientInitMock = vi.hoisted(() => vi.fn());
-const constantsMock = vi.hoisted(() => ({ DEFAULT_PROJECT_ID: '' }));
+const constantsMock = vi.hoisted(() => ({ WALLET_CONNECT_PROJECT_ID: '' }));
 
 vi.mock('@walletconnect/core', () => ({
   Core: coreMock,
   RELAYER_EVENTS: { connect: 'connect', connection_stalled: 'connection_stalled', disconnect: 'disconnect' },
 }));
 vi.mock('@walletconnect/sign-client', () => ({ default: { init: clientInitMock } }));
-vi.mock('../lib/constants', async importOriginal => ({
+vi.mock('@/shared/lib/utils', async importOriginal => ({
   ...(await importOriginal()),
-  get DEFAULT_PROJECT_ID() {
-    return constantsMock.DEFAULT_PROJECT_ID;
+  get WALLET_CONNECT_PROJECT_ID() {
+    return constantsMock.WALLET_CONNECT_PROJECT_ID;
+  },
+  get IS_WALLET_CONNECT_CONFIGURED() {
+    return constantsMock.WALLET_CONNECT_PROJECT_ID !== '';
   },
 }));
 
@@ -32,7 +35,7 @@ describe('wallet-connect-wallet/model/signClient', () => {
   });
 
   it('should not initialise WalletConnect when project id is empty', async () => {
-    constantsMock.DEFAULT_PROJECT_ID = '';
+    constantsMock.WALLET_CONNECT_PROJECT_ID = '';
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const scope = fork({ values: [[$mutatedFeatures, { walletConnect: true }]] });
 
@@ -45,7 +48,7 @@ describe('wallet-connect-wallet/model/signClient', () => {
   });
 
   it('should initialise WalletConnect when project id is set', async () => {
-    constantsMock.DEFAULT_PROJECT_ID = 'project-id';
+    constantsMock.WALLET_CONNECT_PROJECT_ID = 'project-id';
     const scope = fork({ values: [[$mutatedFeatures, { walletConnect: true }]] });
 
     await allSettled(walletConnectWalletFeature.start, { scope });

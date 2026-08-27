@@ -33,6 +33,10 @@ const config: ViteUserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const config: ViteUserConfig = {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
+    define: {
+      // Deterministic in tests: a developer's `.env` must not flip `$defaultFeatures.walletConnect`.
+      'process.env.WALLET_CONNECT_PROJECT_ID': '""',
+    },
     resolve: {
       alias: {
         // Vite 7 native tsconfigPaths does not resolve @/ aliases during Vitest's

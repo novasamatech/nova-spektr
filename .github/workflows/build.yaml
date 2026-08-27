@@ -33,7 +33,7 @@ jobs:
 
       - name: Build app
         env:
-          WALLET_CONNECT_PROJECT_ID: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
+          WALLET_CONNECT_PROJECT_ID: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
         run: |
           pnpm build
           pnpm postbuild

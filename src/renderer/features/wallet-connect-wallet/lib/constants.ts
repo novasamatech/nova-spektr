@@ -1,6 +1,3 @@
-import { WALLET_CONNECT_PROJECT_ID } from '@/shared/lib/utils';
-
-export const DEFAULT_PROJECT_ID = WALLET_CONNECT_PROJECT_ID;
 export const DEFAULT_RELAY_URL = 'wss://relay.walletconnect.com';
 
 export const DEFAULT_LOGGER = 'error';
