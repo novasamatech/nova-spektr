@@ -14,6 +14,8 @@ export type PrimitiveType =
   | 'string'
   | 'bytes';
 
+export const SIGNED_INT_TYPES: ReadonlySet<PrimitiveType> = new Set(['i8', 'i16', 'i32', 'i64', 'i128']);
+
 export type ParameterKind =
   | 'primitive'
   | 'accountId'

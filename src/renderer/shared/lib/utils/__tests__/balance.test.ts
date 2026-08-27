@@ -215,6 +215,20 @@ describe('formatAmountStrict', () => {
   );
 
   test('rejects more decimals than the precision allows', () => {
-    expect(() => formatAmountStrict('1.123', 2)).toThrow();
+    expect(() => formatAmountStrict('1.123', 2)).toThrow(/decimals/);
+  });
+
+  test('does not cap the integer part (Compact<u128> args can exceed 15 digits)', () => {
+    expect(formatAmountStrict('1234567890123456', 10)).toEqual('12345678901234560000000000');
+  });
+
+  test.each([
+    ['.', '0'],
+    ['1.', '10000000000'],
+    ['007', '70000000000'],
+    ['', '0'],
+  ])('tolerates edge-case input %s like formatAmount', (amount, expected) => {
+    expect(formatAmountStrict(amount, 10)).toEqual(formatAmount(amount, 10));
+    expect(formatAmountStrict(amount, 10)).toEqual(expected);
   });
 });

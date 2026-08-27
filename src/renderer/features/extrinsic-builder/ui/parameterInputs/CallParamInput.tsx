@@ -12,7 +12,11 @@ import { ParameterField } from '../ParameterField';
 type Props = {
   api: ApiPromise | null;
   value: string;
-  onChange: (value: string) => void;
+  /**
+   * Null when the nested call cannot be encoded, so the outer call fails
+   * instead of keeping stale data.
+   */
+  onChange: (value: string | null) => void;
   depth: number;
 };
 
@@ -34,7 +38,7 @@ export const CallParamInput = memo(({ api, value, depth, onChange }: Props) => {
 type NestedBuilderProps = {
   api: ApiPromise | null;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string | null) => void;
   depth: number;
 };
 
@@ -84,10 +88,7 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
 
         if (api && pallet && call && callMeta) {
           const args = callMeta.args.map((def) => updated[def.name]);
-          const encoded = encodeCallData(api, pallet, call, args, callMeta.args);
-          if (encoded) {
-            onChange(encoded);
-          }
+          onChange(encodeCallData(api, pallet, call, args, callMeta.args));
         }
 
         return updated;
