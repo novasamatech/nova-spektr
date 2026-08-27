@@ -1,6 +1,16 @@
 name: Install pnpm
 description: Install pnpm, Node.js and project dependencies
 
+inputs:
+  cache:
+    description: >-
+      Restore/save the pnpm store via the GitHub Actions cache. Set to 'false'
+      in trusted jobs (release / signing) — the cache is writable by any
+      pull_request job, so a trusted job that restores it (including via
+      prefix fallback) could install a poisoned store.
+    required: false
+    default: 'true'
+
 runs:
   using: 'composite'
   steps:
@@ -12,9 +22,9 @@ runs:
         run_install: false
 
     - name: 🤞 Use Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
-        cache: pnpm
+        cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
         node-version: 24
 
     - name: ⚙️Install dependencies
