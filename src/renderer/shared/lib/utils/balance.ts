@@ -39,6 +39,22 @@ export const formatAmount = (amount: string, precision: number): string => {
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
 };
 
+/**
+ * Like formatAmount, but refuses input it cannot represent instead of stripping
+ * characters: a sign, separators or excess decimals throw. Use it where the
+ * amount has not already passed the form validators.
+ */
+export const formatAmountStrict = (amount: string, precision: number): string => {
+  if (!validateSymbols(amount)) {
+    throw new Error(`Invalid amount "${amount}": only digits and a decimal point are allowed`);
+  }
+  if (!validatePrecision(amount, precision)) {
+    throw new Error(`Invalid amount "${amount}": at most ${precision} decimals are allowed`);
+  }
+
+  return formatAmount(amount, precision);
+};
+
 type FormatBalanceShorthands = Record<Suffix, boolean>;
 export type FormatBalanceConfig = Partial<{
   round: 'up' | 'down';

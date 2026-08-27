@@ -221,6 +221,27 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       expect(capturedArgs[0]).toBe('address');
       expect(capturedArgs[1]).toBe('15000000000');
     });
+
+    it.each(['-1.5', '-1.55', '1,5'])('refuses to encode the malformed balance %s', (amount) => {
+      let called = false;
+      const api = createMockApi({
+        balances: {
+          transfer: {
+            onCall: () => {
+              called = true;
+            },
+          },
+        },
+      });
+
+      const argDefs = [
+        { name: 'dest', typeDef: { kind: 'accountId' as const, typeName: 'MultiAddress' } },
+        { name: 'value', typeDef: { kind: 'balance' as const, typeName: 'Compact<u128>' } },
+      ];
+
+      expect(encodeCallData(api, 'balances', 'transfer', ['address', amount], argDefs)).toBeNull();
+      expect(called).toBe(false);
+    });
   });
 
   describe('encodeCallData — convertArgForEncoding via onCall', () => {

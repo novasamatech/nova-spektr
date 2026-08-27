@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { formatAmount } from '@/shared/lib/utils';
+import { formatAmountStrict } from '@/shared/lib/utils';
 
 import { type CallArgDef, type ParameterTypeDef } from './types';
 
@@ -41,7 +41,7 @@ export function encodeCallData(
  *
  * - Enum { variant, values } → { VariantName: innerValue } or just "VariantName"
  * - Option { enabled, inner } → inner value or null
- * - Balance string → formatAmount planck string
+ * - Balance string → planck string (throws on malformed input, so encoding fails)
  * - Struct/Tuple objects → recursively convert fields
  * - Vec arrays → recursively convert items
  */
@@ -52,7 +52,7 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
   switch (def.kind) {
     case 'balance': {
       if (typeof arg === 'string' && arg !== '') {
-        return formatAmount(arg, precision);
+        return formatAmountStrict(arg, precision);
       }
 
       return arg;

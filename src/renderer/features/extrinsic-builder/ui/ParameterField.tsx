@@ -79,7 +79,9 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
       const isText = typeDef.primitiveType === 'string' || typeDef.primitiveType === 'bytes';
 
       if (!isText) {
-        return <NumberParamInput value={String(value ?? '')} onChange={onChange} />;
+        const signed = typeDef.primitiveType?.startsWith('i') ?? false;
+
+        return <NumberParamInput value={String(value ?? '')} signed={signed} onChange={onChange} />;
       }
 
       return <TextParamInput value={String(value ?? '')} onChange={onChange} />;

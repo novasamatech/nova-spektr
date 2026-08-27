@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo, useMemo } from 'react';
 
+import { validateSymbols } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
 
@@ -18,7 +19,7 @@ export const BalanceParamInput = memo(({ value, api, onChange }: Props) => {
   }, [api]);
 
   const handleChange = (val: string) => {
-    if (val === '' || /^-?\d*\.?\d*$/.test(val)) {
+    if (validateSymbols(val)) {
       onChange(val);
     }
   };
