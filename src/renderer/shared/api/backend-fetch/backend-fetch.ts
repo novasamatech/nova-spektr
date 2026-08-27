@@ -4,10 +4,21 @@ import { isElectron } from '@/shared/lib/utils';
 
 export type FetchResult = { ok: boolean; status: number; headers: Record<string, string>; body: string };
 
-let csrfToken: string | null = null;
+type CsrfToken = { origin: string; token: string };
+
+// The token is bound to the origin that issued it, so a backend URL change never leaks it elsewhere.
+let csrfToken: CsrfToken | null = null;
+
+function getOrigin(url: string): string | null {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
 
 export function getCsrfToken(): string | null {
-  return csrfToken;
+  return csrfToken?.token ?? null;
 }
 
 export function clearCsrfToken(): void {
@@ -27,8 +38,10 @@ export async function authFetch(url: string, init?: RequestInit): Promise<FetchR
     Object.assign(headers, initHeaders);
   }
 
-  if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken;
+  const origin = getOrigin(url);
+
+  if (csrfToken && origin !== null && csrfToken.origin === origin) {
+    headers['X-CSRF-Token'] = csrfToken.token;
   }
 
   const mergedInit: RequestInit = { ...init, headers };
@@ -56,8 +69,8 @@ export async function authFetch(url: string, init?: RequestInit): Promise<FetchR
   }
 
   const newToken = result.headers['x-csrf-token'];
-  if (newToken) {
-    csrfToken = newToken;
+  if (newToken && origin !== null) {
+    csrfToken = { origin, token: newToken };
   }
 
   return result;

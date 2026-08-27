@@ -86,6 +86,56 @@ describe('authFetch', () => {
     expect(secondInit.headers['X-CSRF-Token']).toBeUndefined();
   });
 
+  it('does not send the token to a different origin than the one that issued it', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(mockFetchResponse({ headers: { 'x-csrf-token': 'token-1' } }))
+      .mockResolvedValueOnce(mockFetchResponse());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await authFetch('https://backend.test/a');
+    await authFetch('https://other.test/b');
+
+    const [, secondInit] = fetchMock.mock.calls[1]!;
+    expect(secondInit.headers['X-CSRF-Token']).toBeUndefined();
+  });
+
+  it('does not send the token when the request URL cannot be parsed', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(mockFetchResponse({ headers: { 'x-csrf-token': 'token-1' } }))
+      .mockResolvedValueOnce(mockFetchResponse());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await authFetch('https://backend.test/a');
+    await authFetch('not a url');
+
+    const [, secondInit] = fetchMock.mock.calls[1]!;
+    expect(secondInit.headers['X-CSRF-Token']).toBeUndefined();
+  });
+
+  it('rebinds the token to the new origin when another backend issues one', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(mockFetchResponse({ headers: { 'x-csrf-token': 'token-1' } }))
+      .mockResolvedValueOnce(mockFetchResponse({ headers: { 'x-csrf-token': 'token-2' } }))
+      .mockResolvedValueOnce(mockFetchResponse())
+      .mockResolvedValueOnce(mockFetchResponse());
+    vi.stubGlobal('fetch', fetchMock);
+
+    await authFetch('https://backend.test/a');
+    await authFetch('https://other.test/b');
+    expect(getCsrfToken()).toBe('token-2');
+
+    await authFetch('https://other.test/c');
+    const [, thirdInit] = fetchMock.mock.calls[2]!;
+    expect(thirdInit.headers['X-CSRF-Token']).toBe('token-2');
+
+    await authFetch('https://backend.test/d');
+    const [, fourthInit] = fetchMock.mock.calls[3]!;
+    expect(fourthInit.headers['X-CSRF-Token']).toBeUndefined();
+  });
+
   it('browser path calls fetch with credentials: include', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(mockFetchResponse());
     vi.stubGlobal('fetch', fetchMock);
