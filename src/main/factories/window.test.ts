@@ -259,22 +259,36 @@ describe('window.ts — external url scheme allow-list via setWindowOpenHandler'
     vi.resetModules();
   });
 
-  it('opens https urls externally and denies the window', async () => {
+  it('opens https urls externally, denies the window and does not warn', async () => {
     const { handler, openExternal } = await getWindowOpenHandler();
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(handler({ url: 'https://example.com' })).toEqual({ action: 'deny' });
     expect(openExternal).toHaveBeenCalledWith('https://example.com');
+    expect(warn).not.toHaveBeenCalled();
   });
 
-  it.each(['file:///etc/passwd', 'smb://attacker/share', 'search-ms:query=x', 'vscode://open'])(
-    'does not hand %s to the OS',
-    async (url) => {
-      const { handler, openExternal } = await getWindowOpenHandler();
-      vi.mocked(openExternal).mockClear();
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      expect(handler({ url })).toEqual({ action: 'deny' });
-      expect(openExternal).not.toHaveBeenCalled();
-      expect(warn).toHaveBeenCalled();
-    },
-  );
+  it('accepts an uppercase scheme', async () => {
+    const { handler, openExternal } = await getWindowOpenHandler();
+    vi.mocked(openExternal).mockClear();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(handler({ url: 'HTTPS://example.com' })).toEqual({ action: 'deny' });
+    expect(openExternal).toHaveBeenCalledWith('HTTPS://example.com');
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'file:///etc/passwd',
+    'smb://attacker/share',
+    'search-ms:query=x',
+    'vscode://open',
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('does not hand %s to the OS', async (url) => {
+    const { handler, openExternal } = await getWindowOpenHandler();
+    vi.mocked(openExternal).mockClear();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(handler({ url })).toEqual({ action: 'deny' });
+    expect(openExternal).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^\[Security\]/), url);
+  });
 });

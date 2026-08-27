@@ -6,6 +6,16 @@ import { type Identity } from '@/shared/core';
 import { entries, toWebUrl } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 
+// A bare `local@domain` address: no whitespace and none of `? & # /`, which would
+// smuggle mailto header fields or a path into the link built from on-chain data.
+const BARE_EMAIL = /^[^\s@?&#/]+@[^\s@?&#/]+$/;
+
+const toMailtoUrl = (email: string): string | null => {
+  if (!BARE_EMAIL.test(email)) return null;
+
+  return `mailto:${email.split('@').map(encodeURIComponent).join('@')}`;
+};
+
 type IdentityListParam = {
   key: string;
   value: string;
@@ -20,8 +30,11 @@ export const getIdentityList = (identity: Identity) => {
     switch (key) {
       case 'twitter':
         return [...acc, { key: capitalizedKey, value, url: `https://x.com/${value}` }];
-      case 'email':
-        return [...acc, { key: capitalizedKey, value, url: `mailto:${value}` }];
+      case 'email': {
+        const url = toMailtoUrl(value);
+
+        return url ? [...acc, { key: capitalizedKey, value, url }] : acc;
+      }
       case 'website': {
         const url = toWebUrl(value);
 

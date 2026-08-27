@@ -1,3 +1,5 @@
+import { CAMERA_SETTINGS_URL } from '~shared/security/externalUrlPolicy';
+
 import { useI18n } from '@/shared/i18n';
 import { getPlatformType } from '@/shared/lib/utils';
 import { Button, Icon, SmallTitleText } from '@/shared/ui';
@@ -22,9 +24,9 @@ export const CameraAccessAlert = ({ status, onRetry }: Props) => {
               const platform = getPlatformType();
               const settingsUrl =
                 platform === 'desktop-mac'
-                  ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Camera'
+                  ? CAMERA_SETTINGS_URL.MAC
                   : platform === 'desktop-windows'
-                    ? 'ms-settings:privacy-webcam'
+                    ? CAMERA_SETTINGS_URL.WINDOWS
                     : null;
 
               if (platform === 'web') {

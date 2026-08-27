@@ -4,6 +4,7 @@
     "paths": {
       "@/*": ["./src/renderer/*"],
       "~config": ["./config/index.js"],
+      "~shared/*": ["./src/shared/*"],
       "@tests/integrations/*": ["./tests/integrations/*"]
     }
   },

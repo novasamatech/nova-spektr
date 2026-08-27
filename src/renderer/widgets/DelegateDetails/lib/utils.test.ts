@@ -20,12 +20,33 @@ describe('getIdentityList', () => {
     ]);
   });
 
+  it('percent-encodes the email parts', () => {
+    expect(getIdentityList(identity({ email: 'a+b@c.d' }))).toEqual([
+      { key: 'Email', value: 'a+b@c.d', url: 'mailto:a%2Bb@c.d' },
+    ]);
+  });
+
+  it.each([
+    'a@b.c?subject=x',
+    'a@b.c&cc=x',
+    'a@b.c#x',
+    'a@b.c/x',
+    'a b@c.d',
+    'a@b.c\nbcc:x',
+    'no-at-sign',
+    'two@at@signs',
+    '@b.c',
+    'a@',
+  ])('drops email %s that is not a bare address', (email) => {
+    expect(getIdentityList(identity({ email }))).toEqual([]);
+  });
+
   it('keeps http(s) websites and prefixes scheme-less ones', () => {
     expect(getIdentityList(identity({ website: 'https://alice.io' }))).toEqual([
-      { key: 'Website', value: 'https://alice.io', url: 'https://alice.io' },
+      { key: 'Website', value: 'https://alice.io', url: 'https://alice.io/' },
     ]);
     expect(getIdentityList(identity({ website: 'alice.io' }))).toEqual([
-      { key: 'Website', value: 'alice.io', url: 'https://alice.io' },
+      { key: 'Website', value: 'alice.io', url: 'https://alice.io/' },
     ]);
   });
 

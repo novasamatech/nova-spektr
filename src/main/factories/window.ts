@@ -86,7 +86,7 @@ export function createWindow(): BrowserWindow {
     if (isAllowedExternalUrl(details.url)) {
       shell.openExternal(details.url);
     } else {
-      console.warn('Blocked external url with disallowed scheme', details.url);
+      console.warn('[Security] Blocked external url with disallowed scheme', details.url);
     }
 
     return { action: 'deny' };
