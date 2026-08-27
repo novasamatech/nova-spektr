@@ -7,6 +7,7 @@ import { isAllowedProxyOrigin, isAllowedProxyUrl, isLoopbackHostname } from './p
 const ORIGIN = 'https://address-book.example.com';
 
 describe('isLoopbackHostname', () => {
+  // `URL.hostname` keeps the brackets for IPv6 literals (`[::1]`), so the bare `::1` is not a match.
   it.each(['localhost', '127.0.0.1', '[::1]', 'LOCALHOST'])('accepts %s', (host) => {
     expect(isLoopbackHostname(host)).toBe(true);
   });

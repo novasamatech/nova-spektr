@@ -11,11 +11,11 @@ type FetchResult = Pick<Response, 'ok' | 'status' | 'statusText'> & {
 };
 
 const AUTH_PARTITION = 'persist:auth';
+const SECURITY_LOG_PREFIX = '[Security]';
+const EMPTY_JSON_BODY = '{}';
+const NETWORK_FAILURE_STATUS = 0;
 
-/**
- * Distinct from network errors so the renderer can tell "blocked" from "server
- * down".
- */
+/** Marks policy rejections (as opposed to network errors) in main and its tests. */
 export const PROXY_BLOCKED_STATUS_TEXT = 'Blocked by proxy policy';
 
 /**
@@ -26,10 +26,28 @@ export const PROXY_BLOCKED_STATUS_TEXT = 'Blocked by proxy policy';
 let allowedOrigin: string | null = null;
 
 function failure(statusText: string): FetchResult {
-  return { ok: false, status: 0, statusText, headers: {}, body: '{}' };
+  return { ok: false, status: NETWORK_FAILURE_STATUS, statusText, headers: {}, body: EMPTY_JSON_BODY };
+}
+
+/**
+ * Log-safe form of a requested URL: its origin, or a truncated prefix when it
+ * does not parse.
+ */
+function describeUrl(url: unknown): string {
+  if (typeof url !== 'string') return `<${typeof url}>`;
+
+  try {
+    return new URL(url).origin;
+  } catch {
+    return `${url.slice(0, 64)}${url.length > 64 ? '…' : ''}`;
+  }
 }
 
 export function setupProxy() {
+  /**
+   * `null` clears the pin; an origin that fails the scheme rule is refused and
+   * the previous pin is kept.
+   */
   ipcMain.handle(IPC.PROXY.SET_ALLOWED_ORIGIN, (_, origin: unknown) => {
     if (origin === null) {
       allowedOrigin = null;
@@ -38,7 +56,7 @@ export function setupProxy() {
     }
 
     if (typeof origin !== 'string' || !isAllowedProxyOrigin(origin)) {
-      console.warn(`[Security] Refused to pin proxy origin: ${String(origin)}`);
+      console.warn(`${SECURITY_LOG_PREFIX} Refused to pin proxy origin: ${describeUrl(origin)}`);
 
       return;
     }
@@ -46,19 +64,23 @@ export function setupProxy() {
     allowedOrigin = origin;
   });
 
-  ipcMain.handle(IPC.PROXY.FETCH, async (_, url: string, init?: FetchInit): Promise<FetchResult> => {
-    if (!isAllowedProxyUrl(url, allowedOrigin)) {
-      console.warn(`[Security] Blocked proxy fetch to ${url} (allowed origin: ${allowedOrigin ?? 'none'})`);
+  ipcMain.handle(IPC.PROXY.FETCH, async (_, url: unknown, init?: FetchInit): Promise<FetchResult> => {
+    if (typeof url !== 'string' || !isAllowedProxyUrl(url, allowedOrigin)) {
+      console.warn(
+        `${SECURITY_LOG_PREFIX} Blocked proxy fetch to ${describeUrl(url)} (allowed origin: ${allowedOrigin ?? 'none'})`,
+      );
 
       return failure(PROXY_BLOCKED_STATUS_TEXT);
     }
 
     let response: Response;
     try {
+      // A pinned origin must not bounce main elsewhere: a redirect is a failure, not a follow.
       response = await session.fromPartition(AUTH_PARTITION).fetch(url, {
         method: init?.method,
         headers: init?.headers,
         body: init?.body,
+        redirect: 'error',
       });
     } catch (err) {
       return failure(err instanceof Error ? err.message : String(err));

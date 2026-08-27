@@ -6,6 +6,26 @@ export type FetchResult = { ok: boolean; status: number; headers: Record<string,
 
 let csrfToken: string | null = null;
 
+// Electron only: the main-process fetch proxy refuses every request outside the origin pinned
+// here, so each request first makes sure its own origin is the pinned one. Pinning per request
+// (rather than per saved backend URL) also covers the reachability probe of an unsaved draft.
+let pinnedOrigin: string | null = null;
+let pinReady: Promise<void> = Promise.resolve();
+
+function ensureProxyOrigin(url: string): Promise<void> {
+  const origin = new URL(url).origin;
+
+  if (origin !== pinnedOrigin) {
+    pinnedOrigin = origin;
+    pinReady = Promise.resolve(window.App.setProxyAllowedOrigin(origin)).catch((error) => {
+      pinnedOrigin = null;
+      throw error;
+    });
+  }
+
+  return pinReady;
+}
+
 export function getCsrfToken(): string | null {
   return csrfToken;
 }
@@ -36,6 +56,7 @@ export async function authFetch(url: string, init?: RequestInit): Promise<FetchR
   let result: FetchResult;
 
   if (isElectron()) {
+    await ensureProxyOrigin(url);
     result = await window.App.proxyFetch(url, mergedInit);
   } else {
     const response = await fetch(url, { ...mergedInit, credentials: 'include' });

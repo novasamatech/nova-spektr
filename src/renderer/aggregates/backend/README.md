@@ -47,12 +47,12 @@ order as everywhere in the app: Polkadot group, Kusama group, others, testnets).
 - If the remembered network is no longer available in the app (removed from the chains config), the selector falls back
   to the Polkadot relay chain.
 
-### Desktop request policy
+## Desktop request policy
 
 In the desktop app backend requests go through a main-process proxy that only talks to the configured backend origin
-over `https` (plaintext `http` is accepted for `localhost` / `127.0.0.1` / `[::1]` only). The aggregate pins the origin
-whenever the backend URL changes, including the value restored on start-up; a URL outside that policy cannot be reached
-and the modal reports it as unreachable.
+over `https` (plaintext `http` is accepted for `localhost` / `127.0.0.1` / `[::1]` only). The shared backend fetch
+helper pins the origin of each request before sending it (so the reachability probe of a draft URL works too); a URL
+outside that policy cannot be reached and the modal reports it as unreachable.
 
 ## Lifecycle
 
