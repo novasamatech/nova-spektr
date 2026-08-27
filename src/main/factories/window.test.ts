@@ -242,3 +242,39 @@ describe('window.ts — CSP header via session.webRequest.onHeadersReceived', ()
     expect(result.responseHeaders).toBeUndefined();
   });
 });
+
+describe('window.ts — external url scheme allow-list via setWindowOpenHandler', () => {
+  async function getWindowOpenHandler() {
+    mockSetWindowOpenHandler.mockReset();
+    const { createWindow } = await import('./window');
+    createWindow();
+    const call = mockSetWindowOpenHandler.mock.calls[0];
+    if (!call) throw new Error('setWindowOpenHandler was not called');
+    const { shell } = await import('electron');
+
+    return { handler: call[0] as (details: { url: string }) => { action: string }, openExternal: shell.openExternal };
+  }
+
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('opens https urls externally and denies the window', async () => {
+    const { handler, openExternal } = await getWindowOpenHandler();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(handler({ url: 'https://example.com' })).toEqual({ action: 'deny' });
+    expect(openExternal).toHaveBeenCalledWith('https://example.com');
+  });
+
+  it.each(['file:///etc/passwd', 'smb://attacker/share', 'search-ms:query=x', 'vscode://open'])(
+    'does not hand %s to the OS',
+    async (url) => {
+      const { handler, openExternal } = await getWindowOpenHandler();
+      vi.mocked(openExternal).mockClear();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      expect(handler({ url })).toEqual({ action: 'deny' });
+      expect(openExternal).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalled();
+    },
+  );
+});

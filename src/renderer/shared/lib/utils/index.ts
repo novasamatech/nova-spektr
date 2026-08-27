@@ -20,3 +20,4 @@ export * from './createAsyncTaskPool';
 export * from './download-multiple-files';
 export * from './createCache';
 export * from './dates';
+export * from './url';

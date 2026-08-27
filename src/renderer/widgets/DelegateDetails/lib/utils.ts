@@ -3,7 +3,7 @@ import { capitalize } from 'lodash';
 
 import { type Delegation } from '@/shared/api/governance/off-chain/lib/types';
 import { type Identity } from '@/shared/core';
-import { entries } from '@/shared/lib/utils';
+import { entries, toWebUrl } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 
 type IdentityListParam = {
@@ -22,8 +22,11 @@ export const getIdentityList = (identity: Identity) => {
         return [...acc, { key: capitalizedKey, value, url: `https://x.com/${value}` }];
       case 'email':
         return [...acc, { key: capitalizedKey, value, url: `mailto:${value}` }];
-      case 'website':
-        return [...acc, { key: capitalizedKey, value, url: value }];
+      case 'website': {
+        const url = toWebUrl(value);
+
+        return url ? [...acc, { key: capitalizedKey, value, url }] : acc;
+      }
       case 'parent':
         return acc;
       default:
