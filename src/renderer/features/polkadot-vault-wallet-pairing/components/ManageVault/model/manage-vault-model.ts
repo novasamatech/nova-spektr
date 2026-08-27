@@ -19,6 +19,7 @@ import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
 import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
 import { type DerivationKeyDraft } from '@/features/wallets';
+import { pairingFormModel } from '../../../model/pairing-form-model';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -142,8 +143,12 @@ sample({
   target: $keys,
 });
 
+// Guarded here, not only in the UI: a duplicate must never reach the wallet model.
 sample({
   clock: vaultCreated,
+  source: pairingFormModel.$existingWallet,
+  filter: nullable,
+  fn: (_, params) => params,
   target: createWalletFx,
 });
 

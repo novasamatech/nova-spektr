@@ -23,14 +23,14 @@ Gated by the `polkadotVault` feature flag. Two entry points open the same pairin
 
 ```mermaid
 flowchart TD
-    START["Scan QR code"] --> DUP{"Key already paired<br/>as a Vault wallet?"}
-    DUP -- "yes" --> BLOCKED["Already added<br/>(Continue disabled, open existing wallet)"]
-    DUP -- "no" --> Q1{"Payload has a name<br/>or derived keys?"}
+    START["Scan QR code"] --> Q1{"Payload has a name<br/>or derived keys?"}
     Q1 -- "no" --> SINGLE["Singleshard flow<br/>(legacy Parity Signer, one account)"]
     Q1 -- "yes" --> VAULT["Vault flow<br/>(modern device, one key per chain)"]
 
     SINGLE --> S1["Name defaults to on-chain identity<br/>if one is found, else blank"]
-    S1 --> S2["Confirm → wallet + single universal account created"]
+    S1 --> SDUP{"Key already paired<br/>as a Vault wallet?"}
+    SDUP -- "yes" --> SBLOCKED["Already added<br/>(Continue disabled, open existing wallet)"]
+    SDUP -- "no" --> S2["Confirm → wallet + single universal account created"]
 
     VAULT --> V1["Auto-derives one 'Main' key<br/>per relay chain from the QR"]
     V1 --> V2{"Add more keys?"}
@@ -40,7 +40,9 @@ flowchart TD
     V3 --> V5
     V4 --> V5
     V5 --> V6["Review keys<br/>(hold Option/Ctrl to reveal full addresses & paths)"]
-    V6 --> V7["Confirm on the address-preview modal"]
+    V6 --> VDUP{"Key already paired<br/>as a Vault wallet?"}
+    VDUP -- "yes" --> VBLOCKED["Already added<br/>(Continue disabled, open existing wallet)"]
+    VDUP -- "no" --> V7["Confirm on the address-preview modal"]
     V7 --> V8["Wallet + all reviewed accounts created"]
 ```
 

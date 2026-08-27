@@ -1,11 +1,37 @@
 import { hexToU8a } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { type VaultChainAccount, AccountNameType, CryptoType, SigningType } from '@/shared/core';
+import {
+  type VaultChainAccount,
+  type Wallet,
+  AccountNameType,
+  CryptoType,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
 import { TEST_HASH } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { pairingFormModel } from '../../../../model/pairing-form-model';
 import { manageVaultModel } from '../manage-vault-model';
+
+const ROOT = '0x01' as AccountId;
+
+const vaultWallet = {
+  id: 7,
+  name: 'My Vault',
+  type: WalletType.POLKADOT_VAULT,
+  rootAccountId: ROOT,
+  isActive: false,
+} as unknown as Omit<Wallet, 'accounts'>;
+
+const vaultCreateParams = {
+  wallet: { name: 'Vault', rootAccountId: ROOT, type: WalletType.POLKADOT_VAULT },
+  accounts: [],
+} as unknown as Parameters<typeof manageVaultModel.events.vaultCreated>[0];
 
 describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
   afterEach(() => {
@@ -75,5 +101,31 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
         .getState(manageVaultModel.$keys)
         .find(account => (account as VaultChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
+  });
+
+  test('does not create a wallet when the scanned key belongs to an existing vault', async () => {
+    const createWallet = vi.fn();
+    const scope = fork({
+      values: new Map().set(walletModel.__test.$rawWallets, [vaultWallet]).set(accounts.__test.$list, []),
+      handlers: new Map<any, any>([[walletModel.createWallet, createWallet]]),
+    });
+
+    await allSettled(pairingFormModel.seedScanned, { scope, params: ROOT });
+    await allSettled(manageVaultModel.events.vaultCreated, { scope, params: vaultCreateParams });
+
+    expect(createWallet).not.toHaveBeenCalled();
+  });
+
+  test('creates a wallet when the scanned key is new', async () => {
+    const createWallet = vi.fn().mockResolvedValue(undefined);
+    const scope = fork({
+      values: new Map().set(walletModel.__test.$rawWallets, [vaultWallet]).set(accounts.__test.$list, []),
+      handlers: new Map<any, any>([[walletModel.createWallet, createWallet]]),
+    });
+
+    await allSettled(pairingFormModel.seedScanned, { scope, params: '0x02' as AccountId });
+    await allSettled(manageVaultModel.events.vaultCreated, { scope, params: vaultCreateParams });
+
+    expect(createWallet).toHaveBeenCalledWith(vaultCreateParams);
   });
 });

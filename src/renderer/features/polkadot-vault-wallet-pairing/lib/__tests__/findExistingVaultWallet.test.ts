@@ -1,4 +1,4 @@
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet, SigningType, WalletType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { findExistingVaultWallet } from '../findExistingVaultWallet';
 
@@ -7,7 +7,14 @@ const DERIVED = '0x02' as AccountId;
 const OTHER = '0x03' as AccountId;
 
 const wallet = (overrides: Partial<Wallet> & Record<string, unknown>): Wallet =>
-  ({ id: 1, name: 'Wallet', isActive: false, signingType: 'signing_ps', accounts: [], ...overrides }) as Wallet;
+  ({
+    id: 1,
+    name: 'Wallet',
+    isActive: false,
+    signingType: SigningType.PARITY_SIGNER,
+    accounts: [],
+    ...overrides,
+  }) as Wallet;
 
 describe('features/polkadot-vault-wallet-pairing/lib/findExistingVaultWallet', () => {
   test('matches singleshard by its single account id', () => {

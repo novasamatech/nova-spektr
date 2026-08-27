@@ -2669,6 +2669,7 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "continueButton": "Continue",
+    "openExistingWalletButton": "Open existing wallet",
     "extension": {
       "accountsTitle": "Manage accounts",
       "askPermissionAgain": "Request permission again",
@@ -2759,7 +2760,6 @@
       },
       "manageTitle": "Set up your wallet",
       "nameColumn": "Account name",
-      "openExistingWalletButton": "Open existing wallet",
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
@@ -2791,7 +2791,6 @@
       "emptyState": "All your accounts in different networks will be shown here",
       "manageTitle": "Set up your wallet",
       "nameRequiredError": "Type a wallet name",
-      "openExistingWalletButton": "Open existing wallet",
       "title": "Add Watch-only wallet",
       "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
       "walletNameRequiredError": "Please enter wallet name",

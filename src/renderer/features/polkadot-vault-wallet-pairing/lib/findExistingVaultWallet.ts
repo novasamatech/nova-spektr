@@ -1,8 +1,7 @@
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-
-const VAULT_WALLET_TYPES = new Set<WalletType>([WalletType.POLKADOT_VAULT, WalletType.SINGLE_PARITY_SIGNER]);
+import { walletUtils } from '@/entities/wallet';
 
 /**
  * Finds a Polkadot Vault / Parity Signer wallet that was already paired from
@@ -17,8 +16,8 @@ export const findExistingVaultWallet = (wallets: Wallet[], rootAccountId: Accoun
   if (nullable(rootAccountId)) return null;
 
   const match = wallets.find(wallet => {
-    if (!VAULT_WALLET_TYPES.has(wallet.type)) return false;
-    if ('rootAccountId' in wallet && wallet.rootAccountId === rootAccountId) return true;
+    if (!walletUtils.isPolkadotVaultGroup(wallet)) return false;
+    if (wallet.rootAccountId === rootAccountId) return true;
 
     return wallet.accounts.some(account => account.accountId === rootAccountId);
   });

@@ -1,17 +1,16 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { type PolkadotVaultGroup, type VaultBaseAccount, WalletType } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountSync, identity } from '@/domains/network';
-import { walletModel } from '@/entities/wallet';
+import { type WalletCreateParams, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { findExistingVaultWallet } from '../lib/findExistingVaultWallet';
 
 const flow = createGate();
 
-// Duplicate detection: the scanned public key identifies the device.
 const seedScanned = createEvent<AccountId>();
 const openExistingWallet = createEvent();
 
@@ -28,6 +27,17 @@ sample({
 });
 
 const requestIdentityFx = attach({ effect: identity.request });
+
+const createSingleshard = createEvent<WalletCreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
+
+// Guarded here, not only in the UI: a duplicate must never reach the wallet model.
+sample({
+  clock: createSingleshard,
+  source: $existingWallet,
+  filter: nullable,
+  fn: (_, params) => params,
+  target: walletModel.events.createSingleshard,
+});
 
 // TODO form should react on actual wallet create flow,
 sample({
@@ -55,6 +65,7 @@ export const pairingFormModel = {
   $existingWallet,
   seedScanned,
   openExistingWallet,
+  createSingleshard,
 
   $identityPending: requestIdentityFx.pending,
   requestIdentity: requestIdentityFx,

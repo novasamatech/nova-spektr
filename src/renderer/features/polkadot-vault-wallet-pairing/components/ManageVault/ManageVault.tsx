@@ -29,7 +29,7 @@ import {
   SmallTitleText,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { Address } from '@/shared/ui-entities';
+import { Address, ExistingWalletAlert } from '@/shared/ui-entities';
 import { Accordion, Box, Copy, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -37,7 +37,6 @@ import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
 import { type DerivationKeyDraft, DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 import { pairingFormModel } from '../../model/pairing-form-model';
-import { ExistingWalletAlert } from '../ExistingWalletAlert';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { manageVaultModel } from './model/manage-vault-model';
@@ -173,9 +172,12 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
         <form className="flex h-full flex-col gap-4" onSubmit={submitForm}>
-          <div className="-mx-5">
-            <ExistingWalletAlert />
-          </div>
+          <ExistingWalletAlert
+            wallet={existingWallet}
+            title={t('onboarding.vault.alreadyAddedTitle')}
+            description={t('onboarding.vault.alreadyAddedDescription', { name: existingWallet?.name })}
+            onOpen={pairingFormModel.openExistingWallet}
+          />
 
           <Field text={t('onboarding.walletNameLabel')}>
             <Input

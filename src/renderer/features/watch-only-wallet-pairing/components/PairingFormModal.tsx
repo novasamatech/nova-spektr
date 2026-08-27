@@ -6,8 +6,8 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { Alert, Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
+import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList, ExistingWalletAlert, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
 import { IDENTITY_CHAIN } from '../lib/constants';
@@ -68,25 +68,12 @@ export const PairingFormModal = ({ children }: Props) => {
             >
               <SmallTitleText className="mb-2">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
-              {nonNullable(existingWallet) && (
-                <Alert
-                  active
-                  variant="warn"
-                  title={t('onboarding.watchOnly.alreadyAddedTitle')}
-                  dataTestId="watch-only-already-added-alert"
-                >
-                  <Alert.Item withDot={false}>
-                    {t('onboarding.watchOnly.alreadyAddedDescription', { name: existingWallet.name })}
-                  </Alert.Item>
-                  {nullable(existingWallet.hiddenReason) && (
-                    <Alert.Item withDot={false}>
-                      <Button size="sm" variant="text" onClick={() => pairingFormModel.openExistingWallet()}>
-                        {t('onboarding.watchOnly.openExistingWalletButton')}
-                      </Button>
-                    </Alert.Item>
-                  )}
-                </Alert>
-              )}
+              <ExistingWalletAlert
+                wallet={existingWallet}
+                title={t('onboarding.watchOnly.alreadyAddedTitle')}
+                description={t('onboarding.watchOnly.alreadyAddedDescription', { name: existingWallet?.name })}
+                onOpen={pairingFormModel.openExistingWallet}
+              />
 
               <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
