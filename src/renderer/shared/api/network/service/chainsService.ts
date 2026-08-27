@@ -36,7 +36,15 @@ async function getChainsData(): Promise<Chain[] | null> {
     return null;
   }
 
-  return parseChainsConfig(await response.json());
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    console.error('Failed to parse chains config as JSON', error);
+    return null;
+  }
+
+  return parseChainsConfig(payload);
 }
 
 function getChainsMap(chains: Chain[]): Record<ChainId, Chain> {

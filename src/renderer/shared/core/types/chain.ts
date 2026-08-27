@@ -19,11 +19,11 @@ export type Chain = {
 };
 
 export type ChainAdditional = {
-  identityChain: ChainId;
-  timelineChain: ChainId;
+  identityChain?: ChainId;
+  timelineChain?: ChainId;
 
   // Supports metadata proofs
-  supportsGenericLedgerApp: boolean;
+  supportsGenericLedgerApp?: boolean;
 
   // Expected block time in milliseconds (overrides API constants when set)
   defaultBlockTime?: number;

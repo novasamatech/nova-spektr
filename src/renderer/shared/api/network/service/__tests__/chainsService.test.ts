@@ -39,6 +39,48 @@ describe('chainsService.getChainsData', () => {
     expect(console.error).toHaveBeenCalledWith(expect.stringContaining('503'));
   });
 
+  it('keeps unknown keys and accepts unpinned enum-like strings', async () => {
+    const chain = {
+      ...chainsFixture[0],
+      futureKey: { nested: true },
+      options: ['some_new_flag'],
+      assets: [{ ...chainsFixture[0]!.assets[0], type: 'new_type' }],
+    };
+    mockFetchJson([chain]);
+
+    const chains = await chainsService.getChainsData();
+
+    expect(chains).toEqual([chain]);
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('returns null and logs when the body is not JSON', async () => {
+    mockFetch({ ok: true, status: 200, json: () => Promise.reject(new SyntaxError('Unexpected token <')) });
+
+    const chains = await chainsService.getChainsData();
+
+    expect(chains).toBeNull();
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining('JSON'), expect.any(SyntaxError));
+  });
+
+  it('returns null and logs the nested path of a malformed asset', async () => {
+    mockFetchJson([{ ...chainsFixture[0], assets: [{ ...chainsFixture[0]!.assets[0], precision: '10' }] }]);
+
+    const chains = await chainsService.getChainsData();
+
+    expect(chains).toBeNull();
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining('0.assets.0.precision'));
+  });
+
+  it('returns null and logs when chainId is not a 32-byte hex hash', async () => {
+    mockFetchJson([{ ...chainsFixture[0], chainId: '0x123' }]);
+
+    const chains = await chainsService.getChainsData();
+
+    expect(chains).toBeNull();
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining('0.chainId'));
+  });
+
   it('returns null and logs when a chain is missing chainId', async () => {
     mockFetchJson([{ ...chainsFixture[0], chainId: undefined }]);
 

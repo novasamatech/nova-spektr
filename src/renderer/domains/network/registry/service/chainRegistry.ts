@@ -141,14 +141,18 @@ export class ChainRegistry {
 let instance: ChainRegistry | undefined;
 
 export async function getChainRegistry(): Promise<ChainRegistry> {
-  if (nullable(instance)) {
-    const chains = await chainsService.getChainsData();
-    const sortedChains = nonNullable(chains) ? chainsService.sortChains(chains) : [];
-    instance = new ChainRegistry(sortedChains, {
-      createWcProvider: getWsProvider,
-      createClient,
-    });
+  if (nonNullable(instance)) return instance;
+
+  const chains = await chainsService.getChainsData();
+  const registry = new ChainRegistry(nonNullable(chains) ? chainsService.sortChains(chains) : [], {
+    createWcProvider: getWsProvider,
+    createClient,
+  });
+
+  // A failed config fetch must not be memoised: the next call gets another chance to load the chains.
+  if (nonNullable(chains)) {
+    instance = registry;
   }
 
-  return instance;
+  return registry;
 }

@@ -6,8 +6,14 @@ import { type Chain } from '@/shared/core';
 // Strict on the structure the app relies on (required keys, primitive types), tolerant of
 // data that is only forwarded as-is: unknown extra keys are kept, and enum-like strings
 // (options, asset/external types) are not pinned so a config update never blanks all chains.
+//
+// Validation is all-or-nothing on purpose. `network-model` persists the last good result as
+// `chains_map`, so rejecting the whole payload keeps that copy intact; filtering out only the
+// broken chains would overwrite it with a partial list and silently drop networks.
 
-const hexString = z.string().regex(/^0x[0-9a-fA-F]*$/);
+const MAX_LOGGED_ISSUES = 5;
+
+const chainIdSchema = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
 
 const assetIconSchema = z.looseObject({
   monochrome: z.string(),
@@ -44,18 +50,16 @@ const externalValueSchema = z.looseObject({
   url: z.string(),
 });
 
-// `identityChain` / `timelineChain` are typed as required on ChainAdditional but most
-// chains in the real config omit them, so the schema follows the data.
 const chainAdditionalSchema = z.looseObject({
-  identityChain: hexString.optional(),
-  timelineChain: hexString.optional(),
+  identityChain: chainIdSchema.optional(),
+  timelineChain: chainIdSchema.optional(),
   supportsGenericLedgerApp: z.boolean().optional(),
   defaultBlockTime: z.number().optional(),
 });
 
 const chainSchema = z.looseObject({
-  chainId: hexString,
-  parentId: hexString.optional(),
+  chainId: chainIdSchema,
+  parentId: chainIdSchema.optional(),
   specName: z.string(),
   name: z.string(),
   assets: z.array(assetSchema),
@@ -71,12 +75,19 @@ const chainSchema = z.looseObject({
 
 export const chainsConfigSchema = z.array(chainSchema);
 
+/**
+ * Validates a fetched chains config payload.
+ *
+ * @returns The payload typed as `Chain[]` when it matches the schema, otherwise
+ *   `null` after logging the first {@link MAX_LOGGED_ISSUES} issues with their
+ *   paths.
+ */
 export function parseChainsConfig(payload: unknown): Chain[] | null {
   const result = chainsConfigSchema.safeParse(payload);
 
   if (!result.success) {
     const issues = result.error.issues
-      .slice(0, 5)
+      .slice(0, MAX_LOGGED_ISSUES)
       .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)
       .join('; ');
     console.error(`Invalid chains config (${result.error.issues.length} issue(s)): ${issues}`);

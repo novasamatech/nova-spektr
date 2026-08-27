@@ -39,6 +39,23 @@ describe('ChainRegistry', () => {
     });
   });
 
+  it('should not memoise the registry when the chains config fails to load', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 503, statusText: 'Unavailable' } as Response));
+
+    const failed = await getChainRegistry();
+    expect(failed.chainsList).toEqual([]);
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(chainsMock) } as Response),
+    );
+
+    const loaded = await getChainRegistry();
+    expect(loaded).not.toBe(failed);
+    expect(loaded.chainsList).toEqual(chainsMock);
+    expect(await getChainRegistry()).toBe(loaded);
+  });
+
   it('should create a singleton instance', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
