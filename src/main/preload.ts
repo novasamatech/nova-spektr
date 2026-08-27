@@ -53,6 +53,9 @@ const API = {
   proxyFetch: (url: string, init?: Pick<RequestInit, 'method' | 'headers' | 'body'>) => {
     return ipcRenderer.invoke(IPC.PROXY.FETCH, url, init);
   },
+  setProxyAllowedOrigin: (origin: string | null) => {
+    return ipcRenderer.invoke(IPC.PROXY.SET_ALLOWED_ORIGIN, origin);
+  },
 };
 
 contextBridge.exposeInMainWorld('App', API);

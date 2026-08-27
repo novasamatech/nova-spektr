@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { persist } from '@/shared/api/storage';
+import { isElectron } from '@/shared/lib/utils';
 
 type UrlReachability = null | 'checking' | 'reachable' | 'unreachable' | 'wrongBackend';
 
@@ -84,6 +85,31 @@ sample({
 
 $backendUrl.on(urlCleared, () => null);
 $draftUrl.on(urlCleared, () => '');
+
+function toOrigin(url: string | null): string | null {
+  if (url === null) return null;
+
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
+// Electron only: the main-process fetch proxy refuses every request outside the pinned
+// origin, so it must learn the backend origin whenever it changes (incl. the persisted value
+// restored on start-up). Scheme rules are enforced in main; an invalid origin simply isn't pinned.
+const pinProxyOriginFx = createEffect((origin: string | null) => {
+  if (!isElectron()) return;
+
+  return window.App.setProxyAllowedOrigin(origin);
+});
+
+sample({
+  clock: $backendUrl,
+  fn: toOrigin,
+  target: pinProxyOriginFx,
+});
 
 const checkUrlReachabilityFx = createEffect(async (url: string) => {
   let result: Awaited<ReturnType<typeof authFetch>>;

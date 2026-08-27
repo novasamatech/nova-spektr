@@ -7,5 +7,6 @@ export const IPC = {
   },
   PROXY: {
     FETCH: 'proxy: fetch',
+    SET_ALLOWED_ORIGIN: 'proxy: set-allowed-origin',
   },
 };

@@ -1,5 +1,5 @@
 import { allSettled, fork } from 'effector';
-import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type Mock, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { backendConfigurationModel } from '../backend-configuration-model';
@@ -82,5 +82,43 @@ describe('backendConfigurationModel — reachability classification', () => {
 
   it('marks unreachable (not wrongBackend) for any non-2xx response, regardless of body shape', async () => {
     expect(await probe(notOk('<html>404</html>', 404))).toBe('unreachable');
+  });
+});
+
+describe('backendConfigurationModel — proxy origin pin (Electron)', () => {
+  const setProxyAllowedOrigin = vi.fn();
+
+  beforeEach(() => {
+    setProxyAllowedOrigin.mockReset();
+    (window as unknown as { App: unknown }).App = { setProxyAllowedOrigin };
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { App?: unknown }).App;
+  });
+
+  it('pins the backend origin (not the full url) when the url is saved', async () => {
+    const scope = fork({ values: [[backendConfigurationModel.$draftUrl, `${URL}/api/`]] });
+
+    await allSettled(backendConfigurationModel.events.urlSaved, { scope });
+
+    expect(setProxyAllowedOrigin).toHaveBeenCalledWith(URL);
+  });
+
+  it('clears the pin when the backend url is removed', async () => {
+    const scope = fork({ values: [[backendConfigurationModel.$backendUrl, URL]] });
+
+    await allSettled(backendConfigurationModel.events.urlCleared, { scope });
+
+    expect(setProxyAllowedOrigin).toHaveBeenLastCalledWith(null);
+  });
+
+  it('does nothing outside Electron', async () => {
+    delete (window as unknown as { App?: unknown }).App;
+    const scope = fork({ values: [[backendConfigurationModel.$draftUrl, URL]] });
+
+    await allSettled(backendConfigurationModel.events.urlSaved, { scope });
+
+    expect(setProxyAllowedOrigin).not.toHaveBeenCalled();
   });
 });
