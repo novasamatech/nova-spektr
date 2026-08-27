@@ -1,6 +1,6 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-27
 
 ## Overview
 
@@ -19,11 +19,22 @@ from.
 | **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks |
 | **Governance Locks**    | Which account holds which lock, and which of them I can release right now            |
 
+**The tab opens on what is live, not on what is locked.** The default layout leads with **Referendums** full-width — the
+one widget about decisions still being made, and the only reason to come back daily — then **Governance Locks**
+full-width beneath it, and finally **Governance Overview** and **Unlock Schedule** side by side. The two summaries sit
+last on purpose: they explain a total the user already met on the Overview tab, while the two tables above are where
+something can actually be done.
+
+That order is the default only. A user who has already arranged this tab keeps their arrangement — the change touches
+the fallback, not the stored layouts — and **Reset layout** drops the stored one so the default takes over (and brings
+back any widget hidden on the tab).
+
 ## Who can use it / when it applies
 
-- Gated by the **`dashboard`** feature flag. The Overview and Unlock Schedule widgets additionally render nothing at all
-  when the global **show fiat** toggle is off — they lead with a fiat total, and a governance lock with no price behind
-  it has nothing to lead with.
+- Gated by the **`dashboard`** feature flag; the unlock flow the Locks widget dispatches also wants **`governance`**, so
+  releasing needs both on. The Overview and Unlock Schedule widgets additionally render nothing at all when the global
+  **show fiat** toggle is off — they lead with a fiat total, and a governance lock with no price behind it has nothing
+  to lead with.
 - Scoped to the dashboard's **account picker**. With nothing picked, each widget shows the shared "No accounts selected"
   prompt rather than an empty chart.
 - Reads **Polkadot Asset Hub and Kusama Asset Hub** — the two chains the app runs governance on.
@@ -103,8 +114,14 @@ point of the widget — a button that releases it. The header carries a **Claima
 arrive sorted by claimable, then by locked, so the money the user can take home is on top.
 
 **This is the only widget on the tab that acts rather than reports.** Everything else on the Governance tab explains a
-number; this one dispatches the unlock flow for the row's account, on the row's chain, for exactly the tracks that have
-expired.
+number; this one dispatches the [unlock flow](../governance-unlock-flow/README.md) for the row's account, on the row's
+chain, for exactly the tracks that have expired — so releasing a lock no longer means leaving the dashboard for the
+Governance page. The flow is mounted app-wide rather than inside the widget, so it survives navigation once opened. The
+rows need no manual refresh afterwards: they are derived from live voting and lock data, so a landed release drops out
+of the table on its own — including one that lands later, when the last multisig signatory approves.
+
+Filtering to a chain or to **Claimable only** can leave nothing on screen; that says "no rows match", not "no locks" —
+the two are different answers and read differently.
 
 **The Action cell is a verdict, not a button that sometimes fails.** Each row says what can be done and why, so the user
 never clicks into a dead end:
@@ -153,7 +170,7 @@ different account.
 
 - **Governance entities** (`entities/governance`) — voting, conviction and claim-schedule maths.
 - **Governance page** (`pages/Governance`) — the full governance surface these widgets summarise.
-- **Governance unlock flow** (`features/governance-unlock-flow`) — the confirm/sign/submit flow the Locks widget's
-  Unlock button dispatches.
+- [`governance-unlock-flow`](../governance-unlock-flow/README.md) — the confirm/sign/submit flow the Locks widget's
+  Unlock button dispatches; mounted app-wide, and blind to everything the dashboard knows.
 - [`dashboard-portfolio-overview`](../dashboard-portfolio-overview/README.md) — the Overview tab's balance card, where
   governance locks appear as part of the locked share.

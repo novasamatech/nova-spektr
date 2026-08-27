@@ -1,0 +1,111 @@
+# Governance unlock flow
+
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-27
+
+## Overview
+
+Releases a **governance conviction lock** — one account, one chain — and walks the user from a pressed button to a
+landed extrinsic: confirm → sign → submit.
+
+A conviction lock is the price of having voted: the tokens stay frozen after the referendum ends, for a period set by
+the conviction and the outcome. Getting them back means a `convictionVoting.removeVote` for every vote still on the
+books plus an `unlock` per track — a batch nobody assembles by hand. This flow takes that batch **already assembled**
+and does the rest.
+
+It is deliberately incurious about where the request came from. Today the Dashboard's
+[Governance Locks widget](../dashboard-governance/README.md) dispatches it, one row at a time, and the flow knows
+nothing about the dashboard, its account picker, the Governance page's network selector or the selected wallet. Its
+whole input is a fully resolved request — the chain, who originates the transaction, whose lock is released, the calls
+and the amount — and everything it shows is derived from that one snapshot.
+
+The flow is **mounted globally** in the app shell's modal slot, so it opens from wherever the user pressed the button
+rather than from a route, and stays open across navigation.
+
+## Who can use it / when it applies
+
+- Gated by the **`dashboard` and `governance`** feature flags together — it exists to serve the dashboard's Locks
+  widget, and has no other entry point yet.
+- The **initiator** — the account that originates the transaction — may be:
+  - a **plain key**, signing for its own lock;
+  - a **multisig or flexible multisig**, which does not release anything on submit: it opens a pending operation the
+    remaining signatories must approve. Closing the flow navigates to that operation, so an initiation is never a
+    success screen with nothing behind it;
+  - a **proxied account**, signed by its delegate;
+  - a **local payer releasing someone else's lock**. `convictionVoting.unlock(class, target)` takes any origin, so a
+    watched address whose votes are all gone can still be released by any local key that can pay. This is available for
+    an **unlock-only** release and no other: `removeVote` must be signed by the voter, so as soon as one is required the
+    payer route is off the table.
+- The **signing route** is seeded with the default path and can be changed on the confirm screen. It is not cosmetic —
+  the account at the end of the route is the one that pays the fee and reserves the multisig deposit — so it is never
+  picked silently when the wallet offers more than one. Changing it re-wraps the transaction, re-prices the fee and
+  re-validates.
+- A **regular account signs for itself**, and for one the signing path is empty by design; the flow falls back to the
+  initiator as its own signatory. Without that fallback the route comes out empty, no transaction is built, and the
+  confirm sits forever on a fee that never arrives.
+
+## States / scenarios
+
+```mermaid
+flowchart TD
+    NONE["NONE — nothing mounted"] -->|unlock requested| CONFIRM["CONFIRM"]
+    CONFIRM -->|Sign| SIGN["SIGN"]
+    SIGN -->|signed| SUBMIT["SUBMIT"]
+    SUBMIT -->|released| DONE["Lock released — flowCompleted"]
+    SUBMIT -->|multisig initiated| PENDING["Pending operation opened on close"]
+    CONFIRM -->|close / back| NONE
+    SIGN -->|back| CONFIRM
+```
+
+| State               | When it appears                                                         | What the user sees                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None                | No release requested                                                    | Nothing — the flow renders no modal                                                                                                                 |
+| Confirm             | An unlock was requested                                                 | The released amount in token and fiat, who it unlocks for, how many calls the release is made of, the signing-path chooser, network fee, and a hint |
+| Confirm — preparing | The wrapped transaction, the fee or the validation is still in flight   | The figures are already there; fee and deposit sit behind their own loaders and **Sign stays disabled** until all three land                        |
+| Confirm — multisig  | The route runs through a multisig                                       | An extra multisig-deposit row alongside the fee                                                                                                     |
+| Confirm — unpayable | The signer cannot cover the fee, or cannot reserve the multisig deposit | The reason is spelled out and **Sign is blocked**. Switching the signing route re-checks it                                                         |
+| Sign                | Sign pressed                                                            | The wallet's standard signing screen; going back returns to Confirm with everything intact                                                          |
+| Submit              | The signature arrived                                                   | The standard submission screen                                                                                                                      |
+| Released            | The extrinsic landed and the initiator is not a multisig                | Success, and the host is told to refresh what it shows                                                                                              |
+| Multisig initiated  | The extrinsic landed but the release still needs signatories            | Success for the _initiation_; closing the flow opens the resulting pending operation                                                                |
+
+**The account the lock is released for is always spelled out**, on its own row, next to the account that signs. For a
+permissionless release the two differ, and the confirm has to make that unmistakable — the user is paying a fee to free
+someone else's tokens.
+
+**Closing resets everything.** Whatever step it is on, closing the flow clears the request, the signing route and the
+confirm, so the next unlock starts clean rather than inheriting the last one.
+
+## Lifecycle
+
+**The confirm opens on the click, not on the data.** Everything it leads with — the amount, the account, the chain, the
+number of calls — is in hand the moment the button is pressed. The wrapped transaction, the fee and the validation each
+cost a round trip to the node, so they are not awaited: the modal opens immediately and they stream in behind their own
+loaders.
+
+**The request is a snapshot, and the flow trusts it.** Locks, referenda and the claimable amount move with every block;
+the release being signed must not. The host is the one responsible for the request being current — the Locks widget
+re-derives the claimable actions against the live head at the moment of the click, because a referendum that ended since
+the last snapshot adds a required `removeVote` — and from then on this flow signs exactly what it was handed. Nothing
+here follows the chain, so a block tick cannot disturb a signature in progress.
+
+**Only a flow at the sign step may claim a signature.** Signing and submission are app-wide singletons: every operation
+in the app goes through the same events. A flow parked on Confirm — or abandoned there while a hardware-wallet request
+is still in flight elsewhere — would otherwise pick up a foreign payload and submit it as its own. So the flow reacts to
+a signature only while it is itself at the sign step.
+
+**Completion means released, not submitted.** The "unlock succeeded" signal fires only when the landed extrinsic
+actually freed the tokens. A multisig initiation lands too, and it releases nothing until the remaining signatories
+approve, so it does not count — the host must not refresh its numbers as though the money were back.
+
+## Related
+
+- [`dashboard-governance`](../dashboard-governance/README.md) — the Governance Locks widget that dispatches every
+  request this flow serves, and decides who can release what.
+- [`vesting-claim`](../vesting-claim/README.md) — the same shape one pallet over: a hidden extrinsic turned into a
+  confirm/sign/submit flow, with the same signing-route and affordability rules.
+- [`staking-confirm-flow`](../staking-confirm-flow/README.md) — another flow mounted globally in the app shell's modal
+  slot and opened by an event rather than by navigation.
+- **Governance page unlock** (`widgets/UnlockModal`) — the page's own unlock surface, bound to the Governance page and
+  its network selector. Untouched by this feature; the two do not share state.
+- `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing, submission and
+  validation stack.

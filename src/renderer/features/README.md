@@ -99,9 +99,11 @@ notes.
 - `governance-navigation` (no spec planned)
 - `governance-basket`
 - [`governance-operation-details`](./governance-operation-details/README.md)
+- [`governance-unlock-flow`](./governance-unlock-flow/README.md)
 - `governance-meta-provider` (aggregate)
 
-> See also: [`dashboard-governance`](#dashboard) — governance summary on the dashboard.
+> See also: [`dashboard-governance`](#dashboard) — governance summary on the dashboard, and the surface that dispatches
+> `governance-unlock-flow`.
 
 ## Fellowship
 
@@ -195,7 +197,8 @@ notes.
 - [`dashboard-staking-rewards-chart`](./dashboard-staking-rewards-chart/README.md)
 
 > See also: [`vesting-claim`](#transfers) and [`vesting-portfolio`](#transfers) — the vesting callout is injected into
-> the Portfolio Overview card.
+> the Portfolio Overview card; [`governance-unlock-flow`](#governance) — the Governance Locks widget's Unlock button
+> dispatches it, and the flow is mounted app-wide in the shell's `modalsSlot` rather than by the dashboard.
 
 ## Contacts & Notifications
 
