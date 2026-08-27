@@ -29,7 +29,7 @@ notes.
 - [`wallet-connect-wallet`](./wallet-connect-wallet/README.md)
 - `wallet-connect-wallet-pairing`
 - [`watch-only-wallet`](./watch-only-wallet/README.md)
-- `watch-only-wallet-pairing`
+- [`watch-only-wallet-pairing`](./watch-only-wallet-pairing/README.md)
 - [`account-presets`](../aggregates/account-presets/README.md) (aggregate)
 - [`wallet-select`](../aggregates/wallet-select/README.md) (aggregate)
 
