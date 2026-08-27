@@ -60,9 +60,22 @@ const extendSessionsFx = createEffect(async (client: Client) => {
   );
 });
 
+const isProjectIdConfigured = () => DEFAULT_PROJECT_ID !== '';
+
+const warnMissingProjectIdFx = createEffect(() => {
+  console.warn('WalletConnect is disabled: WALLET_CONNECT_PROJECT_ID was not provided at build time.');
+});
+
 sample({
   clock: walletConnectWalletFeature.running,
+  filter: isProjectIdConfigured,
   target: createClientFx,
+});
+
+sample({
+  clock: walletConnectWalletFeature.running,
+  filter: () => !isProjectIdConfigured(),
+  target: warnMissingProjectIdFx,
 });
 
 sample({

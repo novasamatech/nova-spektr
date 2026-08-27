@@ -41,6 +41,7 @@ jobs:
           node_js_image_version: ${{ matrix.node-js-image-version }}
           image_label: latest
           build_type: development
+          wallet_connect_project_id: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
 
   build-stage-2-image:
     if: ${{ github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'stage-2-') }}
@@ -61,6 +62,7 @@ jobs:
           node_js_image_version: ${{ matrix.node-js-image-version }}
           image_label: stage-2
           build_type: development
+          wallet_connect_project_id: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
           set_version_from_tag_commit: 'true'
 
   build-release-and-pr-images:
@@ -82,3 +84,4 @@ jobs:
           node_js_image_version: ${{ matrix.node-js-image-version }}
           image_label: ${{ github.event_name == 'pull_request' && 'stage' || github.ref_name }}
           build_type: production
+          wallet_connect_project_id: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}

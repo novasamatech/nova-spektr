@@ -2,7 +2,7 @@ import { type UnitValue, combine, createEvent, createStore, sample } from 'effec
 import { persist } from 'effector-storage/local';
 import { produce } from 'immer';
 
-import { isDev } from '@/shared/lib/utils';
+import { WALLET_CONNECT_PROJECT_ID, isDev } from '@/shared/lib/utils';
 
 type Features = UnitValue<typeof $defaultFeatures>;
 
@@ -30,7 +30,7 @@ export const $defaultFeatures = createStore({
   flexibleMultisig: true,
   proxy: true,
   polkadotVault: true,
-  walletConnect: true,
+  walletConnect: WALLET_CONNECT_PROJECT_ID !== '',
   watchOnly: true,
   ledger: true,
   extensionWallets: true,

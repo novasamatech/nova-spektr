@@ -24,6 +24,7 @@
 - [Development](#development)
   * [Requirements](#requirements)
   * [Commands](#commands)
+  * [Environment variables](#environment-variables)
   * [Difference between environments](#difference-between-environments)
   * [Project localisation](#project-localisation)
     + [How to ignore localisation errors](#how-to-ignore-localisation-errors)
@@ -100,6 +101,14 @@ pnpm staging:sequence
 # Build app in production mode.
 pnpm prod:sequence
 ```
+
+## Environment variables
+
+Build-time secrets are read from the shell or from a git-ignored `.env` at the repo root (see [`.env.example`](./.env.example)).
+
+| Variable                    | Purpose                                                                                                                                                                           |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WALLET_CONNECT_PROJECT_ID` | WalletConnect Cloud project id, baked into the renderer bundle. Create one at [cloud.reown.com](https://cloud.reown.com). When empty, WalletConnect / Nova Wallet pairing is hidden. |
 
 ## Difference between environments
 

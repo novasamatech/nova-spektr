@@ -63,6 +63,14 @@ export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
 const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';
 export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
+/**
+ * WalletConnect Cloud project id, injected at build time (see
+ * `vite.config.renderer.ts`). Empty when the build had no
+ * `WALLET_CONNECT_PROJECT_ID` — WalletConnect features are then disabled
+ * instead of hitting the relay with a bad id.
+ */
+export const WALLET_CONNECT_PROJECT_ID = process.env.WALLET_CONNECT_PROJECT_ID ?? '';
+
 export const TOKENS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${TOKENS_CONFIG_VERSION}/${process.env.TOKENS_FILE + '.json'}`;
 
 // We need to map the chain id to the SpellSDK's chain name for the xcm transfers while using the ParaSpell SDK

@@ -29,6 +29,14 @@ import packageJson from '../../../../package.json'
 pnpm install
 ```
 
+## Environment variables
+
+Copy `.env.example` to `.env` (git-ignored) and fill in the values before building:
+
+- `WALLET_CONNECT_PROJECT_ID` — WalletConnect Cloud project id, baked into the renderer at build time. Create one at
+  [cloud.reown.com](https://cloud.reown.com). Leave it empty to build without WalletConnect / Nova Wallet pairing (the
+  feature is hidden and the sign client is never initialised).
+
 ## Development
 
 ```sh

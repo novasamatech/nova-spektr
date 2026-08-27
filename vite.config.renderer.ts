@@ -35,13 +35,16 @@ function stripCspMetaInDev(): Plugin {
 }
 
 const config: UserConfigFn = async ({ mode, command }) => {
-  const { defineConfig } = await import('vite');
+  const { defineConfig, loadEnv } = await import('vite');
   const { default: svgr } = await import('vite-plugin-svgr');
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { default: tailwindcss } = await import('@tailwindcss/vite');
+
+  // Secrets that must not live in source come from the shell or a git-ignored `.env` (see `.env.example`).
+  const env = loadEnv(mode, folders.root, 'WALLET_CONNECT_');
 
   const isDevServer = command === 'serve';
   const isDev = mode === 'development';
@@ -70,6 +73,9 @@ const config: UserConfigFn = async ({ mode, command }) => {
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
+      'process.env.WALLET_CONNECT_PROJECT_ID': JSON.stringify(
+        process.env.WALLET_CONNECT_PROJECT_ID ?? env.WALLET_CONNECT_PROJECT_ID ?? '',
+      ),
       global: 'globalThis',
     },
     worker: {
