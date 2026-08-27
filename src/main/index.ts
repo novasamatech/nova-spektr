@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import { type BrowserWindow, app, session } from 'electron';
 import { REACT_DEVELOPER_TOOLS, default as installExtension } from 'electron-devtools-installer';
 
+import { setupCertificateErrors } from './factories/certificates';
 import { runAppSingleInstance } from './factories/instance';
 import { setupLogger } from './factories/logs';
 import { processUrl, registerDeepLinkProtocol } from './factories/protocol';
@@ -20,9 +21,7 @@ runAppSingleInstance(async () => {
 
   app.commandLine.appendSwitch('force-color-profile', 'srgb');
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-  if (ENVIRONMENT.IS_DEV || ENVIRONMENT.IS_STAGE) {
-    app.commandLine.appendSwitch('ignore-certificate-errors');
-  }
+  setupCertificateErrors();
 
   process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
   delete process.env.ELECTRON_ENABLE_SECURITY_WARNINGS;
