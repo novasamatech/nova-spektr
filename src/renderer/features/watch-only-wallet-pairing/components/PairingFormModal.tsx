@@ -6,7 +6,7 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
@@ -24,6 +24,7 @@ export const PairingFormModal = ({ children }: Props) => {
   const chains = useUnit(pairingFormModel.$chains);
   const accountDraft = useUnit(pairingFormModel.$accountDraft);
   const identityPending = useUnit(pairingFormModel.$identityPending);
+  const existingWallet = useUnit(pairingFormModel.$existingWallet);
 
   const {
     fields: { address, walletName },
@@ -66,6 +67,26 @@ export const PairingFormModal = ({ children }: Props) => {
               }}
             >
               <SmallTitleText className="mb-2">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
+
+              {nonNullable(existingWallet) && (
+                <Alert
+                  active
+                  variant="warn"
+                  title={t('onboarding.watchOnly.alreadyAddedTitle')}
+                  dataTestId="watch-only-already-added-alert"
+                >
+                  <Alert.Item withDot={false}>
+                    {t('onboarding.watchOnly.alreadyAddedDescription', { name: existingWallet.name })}
+                  </Alert.Item>
+                  {nullable(existingWallet.hiddenReason) && (
+                    <Alert.Item withDot={false}>
+                      <Button size="sm" variant="text" onClick={() => pairingFormModel.openExistingWallet()}>
+                        {t('onboarding.watchOnly.openExistingWalletButton')}
+                      </Button>
+                    </Alert.Item>
+                  )}
+                </Alert>
+              )}
 
               <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
@@ -128,7 +149,11 @@ export const PairingFormModal = ({ children }: Props) => {
                   {t('onboarding.backButton')}
                 </Button>
 
-                <Button type="submit" testId={TEST_IDS.COMMON.CONTINUE_BUTTON} disabled={!eachValid}>
+                <Button
+                  type="submit"
+                  testId={TEST_IDS.COMMON.CONTINUE_BUTTON}
+                  disabled={!eachValid || nonNullable(existingWallet)}
+                >
                   {t('onboarding.continueButton')}
                 </Button>
               </div>

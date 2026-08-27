@@ -25,6 +25,8 @@ import { walletModel } from '@/entities/wallet';
 import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/pairing-form-model';
 
+import { ExistingWalletAlert } from './ExistingWalletAlert';
+
 type WalletForm = {
   walletName: string;
 };
@@ -41,6 +43,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   const allChains = useUnit(networkModel.$chains);
   const identityPending = useUnit(pairingFormModel.$identityPending);
+  const existingWallet = useUnit(pairingFormModel.$existingWallet);
 
   const [chains, setChains] = useState<Chain[]>([]);
 
@@ -123,6 +126,8 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
           </div>
 
           <form className="flex grow flex-col gap-4" onSubmit={handleSubmit(createWallet)}>
+            <ExistingWalletAlert />
+
             <Controller
               name="walletName"
               control={control}
@@ -182,7 +187,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
               <div className="grow" />
 
-              <Button type="submit" disabled={!isValid}>
+              <Button type="submit" disabled={!isValid || nonNullable(existingWallet)}>
                 {t('onboarding.continueButton')}
               </Button>
             </Modal.Footer>

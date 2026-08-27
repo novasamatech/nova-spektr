@@ -1,6 +1,6 @@
 # Polkadot Vault Wallet Pairing
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-07
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-28
 >
 > **Draft — pending author review.** Written from reading the code; needs sign-off from the feature owner before it is
 > treated as the source of product truth.
@@ -23,7 +23,9 @@ Gated by the `polkadotVault` feature flag. Two entry points open the same pairin
 
 ```mermaid
 flowchart TD
-    START["Scan QR code"] --> Q1{"Payload has a name<br/>or derived keys?"}
+    START["Scan QR code"] --> DUP{"Key already paired<br/>as a Vault wallet?"}
+    DUP -- "yes" --> BLOCKED["Already added<br/>(Continue disabled, open existing wallet)"]
+    DUP -- "no" --> Q1{"Payload has a name<br/>or derived keys?"}
     Q1 -- "no" --> SINGLE["Singleshard flow<br/>(legacy Parity Signer, one account)"]
     Q1 -- "yes" --> VAULT["Vault flow<br/>(modern device, one key per chain)"]
 
@@ -42,11 +44,17 @@ flowchart TD
     V7 --> V8["Wallet + all reviewed accounts created"]
 ```
 
-| State                  | When it appears                                                     | What the user sees                                                                                      |
-| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Scan**               | Always, first step                                                  | Camera QR reader with a tutorial video alongside it                                                     |
-| **Singleshard review** | Scanned payload has no wallet name and no derived keys              | A single account preview; wallet name pre-fills from an on-chain identity lookup if one resolves        |
-| **Vault review**       | Scanned payload carries a wallet name and/or a list of derived keys | A wallet-name field plus the list of keys grouped by chain, with Import/Constructor actions to add more |
+| State                  | When it appears                                                                    | What the user sees                                                                                                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Scan**               | Always, first step                                                                 | Camera QR reader with a tutorial video alongside it                                                                                                                                         |
+| **Singleshard review** | Scanned payload has no wallet name and no derived keys                             | A single account preview; wallet name pre-fills from an on-chain identity lookup if one resolves                                                                                            |
+| **Vault review**       | Scanned payload carries a wallet name and/or a list of derived keys                | A wallet-name field plus the list of keys grouped by chain, with Import/Constructor actions to add more                                                                                     |
+| **Already added**      | The scanned public key is the root key of an existing Vault / Parity Signer wallet | A warning naming the existing wallet on the review step; Continue is disabled; "Open existing wallet" selects that wallet and closes the modal (offered only when the wallet is not hidden) |
+
+**Why "Already added" blocks instead of warning.** The scanned public key identifies the device, so a second pairing
+would only produce a second wallet over the same keys — there is nothing a user can gain from it. A watch-only wallet
+tracking the same address does not count as a duplicate: upgrading from watch-only to a signing wallet is a legitimate
+step, so the check only looks at Vault / Parity Signer wallets.
 
 **Why the fork instead of one flow.** The two device generations produce structurally different QR payloads — a legacy
 signer's payload has no name or derived-key list, a Vault's does — so the app tells them apart from the payload shape

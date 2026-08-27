@@ -32,6 +32,8 @@ export const PairingModal = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (nullable(seedInfo)) return;
 
+    pairingFormModel.seedScanned(pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public)));
+
     if (!seedInfo.name && seedInfo.derivedKeys.length === 0) {
       setQrType('singleshard');
     } else {

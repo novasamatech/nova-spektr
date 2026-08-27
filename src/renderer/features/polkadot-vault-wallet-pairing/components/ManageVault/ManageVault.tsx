@@ -16,7 +16,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useKeyCombo, useToggle } from '@/shared/lib/hooks';
-import { IS_MAC, toAddress } from '@/shared/lib/utils';
+import { IS_MAC, nonNullable, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -36,6 +36,8 @@ import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
 import { type DerivationKeyDraft, DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import { pairingFormModel } from '../../model/pairing-form-model';
+import { ExistingWalletAlert } from '../ExistingWalletAlert';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { manageVaultModel } from './model/manage-vault-model';
@@ -60,6 +62,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
   const hasKeys = useUnit(manageVaultModel.$hasKeys);
   const chains = useUnit(networkModel.$chains);
+  const existingWallet = useUnit(pairingFormModel.$existingWallet);
 
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
@@ -169,7 +172,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex h-full flex-col" onSubmit={submitForm}>
+        <form className="flex h-full flex-col gap-4" onSubmit={submitForm}>
+          <div className="-mx-5">
+            <ExistingWalletAlert />
+          </div>
+
           <Field text={t('onboarding.walletNameLabel')}>
             <Input
               placeholder={t('onboarding.walletNamePlaceholder')}
@@ -187,7 +194,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
               {t('onboarding.backButton')}
             </Button>
 
-            <Button type="submit" disabled={!isValid}>
+            <Button type="submit" disabled={!isValid || nonNullable(existingWallet)}>
               {t('onboarding.continueButton')}
             </Button>
           </div>
