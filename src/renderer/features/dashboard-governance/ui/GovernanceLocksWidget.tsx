@@ -159,14 +159,19 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
 
   const handleUnlock = useCallback(
     (row: GovernanceLockRow) => {
-      if (!row.initiator) return;
-
       // The row's figures come from a periodic snapshot; re-run the schedule
       // against the live head so a just-ended referendum still gets its
-      // `remove_vote`.
-      const fresh = getFreshClaim(row) ?? { actions: row.claimableActions, amount: row.claimable };
+      // `remove_vote` — and so the initiator is the one allowed to send it.
+      const fresh = getFreshClaim(row);
+      if (!fresh) return;
 
-      unlockRequested({ chain: row.chain, initiator: row.initiator, target: row.target, ...fresh });
+      unlockRequested({
+        chain: row.chain,
+        initiator: fresh.initiator,
+        target: fresh.target,
+        actions: fresh.actions,
+        amount: fresh.amount,
+      });
     },
     [getFreshClaim, unlockRequested],
   );

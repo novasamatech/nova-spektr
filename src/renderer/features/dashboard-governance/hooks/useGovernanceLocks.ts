@@ -1,17 +1,18 @@
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useCallback, useMemo } from 'react';
 
-import { type ClaimAction, UnlockChunkType } from '@/shared/api/governance';
+import { type ClaimAction } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { getRoundedValue, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { claimScheduleService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
+import { collectClaimable } from '../lib/collectClaimable';
 import { type UnlockBlockReason, resolveUnlockAccount } from '../lib/resolveUnlockAccount';
 
 import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
@@ -54,7 +55,7 @@ export type GovernanceLockRow = {
   lockedNum: number;
 };
 
-export type FreshClaim = { actions: ClaimAction[]; amount: BN } | null;
+export type FreshClaim = { actions: ClaimAction[]; amount: BN; initiator: AnyAccount; target: AccountId } | null;
 
 type ToFiat = (amount: string, precision: number, priceId: string) => string | null;
 
@@ -130,7 +131,7 @@ export const useGovernanceLocks = (accountIds: string[]) => {
   const pricesParams = useUnit(currencySelect.$currentPricesParams);
   const { data: prices } = useAssetsPrices(pricesParams);
   const chains = useUnit(networkModel.$chains);
-  const allAccounts = useUnit(accounts.$list);
+  const allAccounts = useUnit(walletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
 
   const polkadot = useChainGovernanceData(POLKADOT_AH_CHAIN_ID, accountIds);
@@ -149,7 +150,7 @@ export const useGovernanceLocks = (accountIds: string[]) => {
     return [
       ...buildRows(polkadot, chains[POLKADOT_AH_CHAIN_ID], allAccounts, wallets, toFiat, now),
       ...buildRows(kusama, chains[KUSAMA_AH_CHAIN_ID], allAccounts, wallets, toFiat, now),
-    ].sort((a, b) => b.claimableNum - a.claimableNum || b.lockedNum - a.lockedNum);
+    ].sort((a, b) => b.claimable.cmp(a.claimable) || b.locked.cmp(a.locked));
   }, [polkadot, kusama, chains, allAccounts, wallets, fiatFlag, prices, currency]);
 
   /**
@@ -160,10 +161,19 @@ export const useGovernanceLocks = (accountIds: string[]) => {
   const getFreshClaim = useCallback(
     (row: GovernanceLockRow): FreshClaim => {
       const data = row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama;
-      if (!data?.scheduleInputs || data.liveBlock === null) return null;
+      const votingByTrack = data?.votingMap[row.accountId];
 
-      const votingByTrack = data.votingMap[row.accountId];
-      if (!votingByTrack) return null;
+      // Nothing live to re-run against: sign exactly what the row shows.
+      if (!data?.scheduleInputs || data.liveBlock === null || !votingByTrack) {
+        if (!row.initiator || row.claimableActions.length === 0) return null;
+
+        return {
+          actions: row.claimableActions,
+          amount: row.claimable,
+          initiator: row.initiator,
+          target: row.target,
+        };
+      }
 
       const schedule = claimScheduleService.estimateClaimSchedule({
         currentBlockNumber: data.liveBlock,
@@ -175,18 +185,25 @@ export const useGovernanceLocks = (accountIds: string[]) => {
         voteLockingPeriod: data.scheduleInputs.voteLockingPeriod,
       });
 
-      let amount = BN_ZERO;
-      const actions: ClaimAction[] = [];
-      for (const chunk of schedule) {
-        if (chunk.type === UnlockChunkType.CLAIMABLE && !chunk.amount.isZero()) {
-          amount = amount.add(chunk.amount);
-          actions.push(...chunk.actions);
-        }
-      }
+      const { actions, amount } = collectClaimable(schedule);
+      if (actions.length === 0) return null;
 
-      return actions.length > 0 ? { actions, amount } : null;
+      // The initiator on the row was resolved against the snapshot's actions. A
+      // remove_vote that appeared since is origin-bound, so a permissionless
+      // payer would no longer be allowed to send it — resolve again on the
+      // fresh actions.
+      const { initiator, target } = resolveUnlockAccount({
+        lockedAccountId: row.accountId,
+        candidates: allAccounts.filter((account) => account.accountId === row.accountId),
+        chain: row.chain,
+        allAccounts,
+        actions,
+      });
+      if (!initiator) return null;
+
+      return { actions, amount, initiator, target };
     },
-    [polkadot, kusama],
+    [polkadot, kusama, allAccounts],
   );
 
   const pending =

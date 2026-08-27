@@ -127,6 +127,29 @@ describe('resolveUnlockAccount', () => {
     expect(result.reason).toBeNull();
   });
 
+  it('drops the permissionless payer once a remove_vote joins the actions', () => {
+    registerHandlers();
+
+    const payer = chainAccount({ id: 'p', accountId: payerId, walletId: 2 });
+    const params = {
+      lockedAccountId: lockedId,
+      candidates: [watchOnly()],
+      chain: polkadotChain,
+      allAccounts: [watchOnly(), payer],
+    };
+
+    // The snapshot said unlock-only, so a payer could release it for free.
+    expect(resolveUnlockAccount({ ...params, actions: UNLOCK }).initiator).toBe(payer);
+
+    // A referendum that ended since adds an origin-bound remove_vote: the payer
+    // may no longer send it, which is why the initiator is re-resolved against
+    // the fresh actions at the moment of the click.
+    const fresh = resolveUnlockAccount({ ...params, actions: [...UNLOCK, ...REMOVE] });
+
+    expect(fresh.initiator).toBeNull();
+    expect(fresh.reason).toBe('watch-only');
+  });
+
   it('has no payer when no local account can sign on the chain', () => {
     registerHandlers();
 

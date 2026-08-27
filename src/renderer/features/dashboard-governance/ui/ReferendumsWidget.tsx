@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
-import { type ChainId, type ReferendumId } from '@/shared/core';
+import { type ChainId, type ReferendumId, ConnectionStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
@@ -71,7 +71,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     fiatFlag,
   } = useActiveReferendums(deferredAccountIds, allEntries);
   const [selected, setSelected] = useState<{ chainId: ChainId; referendumId: ReferendumId } | null>(null);
-  const apis = useUnit(networkModel.$apis);
+  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [endedCount, setEndedCount] = useState<number | null>(null);
@@ -168,12 +168,12 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   const handleActiveRowClick = useCallback(
     (row: ReferendumRow) => {
       // The details modal reads its chain from the governance network selector,
-      // which only resolves once the chain's api is up.
-      if (!apis[row.chainId]) return;
+      // which only resolves once the chain is connected.
+      if (connectionStatuses[row.chainId] !== ConnectionStatus.CONNECTED) return;
 
       setSelected({ chainId: row.chainId, referendumId: row.id });
     },
-    [apis],
+    [connectionStatuses],
   );
 
   if (!fiatFlag) return null;

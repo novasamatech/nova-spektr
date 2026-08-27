@@ -32,12 +32,10 @@ const UnlockFlowIsolated = () => (
 governanceUnlockFlowFeature.inject(modalsSlot, UnlockFlowIsolated);
 
 /**
- * What a host wires a lock row's Unlock button to. `flowCompleted` fires once
- * per landed extrinsic.
+ * What a host wires a lock row's Unlock button to. Nothing comes back: the
+ * dashboard's rows are derived from live voting and lock subscriptions, so they
+ * update on their own once the extrinsic lands.
  */
 export const governanceUnlockFlow = {
-  $step: unlockFlowModel.$step,
-
   unlockRequested: unlockFlowModel.unlockRequested,
-  flowCompleted: unlockFlowModel.flowCompleted,
 };

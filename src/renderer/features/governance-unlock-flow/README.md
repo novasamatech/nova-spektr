@@ -50,7 +50,7 @@ flowchart TD
     NONE["NONE — nothing mounted"] -->|unlock requested| CONFIRM["CONFIRM"]
     CONFIRM -->|Sign| SIGN["SIGN"]
     SIGN -->|signed| SUBMIT["SUBMIT"]
-    SUBMIT -->|released| DONE["Lock released — flowCompleted"]
+    SUBMIT -->|released| DONE["Lock released"]
     SUBMIT -->|multisig initiated| PENDING["Pending operation opened on close"]
     CONFIRM -->|close / back| NONE
     SIGN -->|back| CONFIRM
@@ -65,7 +65,7 @@ flowchart TD
 | Confirm — unpayable | The signer cannot cover the fee, or cannot reserve the multisig deposit | The reason is spelled out and **Sign is blocked**. Switching the signing route re-checks it                                                         |
 | Sign                | Sign pressed                                                            | The wallet's standard signing screen; going back returns to Confirm with everything intact                                                          |
 | Submit              | The signature arrived                                                   | The standard submission screen                                                                                                                      |
-| Released            | The extrinsic landed and the initiator is not a multisig                | Success, and the host is told to refresh what it shows                                                                                              |
+| Released            | The extrinsic landed and the initiator is not a multisig                | Success. Nothing is pushed back to the host — the dashboard's rows update on their own                                                              |
 | Multisig initiated  | The extrinsic landed but the release still needs signatories            | Success for the _initiation_; closing the flow opens the resulting pending operation                                                                |
 
 **The account the lock is released for is always spelled out**, on its own row, next to the account that signs. For a
@@ -84,18 +84,21 @@ loaders.
 
 **The request is a snapshot, and the flow trusts it.** Locks, referenda and the claimable amount move with every block;
 the release being signed must not. The host is the one responsible for the request being current — the Locks widget
-re-derives the claimable actions against the live head at the moment of the click, because a referendum that ended since
-the last snapshot adds a required `removeVote` — and from then on this flow signs exactly what it was handed. Nothing
-here follows the chain, so a block tick cannot disturb a signature in progress.
+re-derives both the claimable actions and the initiator against the live head at the moment of the click, because a
+referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
+permissionless payer good enough for the snapshot is no longer allowed to send it. From then on this flow signs exactly
+what it was handed. Nothing here follows the chain, so a block tick cannot disturb a signature in progress.
 
 **Only a flow at the sign step may claim a signature.** Signing and submission are app-wide singletons: every operation
 in the app goes through the same events. A flow parked on Confirm — or abandoned there while a hardware-wallet request
 is still in flight elsewhere — would otherwise pick up a foreign payload and submit it as its own. So the flow reacts to
 a signature only while it is itself at the sign step.
 
-**Completion means released, not submitted.** The "unlock succeeded" signal fires only when the landed extrinsic
-actually freed the tokens. A multisig initiation lands too, and it releases nothing until the remaining signatories
-approve, so it does not count — the host must not refresh its numbers as though the money were back.
+**Released is not the same as submitted.** A multisig initiation lands too, and it releases nothing until the remaining
+signatories approve, so the success screen says which of the two happened rather than reporting the money back either
+way. Nothing has to tell the host to refresh: the dashboard's rows are derived from live voting and lock subscriptions,
+so a real release drops out of the table on its own — including one that only lands later, when the last signatory
+approves.
 
 ## Related
 

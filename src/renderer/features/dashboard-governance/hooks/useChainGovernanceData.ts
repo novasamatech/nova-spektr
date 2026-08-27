@@ -294,7 +294,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   ]);
 
   const scheduleInputs = useMemo(() => {
-    if (!api || !referendumsFullyLoaded || Object.keys(tracks).length === 0) {
+    if (!api || !referendumsFullyLoaded || Object.keys(tracks).length === 0 || referendums.length === 0) {
       return null;
     }
 
