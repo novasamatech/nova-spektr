@@ -398,27 +398,31 @@ persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOper
  *   and the row flagged, exactly as a fresh indexer response would be, so the
  *   UI never shows a stale mismatching call.
  *
- * Returns the same array when nothing needs changing so the store skips the
- * update.
+ * Only ever runs for a cache that {@link needsSanitising}: hydration already has
+ * a writer (persist itself), and adding a second one for a cache that is fine
+ * reorders the updates around it.
  */
+const hasMismatchingCallData = ({ callData, callHash }: MultisigOperation): boolean =>
+  nonNullable(callData) && !validateCallData(callData, callHash);
+
+const needsSanitising = (value: MultisigOperation[]): boolean =>
+  value.some(op => !op.multisigAccountId || hasMismatchingCallData(op));
+
 const sanitiseCachedOperations = (value: MultisigOperation[]): MultisigOperation[] => {
   if (value.some(op => !op.multisigAccountId)) return [];
 
-  let changed = false;
-  const sanitised = value.map(op => {
-    if (!op.callData || validateCallData(op.callData, op.callHash)) return op;
-
-    changed = true;
-
-    return { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true };
-  });
-
-  return changed ? sanitised : value;
+  return value.map(op =>
+    hasMismatchingCallData(op)
+      ? { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true }
+      : op,
+  );
 };
 
 sample({
   clock: cachedOperationsLoaded,
-  filter: ({ value }) => Array.isArray(value),
+  // Reads only (`done` fires for writes too), and only when there is something
+  // to fix — see the comment on sanitiseCachedOperations.
+  filter: ({ operation, value }) => operation === 'get' && Array.isArray(value) && needsSanitising(value),
   fn: ({ value }) => sanitiseCachedOperations(value),
   target: $cachedOperations,
 });
