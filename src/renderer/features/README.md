@@ -144,7 +144,7 @@ notes.
 
 ## Assets & Balances
 
-- `assets`
+- [`assets`](./assets/README.md)
 - [`assets-balances`](./assets-balances/README.md)
 - `assets-navigation` (no spec planned)
 - `assets-transaction`
