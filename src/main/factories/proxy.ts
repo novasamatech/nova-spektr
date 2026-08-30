@@ -19,11 +19,15 @@ const NETWORK_FAILURE_STATUS = 0;
 export const PROXY_BLOCKED_STATUS_TEXT = 'Blocked by proxy policy';
 
 /**
- * Origin the renderer registered as its address-book backend. Requests to any
- * other origin are refused. `null` (nothing registered yet) refuses everything.
- * See `shared/lib/proxyUrl.ts` for why the pin is only defence in depth.
+ * Origins the renderer registered as address-book backends. Requests to
+ * anything else are refused, and an empty set (nothing registered yet) refuses
+ * everything. See `shared/lib/proxyUrl.ts` for why this is a set and why it is
+ * only defence in depth.
  */
-let allowedOrigin: string | null = null;
+const allowedOrigins = new Set<string>();
+
+/** Oldest pins are dropped past this, so the set cannot grow without bound. */
+const MAX_PINNED_ORIGINS = 8;
 
 function failure(statusText: string): FetchResult {
   return { ok: false, status: NETWORK_FAILURE_STATUS, statusText, headers: {}, body: EMPTY_JSON_BODY };
@@ -45,12 +49,12 @@ function describeUrl(url: unknown): string {
 
 export function setupProxy() {
   /**
-   * `null` clears the pin; an origin that fails the scheme rule is refused and
-   * the previous pin is kept.
+   * `null` clears every pin; an origin that fails the scheme rule is refused
+   * and the existing pins are kept.
    */
   ipcMain.handle(IPC.PROXY.SET_ALLOWED_ORIGIN, (_, origin: unknown) => {
     if (origin === null) {
-      allowedOrigin = null;
+      allowedOrigins.clear();
 
       return;
     }
@@ -61,14 +65,21 @@ export function setupProxy() {
       return;
     }
 
-    allowedOrigin = origin;
+    // Re-inserting moves the origin to the end, so the eviction below is least-recently-pinned.
+    allowedOrigins.delete(origin);
+    allowedOrigins.add(origin);
+
+    while (allowedOrigins.size > MAX_PINNED_ORIGINS) {
+      const oldest = allowedOrigins.values().next();
+      if (oldest.done) break;
+      allowedOrigins.delete(oldest.value);
+    }
   });
 
   ipcMain.handle(IPC.PROXY.FETCH, async (_, url: unknown, init?: FetchInit): Promise<FetchResult> => {
-    if (typeof url !== 'string' || !isAllowedProxyUrl(url, allowedOrigin)) {
-      console.warn(
-        `${SECURITY_LOG_PREFIX} Blocked proxy fetch to ${describeUrl(url)} (allowed origin: ${allowedOrigin ?? 'none'})`,
-      );
+    if (typeof url !== 'string' || !isAllowedProxyUrl(url, allowedOrigins)) {
+      const pinned = allowedOrigins.size === 0 ? 'none' : [...allowedOrigins].join(', ');
+      console.warn(`${SECURITY_LOG_PREFIX} Blocked proxy fetch to ${describeUrl(url)} (allowed origins: ${pinned})`);
 
       return failure(PROXY_BLOCKED_STATUS_TEXT);
     }

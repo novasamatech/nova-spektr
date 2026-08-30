@@ -17,18 +17,28 @@ describe('isLoopbackHostname', () => {
   });
 });
 
+const pinned = (...origins: string[]) => new Set(origins);
+
 describe('isAllowedProxyUrl', () => {
   it('allows https to the pinned origin', () => {
-    expect(isAllowedProxyUrl(`${ORIGIN}/health`, ORIGIN)).toBe(true);
+    expect(isAllowedProxyUrl(`${ORIGIN}/health`, pinned(ORIGIN))).toBe(true);
   });
 
   it('allows an uppercase scheme (URL normalises it)', () => {
-    expect(isAllowedProxyUrl('HTTPS://address-book.example.com/health', ORIGIN)).toBe(true);
+    expect(isAllowedProxyUrl('HTTPS://address-book.example.com/health', pinned(ORIGIN))).toBe(true);
   });
 
   it('denies everything when no origin is pinned (fail closed)', () => {
-    expect(isAllowedProxyUrl(`${ORIGIN}/health`, null)).toBe(false);
-    expect(isAllowedProxyUrl('http://localhost:5000/health', null)).toBe(false);
+    expect(isAllowedProxyUrl(`${ORIGIN}/health`, pinned())).toBe(false);
+    expect(isAllowedProxyUrl('http://localhost:5000/health', pinned())).toBe(false);
+  });
+
+  it('allows every pinned origin, so a probe in flight cannot unpin the saved backend', () => {
+    const origins = pinned(ORIGIN, 'http://localhost:5000');
+
+    expect(isAllowedProxyUrl(`${ORIGIN}/health`, origins)).toBe(true);
+    expect(isAllowedProxyUrl('http://localhost:5000/health', origins)).toBe(true);
+    expect(isAllowedProxyUrl('https://evil.example.com/exfil', origins)).toBe(false);
   });
 
   it.each([
@@ -38,36 +48,38 @@ describe('isAllowedProxyUrl', () => {
     'ftp://address-book.example.com/x',
     'javascript:alert(1)',
   ])('rejects non-http(s) scheme: %s', (url) => {
-    expect(isAllowedProxyUrl(url, ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl(url, pinned(ORIGIN))).toBe(false);
   });
 
   it('rejects https to a different origin', () => {
-    expect(isAllowedProxyUrl('https://evil.example.com/exfil', ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl('https://evil.example.com/exfil', pinned(ORIGIN))).toBe(false);
   });
 
   it('rejects a port mismatch against the pinned origin', () => {
-    expect(isAllowedProxyUrl('https://address-book.example.com:8443/health', ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl('https://address-book.example.com:8443/health', pinned(ORIGIN))).toBe(false);
   });
 
   it('rejects userinfo tricks that only look like the pinned host', () => {
-    expect(isAllowedProxyUrl('https://address-book.example.com@evil.example.com/', ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl('https://address-book.example.com@evil.example.com/', pinned(ORIGIN))).toBe(false);
   });
 
   it('allows http to a loopback host only when it is the pinned origin', () => {
-    expect(isAllowedProxyUrl('http://localhost:5000/health', 'http://localhost:5000')).toBe(true);
-    expect(isAllowedProxyUrl('http://127.0.0.1:5000/health', 'http://127.0.0.1:5000')).toBe(true);
-    expect(isAllowedProxyUrl('http://[::1]:5000/health', 'http://[::1]:5000')).toBe(true);
-    expect(isAllowedProxyUrl('http://localhost:5000/health', 'http://localhost:6000')).toBe(false);
-    expect(isAllowedProxyUrl('http://localhost:5000/health', ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl('http://localhost:5000/health', pinned('http://localhost:5000'))).toBe(true);
+    expect(isAllowedProxyUrl('http://127.0.0.1:5000/health', pinned('http://127.0.0.1:5000'))).toBe(true);
+    expect(isAllowedProxyUrl('http://[::1]:5000/health', pinned('http://[::1]:5000'))).toBe(true);
+    expect(isAllowedProxyUrl('http://localhost:5000/health', pinned('http://localhost:6000'))).toBe(false);
+    expect(isAllowedProxyUrl('http://localhost:5000/health', pinned(ORIGIN))).toBe(false);
   });
 
   it('rejects plaintext http to a non-loopback host even when pinned', () => {
-    expect(isAllowedProxyUrl('http://address-book.example.com/health', 'http://address-book.example.com')).toBe(false);
+    expect(isAllowedProxyUrl('http://address-book.example.com/health', pinned('http://address-book.example.com'))).toBe(
+      false,
+    );
   });
 
   it('rejects unparsable input', () => {
-    expect(isAllowedProxyUrl('not a url', ORIGIN)).toBe(false);
-    expect(isAllowedProxyUrl('', ORIGIN)).toBe(false);
+    expect(isAllowedProxyUrl('not a url', pinned(ORIGIN))).toBe(false);
+    expect(isAllowedProxyUrl('', pinned(ORIGIN))).toBe(false);
   });
 });
 

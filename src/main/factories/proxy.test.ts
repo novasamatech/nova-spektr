@@ -138,6 +138,33 @@ describe('proxy.ts — fetch proxy policy', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps earlier pins, so a probe of another origin does not unpin the saved backend', async () => {
+    const proxy = await setup();
+    mockFetch.mockResolvedValue(okResponse());
+    await proxy.pin(ORIGIN);
+    await proxy.pin('http://localhost:5000');
+
+    await proxy.fetch('http://localhost:5000/health');
+    await proxy.fetch(`${ORIGIN}/health`);
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops the least recently pinned origin past the cap', async () => {
+    const proxy = await setup();
+    mockFetch.mockResolvedValue(okResponse());
+    await proxy.pin(ORIGIN);
+    for (let i = 0; i < 8; i++) {
+      await proxy.pin(`https://backend-${i}.example.com`);
+    }
+
+    await proxy.fetch(`${ORIGIN}/health`);
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    await proxy.fetch('https://backend-7.example.com/health');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
   it('pinning null clears the allow-list', async () => {
     const proxy = await setup();
     await proxy.pin(ORIGIN);

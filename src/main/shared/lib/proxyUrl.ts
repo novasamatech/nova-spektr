@@ -7,10 +7,15 @@
  * 1. Scheme rule (hard guarantee): `https:` anywhere, `http:` only to a loopback
  *    host (self-hosted dev backends). Nothing else — no `file:`, `data:`,
  *    `blob:`, no plaintext to the network.
- * 2. Origin pin (defence in depth): the request must target the origin the
- *    renderer registered as its address-book backend. A compromised renderer
- *    can re-pin, so this only narrows the blast radius; the scheme rule is what
- *    holds regardless.
+ * 2. Origin pin (defence in depth): the request must target an origin the renderer
+ *    registered as an address-book backend. A compromised renderer can pin
+ *    whatever it likes, so this only narrows the blast radius; the scheme rule
+ *    is what holds regardless.
+ *
+ * The pin is a set rather than a single value: the renderer pins per request,
+ * and a reachability probe of an unsaved URL can be in flight next to a request
+ * to the saved backend. With one slot the later pin would make the earlier
+ * request fail as if it were blocked.
  */
 
 const HTTPS = 'https:';
@@ -41,11 +46,11 @@ export function isAllowedProxyOrigin(origin: string): boolean {
   return url !== null && hasAllowedScheme(url) && url.origin === origin;
 }
 
-/** Fails closed: with no pinned origin every request is denied. */
-export function isAllowedProxyUrl(value: string, allowedOrigin: string | null): boolean {
-  if (allowedOrigin === null) return false;
+/** Fails closed: with nothing pinned every request is denied. */
+export function isAllowedProxyUrl(value: string, allowedOrigins: ReadonlySet<string>): boolean {
+  if (allowedOrigins.size === 0) return false;
 
   const url = parseUrl(value);
 
-  return url !== null && hasAllowedScheme(url) && url.origin === allowedOrigin;
+  return url !== null && hasAllowedScheme(url) && allowedOrigins.has(url.origin);
 }

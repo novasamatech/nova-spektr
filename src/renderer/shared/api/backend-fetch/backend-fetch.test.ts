@@ -176,6 +176,16 @@ describe('authFetch — proxy origin pin (Electron)', () => {
     expect(setProxyAllowedOrigin).toHaveBeenLastCalledWith('http://localhost:5000');
   });
 
+  it('keeps the earlier origin pinned when a second one is used', async () => {
+    const authFetch = await freshAuthFetch();
+
+    await authFetch('https://backend.test/a');
+    await authFetch('http://localhost:5000/a');
+    await authFetch('https://backend.test/b');
+
+    expect(setProxyAllowedOrigin).toHaveBeenCalledTimes(2);
+  });
+
   it('does not pin outside Electron', async () => {
     isElectronMock.mockReturnValue(false);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockFetchResponse()));

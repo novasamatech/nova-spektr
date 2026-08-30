@@ -6,24 +6,35 @@ export type FetchResult = { ok: boolean; status: number; headers: Record<string,
 
 let csrfToken: string | null = null;
 
-// Electron only: the main-process fetch proxy refuses every request outside the origin pinned
-// here, so each request first makes sure its own origin is the pinned one. Pinning per request
-// (rather than per saved backend URL) also covers the reachability probe of an unsaved draft.
-let pinnedOrigin: string | null = null;
-let pinReady: Promise<void> = Promise.resolve();
+// Electron only: the main-process fetch proxy refuses every request outside the origins pinned
+// here, so each request first makes sure its own origin is pinned. Pinning per request (rather
+// than per saved backend URL) also covers the reachability probe of an unsaved draft, and the
+// pins accumulate so a probe in flight cannot unpin the saved backend under another request.
+// Mirrors MAX_PINNED_ORIGINS in main/factories/proxy.ts, including the eviction order.
+const MAX_PINNED_ORIGINS = 8;
+const pinnedOrigins = new Map<string, Promise<void>>();
 
 function ensureProxyOrigin(url: string): Promise<void> {
   const origin = new URL(url).origin;
+  const pending = pinnedOrigins.get(origin);
 
-  if (origin !== pinnedOrigin) {
-    pinnedOrigin = origin;
-    pinReady = Promise.resolve(window.App.setProxyAllowedOrigin(origin)).catch((error) => {
-      pinnedOrigin = null;
-      throw error;
-    });
+  if (pending) {
+    return pending;
   }
 
-  return pinReady;
+  const pin = Promise.resolve(window.App.setProxyAllowedOrigin(origin)).catch((error) => {
+    pinnedOrigins.delete(origin);
+    throw error;
+  });
+
+  pinnedOrigins.set(origin, pin);
+  while (pinnedOrigins.size > MAX_PINNED_ORIGINS) {
+    const oldest = pinnedOrigins.keys().next();
+    if (oldest.done) break;
+    pinnedOrigins.delete(oldest.value);
+  }
+
+  return pin;
 }
 
 export function getCsrfToken(): string | null {
