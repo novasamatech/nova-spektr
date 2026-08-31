@@ -24,6 +24,7 @@
 - [Development](#development)
   * [Requirements](#requirements)
   * [Commands](#commands)
+  * [Environment variables](#environment-variables)
   * [Difference between environments](#difference-between-environments)
   * [Project localisation](#project-localisation)
     + [How to ignore localisation errors](#how-to-ignore-localisation-errors)
@@ -100,6 +101,19 @@ pnpm staging:sequence
 # Build app in production mode.
 pnpm prod:sequence
 ```
+
+## Environment variables
+
+Build-time values are read from the shell or from a git-ignored `.env` at the repo root (see [`.env.example`](./.env.example)).
+
+| Variable                    | Purpose                                                                                                                                                                                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WALLET_CONNECT_PROJECT_ID` | WalletConnect Cloud project id, baked into the renderer bundle. Create one at [cloud.reown.com](https://cloud.reown.com). When empty, WalletConnect / Nova Wallet pairing is hidden in development builds and staging/production builds fail with an error. |
+
+The id ends up in the shipped bundle, so it is not a secret: CI reads it from the `WALLET_CONNECT_PROJECT_ID`
+repository variable (Settings → Secrets and variables → Actions → Variables), which is also available to pull-request
+runs. The `docker-compose.yml` system-test setup runs the development server without the id, so WalletConnect is hidden
+there.
 
 ## Difference between environments
 

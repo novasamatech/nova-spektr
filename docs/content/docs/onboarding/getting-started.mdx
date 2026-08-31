@@ -29,6 +29,24 @@ import packageJson from '../../../../package.json'
 pnpm install
 ```
 
+## Environment variables
+
+Copy `.env.example` to `.env` (git-ignored) and fill in the values before building:
+
+- `WALLET_CONNECT_PROJECT_ID` — WalletConnect Cloud project id, baked into the renderer at build time. Create one at
+  [cloud.reown.com](https://cloud.reown.com). In development it may be empty: WalletConnect / Nova Wallet pairing is
+  hidden and the sign client is never initialised. Staging and production builds fail with an error without it.
+
+The id is embedded in the shipped bundle, so it is a repository **variable** in CI, not a secret
+(Settings → Secrets and variables → Actions → Variables → `WALLET_CONNECT_PROJECT_ID`). The `docker-compose.yml`
+system-test setup starts the development server without the id, so WalletConnect stays hidden there.
+
+Manual steps after moving the id out of source:
+
+1. Rotate the previously committed project id at [cloud.reown.com](https://cloud.reown.com) — it is still visible in git
+   history.
+2. Set the new id as the `WALLET_CONNECT_PROJECT_ID` repository variable in GitHub Actions.
+
 ## Development
 
 ```sh

@@ -35,7 +35,7 @@ function stripCspMetaInDev(): Plugin {
 }
 
 const config: UserConfigFn = async ({ mode, command }) => {
-  const { defineConfig } = await import('vite');
+  const { defineConfig, loadEnv } = await import('vite');
   const { default: svgr } = await import('vite-plugin-svgr');
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
@@ -47,6 +47,16 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const isDev = mode === 'development';
   const isProd = mode === 'production';
   const isStage = mode === 'staging';
+
+  // Values that must not live in source come from the shell or a git-ignored `.env` (see `.env.example`);
+  // `loadEnv` lets the shell override the files.
+  const env = loadEnv(mode, folders.root, 'WALLET_CONNECT_');
+  const walletConnectProjectId = env.WALLET_CONNECT_PROJECT_ID ?? '';
+
+  // Development/test builds hide the WalletConnect feature when the id is missing; shipped builds must have it.
+  if (command === 'build' && (isStage || isProd) && walletConnectProjectId === '') {
+    throw new Error('WALLET_CONNECT_PROJECT_ID is required for staging/production builds (see .env.example)');
+  }
 
   const commonPlugins = [skipSourcemaps(['node_modules'])];
 
@@ -70,6 +80,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
+      'process.env.WALLET_CONNECT_PROJECT_ID': JSON.stringify(walletConnectProjectId),
       global: 'globalThis',
     },
     worker: {

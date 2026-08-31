@@ -63,6 +63,20 @@ export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
 const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';
 export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
+/**
+ * WalletConnect Cloud project id, injected at build time (see
+ * `vite.config.renderer.ts`). Empty only in development/test builds without
+ * `WALLET_CONNECT_PROJECT_ID` — staging/production builds fail fast without it,
+ * so released bundles always carry a real id and signing paths need no runtime
+ * guard.
+ */
+export const WALLET_CONNECT_PROJECT_ID = process.env.WALLET_CONNECT_PROJECT_ID ?? '';
+/**
+ * False when the id is missing: the walletConnect feature is hidden and the
+ * sign client is never initialised.
+ */
+export const IS_WALLET_CONNECT_CONFIGURED = WALLET_CONNECT_PROJECT_ID !== '';
+
 export const TOKENS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${TOKENS_CONFIG_VERSION}/${process.env.TOKENS_FILE + '.json'}`;
 
 // We need to map the chain id to the SpellSDK's chain name for the xcm transfers while using the ParaSpell SDK

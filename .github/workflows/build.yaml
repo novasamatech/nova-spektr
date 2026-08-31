@@ -32,6 +32,8 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Build app
+        env:
+          WALLET_CONNECT_PROJECT_ID: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
         run: |
           pnpm build
           pnpm postbuild

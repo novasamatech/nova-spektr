@@ -17,6 +17,10 @@ inputs:
   build_type:
     description: BUILD_TYPE build arg value
     required: true
+  wallet_connect_project_id:
+    description: WalletConnect Cloud project id passed to the renderer build (empty disables WalletConnect)
+    required: false
+    default: ''
   set_version_from_tag_commit:
     description: Update package.json version with +<short_sha>
     required: false
@@ -70,4 +74,5 @@ runs:
         build-args: |
           NODE_JS_IMAGE_VERSION=${{ inputs.node_js_image_version }}-alpine
           BUILD_TYPE=${{ inputs.build_type }}
+          WALLET_CONNECT_PROJECT_ID=${{ inputs.wallet_connect_project_id }}
         tags: ${{ env.FULL_IMAGE_NAME }}
