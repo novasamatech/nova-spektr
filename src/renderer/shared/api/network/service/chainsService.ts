@@ -11,6 +11,7 @@ import {
   ChainOptions,
 } from '@/shared/core';
 import { CHAINS_CONFIG_URL, RelayChains, ZERO_BALANCE, getRelaychainAsset, totalAmount } from '@/shared/lib/utils';
+import { parseChainsConfig } from '../lib/chainsSchema';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type PriceObject = Record<string, Record<string, { price: number; change: number }>>;
@@ -35,7 +36,15 @@ async function getChainsData(): Promise<Chain[] | null> {
     return null;
   }
 
-  return response.json();
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    console.error('Failed to parse chains config as JSON', error);
+    return null;
+  }
+
+  return parseChainsConfig(payload);
 }
 
 function getChainsMap(chains: Chain[]): Record<ChainId, Chain> {

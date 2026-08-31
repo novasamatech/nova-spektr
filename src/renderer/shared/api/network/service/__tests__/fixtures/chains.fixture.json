@@ -1,0 +1,184 @@
+[
+  {
+    "name": "Polkadot Relay",
+    "specName": "polkadot",
+    "addressPrefix": 0,
+    "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg",
+    "options": [
+      "multisig",
+      "regular_proxy",
+      "pure_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://rpc-polkadot-1.novasama-tech.org",
+        "name": "Novasama node"
+      },
+      {
+        "url": "wss://rpc-polkadot-2.novasama-tech.org",
+        "name": "Novasama node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Polkadot",
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "native",
+        "priceId": "polkadot",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://polkadot.subscan.io/extrinsic/{hash}",
+        "account": "https://polkadot.subscan.io/account/{address}",
+        "multisig": "https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
+        "name": "Statescan",
+        "account": "https://polkadot.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://polkadot.statescan.io/#/extrinsics/{hash}",
+        "event": "https://polkadot.statescan.io/#/events/{event}"
+      }
+    ],
+    "externalApi": {
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-polkadot-prod.novasama-tech.org"
+        }
+      ],
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-polkadot-prod.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-polkadot-prod.novasama-tech.org"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-accounts-prod.novasama-tech.org"
+        }
+      ]
+    },
+    "additional": {
+      "identityChain": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+      "supportsGenericLedgerApp": true
+    }
+  },
+  {
+    "name": "Polkadot Asset Hub",
+    "specName": "polkadot",
+    "addressPrefix": 0,
+    "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg",
+    "options": [
+      "multisig",
+      "regular_proxy",
+      "pure_proxy",
+      "governance",
+      "vested_transfer",
+      "multi_transfer"
+    ],
+    "nodes": [
+      {
+        "url": "wss://asset-hub-polkadot-rpc.n.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://sys.ibp.network/asset-hub-polkadot",
+        "name": "IBP1 node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Polkadot",
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "native",
+        "priceId": "polkadot",
+        "staking": "relaychain",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+        }
+      },
+      {
+        "name": "USD Tether",
+        "assetId": 1,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDT.svg"
+        },
+        "typeExtras": {
+          "assetId": "1984"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "account": "https://assethub-polkadot.subscan.io/account/{address}",
+        "extrinsic": "https://assethub-polkadot.subscan.io/extrinsic/{hash}",
+        "multisig": "https://assethub-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      },
+      {
+        "name": "Statescan",
+        "account": "https://assethub-polkadot.statescan.io/#/accounts/{address}",
+        "extrinsic": "https://assethub-polkadot.statescan.io/#/extrinsics/{hash}",
+        "event": "https://assethub-polkadot.statescan.io/#/events/{event}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-polkadot-ah-prod.novasama-tech.org"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-polkadot-prod.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-polkadot-ah-prod.novasama-tech.org"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-accounts-prod.novasama-tech.org"
+        }
+      ]
+    },
+    "additional": {
+      "identityChain": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
+      "timelineChain": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+      "supportsGenericLedgerApp": true,
+      "defaultBlockTime": 2000
+    }
+  }
+]

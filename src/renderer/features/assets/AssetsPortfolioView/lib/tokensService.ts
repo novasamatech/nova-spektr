@@ -25,6 +25,7 @@ import { type AnyAccount, accountService } from '@/domains/network';
 import { type PriceObject } from '@/domains/price';
 import { balanceUtils } from '@/entities/balance';
 
+import { parseTokensConfig } from './tokensSchema';
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
 export const tokensService = {
@@ -44,7 +45,15 @@ async function getTokensData(): Promise<AssetByChains[] | null> {
     return null;
   }
 
-  return response.json();
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    console.error('Failed to parse tokens config as JSON', error);
+    return null;
+  }
+
+  return parseTokensConfig(payload);
 }
 
 function getTokenBalance(balance: Balance): PortfolioTokenBalance {
