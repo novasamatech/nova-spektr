@@ -46,7 +46,9 @@ Inputs are chosen by the resolved type of each argument:
 - **Bool** — a switch.
 - **String / bytes** — free text, placeholder `0x...`.
 - **Account** — a combobox over the user's own accounts and address-book contacts, searchable by name or address (a full
-  address in any SS58 prefix matches by account id); whatever is typed on blur is committed as the value.
+  address in any SS58 prefix matches by account id); whatever is typed on blur is committed as the value. Contact rows
+  are collapsed by account id (a local contact wins over a backend one with the same address) and keyed by source +
+  contact id, never by the user-supplied name, so same-named contacts stay distinct rows.
 - **Option** — a Some/None switch that reveals the inner field when enabled.
 - **Enum** — a variant picker plus fields for the chosen variant.
 - **Struct / Tuple / Vec** — nested fields; Vec items can be added and removed.

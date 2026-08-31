@@ -4,20 +4,14 @@ import { uniqBy } from 'lodash';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import {
-  includesMultiple,
-  isCorrectAccountId,
-  performSearch,
-  toAccountId,
-  toAddress,
-  validateAddress,
-} from '@/shared/lib/utils';
+import { includesMultiple, isCorrectAccountId, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Combobox } from '@/shared/ui-kit';
 import { useAccountsNames } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
+import { buildContactOptions } from '../../lib/accountSuggestions';
 
 type Props = {
   value: string;
@@ -73,18 +67,10 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
       });
   }, [searchQuery, queryAccountId, chain, resolvedAccounts]);
 
-  const contactOptions = useMemo(() => {
-    const filtered = queryAccountId
-      ? contacts.filter((contact) => contact.accountId === queryAccountId)
-      : searchQuery
-        ? performSearch({ query: searchQuery, records: contacts, weights: { name: 1, address: 0.5 } })
-        : contacts;
-
-    return filtered.map((contact) => ({
-      name: contact.name,
-      address: toAddress(contact.accountId, { prefix: chain?.prefix }),
-    }));
-  }, [searchQuery, queryAccountId, contacts, chain]);
+  const contactOptions = useMemo(
+    () => buildContactOptions({ contacts, searchQuery, queryAccountId, prefix: chain?.prefix }),
+    [searchQuery, queryAccountId, contacts, chain],
+  );
 
   const prefixElement = value ? (
     <Identicon size={20} address={toAddress(value, { prefix: chain?.prefix })} background={false} />
@@ -146,7 +132,7 @@ export const AccountParamInput = memo(({ value, api, onChange }: Props) => {
           }
         >
           {contactOptions.map((opt) => (
-            <Combobox.Item key={`contact-${opt.name}`} value={opt.address}>
+            <Combobox.Item key={opt.key} value={opt.address}>
               <Address showIcon title={opt.name} address={opt.address} />
             </Combobox.Item>
           ))}
