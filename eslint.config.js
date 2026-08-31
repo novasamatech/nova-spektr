@@ -67,6 +67,11 @@ const importOrderPathGroups = [
     pattern: '~config',
     position: 'before',
   },
+  {
+    group: 'external',
+    pattern: '~shared/**',
+    position: 'before',
+  },
 ];
 
 export default tseslint.config(

@@ -5,6 +5,7 @@ import { BrowserWindow, Menu, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 
 import { ENVIRONMENT } from '../shared/constants/environment';
+import { isAllowedExternalUrl } from '../shared/lib/externalUrl';
 
 import { buildMenuTemplate } from './menu';
 
@@ -80,9 +81,13 @@ export function createWindow(): BrowserWindow {
     }
   });
 
-  // Open urls in the user's browser
+  // Open urls in the user's browser; never let other schemes reach OS protocol handlers
   window.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
+    if (isAllowedExternalUrl(details.url)) {
+      shell.openExternal(details.url);
+    } else {
+      console.warn('[Security] Blocked external url with disallowed scheme', details.url);
+    }
 
     return { action: 'deny' };
   });
