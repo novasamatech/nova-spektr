@@ -1,6 +1,6 @@
 # Address book backend connection & authentication
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-28
 
 ## Overview
 
@@ -46,6 +46,13 @@ order as everywhere in the app: Polkadot group, Kusama group, others, testnets).
   different network.
 - If the remembered network is no longer available in the app (removed from the chains config), the selector falls back
   to the Polkadot relay chain.
+
+## Desktop request policy
+
+In the desktop app backend requests go through a main-process proxy that only talks to the configured backend origin
+over `https` (plaintext `http` is accepted for `localhost` / `127.0.0.1` / `[::1]` only). The shared backend fetch
+helper pins the origin of each request before sending it (so the reachability probe of a draft URL works too); a URL
+outside that policy cannot be reached and the modal reports it as unreachable.
 
 ## Lifecycle
 
