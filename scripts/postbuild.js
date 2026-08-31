@@ -40,4 +40,23 @@ async function createPackageJSONDistVersion() {
   }
 }
 
+/**
+ * `ignore-certificate-errors` disables TLS validation for the whole Electron
+ * process. It is only ever appended in development builds (see
+ * src/main/factories/certificates.ts) and postbuild runs for `build` /
+ * `build:staging` only, so its presence in the bundle means a distributable
+ * build would ship with certificate validation off.
+ */
+function assertNoInsecureTlsSwitch() {
+  const mainBundle = resolve(folders.devBuild, 'main.cjs');
+
+  if (readFileSync(mainBundle, { encoding: 'utf-8' }).includes('ignore-certificate-errors')) {
+    console.error(
+      `🛑 ${mainBundle} contains the 'ignore-certificate-errors' switch; it is allowed in development builds only.`,
+    );
+    process.exit(1);
+  }
+}
+
+assertNoInsecureTlsSwitch();
 createPackageJSONDistVersion();
