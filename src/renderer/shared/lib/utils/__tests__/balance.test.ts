@@ -2,7 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type AssetBalance, type AssetId, type Balance, type BalanceId, AssetType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { formatAmount, formatBalance, transferableAmountBN, withdrawableAmount } from '../balance';
+import { formatAmount, formatAmountStrict, formatBalance, transferableAmountBN, withdrawableAmount } from '../balance';
 
 const createBalance = (params: {
   free?: string | number;
@@ -195,5 +195,40 @@ describe('shared/lib/onChainUtils/balance', () => {
       const result = withdrawableAmount(balance);
       expect(result).toEqual(expected);
     });
+  });
+});
+
+describe('formatAmountStrict', () => {
+  test('matches formatAmount for well-formed input', () => {
+    expect(formatAmountStrict('1.5', 10)).toEqual('15000000000');
+    expect(formatAmountStrict('1.55', 10)).toEqual('15500000000');
+    expect(formatAmountStrict('0.1', 10)).toEqual('1000000000');
+    expect(formatAmountStrict('.1', 10)).toEqual('1000000000');
+    expect(formatAmountStrict('7', 10)).toEqual('70000000000');
+  });
+
+  test.each(['-1.5', '-1.55', '-0.1', '1,000', '1 000', '1e5', 'abc'])(
+    'rejects %s instead of rescaling it',
+    (amount) => {
+      expect(() => formatAmountStrict(amount, 10)).toThrow();
+    },
+  );
+
+  test('rejects more decimals than the precision allows', () => {
+    expect(() => formatAmountStrict('1.123', 2)).toThrow(/decimals/);
+  });
+
+  test('does not cap the integer part (Compact<u128> args can exceed 15 digits)', () => {
+    expect(formatAmountStrict('1234567890123456', 10)).toEqual('12345678901234560000000000');
+  });
+
+  test.each([
+    ['.', '0'],
+    ['1.', '10000000000'],
+    ['007', '70000000000'],
+    ['', '0'],
+  ])('tolerates edge-case input %s like formatAmount', (amount, expected) => {
+    expect(formatAmountStrict(amount, 10)).toEqual(formatAmount(amount, 10));
+    expect(formatAmountStrict(amount, 10)).toEqual(expected);
   });
 });

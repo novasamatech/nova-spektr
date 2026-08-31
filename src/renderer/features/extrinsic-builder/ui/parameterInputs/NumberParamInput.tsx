@@ -6,12 +6,14 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /** Allow a leading minus (signed ints only). */
+  signed?: boolean;
 };
 
-export const NumberParamInput = memo(({ value, onChange, placeholder }: Props) => {
+export const NumberParamInput = memo(({ value, onChange, placeholder, signed = false }: Props) => {
   const handleChange = (val: string) => {
-    // Allow empty, digits, and negative sign for signed ints
-    if (val === '' || val === '-' || /^-?\d+$/.test(val)) {
+    const pattern = signed ? /^-?\d*$/ : /^\d*$/;
+    if (pattern.test(val)) {
       onChange(val);
     }
   };

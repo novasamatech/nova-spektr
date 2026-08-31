@@ -162,7 +162,7 @@ notes.
 - `operation-templates`
 - `app-custom-operations`
 - [`call-data-execute`](./call-data-execute/README.md)
-- `extrinsic-builder`
+- [`extrinsic-builder`](./extrinsic-builder/README.md)
 - [`drafts`](./drafts/README.md)
 - [`signing-path`](./signing-path/README.md)
 - `sign-wallet-connect` (no spec planned)

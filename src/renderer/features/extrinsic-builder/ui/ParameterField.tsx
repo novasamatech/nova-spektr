@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
-import { type ParameterTypeDef } from '../lib/types';
+import { type ParameterTypeDef, SIGNED_INT_TYPES } from '../lib/types';
 
 import { AccountParamInput } from './parameterInputs/AccountParamInput';
 import { BalanceParamInput } from './parameterInputs/BalanceParamInput';
@@ -79,7 +79,9 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
       const isText = typeDef.primitiveType === 'string' || typeDef.primitiveType === 'bytes';
 
       if (!isText) {
-        return <NumberParamInput value={String(value ?? '')} onChange={onChange} />;
+        const signed = typeDef.primitiveType !== undefined && SIGNED_INT_TYPES.has(typeDef.primitiveType);
+
+        return <NumberParamInput value={String(value ?? '')} signed={signed} onChange={onChange} />;
       }
 
       return <TextParamInput value={String(value ?? '')} onChange={onChange} />;

@@ -39,6 +39,23 @@ export const formatAmount = (amount: string, precision: number): string => {
   return new BN(amount.replace(/\D/g, '')).mul(BN_TEN.pow(bnPrecision)).toString();
 };
 
+/**
+ * Like formatAmount, but refuses input it cannot represent instead of stripping
+ * characters: a sign, separators or excess decimals throw. Unlike the transfer
+ * form validators it does not cap the integer part — Compact<u128> args may
+ * exceed 15 digits. Use it where the amount has not already been validated.
+ */
+export const formatAmountStrict = (amount: string, precision: number): string => {
+  if (!validateSymbols(amount)) {
+    throw new Error(`Invalid amount "${amount}": only digits and a decimal point are allowed`);
+  }
+  if (!validateDecimals(amount, precision)) {
+    throw new Error(`Invalid amount "${amount}": at most ${precision} decimals are allowed`);
+  }
+
+  return formatAmount(amount, precision);
+};
+
 type FormatBalanceShorthands = Record<Suffix, boolean>;
 export type FormatBalanceConfig = Partial<{
   round: 'up' | 'down';
@@ -296,9 +313,16 @@ export const validateSymbols = (amount: string) => {
   return /^\d*\.?\d*$/.test(amount);
 };
 
+/** Decimal places only — no cap on the integer part (see validatePrecision). */
+export const validateDecimals = (amount: string, precision: number) => {
+  const decimal = amount.split('.')[1] ?? '';
+
+  return decimal.length <= precision;
+};
+
 export const validatePrecision = (amount: string, precision: number) => {
-  const [integer, decimal] = amount.split('.');
-  if (decimal && decimal.length > precision) return false;
+  const [integer] = amount.split('.');
+  if (!validateDecimals(amount, precision)) return false;
 
   return (integer?.length ?? 0) <= MAX_INTEGER;
 };
