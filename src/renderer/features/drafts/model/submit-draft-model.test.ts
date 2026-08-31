@@ -1,13 +1,30 @@
+import { type ApiPromise } from '@polkadot/api';
 import { allSettled, fork } from 'effector';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Chain, type ChainId, AccountType, CryptoType, SigningType } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  type DecodedTransaction,
+  AccountType,
+  CryptoType,
+  SigningType,
+  TransactionType,
+} from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Draft } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
-import { backendConfigurationModel } from '@/aggregates/backend';
+import { networkModel } from '@/entities/network';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
+import type * as DecodeDraft from '../lib/decode-draft-transaction';
+import { decodeDraftTransaction } from '../lib/decode-draft-transaction';
 
 import { submitDraftModel } from './submit-draft-model';
+
+vi.mock('../lib/decode-draft-transaction', async (importOriginal) => ({
+  ...(await importOriginal<typeof DecodeDraft>()),
+  decodeDraftTransaction: vi.fn(() => null),
+}));
 
 const CHAIN_ID = `0x${'11'.repeat(32)}` as ChainId;
 const CHAIN = { chainId: CHAIN_ID, name: 'Test', assets: [], nodes: [], options: [] } as unknown as Chain;
@@ -166,5 +183,132 @@ describe('submitDraftModel · a draft is only signable along a fully resolved pa
     expect(scope.getState(submitDraftModel.$wrappedTxErrorKind)).toBeNull();
     expect(scope.getState(submitDraftModel.$pathMissingAccountId)).toBeNull();
     expect(scope.getState(submitDraftModel.$route)).toEqual([multisigAccount, signerAccount]);
+  });
+});
+
+describe('submitDraftModel · unknown recipient gate', () => {
+  // `toAccountId` only passes hex through untouched — the padded decimal ids
+  // above are fine for path nodes but not for a transfer `dest`.
+  const hexAcc = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
+  const STRANGER = hexAcc(9);
+  const OWN_ID = hexAcc(7);
+  const PROXIED_ID = acc(3);
+  const transferTo = (dest: AccountId) =>
+    ({
+      type: TransactionType.TRANSFER,
+      section: 'balances',
+      method: 'transferKeepAlive',
+      chainId: CHAIN_ID,
+      address: '',
+      args: { dest, value: '1' },
+    }) as unknown as DecodedTransaction;
+  const healthyBook = { accountId: acc(8), accountName: 'Backend user', permissions: [] };
+
+  // Address book connected and healthy, chain api up — the only situation in
+  // which a recipient can actually be checked.
+  const setupVerifiedScope = async (accountList: AnyAccount[]) => {
+    const scope = fork({
+      values: new Map<any, any>([
+        [accounts.__test.$list, accountList],
+        [backendConfigurationModel.$backendUrl, 'https://backend.test'],
+        [networkModel.$apis, { [CHAIN_ID]: {} as ApiPromise }],
+        [connectionHistoryModel.$hasEverConnected, true],
+        [authModel.$authState, healthyBook],
+      ]),
+    });
+
+    await allSettled(accountService.accountAvailabilityOnChainAnyOf.registerHandler, {
+      scope,
+      params: { body: () => true, available: () => true },
+    });
+
+    return scope;
+  };
+
+  const startFlow = (scope: ReturnType<typeof fork>, draft: Draft = makeDraft()) =>
+    allSettled(submitDraftModel.flowStarted, {
+      scope,
+      params: { draft, initiator: makeMultisigAccount(MULTISIG_ID), chain: CHAIN },
+    });
+
+  beforeEach(() => {
+    vi.mocked(decodeDraftTransaction).mockReset();
+    vi.mocked(decodeDraftTransaction).mockReturnValue(null);
+  });
+
+  it('computes the warning from the transfer inside the draft, not from the multisig', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferTo(STRANGER));
+    const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope);
+
+    expect(scope.getState(submitDraftModel.$destinationAccountId)).toBe(STRANGER);
+    expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
+  });
+
+  it('refuses to start signing until the warning is acknowledged (multisig first approval)', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferTo(STRANGER));
+    const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope);
+    expect(scope.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+
+    await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(true);
+
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.SIGN);
+  });
+
+  it('gates a proxy-only draft (no multisig hop) the same way', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferTo(STRANGER));
+    const scope = await setupVerifiedScope([makeAccount(PROXIED_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope, {
+      ...makeDraft(),
+      multisigAccountId: null as unknown as AccountId,
+      signingPath: [
+        { kind: 'proxied', accountId: PROXIED_ID },
+        { kind: 'signer', accountId: SIGNER_ID },
+      ],
+    });
+
+    expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
+
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).not.toBe(submitDraftModel.Step.SIGN);
+  });
+
+  it("lets a transfer to one of the user's own accounts through without a tick", async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferTo(OWN_ID));
+    const scope = await setupVerifiedScope([
+      makeMultisigAccount(MULTISIG_ID),
+      makeAccount(SIGNER_ID),
+      makeAccount(OWN_ID),
+    ]);
+    await startFlow(scope);
+
+    expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('none');
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(true);
+  });
+
+  it('drops the acknowledgement when the flow finishes and when another draft opens', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferTo(STRANGER));
+    const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope);
+
+    await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(submitDraftModel.$isRiskAcknowledged)).toBe(true);
+
+    await allSettled(submitDraftModel.flowFinished, { scope });
+    expect(scope.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+
+    await startFlow(scope);
+    await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    await startFlow(scope, { ...makeDraft(), id: 'draft-2' });
+    expect(scope.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
   });
 });
