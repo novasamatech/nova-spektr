@@ -107,6 +107,12 @@ export const OperationDetails = ({ operation, account, wallet, amount, children 
           </DetailRow>
         )}
 
+        {!palletCall && operation.callDataMismatch && (
+          <DetailRow label={t('operation.details.operationType')}>
+            <FootnoteText className="text-text-negative">{t('operation.callData.indexerMismatch')}</FootnoteText>
+          </DetailRow>
+        )}
+
         {amount && (
           <DetailRow label={t('operation.details.amount')}>
             <OperationAmount value={amount.value} asset={amount.asset} iconSize={22} />

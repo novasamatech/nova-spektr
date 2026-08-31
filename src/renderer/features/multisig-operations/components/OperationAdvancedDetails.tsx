@@ -45,7 +45,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const explorers = chain?.explorers;
 
-  const { indexCreated, blockCreated, callHash, callData } = operation;
+  const { indexCreated, blockCreated, callHash, callData, callDataMismatch } = operation;
   const displayCall = useMemo(
     () => networkTransactionService.getCoreCallData(api, callData) ?? { callData, callHash },
     [api, callData, callHash],
@@ -152,6 +152,12 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
                 </Modal>
               )}
             </div>
+          </DetailRow>
+        )}
+
+        {callDataMismatch && (
+          <DetailRow label={t(callDetailsLabelKeys.callData)} className="text-text-secondary">
+            <FootnoteText className="text-text-negative">{t('operation.callData.indexerMismatch')}</FootnoteText>
           </DetailRow>
         )}
 

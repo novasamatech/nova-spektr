@@ -44,6 +44,12 @@ export type MultisigOperation = {
   section: string | null;
   callHash: HexString;
   callData: HexString | null;
+  /**
+   * The indexer returned call data whose hash does not match `callHash`. The
+   * data was discarded (`callData` is null) so nothing unrelated to the hash is
+   * ever decoded or displayed.
+   */
+  callDataMismatch?: boolean;
   chainId: ChainId;
   multisigAccountId: AccountId;
   proxiedAccountId?: AccountId;

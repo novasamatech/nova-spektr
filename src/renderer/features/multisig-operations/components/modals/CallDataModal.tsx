@@ -128,9 +128,15 @@ export const CallDataModal = memo(({ operation, api, chain, children }: Props) =
       <Modal.Title close>{t('operation.callData.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex flex-col gap-y-4 p-5">
-          <Alert active variant="info" title={t('operation.callData.hintTitle')}>
-            <Alert.Item withDot={false}>{t('operation.callData.hintDescription')}</Alert.Item>
-          </Alert>
+          {operation.callDataMismatch ? (
+            <Alert active variant="warn" title={t('operation.callData.hintTitle')}>
+              <Alert.Item withDot={false}>{t('operation.callData.indexerMismatch')}</Alert.Item>
+            </Alert>
+          ) : (
+            <Alert active variant="info" title={t('operation.callData.hintTitle')}>
+              <Alert.Item withDot={false}>{t('operation.callData.hintDescription')}</Alert.Item>
+            </Alert>
+          )}
 
           <Input
             placeholder={t('operation.callData.inputPlaceholder')}

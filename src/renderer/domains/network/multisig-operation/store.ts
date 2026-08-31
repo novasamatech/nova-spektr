@@ -14,7 +14,7 @@ import {
   AccountType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { entries, groupBy, keys, nonNullable, nullable } from '@/shared/lib/utils';
+import { entries, groupBy, keys, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ResourceRequestKey } from '@/shared/query/types';
 import { networkModel } from '@/entities/network';
@@ -388,11 +388,42 @@ const $populated = restore(
 
 persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOperationsLoaded });
 
-// Clear stale cached operations that lack required fields (old format before multisigAccountId was added)
+/**
+ * Normalise what IndexedDB hands back:
+ *
+ * - Rows without `multisigAccountId` predate the field — the whole cache is
+ *   thrown away;
+ * - Rows persisted before the indexer call-hash check may still carry call data
+ *   (and decoded semantics) unrelated to their hash — that data is discarded
+ *   and the row flagged, exactly as a fresh indexer response would be, so the
+ *   UI never shows a stale mismatching call.
+ *
+ * Only ever runs for a cache that {@link needsSanitising}: hydration already has
+ * a writer (persist itself), and adding a second one for a cache that is fine
+ * reorders the updates around it.
+ */
+const hasMismatchingCallData = ({ callData, callHash }: MultisigOperation): boolean =>
+  nonNullable(callData) && !validateCallData(callData, callHash);
+
+const needsSanitising = (value: MultisigOperation[]): boolean =>
+  value.some(op => !op.multisigAccountId || hasMismatchingCallData(op));
+
+const sanitiseCachedOperations = (value: MultisigOperation[]): MultisigOperation[] => {
+  if (value.some(op => !op.multisigAccountId)) return [];
+
+  return value.map(op =>
+    hasMismatchingCallData(op)
+      ? { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true }
+      : op,
+  );
+};
+
 sample({
   clock: cachedOperationsLoaded,
-  filter: ({ value }) => Array.isArray(value) && value.some(op => !op.multisigAccountId),
-  fn: () => [],
+  // Reads only (`done` fires for writes too), and only when there is something
+  // to fix — see the comment on sanitiseCachedOperations.
+  filter: ({ operation, value }) => operation === 'get' && Array.isArray(value) && needsSanitising(value),
+  fn: ({ value }) => sanitiseCachedOperations(value),
   target: $cachedOperations,
 });
 
@@ -565,6 +596,7 @@ export const multisigOperation = {
     $list: $allOperations,
     $populated,
     $cachedOperations,
+    cachedOperationsLoaded,
     $expectedChainIds: $chainIdsWithMultisigSupport,
     $fetchedChainIds: $initializedChainIds,
     $offChainReady: $offChainFetched,

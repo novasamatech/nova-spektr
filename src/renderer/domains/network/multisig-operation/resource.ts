@@ -191,7 +191,7 @@ const operationsQuery = gql`
   }
 `;
 
-function mapSubqueryOperationRecord(
+export function mapSubqueryOperationRecord(
   node: unknown,
   apis: Record<ChainId, ApiPromise>,
   chains: Record<ChainId, Chain>,
@@ -210,16 +210,24 @@ function mapSubqueryOperationRecord(
 
   if (nullable(api) || nullable(chain)) return null;
 
+  // The indexer is untrusted: call data that doesn't hash to `callHash` is
+  // dropped before anything decodes it, and the record is flagged so the UI
+  // can tell the user why the call is missing. The indexer's pre-decoded
+  // section/method describe that same discarded data, so they go with it.
+  const callDataMismatch = Boolean(response.callData && !validateCallData(response.callData, response.callHash));
+  const callData = callDataMismatch ? null : response.callData;
+  const indexerMeta = callDataMismatch ? null : response;
+
   let transaction: DecodedTransaction | null = null;
   let extractedMeta: { section: string; method: string } | null = null;
-  const coreCallData = transactionService.getCoreCallData(api, response.callData);
+  const coreCallData = transactionService.getCoreCallData(api, callData);
 
   try {
-    if (response.callData && validateCallData(response.callData, response.callHash)) {
+    if (callData) {
       transaction = decodeCallData(
         api,
         multisigAccountId,
-        coreCallData?.callData ?? response.callData,
+        coreCallData?.callData ?? callData,
         getNativeAssetId(chain.assets),
       );
     }
@@ -228,8 +236,8 @@ function mapSubqueryOperationRecord(
     // Full decoding can blow up on nested batch/proxy children even when the
     // outer call is well-known. Try to recover at least the pallet/method names
     // so the operation doesn't render as "unknown".
-    if (response.callData) {
-      extractedMeta = extractSectionMethodFromCallData(api, response.callData);
+    if (callData) {
+      extractedMeta = extractSectionMethodFromCallData(api, callData);
     }
   }
 
@@ -239,13 +247,14 @@ function mapSubqueryOperationRecord(
   return {
     id: operationId,
     transaction,
-    section: transaction?.section ?? response.section ?? extractedMeta?.section ?? null,
-    method: transaction?.method ?? response.method ?? extractedMeta?.method ?? null,
+    section: transaction?.section ?? indexerMeta?.section ?? extractedMeta?.section ?? null,
+    method: transaction?.method ?? indexerMeta?.method ?? extractedMeta?.method ?? null,
     timestamp: response.timestamp,
     multisigAccountId,
     ...(proxiedAccountId ? { proxiedAccountId } : {}),
     callHash: response.callHash,
-    callData: response.callData ?? null,
+    callData: callData ?? null,
+    ...(callDataMismatch ? { callDataMismatch } : {}),
     blockCreated: response.blockCreated,
     indexCreated: response.indexCreated,
     status: response.status,

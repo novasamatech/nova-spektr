@@ -197,6 +197,28 @@ describe('OperationDetails', () => {
     expect(screen.queryByTestId('row-operation.details.operationType')).toBeNull();
   });
 
+  it('warns in place of the Operation type when indexer call data was discarded on a hash mismatch', () => {
+    render(
+      <OperationDetails
+        operation={{ ...baseOperation, transaction: null, section: null, method: null, callDataMismatch: true }}
+        account={multisigAccount}
+      />,
+    );
+    expect(screen.getByTestId('row-operation.details.operationType')).toHaveTextContent(
+      'operation.callData.indexerMismatch',
+    );
+  });
+
+  it('shows no mismatch warning for a plain unknown call', () => {
+    render(
+      <OperationDetails
+        operation={{ ...baseOperation, transaction: null, section: null, method: null }}
+        account={multisigAccount}
+      />,
+    );
+    expect(screen.queryByText('operation.callData.indexerMismatch')).toBeNull();
+  });
+
   it('unwraps a proxy transaction so the chip names the inner call', () => {
     const proxyOperation = {
       ...baseOperation,
