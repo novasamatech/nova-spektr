@@ -16,12 +16,11 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { ConsensusAccountsList } from '@/shared/ui-entities';
+import { ConsensusAccountsList, ExistingWalletAlert } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
 import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/pairing-form-model';
 
@@ -41,6 +40,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   const allChains = useUnit(networkModel.$chains);
   const identityPending = useUnit(pairingFormModel.$identityPending);
+  const existingWallet = useUnit(pairingFormModel.$existingWallet);
 
   const [chains, setChains] = useState<Chain[]>([]);
 
@@ -86,7 +86,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   const createWallet: SubmitHandler<WalletForm> = ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
-    walletModel.events.createSingleshard({
+    pairingFormModel.createSingleshard({
       wallet: {
         name: walletName,
         rootAccountId: accountId,
@@ -123,6 +123,15 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
           </div>
 
           <form className="flex grow flex-col gap-4" onSubmit={handleSubmit(createWallet)}>
+            <div className="px-5">
+              <ExistingWalletAlert
+                wallet={existingWallet}
+                title={t('onboarding.vault.alreadyAddedTitle')}
+                description={t('onboarding.vault.alreadyAddedDescription', { name: existingWallet?.name })}
+                onOpen={pairingFormModel.openExistingWallet}
+              />
+            </div>
+
             <Controller
               name="walletName"
               control={control}
@@ -182,7 +191,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
               <div className="grow" />
 
-              <Button type="submit" disabled={!isValid}>
+              <Button type="submit" disabled={!isValid || nonNullable(existingWallet)}>
                 {t('onboarding.continueButton')}
               </Button>
             </Modal.Footer>

@@ -1,4 +1,4 @@
-import { attach, combine, sample } from 'effector';
+import { attach, combine, createEvent, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
 import { t } from 'i18next';
@@ -12,10 +12,10 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
-import { isEthereumAccountId, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { walletModel } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { IDENTITY_CHAIN } from '../lib/constants';
 
@@ -82,6 +82,28 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
   };
 });
 
+/**
+ * A watch-only wallet already tracking the typed address. Only watch-only
+ * wallets count — a signing wallet with the same address is a different kind of
+ * wallet and does not block adding a watch-only one alongside it.
+ */
+const $existingWallet = combine(walletModel.$allWallets, form.fields.address.$value, (wallets, address) => {
+  if (!validateAddress(address)) return null;
+
+  const accountId = toAccountId(address);
+  const match = wallets.find(w => walletUtils.isWatchOnly(w) && w.accounts.some(a => a.accountId === accountId));
+
+  return match ?? null;
+});
+
+const openExistingWallet = createEvent();
+
+sample({
+  clock: sample({ clock: openExistingWallet, source: $existingWallet }).filter({ fn: nonNullable }),
+  fn: wallet => wallet.id,
+  target: [walletSelect.select, flow.close],
+});
+
 const $chains = combine($accountDraft, networkModel.$chains, (account, chains) => {
   const chainsList = chainsService.sortChains(Object.values(chains));
 
@@ -111,7 +133,9 @@ sample({
   source: {
     accountDraft: $accountDraft,
     walletDraft: $walletDraft,
+    existingWallet: $existingWallet,
   },
+  filter: ({ existingWallet }) => nullable(existingWallet),
   fn: ({ accountDraft, walletDraft }) => ({
     wallet: walletDraft,
     accounts: [accountDraft],
@@ -142,6 +166,8 @@ export const pairingFormModel = {
 
   form,
   $accountDraft,
+  $existingWallet,
+  openExistingWallet,
   $chains,
   $identityPending: requestIdentityFx.pending,
 };

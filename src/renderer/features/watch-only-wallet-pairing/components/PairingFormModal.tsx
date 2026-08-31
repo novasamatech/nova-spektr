@@ -7,7 +7,7 @@ import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
+import { ChainAccountsList, ExistingWalletAlert, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
 import { IDENTITY_CHAIN } from '../lib/constants';
@@ -24,6 +24,7 @@ export const PairingFormModal = ({ children }: Props) => {
   const chains = useUnit(pairingFormModel.$chains);
   const accountDraft = useUnit(pairingFormModel.$accountDraft);
   const identityPending = useUnit(pairingFormModel.$identityPending);
+  const existingWallet = useUnit(pairingFormModel.$existingWallet);
 
   const {
     fields: { address, walletName },
@@ -66,6 +67,13 @@ export const PairingFormModal = ({ children }: Props) => {
               }}
             >
               <SmallTitleText className="mb-2">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
+
+              <ExistingWalletAlert
+                wallet={existingWallet}
+                title={t('onboarding.watchOnly.alreadyAddedTitle')}
+                description={t('onboarding.watchOnly.alreadyAddedDescription', { name: existingWallet?.name })}
+                onOpen={pairingFormModel.openExistingWallet}
+              />
 
               <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
@@ -128,7 +136,11 @@ export const PairingFormModal = ({ children }: Props) => {
                   {t('onboarding.backButton')}
                 </Button>
 
-                <Button type="submit" testId={TEST_IDS.COMMON.CONTINUE_BUTTON} disabled={!eachValid}>
+                <Button
+                  type="submit"
+                  testId={TEST_IDS.COMMON.CONTINUE_BUTTON}
+                  disabled={!eachValid || nonNullable(existingWallet)}
+                >
                   {t('onboarding.continueButton')}
                 </Button>
               </div>

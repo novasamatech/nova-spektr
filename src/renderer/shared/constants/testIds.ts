@@ -8,6 +8,7 @@ export const TEST_IDS = {
     POLKADOT_EXTENSION_BUTTON: 'onboarding-polkadot-extension-button',
     TALISMAN_BUTTON: 'onboarding-talisman-extension-button',
     SUBWALLET_BUTTON: 'onboarding-subwallet-extension-button',
+    EXISTING_WALLET_ALERT: 'onboarding-existing-wallet-alert',
     WALLET_NAME_INPUT: 'onboarding-wallet-name-input',
     WALLET_ADDRESS_INPUT: 'onboarding-wallet-address-input',
     IMPORT_DATABASE_BUTTON: 'onboarding-import-database-button',

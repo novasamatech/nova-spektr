@@ -39,3 +39,4 @@ export {
 export { UnknownRecipientBadge } from './UnknownRecipient/UnknownRecipientBadge';
 export { UnknownRecipientAckBox } from './UnknownRecipient/UnknownRecipientAckBox';
 export { UnknownRecipientAlert } from './UnknownRecipient/UnknownRecipientAlert';
+export { ExistingWalletAlert } from './ExistingWalletAlert/ExistingWalletAlert';
