@@ -22,6 +22,12 @@ export type Column<T> = {
   title: ReactNode;
   sortable?: boolean;
   width?: string;
+  /**
+   * Keeps the column in view while the caller's container scrolls horizontally
+   * — for an action column that must never end up off-screen behind a wide
+   * table.
+   */
+  pin?: 'right';
   render?: (value: T[keyof T], item: T) => ReactNode;
 };
 
@@ -188,6 +194,7 @@ const TableComponent = <T,>({
                   className={cnTw('table-header-cell', {
                     'table-header-cell--sortable': column.sortable,
                     'table-header-cell--active': isActive,
+                    'table-header-cell--pinned-right': column.pin === 'right',
                   })}
                   style={{ width: column.width }}
                   onClick={() => handleSort(column.key)}
@@ -268,7 +275,12 @@ const TableRow = <T,>({ item, index, columns, cellAlign, rowProps, onRowClick }:
       onClick={onRowClick && !disabled ? () => onRowClick(item, index) : undefined}
     >
       {columns.map(column => (
-        <td key={String(column.key)} className={cnTw('table-cell', CELL_ALIGN_STYLES[cellAlign])}>
+        <td
+          key={String(column.key)}
+          className={cnTw('table-cell', CELL_ALIGN_STYLES[cellAlign], {
+            'table-cell--pinned-right': column.pin === 'right',
+          })}
+        >
           {column.render ? column.render(item[column.key], item) : String(item[column.key])}
         </td>
       ))}

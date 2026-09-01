@@ -194,3 +194,29 @@
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.13px;
 }
+
+/*
+ * A column pinned to the right edge of the caller's horizontal scroll. It
+ * paints its own surface so the columns sliding under it stay hidden, and the
+ * hover tint composites on top of that surface the same way the sticky header
+ * does — a plain `background-color` swap would drop the tint entirely.
+ */
+.table-header-cell--pinned-right,
+.table-cell--pinned-right {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  box-shadow: inset 1px 0 0 var(--divider);
+  background-color: var(--table-surface);
+}
+
+.table-container--sticky-header .table-header-cell--pinned-right {
+  z-index: 2;
+  box-shadow:
+    inset 1px 0 0 var(--divider),
+    inset 0 -1px 0 var(--divider);
+}
+
+.table-row:hover .table-cell--pinned-right {
+  background-image: linear-gradient(var(--action-background-hover), var(--action-background-hover));
+}

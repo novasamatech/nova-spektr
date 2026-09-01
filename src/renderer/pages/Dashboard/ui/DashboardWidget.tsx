@@ -27,7 +27,11 @@ const CARD_CLASS = 'rounded-lg border border-token-container-border bg-white p-4
  * width up) raises a horizontal scrollbar, which steals height, which raises
  * the vertical one, which steals width — the pair then blinks forever.
  */
-const SCROLL_CLASS = 'overflow-x-hidden overflow-y-auto';
+// Chromium makes a scrollable box keyboard-focusable, so the card itself can
+// take focus; the global outline then frames the whole card, which reads as a
+// selection. An inset ring keeps the affordance without the frame.
+const SCROLL_CLASS =
+  'overflow-x-hidden overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-button-background-default/30';
 
 // The focus ring is white rather than the global `*:focus-visible` outline:
 // that outline is `--focus-container-border`, the button's own indigo at 40%
