@@ -1,7 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { memo } from 'react';
+import { type ReactNode, memo } from 'react';
 import { generatePath } from 'react-router-dom';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -37,6 +37,13 @@ type Props = {
   asset: Asset;
   referendum: AggregatedReferendum;
   showActions?: boolean;
+  /**
+   * Rendered after the title — a host that is not the Governance page names the
+   * chain here.
+   */
+  titleBadge?: ReactNode;
+  /** See `VotingStatus`'s prop of the same name. */
+  showVotingAs?: boolean;
   onVoteRequest: () => unknown;
   onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
@@ -50,6 +57,8 @@ export const ReferendumDetailsModal = memo(
     asset,
     referendum,
     showActions,
+    titleBadge,
+    showVotingAs,
     onClose,
     onVoteRequest,
     onRevoteRequest,
@@ -96,7 +105,10 @@ export const ReferendumDetailsModal = memo(
     return (
       <Modal isOpen size="xl" onToggle={onToggle}>
         <Modal.Title close action={ShareButton}>
-          {t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+          <span className="inline-flex items-center gap-2">
+            {t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+            {titleBadge}
+          </span>
         </Modal.Title>
         <Modal.Content>
           <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
@@ -136,6 +148,7 @@ export const ReferendumDetailsModal = memo(
                     canVote={showActions ?? canVote}
                     hasAccount={hasAccount}
                     wallet={wallet}
+                    showVotingAs={showVotingAs}
                     onVoteRequest={onVoteRequest}
                     onRevoteRequest={onRevoteRequest}
                     onRemoveVoteRequest={onRemoveVoteRequest}

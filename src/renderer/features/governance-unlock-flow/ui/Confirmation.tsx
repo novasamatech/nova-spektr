@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
-import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
+import { AssetBalance, TransactionDetails, TransactionValidationError, getTrackMeta } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -46,6 +46,11 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   const signatoryWallet = walletUtils.getWalletById(wallets, signatory.walletId);
   const amount = request.amount.toString();
+  // `unlock` is permissionless: when the signer is not the locked account the
+  // user is paying a fee to free somebody else's tokens, and that must be said
+  // in words, not left to a differing address in a details row.
+  const isPermissionless = request.target !== initiator.accountId;
+  const hasRemoveVote = request.actions.some((action) => action.type === 'remove_vote');
 
   return (
     <>
@@ -88,10 +93,25 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             <DetailRow label={t('governanceUnlockFlow.confirm.target')}>
               <NamedAccount accountId={request.target} chain={chain} variant="short" />
             </DetailRow>
+            {/* The calls themselves, not their count: "what exactly am I signing" is
+                the question the confirm is there to answer. */}
             <DetailRow label={t('governanceUnlockFlow.confirm.calls')}>
-              <FootnoteText>
-                {t('governanceUnlockFlow.confirm.callsCount', { count: request.actions.length })}
-              </FootnoteText>
+              <ul className="flex max-h-32 flex-col items-end gap-0.5 overflow-y-auto">
+                {request.actions.map((action) => (
+                  <li key={`${action.type}:${action.trackId}:${'referendumId' in action ? action.referendumId : ''}`}>
+                    <FootnoteText className="whitespace-nowrap">
+                      {action.type === 'unlock'
+                        ? t('governanceUnlockFlow.confirm.unlockAction', {
+                            track: t(getTrackMeta(action.trackId).title),
+                          })
+                        : t('governanceUnlockFlow.confirm.removeVoteAction', {
+                            referendum: action.referendumId,
+                            track: t(getTrackMeta(action.trackId).title),
+                          })}
+                    </FootnoteText>
+                  </li>
+                ))}
+              </ul>
             </DetailRow>
             <Separator className="border-filter-border" />
             {asset && <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />}
@@ -105,7 +125,20 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             cannot sign here — an account with everything locked hits these. */}
         <TransactionValidationError errors={errors} wallets={wallets} />
 
-        <FootnoteText className="px-5 pt-3 text-text-tertiary">{t('governanceUnlockFlow.confirm.hint')}</FootnoteText>
+        {isPermissionless && (
+          <div className="mx-5 mt-3 flex items-start gap-2 rounded-md bg-input-background-disabled px-3 py-2">
+            <span aria-hidden="true" className="flex pt-0.5">
+              <Icon name="info" size={14} className="shrink-0 text-text-tertiary" />
+            </span>
+            <FootnoteText className="text-text-secondary">
+              {t('governanceUnlockFlow.confirm.permissionlessNotice')}
+            </FootnoteText>
+          </div>
+        )}
+
+        <FootnoteText className="px-5 pt-3 text-text-tertiary">
+          {hasRemoveVote ? t('governanceUnlockFlow.confirm.hint') : t('governanceUnlockFlow.confirm.hintUnlockOnly')}
+        </FootnoteText>
       </ScrollArea>
 
       <Modal.Footer align="between">

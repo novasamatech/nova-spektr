@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 
 import { type ChainId } from '@/shared/core';
@@ -44,10 +44,23 @@ export const GovernanceReferendumDetails = memo(() => {
 type Props = {
   referendum: AggregatedReferendum;
   chainId?: ChainId;
+  /**
+   * Shown after the title — a host outside the Governance page names the chain
+   * here.
+   */
+  titleBadge?: ReactNode;
+  /** Name the wallet the vote acts for; see `VotingStatus`. */
+  showVotingAs?: boolean;
   onClose?: VoidFunction;
 };
 
-export const GovernanceReferendumDetailsModal = ({ referendum, chainId, onClose: onCloseProp }: Props) => {
+export const GovernanceReferendumDetailsModal = ({
+  referendum,
+  chainId,
+  titleBadge,
+  showVotingAs,
+  onClose: onCloseProp,
+}: Props) => {
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [showRevoteModal, setShowRevoteModal] = useState(false);
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
@@ -121,6 +134,8 @@ export const GovernanceReferendumDetailsModal = ({ referendum, chainId, onClose:
         chain={network.chain}
         timelineApi={network.timelineApi}
         asset={network.asset}
+        titleBadge={titleBadge}
+        showVotingAs={showVotingAs}
         onClose={onClose}
         onVoteRequest={onVoteRequest}
         onRemoveVoteRequest={onRemoveVoteRequest}

@@ -117,15 +117,23 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
     fireEvent.click(button!);
 
     expect(onUnlock).toHaveBeenCalledWith(expect.objectContaining({ accountId: lockedId }));
-    expect(screen.queryByText('→ needs signatories')).toBeNull();
+    // The caption says how much comes back — 100 planck of a 10-decimal token is dust.
+    expect(screen.getByText('<0.0001 DOT')).toBeInTheDocument();
+    expect(screen.queryByText('Needs signatories')).toBeNull();
     expect(screen.queryByText('permissionless')).toBeNull();
+  });
+
+  it('shows the released amount under the button for a readable claim', () => {
+    renderCell(row({ claimable: new BN('12500000000') }));
+
+    expect(screen.getByText('1.25 DOT')).toBeInTheDocument();
   });
 
   it('warns that a multisig release only opens a pending operation', () => {
     renderCell(row({ initiator: multisig }));
 
     expect(unlockButton()).toBeEnabled();
-    expect(screen.getByText('→ needs signatories')).toBeInTheDocument();
+    expect(screen.getByText('Needs signatories')).toBeInTheDocument();
   });
 
   it('marks a release paid by another local account as permissionless', () => {
@@ -133,6 +141,13 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
 
     expect(unlockButton()).toBeEnabled();
     expect(screen.getByText('permissionless')).toBeInTheDocument();
+  });
+
+  it('keeps the tooltip reachable by keyboard when the button is disabled', () => {
+    renderCell(row({ initiator: null, wallet: null, blockReason: 'no-signer' }));
+
+    // A disabled button cannot take focus, so its wrapper does.
+    expect(unlockButton()?.parentElement).toHaveAttribute('tabindex', '0');
   });
 
   it('disables the button, without a caption, when nothing local can sign', () => {

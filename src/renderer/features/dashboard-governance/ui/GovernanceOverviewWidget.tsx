@@ -36,7 +36,7 @@ export const GovernanceOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <FootnoteText className="text-text-tertiary">{t('dashboard.governanceOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
-          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
+          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.governanceDescription')}</BodyText>
         </div>
       </DashboardWidget>
     );

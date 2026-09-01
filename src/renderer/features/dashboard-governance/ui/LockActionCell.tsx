@@ -19,19 +19,34 @@ export const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
   'no-signer': 'dashboard.governanceLocks.hint.noSigner',
 };
 
+/**
+ * The date format every estimate in the tab uses — same as the Ended tab's
+ * dates.
+ */
+export const ESTIMATE_DATE_FORMAT = 'MMM d, yyyy';
+
 type HintProps = {
   text: string;
   hint: string;
 };
 
-/** A verdict the user cannot act on: why it says so lives in the tooltip. */
+/**
+ * A verdict the user cannot act on: why it says so lives in the tooltip. A real
+ * button, so the keyboard reaches the tooltip too.
+ */
 const HintText = memo(({ text, hint }: HintProps) => (
   <Tooltip>
     <Tooltip.Trigger>
-      <div tabIndex={0} className="flex items-center justify-end gap-1 text-text-tertiary">
+      <button
+        type="button"
+        className="flex w-full cursor-default items-center justify-end gap-1 text-text-tertiary"
+        aria-label={`${text}. ${hint}`}
+      >
         <FootnoteText className="whitespace-nowrap text-inherit">{text}</FootnoteText>
-        <Icon name="info" size={14} className="shrink-0 text-inherit" />
-      </div>
+        <span aria-hidden="true" className="flex">
+          <Icon name="info" size={14} className="shrink-0 text-inherit" />
+        </span>
+      </button>
     </Tooltip.Trigger>
     <Tooltip.Content>{hint}</Tooltip.Content>
   </Tooltip>
@@ -45,7 +60,7 @@ type Props = {
 };
 
 export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
 
   if (row.claimable.isZero()) {
     // Delegation has no unlock date at all — a pending lock at least has one.
@@ -60,7 +75,7 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
 
     const hint = row.nextUnlockAtMs
       ? t('dashboard.governanceLocks.hint.nothingClaimableUntil', {
-          date: new Date(row.nextUnlockAtMs).toLocaleDateString(),
+          date: formatDate(row.nextUnlockAtMs, ESTIMATE_DATE_FORMAT),
         })
       : t('dashboard.governanceLocks.hint.nothingClaimable');
 
@@ -95,17 +110,20 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
     hint = t('dashboard.governanceLocks.hint.unlock', { amount });
   }
 
+  // What the button does, in one line under it: who else has to sign, who
+  // pays, or simply how much comes back.
   const caption = isMultisig
     ? t('dashboard.governanceLocks.needsSignatories')
     : isPermissionless
       ? t('dashboard.governanceLocks.permissionless')
-      : null;
+      : amount;
 
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        {/* A disabled button swallows pointer events — the wrapper keeps the tooltip reachable. */}
-        <div className="flex flex-col items-end gap-0.5">
+        {/* A disabled button swallows pointer events and cannot take focus — the
+            wrapper keeps the tooltip reachable by mouse and, when disabled, by keyboard. */}
+        <div className="flex flex-col items-end gap-0.5" tabIndex={disabled ? 0 : undefined}>
           <Button
             size="sm"
             pallet={isPermissionless ? 'secondary' : 'primary'}
@@ -115,9 +133,13 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
           >
             {t('dashboard.governanceLocks.unlock')}
           </Button>
-          {!disabled && caption && (
+          {!disabled && (
             <FootnoteText
-              className={isMultisig ? 'text-help-text text-text-warning' : 'text-help-text text-text-tertiary'}
+              className={
+                isMultisig
+                  ? 'text-help-text whitespace-nowrap text-text-warning'
+                  : 'text-help-text whitespace-nowrap text-text-tertiary'
+              }
             >
               {caption}
             </FootnoteText>

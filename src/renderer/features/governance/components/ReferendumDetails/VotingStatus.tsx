@@ -20,6 +20,12 @@ type Props = {
   wallet: Wallet | null;
   canVote: boolean;
   hasAccount: boolean;
+  /**
+   * Name the wallet the vote is cast from. Off on the Governance page, where
+   * the selected wallet frames the whole screen; on for hosts (the dashboard)
+   * whose own account selection is not what the vote acts for.
+   */
+  showVotingAs?: boolean;
   onVoteRequest: () => unknown;
   onRevoteRequest: () => unknown;
   onRemoveVoteRequest: () => unknown;
@@ -33,11 +39,19 @@ export const VotingStatus = ({
   wallet,
   canVote,
   hasAccount,
+  showVotingAs = false,
   onVoteRequest,
   onRevoteRequest,
   onRemoveVoteRequest,
 }: Props) => {
   const { t } = useI18n();
+
+  const votingAs =
+    showVotingAs && wallet && hasAccount ? (
+      <FootnoteText align="center" className="text-text-tertiary">
+        {t('governance.referendum.votingAs', { wallet: wallet.name })}
+      </FootnoteText>
+    ) : null;
 
   const { approvalThreshold, supportThreshold, voting } = referendum;
 
@@ -86,6 +100,7 @@ export const VotingStatus = ({
           <Button className="w-full" disabled={!hasAccount || !canVote || fullDelegation} onClick={onVoteRequest}>
             {t('governance.referendum.vote')}
           </Button>
+          {votingAs}
 
           {!hasAccount && wallet && (
             <FootnoteText align="center">
@@ -106,6 +121,7 @@ export const VotingStatus = ({
           <Button className="w-full" disabled={!hasAccount || !canVote || fullDelegation} onClick={onRevoteRequest}>
             {t('governance.referendum.revote')}
           </Button>
+          {votingAs}
 
           <Button className="w-full" pallet="secondary" onClick={onRemoveVoteRequest}>
             {t('governance.referendum.remove')}

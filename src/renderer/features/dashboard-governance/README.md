@@ -47,12 +47,15 @@ back any widget hidden on the tab).
 Every widget follows the same four-state shape, and the distinction that matters is the last two: _still arriving_ and
 _nothing there_ are different answers, and only one of them is worth waiting on.
 
-| State        | When it appears                             | What the user sees                                           |
-| ------------ | ------------------------------------------- | ------------------------------------------------------------ |
-| No selection | The account picker is empty                 | Title + "No accounts selected"                               |
-| Loading      | Voting data for a chain has not arrived     | Title + skeletons                                            |
-| Empty        | Loaded, and the selection has no governance | "No governance activity found" / "No governance locks found" |
-| Populated    | At least one account votes or holds a lock  | The widget's own content                                     |
+| State        | When it appears                             | What the user sees                                                                                |
+| ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| No selection | The account picker is empty                 | Title + "No accounts selected", centred in the card, with a governance-specific prompt            |
+| Loading      | Voting data for a chain has not arrived     | Title + a skeleton shaped like the table that is coming (avatar, name, one plate per column)      |
+| Empty        | Loaded, and the selection has no governance | "No governance activity found" / "No governance locks found", centred, with a line on what counts |
+| Populated    | At least one account votes or holds a lock  | The widget's own content                                                                          |
+
+An empty card is mostly empty space, so its message sits in the middle of it rather than pinned under the title, and the
+loading body has the shape of the rows it stands in for — the swap to real data is a fill-in, not a jump.
 
 A chain drops out of every widget when none of the selected accounts votes on it. A user staking only on Polkadot never
 sees an empty Kusama row.
@@ -91,12 +94,14 @@ referendum id and the chain name.
 - **Active** — id, track, title, the user's own votes as chips (aye / nay / abstain / split, with counts), the aye–nay
   split, time left, and the referendum's own TVL — the network's whole tally, ayes plus nays, which is the context the
   user's vote sits in rather than a figure about the user. Time left is colour-coded: under a day is critical, under a
-  week is a warning. Clicking a row opens the app's own referendum modal — the same one the Governance page uses, so the
-  proposal can be read and voted on without leaving the dashboard. That modal reads its chain from the single global
-  governance network selector, so the row's chain is selected first; clicking a row whose chain has no live connection
-  only says so in a toast. That selection is sticky — the same way the Governance page remembers the chain the user last
-  switched to — so after opening a Kusama referendum here the Governance page opens on Kusama until another chain is
-  chosen.
+  week is a warning. The Votes column is there only while one of the selected accounts has voted on something — a column
+  of dashes says nothing and takes width from the title. Clicking a row opens the app's own referendum modal — the same
+  one the Governance page uses, so the proposal can be read and voted on without leaving the dashboard. That modal reads
+  its chain from the single global governance network selector, so the row's chain is selected first; a row whose chain
+  has no live connection is dimmed and inert. Opened from here the modal names its chain next to the title and says
+  which wallet a vote is cast from — the dashboard's account selection is not what the vote acts for. Once the modal
+  closes, the selector is put back to the chain the user had chosen on the Governance page: the dashboard only borrowed
+  it.
 - **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
   and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
   watching and exactly what keeps holding their tokens.
@@ -111,7 +116,10 @@ alone would free nothing.
 
 One row per **account × chain**: the account, the chain, the locked amount (the largest lock, never the sum), what is
 claimable, what is still pending with its estimated release date, what is delegated, the tracks behind it, and — the
-point of the widget — a button that releases it.
+point of the widget — a button that releases it. Pending and Delegated show only while some row has them. The table has
+a floor width; below it the rows scroll sideways rather than crushing amounts into wrapped digits, and the Action column
+stays pinned to the right edge so the one control in the widget never leaves the screen. Amounts too small to read — a
+single-planck class lock, a fraction of a cent — are labelled `<0.0001 DOT` / `<$0.01` instead of a ten-digit tail.
 
 **Locked is what the chain freezes, not what the votes add up to.** The chain keeps a per-track class lock that only an
 explicit `unlock` clears, so a vote removed without one leaves the lock behind with nothing voting on it. The row takes
@@ -138,7 +146,7 @@ never clicks into a dead end:
 | Nothing claimable, everything delegated | "No unlock date" — delegated balance releases only when the delegation does          |
 | Nothing claimable                       | "Nothing claimable", with the estimated release date when one is known               |
 | Claimable, but the key never signs      | "Watch-only" — a `remove_vote` is origin-bound and cannot be paid for by proxy       |
-| Claimable, signed by the account itself | **Unlock**                                                                           |
+| Claimable, signed by the account itself | **Unlock** + the amount that comes back                                              |
 | Claimable, signed by a multisig         | **Unlock** + "needs signatories" — signing opens a pending operation                 |
 | Claimable, released by a local payer    | **Unlock** (secondary) + "permissionless" — `unlock(track, target)` takes any origin |
 | Claimable, but nothing local can sign   | **Unlock**, disabled, naming the reason                                              |
