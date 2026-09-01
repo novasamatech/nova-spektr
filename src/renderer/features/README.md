@@ -95,7 +95,7 @@ notes.
 
 ## Governance
 
-- `governance`
+- [`governance`](./governance/README.md)
 - `governance-navigation` (no spec planned)
 - `governance-basket`
 - [`governance-operation-details`](./governance-operation-details/README.md)
