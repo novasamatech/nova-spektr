@@ -1,9 +1,9 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { describe, expect, it } from 'vitest';
 
 import { type Chunks, type ClaimAction, UnlockChunkType } from '@/shared/api/governance';
 
-import { summarizeAccountLocks } from './summarizeAccountLocks';
+import { getLockedAmount, summarizeAccountLocks } from './summarizeAccountLocks';
 
 const claimable = (amount: number, actions: ClaimAction[]): Chunks => ({
   type: UnlockChunkType.CLAIMABLE,
@@ -61,5 +61,20 @@ describe('summarizeAccountLocks', () => {
 
     expect(summary.nextUnlockBlock).toBeNull();
     expect(summary.pending.isZero()).toBe(true);
+  });
+});
+
+describe('getLockedAmount', () => {
+  it('takes the class lock when it outlives the votes', () => {
+    // Votes removed, `unlock` never called: the chain still freezes the class lock.
+    expect(getLockedAmount(BN_ZERO, { '0': new BN(100), '1': new BN(40) }).toString()).toBe('100');
+  });
+
+  it('keeps the votes max when the class locks lag behind', () => {
+    expect(getLockedAmount(new BN(200), { '0': new BN(100) }).toString()).toBe('200');
+  });
+
+  it('is zero with neither votes nor class locks', () => {
+    expect(getLockedAmount(BN_ZERO, {}).isZero()).toBe(true);
   });
 });

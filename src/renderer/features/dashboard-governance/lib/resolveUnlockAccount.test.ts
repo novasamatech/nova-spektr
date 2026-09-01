@@ -150,6 +150,65 @@ describe('resolveUnlockAccount', () => {
     expect(fresh.reason).toBe('watch-only');
   });
 
+  it('prefers a payer from the selected wallet for a permissionless release', () => {
+    registerHandlers();
+
+    const otherPayer = chainAccount({ id: 'p1', accountId: payerId, walletId: 2 });
+    const selectedPayer = chainAccount({ id: 'p2', accountId: createAccountId('3'), walletId: 5 });
+    const params = {
+      lockedAccountId: lockedId,
+      candidates: [watchOnly()],
+      chain: polkadotChain,
+      allAccounts: [watchOnly(), otherPayer, selectedPayer],
+      actions: UNLOCK,
+    };
+
+    // The user cannot pick the payer afterwards, so the selected wallet wins the tie…
+    expect(resolveUnlockAccount({ ...params, preferredWalletId: 5 }).initiator).toBe(selectedPayer);
+    // …and without a selection the first signer stands.
+    expect(resolveUnlockAccount(params).initiator).toBe(otherPayer);
+  });
+
+  it('prefers the selected wallet when the same key lives in two wallets', () => {
+    registerHandlers();
+
+    const inVault = chainAccount({ id: 'v', walletId: 1 });
+    const inOtherWallet = chainAccount({ id: 'o', walletId: 7 });
+
+    const result = resolveUnlockAccount({
+      lockedAccountId: lockedId,
+      candidates: [inVault, inOtherWallet],
+      chain: polkadotChain,
+      allAccounts: [inVault, inOtherWallet],
+      actions: REMOVE,
+      preferredWalletId: 7,
+    });
+
+    expect(result.initiator).toBe(inOtherWallet);
+  });
+
+  it('reports chain-unsupported when the key is held but cannot act on the chain', () => {
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      body: () => false,
+      available: () => true,
+    });
+    accountService.accountActionPermissionAnyOf.registerHandler({
+      body: () => true,
+      available: () => true,
+    });
+
+    const result = resolveUnlockAccount({
+      lockedAccountId: lockedId,
+      candidates: [chainAccount({ id: 'a' })],
+      chain: polkadotChain,
+      allAccounts: [chainAccount({ id: 'a' })],
+      actions: REMOVE,
+    });
+
+    expect(result.initiator).toBeNull();
+    expect(result.reason).toBe('chain-unsupported');
+  });
+
   it('has no payer when no local account can sign on the chain', () => {
     registerHandlers();
 
