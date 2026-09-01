@@ -1,14 +1,18 @@
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
-import { type GovernanceLockRow } from '../hooks/useGovernanceLocks';
+import { type GovernanceLockRow } from '../lib/buildLockRows';
+import { formatToken } from '../lib/formatToken';
 import { type UnlockBlockReason } from '../lib/resolveUnlockAccount';
 
-const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
+/**
+ * I18n key spelling out each block reason — shared with the widget's click-time
+ * verdict.
+ */
+export const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
   'no-local-account': 'dashboard.governanceLocks.hint.noLocalAccount',
   'chain-unsupported': 'dashboard.governanceLocks.hint.chainUnsupported',
   'watch-only': 'dashboard.governanceLocks.hint.watchOnly',
@@ -70,8 +74,7 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
     );
   }
 
-  const { value, suffix } = formatBalance(row.claimable, row.precision);
-  const amount = `${value}${suffix} ${row.symbol}`;
+  const amount = formatToken(row.claimable, row.precision, row.symbol);
 
   const initiator = row.initiator;
   const disabled = !initiator || !chainConnected;

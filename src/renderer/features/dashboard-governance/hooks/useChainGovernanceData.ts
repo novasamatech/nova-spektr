@@ -19,7 +19,7 @@ import {
 import { useBlock, useBlockTime } from '@/domains/network';
 import { locksService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
-import { type AccountLockSummary, summarizeAccountLocks } from '../lib/summarizeAccountLocks';
+import { type AccountLockSummary, getLockedAmount, summarizeAccountLocks } from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 
@@ -257,7 +257,10 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       );
 
       collectChunks(schedule, accountId, allChunks);
-      locksByAccount[accountId] = summarizeAccountLocks(schedule, stats.maxLockByAccount[accountId] ?? BN_ZERO);
+      locksByAccount[accountId] = summarizeAccountLocks(
+        schedule,
+        getLockedAmount(stats.maxLockByAccount[accountId] ?? BN_ZERO, accountTrackLocks),
+      );
 
       let accountClaimable = BN_ZERO;
       for (const chunk of schedule) {

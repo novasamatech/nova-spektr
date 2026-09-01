@@ -759,6 +759,9 @@
       "inDays_other": "~in {count} days · {date}",
       "dateUnavailable": "date unavailable",
       "moreTracks": "+{count}",
+      "toast": {
+        "nothingClaimable": "Nothing left to unlock — the lock was released or is held by an active vote again"
+      },
       "hint": {
         "unlock": "Release {amount} — signed by this account",
         "multisig": "Signing creates a pending operation; the funds stay locked until the signatories approve",

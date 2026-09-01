@@ -4,32 +4,25 @@ import { type ReactNode, memo, useCallback, useDeferredValue, useMemo, useState 
 
 import { ConnectionStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, SmallTitleText, Switch } from '@/shared/ui';
 import { TrackInfo, getTrackMeta } from '@/shared/ui-entities';
-import { type Column, Select, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { type Column, Select, Skeleton, Table, Tooltip, useNotification } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
 import { networkModel } from '@/entities/network';
 import { governanceUnlockFlow } from '@/features/governance-unlock-flow';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type GovernanceLockRow, useGovernanceLocks } from '../hooks/useGovernanceLocks';
+import { formatToken } from '../lib/formatToken';
 
-import { LockActionCell } from './LockActionCell';
+import { BLOCK_REASON_HINT, LockActionCell } from './LockActionCell';
 import { Price } from './Price';
 
 type Props = {
   accountIds: string[];
-  allEntries: { accountId: string; name: string; address: string }[];
 };
 
 const ALL_CHAINS = '__all__';
-
-const formatToken = (amount: BN, precision: number, symbol: string) => {
-  const { value, suffix } = formatBalance(amount, precision);
-
-  return `${value}${suffix} ${symbol}`;
-};
 
 type AmountCellProps = {
   amount: BN;
@@ -152,6 +145,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
   const { rows, pending, fiatFlag, currency, getFreshClaim } = useGovernanceLocks(deferredAccountIds);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
   const unlockRequested = useUnit(governanceUnlockFlow.unlockRequested);
+  const { toast } = useNotification();
 
   const handleChainFilterChange = useCallback((value: string) => {
     setChainFilter(value === ALL_CHAINS ? null : value);
@@ -163,7 +157,18 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
       // against the live head so a just-ended referendum still gets its
       // `remove_vote` — and so the initiator is the one allowed to send it.
       const fresh = getFreshClaim(row);
-      if (!fresh) return;
+
+      // The button promised a release the live head no longer backs: say so
+      // rather than swallowing the click — the row catches up on the next snapshot.
+      if (fresh.status === 'blocked') {
+        toast.info(
+          fresh.reason === 'nothing-claimable'
+            ? t('dashboard.governanceLocks.toast.nothingClaimable')
+            : t(BLOCK_REASON_HINT[fresh.reason]),
+        );
+
+        return;
+      }
 
       unlockRequested({
         chain: row.chain,
@@ -173,7 +178,7 @@ export const GovernanceLocksWidget = ({ accountIds }: Props) => {
         amount: fresh.amount,
       });
     },
-    [getFreshClaim, unlockRequested],
+    [getFreshClaim, unlockRequested, toast, t],
   );
 
   const uniqueChains = useMemo(() => {

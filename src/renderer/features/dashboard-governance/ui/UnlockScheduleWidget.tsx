@@ -185,7 +185,8 @@ type UnlockEventRowProps = {
 
 const UnlockEventRow = memo(({ event, currency, accountNameMap }: UnlockEventRowProps) => {
   const { t } = useI18n();
-  const { formatted, suffix } = formatBalance(event.amount, event.precision);
+  // `formatted` already carries the magnitude suffix (`8.9M`).
+  const { formatted } = formatBalance(event.amount, event.precision);
 
   const accountLabel =
     event.accountIds.length <= 2
@@ -203,8 +204,7 @@ const UnlockEventRow = memo(({ event, currency, accountNameMap }: UnlockEventRow
       </div>
       <div className="flex flex-col items-end">
         <FootnoteText className="text-text-primary">
-          {formatted}
-          {suffix ? ` ${suffix}` : ''} {event.symbol}
+          {formatted} {event.symbol}
         </FootnoteText>
         <FootnoteText className="text-help-text text-text-tertiary">
           <Price amount={event.amountFiat} currency={currency} />

@@ -25,13 +25,6 @@ import { confirmModel } from './confirm';
 
 const unlockRequested = createEvent<UnlockRequest>();
 const flowFinished = createEvent();
-/**
- * A landed extrinsic that actually released the lock. A multisig initiation
- * landing is not this — nothing is released until the remaining signatories
- * approve — so it does not fire this event. The host refreshes what it shows
- * off this.
- */
-const flowCompleted = createEvent();
 const stepChanged = createEvent<Step>();
 
 const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
@@ -320,21 +313,6 @@ sample({
   target: navigationModel.events.navigateTo,
 });
 
-/**
- * A multisig initiation isn't a release — the extrinsic lands, but the funds
- * stay locked until the remaining signatories approve. Gated on
- * `$hasMultisigAccount` being false so `flowCompleted` only fires once the lock
- * is actually released.
- */
-sample({
-  clock: submitModel.done,
-  source: { step: $step, hasMultisigAccount: $hasMultisigAccount },
-  filter: ({ step, hasMultisigAccount }, results) =>
-    step === Step.SUBMIT && !hasMultisigAccount && nonNullable(findSuccessResult(results)),
-  fn: () => undefined,
-  target: flowCompleted,
-});
-
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
@@ -364,7 +342,6 @@ export const unlockFlowModel = {
 
   unlockRequested,
   flowFinished,
-  flowCompleted,
   stepChanged,
   signingPathChanged,
 };

@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { TrackInfo, VoteChart } from '@/shared/ui-entities';
-import { type Column, SearchInput, Select, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { type Column, SearchInput, Select, Skeleton, Table, Tooltip, useNotification } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
@@ -72,6 +72,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   } = useActiveReferendums(deferredAccountIds, allEntries);
   const [selected, setSelected] = useState<{ chainId: ChainId; referendumId: ReferendumId } | null>(null);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
+  const { toast } = useNotification();
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [endedCount, setEndedCount] = useState<number | null>(null);
@@ -169,11 +170,15 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     (row: ReferendumRow) => {
       // The details modal reads its chain from the governance network selector,
       // which only resolves once the chain is connected.
-      if (connectionStatuses[row.chainId] !== ConnectionStatus.CONNECTED) return;
+      if (connectionStatuses[row.chainId] !== ConnectionStatus.CONNECTED) {
+        toast.info(t('dashboard.governanceLocks.hint.chainDisconnected'));
+
+        return;
+      }
 
       setSelected({ chainId: row.chainId, referendumId: row.id });
     },
-    [connectionStatuses],
+    [connectionStatuses, toast, t],
   );
 
   if (!fiatFlag) return null;

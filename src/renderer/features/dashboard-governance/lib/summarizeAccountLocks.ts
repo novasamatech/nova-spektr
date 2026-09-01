@@ -1,11 +1,16 @@
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Chunks, type ClaimAction, UnlockChunkType } from '@/shared/api/governance';
+import { type TrackId } from '@/shared/core';
 import { locksService } from '@/entities/governance';
 
 /** One account's governance locks on one chain, folded from its claim schedule. */
 export type AccountLockSummary = {
-  /** The largest lock on the chain — never the sum of votes. */
+  /**
+   * The largest lock on the chain — never the sum of votes. Fed by
+   * `getLockedAmount`, so it stays non-zero for a class lock that outlived its
+   * votes.
+   */
   maxLock: BN;
   claimable: BN;
   /** The calls that release `claimable`; empty when nothing is claimable. */
@@ -20,6 +25,17 @@ export type AccountLockSummary = {
   /** Track ids behind the lock, in first-seen order, no duplicates. */
   tracks: string[];
 };
+
+/**
+ * What the chain actually freezes for the account: the largest of its
+ * `classLocksFor` entries, or of its votes when the class locks lag behind
+ * (they are updated only by `unlock`). Votes alone miss the common case of a
+ * vote removed without an `unlock` — the class lock stays, and it is exactly
+ * the amount a permissionless `unlock` releases.
+ */
+export function getLockedAmount(votesMaxLock: BN, trackLocks: Record<TrackId, BN>): BN {
+  return Object.values(trackLocks).reduce((max, lock) => BN.max(max, lock), votesMaxLock);
+}
 
 export function summarizeAccountLocks(schedule: Chunks[], maxLock: BN): AccountLockSummary {
   let claimable = BN_ZERO;

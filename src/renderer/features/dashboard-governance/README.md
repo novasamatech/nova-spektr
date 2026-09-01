@@ -1,6 +1,6 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-01
 
 ## Overview
 
@@ -93,9 +93,10 @@ referendum id and the chain name.
   user's vote sits in rather than a figure about the user. Time left is colour-coded: under a day is critical, under a
   week is a warning. Clicking a row opens the app's own referendum modal — the same one the Governance page uses, so the
   proposal can be read and voted on without leaving the dashboard. That modal reads its chain from the single global
-  governance network selector, so the row's chain is selected first and a row whose chain has no live connection is
-  inert. That selection is sticky — the same way the Governance page remembers the chain the user last switched to — so
-  after opening a Kusama referendum here the Governance page opens on Kusama until another chain is chosen.
+  governance network selector, so the row's chain is selected first; clicking a row whose chain has no live connection
+  only says so in a toast. That selection is sticky — the same way the Governance page remembers the chain the user last
+  switched to — so after opening a Kusama referendum here the Governance page opens on Kusama until another chain is
+  chosen.
 - **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
   and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
   watching and exactly what keeps holding their tokens.
@@ -110,8 +111,14 @@ alone would free nothing.
 
 One row per **account × chain**: the account, the chain, the locked amount (the largest lock, never the sum), what is
 claimable, what is still pending with its estimated release date, what is delegated, the tracks behind it, and — the
-point of the widget — a button that releases it. The header carries a **Claimable only** toggle and a chain filter; rows
-arrive sorted by claimable, then by locked, so the money the user can take home is on top.
+point of the widget — a button that releases it.
+
+**Locked is what the chain freezes, not what the votes add up to.** The chain keeps a per-track class lock that only an
+explicit `unlock` clears, so a vote removed without one leaves the lock behind with nothing voting on it. The row takes
+the larger of the votes' lock and the class lock, which is why an account whose votes are all gone still shows — its
+whole lock is claimable, and releasing it is exactly what the widget is for. The header carries a **Claimable only**
+toggle and a chain filter; rows arrive sorted by claimable, then by locked, so the money the user can take home is on
+top.
 
 **This is the only widget on the tab that acts rather than reports.** Everything else on the Governance tab explains a
 number; this one dispatches the [unlock flow](../governance-unlock-flow/README.md) for the row's account, on the row's
@@ -139,7 +146,15 @@ never clicks into a dead end:
 
 **The claim is re-derived at the moment of the click.** The row's figures come from a periodic snapshot; a referendum
 that ended in between adds a required `remove_vote`, so the schedule is recomputed against the live head before the flow
-opens, and the fresh actions are what gets signed.
+opens, and the fresh actions are what gets signed. When the live head no longer backs the button — the lock was released
+elsewhere, or the fresh `remove_vote` needs a key nobody holds — the click says so in a toast instead of opening
+nothing; the row catches up on the next snapshot.
+
+**Who pays is a tie the selected wallet wins.** A permissionless release can be paid by any local signer, and the same
+key can live in more than one wallet; nothing else tells the candidates apart, and the flow's signing-path chooser picks
+a route _for_ the initiator rather than the initiator itself, so the choice would otherwise be silent. The row prefers
+the selected wallet's account and falls back to the first signer. The payer's balance is not checked here — the flow's
+fee validation reports an unaffordable fee once the fee is known.
 
 ## Lifecycle
 

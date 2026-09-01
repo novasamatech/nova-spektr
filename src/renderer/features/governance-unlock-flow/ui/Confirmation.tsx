@@ -41,9 +41,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const preparing = useUnit(unlockFlowModel.$preparing);
   const canSign = useUnit(unlockFlowModel.$canSign);
 
-  if (!request || !chain || !initiator) return null;
+  // `$signatory` already falls back to the initiator, so it is null only when the request is.
+  if (!request || !chain || !initiator || !signatory) return null;
 
-  const signatoryWallet = signatory ? walletUtils.getWalletById(wallets, signatory.walletId) : null;
+  const signatoryWallet = walletUtils.getWalletById(wallets, signatory.walletId);
   const amount = request.amount.toString();
 
   return (
@@ -75,12 +76,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         />
 
         <Box padding={[4, 5]}>
-          <TransactionDetails
-            chain={chain}
-            wallets={wallets}
-            initiators={[initiator]}
-            signatory={signatory ?? initiator}
-          >
+          <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
             <DetailRow label={t('governanceUnlockFlow.confirm.releases')}>
               <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={amount} asset={asset ?? undefined} showSymbol />

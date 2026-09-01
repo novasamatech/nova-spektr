@@ -1,6 +1,6 @@
 # Governance unlock flow
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-27
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-01
 
 ## Overview
 
