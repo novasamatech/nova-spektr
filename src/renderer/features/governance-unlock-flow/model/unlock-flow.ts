@@ -75,9 +75,10 @@ const { $signingPath, signingPathChanged, $signatoryFromPath, $pathRoute } = cre
 });
 
 /**
- * `remove_vote` + `unlock`, batched when there is more than one. The initiator
- * is the origin of every call; `target` only parameterises `unlock`, which is
- * permissionless — anyone may release someone else's expired conviction lock.
+ * `remove_vote`, `undelegate` and `unlock`, batched when there is more than
+ * one. The initiator is the origin of every call; `target` only parameterises
+ * `unlock`, which is permissionless — anyone may release someone else's expired
+ * conviction lock.
  */
 const $coreTx = $request.map((request) =>
   request

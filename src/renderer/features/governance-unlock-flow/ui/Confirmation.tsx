@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { type ClaimAction } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails, TransactionValidationError, getTrackMeta } from '@/shared/ui-entities';
@@ -52,6 +53,18 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const isPermissionless = request.target !== initiator.accountId;
   const hasRemoveVote = request.actions.some((action) => action.type === 'remove_vote');
 
+  const describeAction = (action: ClaimAction) => {
+    const track = t(getTrackMeta(action.trackId).title);
+    switch (action.type) {
+      case 'unlock':
+        return t('governanceUnlockFlow.confirm.unlockAction', { track });
+      case 'remove_vote':
+        return t('governanceUnlockFlow.confirm.removeVoteAction', { referendum: action.referendumId, track });
+      case 'undelegate':
+        return t('governanceUnlockFlow.confirm.undelegateAction', { track });
+    }
+  };
+
   return (
     <>
       <ScrollArea>
@@ -99,16 +112,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
               <ul className="flex max-h-32 flex-col items-end gap-0.5 overflow-y-auto">
                 {request.actions.map((action) => (
                   <li key={`${action.type}:${action.trackId}:${'referendumId' in action ? action.referendumId : ''}`}>
-                    <FootnoteText className="whitespace-nowrap">
-                      {action.type === 'unlock'
-                        ? t('governanceUnlockFlow.confirm.unlockAction', {
-                            track: t(getTrackMeta(action.trackId).title),
-                          })
-                        : t('governanceUnlockFlow.confirm.removeVoteAction', {
-                            referendum: action.referendumId,
-                            track: t(getTrackMeta(action.trackId).title),
-                          })}
-                    </FootnoteText>
+                    <FootnoteText className="whitespace-nowrap">{describeAction(action)}</FootnoteText>
                   </li>
                 ))}
               </ul>

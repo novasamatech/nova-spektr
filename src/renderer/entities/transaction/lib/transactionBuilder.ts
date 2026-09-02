@@ -469,6 +469,16 @@ function buildUnlock({ chain, accountId, actions, amount: value, target }: Unloc
       };
     }
 
+    if (action.type === 'undelegate') {
+      return {
+        ...transaction,
+        type: TransactionType.UNDELEGATE,
+        args: {
+          track: action.trackId,
+        },
+      };
+    }
+
     return {
       ...transaction,
       type: TransactionType.UNLOCK,

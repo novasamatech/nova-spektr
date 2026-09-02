@@ -53,7 +53,16 @@ export type RemoveVote = {
   referendumId: ReferendumId;
 };
 
-export type ClaimAction = Unlock | RemoveVote;
+/**
+ * Revokes the account's delegation on one track — origin-bound like
+ * `remove_vote`.
+ */
+export type Undelegate = {
+  type: 'undelegate';
+  trackId: TrackId;
+};
+
+export type ClaimAction = Unlock | RemoveVote | Undelegate;
 
 // Unlock chunk
 export enum UnlockChunkType {

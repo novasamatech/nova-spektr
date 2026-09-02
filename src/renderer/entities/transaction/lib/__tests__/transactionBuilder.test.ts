@@ -375,4 +375,40 @@ describe('entities/transaction/lib/transactionBuilder', () => {
       expect(transaction.args.transactions).toHaveLength(MAX_PAYOUT_CALLS_PER_BATCH);
     });
   });
+
+  describe('buildUnlock', () => {
+    const chain = createMockChain();
+
+    it('maps an undelegate action to an UNDELEGATE call with the track', () => {
+      const transaction = transactionBuilder.buildUnlock({
+        chain,
+        accountId: TEST_ACCOUNT_ID,
+        actions: [{ type: 'undelegate', trackId: '20' }],
+        amount: '0',
+        target: TEST_ACCOUNT_ID,
+      });
+
+      expect(transaction.type).toBe(TransactionType.UNDELEGATE);
+      expect(transaction.args).toEqual({ track: '20' });
+    });
+
+    it('batches undelegates before the unlock that follows them', () => {
+      const transaction = transactionBuilder.buildUnlock({
+        chain,
+        accountId: TEST_ACCOUNT_ID,
+        actions: [
+          { type: 'undelegate', trackId: '20' },
+          { type: 'unlock', trackId: '20' },
+        ],
+        amount: '100',
+        target: TEST_ACCOUNT_ID,
+      });
+
+      expect(transaction.type).toBe(TransactionType.BATCH_ALL);
+      expect(transaction.args.transactions.map((tx: { type: TransactionType }) => tx.type)).toEqual([
+        TransactionType.UNDELEGATE,
+        TransactionType.UNLOCK,
+      ]);
+    });
+  });
 });
