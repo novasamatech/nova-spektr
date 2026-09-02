@@ -1,8 +1,17 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Chunks, type ClaimAction, UnlockChunkType } from '@/shared/api/governance';
-import { type TrackId } from '@/shared/core';
+import { type Conviction, type TrackId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { locksService } from '@/entities/governance';
+
+/** One delegation of the account on one track, as the chain holds it. */
+export type Delegation = {
+  trackId: TrackId;
+  target: AccountId;
+  balance: BN;
+  conviction: Conviction;
+};
 
 /** One account's governance locks on one chain, folded from its claim schedule. */
 export type AccountLockSummary = {
@@ -22,6 +31,8 @@ export type AccountLockSummary = {
    */
   nextUnlockBlock: number | null;
   delegated: BN;
+  /** The delegations behind `delegated`, in track order. */
+  delegations: Delegation[];
   /** Track ids behind the lock, in first-seen order, no duplicates. */
   tracks: string[];
 };
@@ -37,7 +48,7 @@ export function getLockedAmount(votesMaxLock: BN, trackLocks: Record<TrackId, BN
   return Object.values(trackLocks).reduce((max, lock) => BN.max(max, lock), votesMaxLock);
 }
 
-export function summarizeAccountLocks(schedule: Chunks[], maxLock: BN): AccountLockSummary {
+export function summarizeAccountLocks(schedule: Chunks[], maxLock: BN, delegations: Delegation[]): AccountLockSummary {
   let claimable = BN_ZERO;
   let pending = BN_ZERO;
   let delegated = BN_ZERO;
@@ -63,5 +74,16 @@ export function summarizeAccountLocks(schedule: Chunks[], maxLock: BN): AccountL
     }
   }
 
-  return { maxLock, claimable, claimableActions, pending, nextUnlockBlock, delegated, tracks: [...tracks] };
+  for (const delegation of delegations) tracks.add(delegation.trackId);
+
+  return {
+    maxLock,
+    claimable,
+    claimableActions,
+    pending,
+    nextUnlockBlock,
+    delegated,
+    delegations,
+    tracks: [...tracks],
+  };
 }

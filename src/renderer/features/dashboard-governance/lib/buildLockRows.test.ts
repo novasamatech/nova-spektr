@@ -35,6 +35,7 @@ const summary = (overrides: Partial<AccountLockSummary> = {}): AccountLockSummar
   pending: BN_ZERO,
   nextUnlockBlock: null,
   delegated: BN_ZERO,
+  delegations: [],
   tracks: [],
   ...overrides,
 });

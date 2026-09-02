@@ -20,7 +20,12 @@ import { useBlock, useBlockTime } from '@/domains/network';
 import { votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
-import { type AccountLockSummary, getLockedAmount, summarizeAccountLocks } from '../lib/summarizeAccountLocks';
+import {
+  type AccountLockSummary,
+  type Delegation,
+  getLockedAmount,
+  summarizeAccountLocks,
+} from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 
@@ -214,9 +219,22 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
         referendums,
       );
 
+      const delegations: Delegation[] = [];
+      for (const [trackId, voting] of entries(votingByTrack)) {
+        if (votingService.isDelegating(voting)) {
+          delegations.push({
+            trackId,
+            target: voting.target,
+            balance: voting.balance,
+            conviction: voting.conviction,
+          });
+        }
+      }
+
       locksByAccount[accountId] = summarizeAccountLocks(
         schedule,
         getLockedAmount(stats.maxLockByAccount[accountId] ?? BN_ZERO, accountTrackLocks),
+        delegations,
       );
 
       for (const chunk of schedule) {

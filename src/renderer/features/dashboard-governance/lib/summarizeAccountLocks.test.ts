@@ -2,8 +2,10 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { describe, expect, it } from 'vitest';
 
 import { type Chunks, type ClaimAction, UnlockChunkType } from '@/shared/api/governance';
+import { type Conviction } from '@/shared/core';
+import { createAccountId } from '@/shared/mocks';
 
-import { getLockedAmount, summarizeAccountLocks } from './summarizeAccountLocks';
+import { type Delegation, getLockedAmount, summarizeAccountLocks } from './summarizeAccountLocks';
 
 const claimable = (amount: number, actions: ClaimAction[]): Chunks => ({
   type: UnlockChunkType.CLAIMABLE,
@@ -25,6 +27,13 @@ const pendingDelegation = (amount: number): Chunks => ({
   affected: [],
 });
 
+const delegation = (trackId: string, conviction: Conviction = 'None'): Delegation => ({
+  trackId,
+  target: createAccountId('delegate'),
+  balance: new BN(70),
+  conviction,
+});
+
 describe('summarizeAccountLocks', () => {
   it('keeps claimable actions and sums amounts', () => {
     const summary = summarizeAccountLocks(
@@ -33,6 +42,7 @@ describe('summarizeAccountLocks', () => {
         claimable(50, [{ type: 'remove_vote', trackId: '1', referendumId: '10' }]),
       ],
       new BN(150),
+      [],
     );
 
     expect(summary.claimable.toString()).toBe('150');
@@ -47,6 +57,7 @@ describe('summarizeAccountLocks', () => {
     const summary = summarizeAccountLocks(
       [pendingLock(30, 2_000, '5'), pendingLock(20, 1_000, '6'), pendingDelegation(70)],
       new BN(120),
+      [],
     );
 
     expect(summary.pending.toString()).toBe('50');
@@ -57,10 +68,30 @@ describe('summarizeAccountLocks', () => {
   });
 
   it('has a null next block when nothing is pending', () => {
-    const summary = summarizeAccountLocks([claimable(1, [{ type: 'unlock', trackId: '0' }])], new BN(1));
+    const summary = summarizeAccountLocks([claimable(1, [{ type: 'unlock', trackId: '0' }])], new BN(1), []);
 
     expect(summary.nextUnlockBlock).toBeNull();
     expect(summary.pending.isZero()).toBe(true);
+  });
+
+  it('keeps the delegations and names their tracks', () => {
+    const summary = summarizeAccountLocks([pendingDelegation(70)], new BN(70), [
+      delegation('20'),
+      delegation('21', 'Locked1x'),
+    ]);
+
+    expect(summary.delegations.map((d) => d.trackId)).toEqual(['20', '21']);
+    expect(summary.tracks).toEqual(['20', '21']);
+  });
+
+  it('lists a track once when it is both voted and delegated', () => {
+    const summary = summarizeAccountLocks(
+      [claimable(1, [{ type: 'unlock', trackId: '20' }]), pendingDelegation(70)],
+      new BN(70),
+      [delegation('20')],
+    );
+
+    expect(summary.tracks).toEqual(['20']);
   });
 });
 
