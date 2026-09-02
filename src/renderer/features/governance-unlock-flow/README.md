@@ -13,10 +13,17 @@ books plus an `unlock` per track — a batch nobody assembles by hand. This flow
 and does the rest.
 
 It is deliberately incurious about where the request came from. Today the Dashboard's
-[Unlock Schedule widget](../dashboard-governance/README.md) dispatches it, one row at a time, and the flow knows nothing
-about the dashboard, its account picker, the Governance page's network selector or the selected wallet. Its whole input
-is a fully resolved request — the chain, who originates the transaction, whose lock is released, the calls and the
-amount — and everything it shows is derived from that one snapshot.
+[Locks widget](../dashboard-governance/README.md) dispatches it, one row at a time, and the flow knows nothing about the
+dashboard, its account picker, the Governance page's network selector or the selected wallet. Its whole input is a fully
+resolved request — the chain, who originates the transaction, whose lock is released, the calls and the amount — and
+everything it shows is derived from that one snapshot.
+
+**The same flow also takes a delegation back.** A request whose `actions` carry an `undelegate` (plus an `unlock` for
+each delegated track whose conviction is None, whose lock expires in the same block) is read as a revocation rather than
+a release: the title, the amount label ("Delegated"), the label over the account it acts for, the hint under the details
+and the icon all switch to undelegate wording. Nothing else changes — the signing route, the multisig handling, the fee
+and deposit validation and the success screens are the same ones the unlock uses, because from the pallet's side both
+are a batch of origin-bound calls on the same account.
 
 The flow is **mounted globally** in the app shell's modal slot, so it opens from wherever the user pressed the button
 rather than from a route, and stays open across navigation.
@@ -84,9 +91,9 @@ cost a round trip to the node, so they are not awaited: the modal opens immediat
 loaders.
 
 **The request is a snapshot, and the flow trusts it.** Locks, referenda and the claimable amount move with every block;
-the release being signed must not. The host is the one responsible for the request being current — the Unlock Schedule
-widget re-derives both the claimable actions and the initiator against the live head at the moment of the click, because
-a referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
+the release being signed must not. The host is the one responsible for the request being current — the Locks widget
+re-derives both the claimable actions and the initiator against the live head at the moment of the click, because a
+referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
 permissionless payer good enough for the snapshot is no longer allowed to send it. From then on this flow signs exactly
 what it was handed. Nothing here follows the chain, so a block tick cannot disturb a signature in progress.
 
@@ -103,8 +110,8 @@ approves.
 
 ## Related
 
-- [`dashboard-governance`](../dashboard-governance/README.md) — the Unlock Schedule widget that dispatches every request
-  this flow serves, and decides who can release what.
+- [`dashboard-governance`](../dashboard-governance/README.md) — the Locks widget that dispatches every request this flow
+  serves, and decides who can release what.
 - [`vesting-claim`](../vesting-claim/README.md) — the same shape one pallet over: a hidden extrinsic turned into a
   confirm/sign/submit flow, with the same signing-route and affordability rules.
 - [`staking-confirm-flow`](../staking-confirm-flow/README.md) — another flow mounted globally in the app shell's modal
