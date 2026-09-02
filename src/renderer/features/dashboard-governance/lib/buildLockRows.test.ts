@@ -174,6 +174,20 @@ describe('buildLockRows', () => {
     expect(row?.claimableNum).toBe(45);
     expect(row?.chainIcon).toBe('dot.svg');
   });
+
+  it('prices the pending amount, and leaves it null when nothing is pending', () => {
+    const toFiat = (amount: string) => `fiat:${amount}`;
+    const rows = build(
+      source({
+        [lockedId]: summary({ pending: new BN(40) }),
+        [contactId]: summary(),
+      }),
+      { toFiat },
+    );
+
+    expect(rows.find((row) => row.accountId === lockedId)?.pendingFiat).toBe('fiat:40');
+    expect(rows.find((row) => row.accountId === contactId)?.pendingFiat).toBeNull();
+  });
 });
 
 describe('compareLockRows', () => {

@@ -31,6 +31,7 @@ export type GovernanceLockRow = {
   claimableFiat: string | null;
   claimableActions: ClaimAction[];
   pending: BN;
+  pendingFiat: string | null;
   /** Estimated ms timestamp of the next pending release; `null` when unknown. */
   nextUnlockAtMs: number | null;
   /** Days until `nextUnlockAtMs`, rounded and floored at 0; `null` when unknown. */
@@ -133,6 +134,7 @@ export function buildLockRows({
       claimableFiat: summary.claimable.isZero() ? null : fiat(summary.claimable),
       claimableActions: summary.claimableActions,
       pending: summary.pending,
+      pendingFiat: summary.pending.isZero() ? null : fiat(summary.pending),
       nextUnlockAtMs,
       daysUntilNextUnlock,
       delegated: summary.delegated,

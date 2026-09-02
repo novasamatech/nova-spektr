@@ -60,6 +60,7 @@ const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => (
   claimableFiat: null,
   claimableActions: [{ type: 'unlock', trackId: '0' }],
   pending: BN_ZERO,
+  pendingFiat: null,
   nextUnlockAtMs: null,
   daysUntilNextUnlock: null,
   delegated: BN_ZERO,
