@@ -19,7 +19,7 @@ import { Price } from './Price';
 import { TableSkeleton } from './TableSkeleton';
 import { WidgetEmptyState } from './WidgetEmptyState';
 
-export type LocksTableMode = 'compact' | 'full';
+type LocksTableMode = 'compact' | 'full';
 
 type Props = {
   mode: LocksTableMode;

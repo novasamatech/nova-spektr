@@ -93,15 +93,22 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
     return [...seen.values()];
   }, [rows]);
 
+  // A filter outlives the selection that produced it: once no row is on the
+  // chosen chain any more, the select has nothing to show for it, so the
+  // filter is treated as unset rather than hiding every row behind an
+  // invisible choice.
+  const activeChainFilter =
+    chainFilter && uniqueChains.some((chain) => chain.chainId === chainFilter) ? chainFilter : null;
+
   const visibleRows = useMemo(
     () =>
       rows.filter((row) => {
-        if (chainFilter && row.chainId !== chainFilter) return false;
+        if (activeChainFilter && row.chainId !== activeChainFilter) return false;
         if (claimableOnly && row.claimable.isZero()) return false;
 
         return true;
       }),
-    [rows, chainFilter, claimableOnly],
+    [rows, activeChainFilter, claimableOnly],
   );
 
   const totals = useMemo(() => (fiatFlag && currency ? sumLockTotals(rows) : null), [rows, fiatFlag, currency]);
@@ -116,7 +123,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
     totals,
     showTotals,
     uniqueChains,
-    chainFilter,
+    chainFilter: activeChainFilter,
     setChainFilter,
     claimableOnly,
     setClaimableOnly,

@@ -55,8 +55,8 @@ _nothing there_ are different answers, and only one of them is worth waiting on.
 An empty card is mostly empty space, so its message sits in the middle of it rather than pinned under the title, and the
 loading body has the shape of the rows it stands in for — the swap to real data is a fill-in, not a jump.
 
-A chain drops out of every widget when none of the selected accounts votes on it. A user staking only on Polkadot never
-sees an empty Kusama row.
+A chain drops out of every widget when none of the selected accounts holds anything on it. A user staking only on
+Polkadot never sees an empty Kusama row.
 
 ## Governance Overview
 
