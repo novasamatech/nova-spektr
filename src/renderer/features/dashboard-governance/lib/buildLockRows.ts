@@ -7,7 +7,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import { type UnlockBlockReason, resolveUnlockAccount } from './resolveUnlockAccount';
-import { type AccountLockSummary } from './summarizeAccountLocks';
+import { type AccountLockSummary, type Delegation } from './summarizeAccountLocks';
+import { buildUndelegateActions } from './undelegateActions';
 
 const DAY_MS = 86_400_000;
 
@@ -38,6 +39,16 @@ export type GovernanceLockRow = {
   daysUntilNextUnlock: number | null;
   delegated: BN;
   delegatedFiat: string | null;
+  /** The delegations behind `delegated`, in track order. */
+  delegations: Delegation[];
+  /**
+   * `undelegate` per delegated track, then `unlock` for the tracks without
+   * conviction; empty when nothing is delegated.
+   */
+  undelegateActions: ClaimAction[];
+  /** Who signs the undelegate — origin-bound, so never a permissionless payer. */
+  undelegateInitiator: AnyAccount | null;
+  undelegateBlockReason: UnlockBlockReason | null;
   tracks: string[];
   initiator: AnyAccount | null;
   target: AccountId;
@@ -108,6 +119,18 @@ export function buildLockRows({
       actions: summary.claimableActions,
       preferredWalletId,
     });
+    const undelegateActions = buildUndelegateActions(summary.delegations);
+    const undelegate =
+      undelegateActions.length > 0
+        ? resolveUnlockAccount({
+            lockedAccountId: accountId,
+            candidates,
+            chain,
+            allAccounts,
+            actions: undelegateActions,
+            preferredWalletId,
+          })
+        : null;
     const wallet = initiator ? (wallets.find((w) => w.id === initiator.walletId) ?? null) : null;
 
     const fiat = (value: BN) => (toFiat ? toFiat(value.toString(), data.precision, data.priceId) : null);
@@ -139,6 +162,10 @@ export function buildLockRows({
       daysUntilNextUnlock,
       delegated: summary.delegated,
       delegatedFiat: summary.delegated.isZero() ? null : fiat(summary.delegated),
+      delegations: summary.delegations,
+      undelegateActions,
+      undelegateInitiator: undelegate?.initiator ?? null,
+      undelegateBlockReason: undelegate?.reason ?? null,
       tracks: summary.tracks,
       initiator,
       target,

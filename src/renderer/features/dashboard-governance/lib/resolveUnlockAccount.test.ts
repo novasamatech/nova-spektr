@@ -37,6 +37,10 @@ const watchOnly = (): WatchOnlyAccount => ({
 
 const UNLOCK: ClaimAction[] = [{ type: 'unlock', trackId: '0' }];
 const REMOVE: ClaimAction[] = [{ type: 'remove_vote', trackId: '0', referendumId: '1' }];
+const UNDELEGATE: ClaimAction[] = [
+  { type: 'undelegate', trackId: '0' },
+  { type: 'unlock', trackId: '0' },
+];
 
 /**
  * Mirrors resolveClaimAccount.test.ts: these DI pipelines have no default
@@ -125,6 +129,22 @@ describe('resolveUnlockAccount', () => {
     expect(result.initiator).toBe(payer);
     expect(result.target).toBe(lockedId);
     expect(result.reason).toBeNull();
+  });
+
+  it('never lets a payer undelegate for somebody else', () => {
+    registerHandlers();
+
+    const payer = chainAccount({ id: 'payer', accountId: payerId });
+
+    const result = resolveUnlockAccount({
+      lockedAccountId: lockedId,
+      candidates: [watchOnly()],
+      chain: polkadotChain,
+      allAccounts: [watchOnly(), payer],
+      actions: UNDELEGATE,
+    });
+
+    expect(result).toEqual({ initiator: null, target: lockedId, reason: 'watch-only' });
   });
 
   it('drops the permissionless payer once a remove_vote joins the actions', () => {

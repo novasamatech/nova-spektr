@@ -9,8 +9,8 @@ import { accountUtils } from '@/entities/wallet';
  *
  * - `no-local-account` — a contact, or a key held only by a hidden wallet.
  * - `chain-unsupported` — the wallet holds the key but cannot act on this chain.
- * - `watch-only` — the key never signs and a `remove_vote` (origin-bound) is
- *   required.
+ * - `watch-only` — the key never signs and an origin-bound call (`remove_vote`,
+ *   `undelegate`) is required.
  * - `no-signer` — nothing local signs for it, and no local payer can release it
  *   permissionlessly.
  */
@@ -45,6 +45,10 @@ type Params = {
   preferredWalletId?: ID | null;
 };
 
+/**
+ * `unlock` is the only call anyone may send; `remove_vote` and `undelegate`
+ * need the account's own origin.
+ */
 const isPermissionlessRelease = (actions: ClaimAction[]) =>
   actions.length > 0 && actions.every((action) => action.type === 'unlock');
 

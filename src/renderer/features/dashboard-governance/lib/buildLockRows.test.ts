@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { type Wallet, SigningType, WalletType } from '@/shared/core';
+import { type Wallet, type WatchOnlyAccount, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AnyAccount, accountService } from '@/domains/network';
 
@@ -188,6 +188,50 @@ describe('buildLockRows', () => {
 
     expect(rows.find((row) => row.accountId === lockedId)?.pendingFiat).toBe('fiat:40');
     expect(rows.find((row) => row.accountId === contactId)?.pendingFiat).toBeNull();
+  });
+
+  it('builds the undelegate actions and resolves their signer', () => {
+    const delegations = [{ trackId: '20', target: contactId, balance: new BN(10), conviction: 'None' as const }];
+    const [row] = build(source({ [lockedId]: summary({ delegated: new BN(10), delegations }) }));
+
+    expect(row?.delegations).toEqual(delegations);
+    expect(row?.undelegateActions).toEqual([
+      { type: 'undelegate', trackId: '20' },
+      { type: 'unlock', trackId: '20' },
+    ]);
+    expect(row?.undelegateInitiator).toBe(signer);
+    expect(row?.undelegateBlockReason).toBeNull();
+  });
+
+  it('has no undelegate signer for a watch-only key', () => {
+    const watchOnly: WatchOnlyAccount = {
+      id: 'watch',
+      type: 'universal',
+      name: '',
+      walletId: wallet.id,
+      accountId: lockedId,
+      accountType: AccountType.WATCH_ONLY,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: 0,
+    };
+    const delegations = [{ trackId: '20', target: contactId, balance: new BN(10), conviction: 'Locked1x' as const }];
+    const [row] = build(source({ [lockedId]: summary({ delegated: new BN(10), delegations }) }), {
+      allAccounts: [watchOnly],
+    });
+
+    expect(row?.undelegateActions).toEqual([{ type: 'undelegate', trackId: '20' }]);
+    expect(row?.undelegateInitiator).toBeNull();
+    expect(row?.undelegateBlockReason).toBe('watch-only');
+  });
+
+  it('leaves the undelegate fields empty without delegations', () => {
+    const [row] = build(source({ [lockedId]: summary() }));
+
+    expect(row?.delegations).toEqual([]);
+    expect(row?.undelegateActions).toEqual([]);
+    expect(row?.undelegateInitiator).toBeNull();
+    expect(row?.undelegateBlockReason).toBeNull();
   });
 });
 
