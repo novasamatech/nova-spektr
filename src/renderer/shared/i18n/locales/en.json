@@ -751,6 +751,7 @@
       "noLocksDescription": "Locks appear once one of the selected accounts votes or delegates on Polkadot or Kusama Asset Hub",
       "noResults": "No locks match your filters",
       "unlock": "Unlock",
+      "undelegate": "Undelegate",
       "needsSignatories": "Needs signatories",
       "permissionless": "permissionless",
       "watchOnly": "Watch-only",
@@ -760,11 +761,13 @@
       "inDays_other": "~in {count} days · {date}",
       "dateUnavailable": "date unavailable",
       "claimableCaption": "{amount} claimable",
+      "delegatedCaption": "{amount} delegated",
       "moreTracks": "+{count}",
       "tracksCount_one": "{count} track",
       "tracksCount_other": "{count} tracks",
       "toast": {
-        "nothingClaimable": "Nothing left to unlock — the lock was released or is held by an active vote again"
+        "nothingClaimable": "Nothing left to unlock — the lock was released or is held by an active vote again",
+        "nothingDelegated": "Nothing left to undelegate — the delegation was already revoked"
       },
       "hint": {
         "unlock": "Release {amount} — signed by this account",
@@ -776,7 +779,9 @@
         "noSigner": "No account in your wallets can sign this unlock",
         "nothingClaimable": "The whole lock is still held by an active vote",
         "nothingClaimableUntil": "The whole lock is still held by an active vote — estimated release {date}",
-        "delegated": "Delegated funds carry no unlock date. Remove the delegation first",
+        "delegated": "Delegated funds carry no unlock date; revoke the delegation to start the clock",
+        "undelegate": "Revokes the delegation on {count} tracks. Delegations with conviction stay locked until their period ends; those without are unlocked in the same transaction",
+        "undelegateWatchOnly": "Undelegate must be signed by the delegator and you hold no key for this address",
         "chainDisconnected": "Chain is not connected",
         "lockedTooltip": "The largest of the account's locks on this chain — never the sum of its votes",
         "claimableTooltip": "Net amount that becomes transferable once released",

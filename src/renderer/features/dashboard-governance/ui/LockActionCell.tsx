@@ -57,21 +57,56 @@ type Props = {
   /** Whether the row's chain has a live connection — nothing signs without one. */
   chainConnected: boolean;
   onUnlock: (row: GovernanceLockRow) => void;
+  onUndelegate: (row: GovernanceLockRow) => void;
 };
 
-export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) => {
+type ActionButtonProps = {
+  label: string;
+  hint: string;
+  caption: string | null;
+  captionClassName?: string;
+  pallet: 'primary' | 'secondary';
+  disabled: boolean;
+  onClick: () => void;
+};
+
+/**
+ * A button with its verdict: the tooltip says why it is enabled or not, the
+ * caption under it says what signing will do. A disabled button swallows
+ * pointer events and cannot take focus, so the wrapper keeps the tooltip
+ * reachable by mouse and, when disabled, by keyboard.
+ */
+const ActionButton = memo(
+  ({ label, hint, caption, captionClassName, pallet, disabled, onClick }: ActionButtonProps) => (
+    <Tooltip>
+      <Tooltip.Trigger>
+        <div className="flex flex-col items-end gap-0.5" tabIndex={disabled ? 0 : undefined}>
+          <Button size="sm" pallet={pallet} className="whitespace-nowrap" disabled={disabled} onClick={onClick}>
+            {label}
+          </Button>
+          {!disabled && caption && (
+            <FootnoteText className={captionClassName ?? 'text-help-text whitespace-nowrap text-text-tertiary'}>
+              {caption}
+            </FootnoteText>
+          )}
+        </div>
+      </Tooltip.Trigger>
+      <Tooltip.Content>{hint}</Tooltip.Content>
+    </Tooltip>
+  ),
+);
+
+/**
+ * The Unlock verdict — what the widget always showed. `null` when the row only
+ * delegates.
+ */
+const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUndelegate'>) => {
   const { t, formatDate } = useI18n();
 
   if (row.claimable.isZero()) {
     // Delegation has no unlock date at all — a pending lock at least has one.
-    if (!row.delegated.isZero() && row.pending.isZero()) {
-      return (
-        <HintText
-          text={t('dashboard.governanceLocks.noUnlockDate')}
-          hint={t('dashboard.governanceLocks.hint.delegated')}
-        />
-      );
-    }
+    // A delegation-only row shows the Undelegate button instead of a hint.
+    if (!row.delegated.isZero() && row.pending.isZero()) return null;
 
     const hint = row.nextUnlockAtMs
       ? t('dashboard.governanceLocks.hint.nothingClaimableUntil', {
@@ -90,10 +125,8 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
   }
 
   const amount = formatToken(row.claimable, row.precision, row.symbol);
-
   const initiator = row.initiator;
   const disabled = !initiator || !chainConnected;
-
   const isMultisig = initiator ? accountUtils.isAnyMultisigAccount(initiator) : false;
   const isPermissionless = initiator ? initiator.accountId !== row.target : false;
 
@@ -119,34 +152,70 @@ export const LockActionCell = memo(({ row, chainConnected, onUnlock }: Props) =>
       : amount;
 
   return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        {/* A disabled button swallows pointer events and cannot take focus — the
-            wrapper keeps the tooltip reachable by mouse and, when disabled, by keyboard. */}
-        <div className="flex flex-col items-end gap-0.5" tabIndex={disabled ? 0 : undefined}>
-          <Button
-            size="sm"
-            pallet={isPermissionless ? 'secondary' : 'primary'}
-            className="whitespace-nowrap"
-            disabled={disabled}
-            onClick={() => onUnlock(row)}
-          >
-            {t('dashboard.governanceLocks.unlock')}
-          </Button>
-          {!disabled && (
-            <FootnoteText
-              className={
-                isMultisig
-                  ? 'text-help-text whitespace-nowrap text-text-warning'
-                  : 'text-help-text whitespace-nowrap text-text-tertiary'
-              }
-            >
-              {caption}
-            </FootnoteText>
-          )}
-        </div>
-      </Tooltip.Trigger>
-      <Tooltip.Content>{hint}</Tooltip.Content>
-    </Tooltip>
+    <ActionButton
+      label={t('dashboard.governanceLocks.unlock')}
+      hint={hint}
+      caption={caption}
+      captionClassName={isMultisig ? 'text-help-text whitespace-nowrap text-text-warning' : undefined}
+      pallet={isPermissionless ? 'secondary' : 'primary'}
+      disabled={disabled}
+      onClick={() => onUnlock(row)}
+    />
   );
 });
+
+/**
+ * The Undelegate button — only for a row that delegates. Always origin-bound,
+ * never permissionless.
+ */
+const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props, 'onUnlock'>) => {
+  const { t } = useI18n();
+
+  const initiator = row.undelegateInitiator;
+  const disabled = !initiator || !chainConnected;
+  const isMultisig = initiator ? accountUtils.isAnyMultisigAccount(initiator) : false;
+  const count = row.delegations.length;
+
+  let hint: string;
+  if (!chainConnected) {
+    hint = t('dashboard.governanceLocks.hint.chainDisconnected');
+  } else if (!initiator) {
+    hint =
+      row.undelegateBlockReason === 'watch-only'
+        ? t('dashboard.governanceLocks.hint.undelegateWatchOnly')
+        : t(BLOCK_REASON_HINT[row.undelegateBlockReason ?? 'no-signer']);
+  } else if (isMultisig) {
+    hint = t('dashboard.governanceLocks.hint.multisig');
+  } else {
+    hint = t('dashboard.governanceLocks.hint.undelegate', { count });
+  }
+
+  return (
+    <ActionButton
+      label={t('dashboard.governanceLocks.undelegate')}
+      hint={hint}
+      caption={
+        isMultisig
+          ? t('dashboard.governanceLocks.needsSignatories')
+          : t('dashboard.governanceLocks.tracksCount', { count })
+      }
+      captionClassName={isMultisig ? 'text-help-text whitespace-nowrap text-text-warning' : undefined}
+      pallet="secondary"
+      disabled={disabled}
+      onClick={() => onUndelegate(row)}
+    />
+  );
+});
+
+/**
+ * The row's verdicts, stacked: what can be released now on top, and beneath it
+ * — when the account delegates — the button that takes the delegation back.
+ */
+export const LockActionCell = memo(({ row, chainConnected, onUnlock, onUndelegate }: Props) => (
+  <div className="flex flex-col items-end gap-1.5">
+    <UnlockVerdict row={row} chainConnected={chainConnected} onUnlock={onUnlock} />
+    {row.delegations.length > 0 && (
+      <UndelegateAction row={row} chainConnected={chainConnected} onUndelegate={onUndelegate} />
+    )}
+  </div>
+));

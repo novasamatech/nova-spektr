@@ -141,7 +141,14 @@ const LockedCompactCell = memo(
         }
       : !row.pending.isZero()
         ? { text: releaseLine, className: 'text-help-text whitespace-nowrap text-text-tertiary' }
-        : null;
+        : !row.delegated.isZero()
+          ? {
+              text: t('dashboard.governanceLocks.delegatedCaption', {
+                amount: formatToken(row.delegated, row.precision, row.symbol),
+              }),
+              className: 'text-help-text whitespace-nowrap text-text-tertiary',
+            }
+          : null;
 
     return (
       <AmountCell
@@ -248,7 +255,7 @@ const AccountCell = memo(({ row, withChainIcon }: { row: GovernanceLockRow; with
 export const LocksTable = ({ mode, state, rows }: Props) => {
   const { t } = useI18n();
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
-  const { currency, fiatFlag, onUnlock, pending: isLoading } = state;
+  const { currency, fiatFlag, onUnlock, onUndelegate, pending: isLoading } = state;
 
   // A column that is "—" on every row says nothing and costs the width the
   // other columns need; it comes back the moment one row fills it.
@@ -272,6 +279,7 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
           row={row}
           chainConnected={connectionStatuses[row.chainId] === ConnectionStatus.CONNECTED}
           onUnlock={onUnlock}
+          onUndelegate={onUndelegate}
         />
       ),
     };
@@ -392,7 +400,7 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
     ];
 
     return all.filter((column): column is Column<GovernanceLockRow> => column !== null);
-  }, [mode, t, currency, fiatFlag, connectionStatuses, onUnlock, showPending, showDelegated]);
+  }, [mode, t, currency, fiatFlag, connectionStatuses, onUnlock, onUndelegate, showPending, showDelegated]);
 
   // The table's floor: below the sum of its columns it scrolls sideways rather
   // than crushing the amounts into wrapped digits.

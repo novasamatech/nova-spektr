@@ -34,6 +34,11 @@ export type LocksTableState = {
   claimableOnly: boolean;
   setClaimableOnly: (value: boolean) => void;
   onUnlock: (row: GovernanceLockRow) => void;
+  /**
+   * Revokes every delegation of the row's account on its chain through the
+   * release flow.
+   */
+  onUndelegate: (row: GovernanceLockRow) => void;
 };
 
 /**
@@ -128,5 +133,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
     claimableOnly,
     setClaimableOnly,
     onUnlock,
+    // Wired up by the release-flow task.
+    onUndelegate: () => {},
   };
 };

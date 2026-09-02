@@ -79,6 +79,7 @@ const state = (rows: GovernanceLockRow[], overrides: Partial<LocksTableState> = 
   claimableOnly: false,
   setClaimableOnly: vi.fn(),
   onUnlock: vi.fn(),
+  onUndelegate: vi.fn(),
   ...overrides,
 });
 
@@ -130,6 +131,15 @@ describe('features/dashboard-governance/ui/LocksTable', () => {
     );
 
     expect(screen.getByText('date unavailable')).toBeInTheDocument();
+  });
+
+  it('captions the compact Locked cell with the delegated amount when that is all there is', () => {
+    renderTable(
+      'compact',
+      state([row({ claimable: BN_ZERO, claimableActions: [], delegated: new BN('1000000000000') })]),
+    );
+
+    expect(screen.getByText('100 DOT delegated')).toBeInTheDocument();
   });
 
   it('renders the skeleton while loading with no rows', () => {

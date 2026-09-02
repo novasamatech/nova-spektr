@@ -78,19 +78,36 @@ const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => (
   ...overrides,
 });
 
-const renderCell = (lockRow: GovernanceLockRow, chainConnected = true, onUnlock = vi.fn()) => {
+/** A row whose only lock is a delegation, signed by the account itself. */
+const delegating = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow =>
+  row({
+    claimable: BN_ZERO,
+    claimableActions: [],
+    delegated: new BN(100),
+    delegations: [{ trackId: '20', target: lockedId, balance: new BN(100), conviction: 'None' }],
+    undelegateActions: [
+      { type: 'undelegate', trackId: '20' },
+      { type: 'unlock', trackId: '20' },
+    ],
+    undelegateInitiator: signer,
+    undelegateBlockReason: null,
+    ...overrides,
+  });
+
+const renderCell = (lockRow: GovernanceLockRow, chainConnected = true, onUnlock = vi.fn(), onUndelegate = vi.fn()) => {
   render(
     <I18Provider>
       <ThemeProvider>
-        <LockActionCell row={lockRow} chainConnected={chainConnected} onUnlock={onUnlock} />
+        <LockActionCell row={lockRow} chainConnected={chainConnected} onUnlock={onUnlock} onUndelegate={onUndelegate} />
       </ThemeProvider>
     </I18Provider>,
   );
 
-  return onUnlock;
+  return { onUnlock, onUndelegate };
 };
 
 const unlockButton = () => screen.queryByRole('button', { name: 'Unlock' });
+const undelegateButton = () => screen.queryByRole('button', { name: 'Undelegate' });
 
 describe('features/dashboard-governance/ui/LockActionCell', () => {
   it('says nothing is claimable while the lock is still held by a vote', () => {
@@ -100,11 +117,42 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
     expect(unlockButton()).toBeNull();
   });
 
-  it('says there is no unlock date for a purely delegated lock', () => {
-    renderCell(row({ claimable: BN_ZERO, claimableActions: [], delegated: new BN(100) }));
+  it('offers Undelegate alone for a delegation-only row', () => {
+    const { onUndelegate } = renderCell(delegating());
 
-    expect(screen.getByText('No unlock date')).toBeInTheDocument();
     expect(unlockButton()).toBeNull();
+    expect(screen.queryByText('No unlock date')).toBeNull();
+    expect(undelegateButton()).toBeEnabled();
+    fireEvent.click(undelegateButton()!);
+    expect(onUndelegate).toHaveBeenCalledWith(expect.objectContaining({ accountId: lockedId }));
+  });
+
+  it('stacks Undelegate under the Unlock verdict when both apply', () => {
+    renderCell(delegating({ claimable: new BN(100), claimableActions: [{ type: 'unlock', trackId: '0' }] }));
+
+    expect(unlockButton()).toBeEnabled();
+    expect(undelegateButton()).toBeEnabled();
+  });
+
+  it('disables Undelegate when the key never signs', () => {
+    const { onUndelegate } = renderCell(delegating({ undelegateInitiator: null, undelegateBlockReason: 'watch-only' }));
+
+    expect(undelegateButton()).toBeDisabled();
+    fireEvent.click(undelegateButton()!);
+    expect(onUndelegate).not.toHaveBeenCalled();
+  });
+
+  it('disables Undelegate while the chain is disconnected', () => {
+    renderCell(delegating(), false);
+
+    expect(undelegateButton()).toBeDisabled();
+  });
+
+  it('warns that a multisig undelegate only opens a pending operation', () => {
+    renderCell(delegating({ undelegateInitiator: multisig }));
+
+    expect(undelegateButton()).toBeEnabled();
+    expect(screen.getByText('Needs signatories')).toBeInTheDocument();
   });
 
   it('shows Watch-only instead of a button when a remove_vote needs a key nobody holds', () => {
@@ -115,7 +163,7 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
   });
 
   it('releases through the button for a self-signed row', () => {
-    const onUnlock = renderCell(row());
+    const { onUnlock } = renderCell(row());
     const button = unlockButton();
 
     expect(button).toBeEnabled();
@@ -156,7 +204,7 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
   });
 
   it('disables the button, without a caption, when nothing local can sign', () => {
-    const onUnlock = renderCell(row({ initiator: null, wallet: null, blockReason: 'no-signer' }));
+    const { onUnlock } = renderCell(row({ initiator: null, wallet: null, blockReason: 'no-signer' }));
     const button = unlockButton();
 
     expect(button).toBeDisabled();
