@@ -37,7 +37,7 @@ const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => (
   chainId: polkadotChainId,
   chain: polkadotChain,
   chainName: 'Polkadot',
-  chainIcon: '',
+  chainIcon: 'polkadot.svg',
   symbol: 'DOT',
   precision: 10,
   wallet,
@@ -143,5 +143,17 @@ describe('features/dashboard-governance/ui/LocksTable', () => {
     renderTable('full', state([row()]), []);
 
     expect(screen.getByText('No locks match your filters')).toBeInTheDocument();
+  });
+
+  it('shows the chain icon next to the account only in compact mode', () => {
+    renderTable('compact', state([row()]));
+
+    expect(screen.getByRole('img', { name: 'Polkadot' })).toBeInTheDocument();
+  });
+
+  it('leaves the chain icon to the Chain column in full mode', () => {
+    renderTable('full', state([row()]));
+
+    expect(screen.queryByRole('img', { name: 'Polkadot' })).toBeNull();
   });
 });

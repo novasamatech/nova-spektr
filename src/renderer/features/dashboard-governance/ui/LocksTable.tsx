@@ -134,7 +134,7 @@ const LockedCompactCell = memo(
 
     const caption = !row.claimable.isZero()
       ? {
-          text: t('dashboard.unlockSchedule.claimableCaption', {
+          text: t('dashboard.governanceLocks.claimableCaption', {
             amount: formatToken(row.claimable, row.precision, row.symbol),
           }),
           className: 'text-help-text whitespace-nowrap text-text-positive',
@@ -144,17 +144,16 @@ const LockedCompactCell = memo(
         : null;
 
     return (
-      <div className="text-right">
-        <FootnoteText className="whitespace-nowrap text-text-primary tabular-nums">
-          {formatToken(row.locked, row.precision, row.symbol)}
-        </FootnoteText>
-        {showFiat && row.lockedFiat && currency && (
-          <FootnoteText className="text-help-text text-text-tertiary tabular-nums">
-            <Price amount={row.lockedFiat} currency={currency} />
-          </FootnoteText>
-        )}
+      <AmountCell
+        amount={row.locked}
+        fiat={row.lockedFiat}
+        precision={row.precision}
+        symbol={row.symbol}
+        currency={currency}
+        showFiat={showFiat}
+      >
         {caption && <FootnoteText className={caption.className}>{caption.text}</FootnoteText>}
-      </div>
+      </AmountCell>
     );
   },
 );
@@ -242,11 +241,14 @@ const AccountCell = memo(({ row, withChainIcon }: { row: GovernanceLockRow; with
  * The lock rows and the states around them. `compact` is the three-column card
  * (Account · Locked · Action); `full` is the whole table the modal shows, with
  * Pending and Delegated appearing only while some row fills them.
+ *
+ * Expects a flex-column parent: the table wrapper is `min-h-0 flex-1` and
+ * scrolls inside whatever height it is given.
  */
 export const LocksTable = ({ mode, state, rows }: Props) => {
   const { t } = useI18n();
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
-  const { currency, fiatFlag, onUnlock, pending } = state;
+  const { currency, fiatFlag, onUnlock, pending: isLoading } = state;
 
   // A column that is "—" on every row says nothing and costs the width the
   // other columns need; it comes back the moment one row fills it.
@@ -409,7 +411,7 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
     [mode, showPending, showDelegated],
   );
 
-  if (pending && state.rows.length === 0) {
+  if (isLoading && state.rows.length === 0) {
     return <TableSkeleton columns={mode === 'compact' ? COMPACT_SKELETON_COLUMNS : FULL_SKELETON_COLUMNS} />;
   }
 
