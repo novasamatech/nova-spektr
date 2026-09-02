@@ -52,7 +52,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const unlockRequested = useUnit(governanceUnlockFlow.unlockRequested);
-  const { rows, pending, fiatFlag, currency, getFreshClaim } = useGovernanceLocks(accountIds);
+  const { rows, pending, fiatFlag, currency, getFreshClaim, hasLiveDelegation } = useGovernanceLocks(accountIds);
 
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [claimableOnly, setClaimableOnly] = useState(false);
@@ -85,6 +85,33 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
       });
     },
     [getFreshClaim, unlockRequested, toast, t],
+  );
+
+  const onUndelegate = useCallback(
+    (row: GovernanceLockRow) => {
+      if (!hasLiveDelegation(row)) {
+        toast.info(t('dashboard.governanceLocks.toast.nothingDelegated'));
+
+        return;
+      }
+
+      if (!row.undelegateInitiator) {
+        toast.info(t(BLOCK_REASON_HINT[row.undelegateBlockReason ?? 'no-signer']));
+
+        return;
+      }
+
+      // Origin-bound: the delegator's own key (or its multisig / proxy route)
+      // signs, and the target is the delegator itself.
+      unlockRequested({
+        chain: row.chain,
+        initiator: row.undelegateInitiator,
+        target: row.accountId,
+        actions: row.undelegateActions,
+        amount: row.delegated,
+      });
+    },
+    [hasLiveDelegation, unlockRequested, toast, t],
   );
 
   const uniqueChains = useMemo(() => {
@@ -133,7 +160,6 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
     claimableOnly,
     setClaimableOnly,
     onUnlock,
-    // Wired up by the release-flow task.
-    onUndelegate: () => {},
+    onUndelegate,
   };
 };
