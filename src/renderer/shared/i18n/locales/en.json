@@ -842,6 +842,7 @@
       "claimableNow": "Claimable",
       "pendingLocks": "Pending",
       "delegated": "Delegated",
+      "claimableCaption": "{amount} claimable",
       "upcomingUnlocks": "Upcoming Unlocks",
       "noLocks": "No governance locks found",
       "accountCount": "{count} accounts",
