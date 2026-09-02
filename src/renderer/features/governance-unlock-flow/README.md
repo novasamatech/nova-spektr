@@ -1,6 +1,6 @@
 # Governance unlock flow
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-01
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-02
 
 ## Overview
 
@@ -13,10 +13,10 @@ books plus an `unlock` per track — a batch nobody assembles by hand. This flow
 and does the rest.
 
 It is deliberately incurious about where the request came from. Today the Dashboard's
-[Governance Locks widget](../dashboard-governance/README.md) dispatches it, one row at a time, and the flow knows
-nothing about the dashboard, its account picker, the Governance page's network selector or the selected wallet. Its
-whole input is a fully resolved request — the chain, who originates the transaction, whose lock is released, the calls
-and the amount — and everything it shows is derived from that one snapshot.
+[Unlock Schedule widget](../dashboard-governance/README.md) dispatches it, one row at a time, and the flow knows nothing
+about the dashboard, its account picker, the Governance page's network selector or the selected wallet. Its whole input
+is a fully resolved request — the chain, who originates the transaction, whose lock is released, the calls and the
+amount — and everything it shows is derived from that one snapshot.
 
 The flow is **mounted globally** in the app shell's modal slot, so it opens from wherever the user pressed the button
 rather than from a route, and stays open across navigation.
@@ -103,8 +103,8 @@ approves.
 
 ## Related
 
-- [`dashboard-governance`](../dashboard-governance/README.md) — the Governance Locks widget that dispatches every
-  request this flow serves, and decides who can release what.
+- [`dashboard-governance`](../dashboard-governance/README.md) — the Unlock Schedule widget that dispatches every request
+  this flow serves, and decides who can release what.
 - [`vesting-claim`](../vesting-claim/README.md) — the same shape one pallet over: a hidden extrinsic turned into a
   confirm/sign/submit flow, with the same signing-route and affordability rules.
 - [`staking-confirm-flow`](../staking-confirm-flow/README.md) — another flow mounted globally in the app shell's modal

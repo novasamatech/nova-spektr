@@ -1,29 +1,26 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-01
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-02
 
 ## Overview
 
-The Dashboard's **Governance** tab: four widgets that answer, for the accounts the user has picked, _how much of my
+The Dashboard's **Governance** tab: three widgets that answer, for the accounts the user has picked, _how much of my
 money is tied up in voting, when do I get it back, and what am I currently voting on_.
 
 Governance costs the user liquidity, and the cost is invisible on the chain explorer: a vote locks tokens for a period
 that depends on the conviction, the outcome, and every other vote on the same track. These widgets exist to make that
-cost legible — what is locked, what is already claimable, what unlocks on which day, and which referendum each lock came
+cost legible — what is locked, what is already claimable, when the rest comes back, and which referendum each lock came
 from.
 
-| Widget                  | The question it answers                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| **Governance Overview** | How much is locked in governance, split by chain and drillable to account and track  |
-| **Unlock Schedule**     | What is claimable now, what is still pending, and on which days it unlocks           |
-| **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks |
-| **Governance Locks**    | Which account holds which lock, and which of them I can release right now            |
+| Widget                  | The question it answers                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Governance Overview** | How much is locked in governance, split by chain and drillable to account and track                        |
+| **Unlock Schedule**     | What is claimable, pending and delegated, which account holds which lock, and what I can release right now |
+| **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks                       |
 
-**The tab opens on what is live, not on what is locked.** The default layout leads with **Referendums** full-width — the
-one widget about decisions still being made, and the only reason to come back daily — then **Governance Locks**
-full-width beneath it, and finally **Governance Overview** and **Unlock Schedule** side by side. The two summaries sit
-last on purpose: they explain a total the user already met on the Overview tab, while the two tables above are where
-something can actually be done.
+**The tab reads top-down from the total to the decision.** The default layout puts **Governance Overview** and **Unlock
+Schedule** side by side — the total, then what can be done about it — and **Referendums** full-width beneath them, where
+the votes that will create the next locks are still being decided.
 
 That order is the default only. A user who has already arranged this tab keeps their arrangement — the change touches
 the fallback, not the stored layouts — and **Reset layout** drops the stored one so the default takes over (and brings
@@ -31,10 +28,10 @@ back any widget hidden on the tab).
 
 ## Who can use it / when it applies
 
-- Gated by the **`dashboard`** feature flag; the unlock flow the Locks widget dispatches also wants **`governance`**, so
-  releasing needs both on. The Overview and Unlock Schedule widgets additionally render nothing at all when the global
-  **show fiat** toggle is off — they lead with a fiat total, and a governance lock with no price behind it has nothing
-  to lead with.
+- Gated by the **`dashboard`** feature flag; the unlock flow the Unlock Schedule widget dispatches also wants
+  **`governance`**, so that widget needs both on. The Overview widget renders nothing at all when the global **show
+  fiat** toggle is off — it leads with a fiat total. Unlock Schedule keeps its table without fiat and hides only its
+  totals strip: DOT and KSM do not add, so a total without a price has nothing to say, but a lock still does.
 - Scoped to the dashboard's **account picker**. With nothing picked, each widget shows the shared "No accounts selected"
   prompt rather than an empty chart.
 - Reads **Polkadot Asset Hub and Kusama Asset Hub** — the two chains the app runs governance on.
@@ -76,64 +73,37 @@ is.
 
 ## Unlock Schedule
 
-Three figures — **Claimable**, **Pending**, **Delegated** — and a dated list of upcoming unlocks. Claimable and Pending
-each open a per-account breakdown; Delegated does not, because delegated balance has no unlock date to break down.
+A half-width card with a totals strip and one row per **account × chain**, and an **expand** icon in its header that
+opens the same rows full screen with every column and the filters.
 
-**Upcoming unlocks are grouped by day, not by referendum.** Unlock times are estimated from the current block and the
-chain's block time, so they carry hours of error even when the arithmetic is exact; a list of per-referendum timestamps
-would advertise a precision that does not exist. Each day's row names the amount, the accounts and the tracks behind it.
+**The strip** — **Claimable**, **Pending**, **Delegated** — sums every row in fiat, because DOT and KSM do not add. It
+reads the same rows the table shows, so a lock that makes a row is in the total too; the strip disappears when show fiat
+is off, the table stays.
 
-When the chain has not reported its block time yet, the pending total is still shown but the dated list is empty — a
-total is true without a schedule, a schedule is not true without block time.
+**In the card** each row is the account (with its chain's icon), the locked amount with one line under it — how much is
+claimable, or when the next part releases — and the Action cell. Three columns fit half the grid; the Action column
+stays pinned to the right edge so the one control in the widget never leaves the screen. Rows arrive sorted by
+claimable, then by locked, so the money the user can take home is on top.
 
-## Referendums
-
-Two tabs over the same table: **Active** and **Ended**, both filterable by chain and searchable over the title, the
-referendum id and the chain name.
-
-- **Active** — id, track, title, the user's own votes as chips (aye / nay / abstain / split, with counts), the aye–nay
-  split, time left, and the referendum's own TVL — the network's whole tally, ayes plus nays, which is the context the
-  user's vote sits in rather than a figure about the user. Time left is colour-coded: under a day is critical, under a
-  week is a warning. The Votes column is there only while one of the selected accounts has voted on something — a column
-  of dashes says nothing and takes width from the title. Clicking a row opens the app's own referendum modal — the same
-  one the Governance page uses, so the proposal can be read and voted on without leaving the dashboard. That modal reads
-  its chain from the single global governance network selector, so the row's chain is selected first; a row whose chain
-  has no live connection is dimmed and inert. Opened from here the modal names its chain next to the title and says
-  which wallet a vote is cast from — the dashboard's account selection is not what the vote acts for. Once the modal
-  closes, the selector is put back to the chain the user had chosen on the Governance page: the dashboard only borrowed
-  it.
-- **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
-  and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
-  watching and exactly what keeps holding their tokens.
-
-**A vote's lock outlives the referendum, and only sometimes.** A lock extends past the end only for a vote that backed
-the winning side — conviction is the price of being right, not of participating — so a losing vote, an abstention or a
-cancelled referendum releases at the end block. The Ended detail modal marks each vote **Unlockable**, **Locked until
-~date**, or **Shadowed**: shadowed means another, longer lock on the same track already covers this one, so releasing it
-alone would free nothing.
-
-## Governance Locks
-
-One row per **account × chain**: the account, the chain, the locked amount (the largest lock, never the sum), what is
-claimable, what is still pending with its estimated release date, what is delegated, the tracks behind it, and — the
-point of the widget — a button that releases it. Pending and Delegated show only while some row has them. The table has
-a floor width; below it the rows scroll sideways rather than crushing amounts into wrapped digits, and the Action column
-stays pinned to the right edge so the one control in the widget never leaves the screen. Amounts too small to read — a
-single-planck class lock, a fraction of a cent — are labelled `<0.0001 DOT` / `<$0.01` instead of a ten-digit tail.
+**Full screen** is the same table given the whole window — the configuration the Accounts table and the validator picker
+use — with Chain, Claimable, Pending (with its estimated release date), Delegated and Tracks as their own columns, a
+**Claimable only** toggle and a chain filter. Pending and Delegated show only while some row has them. Widget and modal
+share one table state, so a filter set in the modal is what the next open shows; the card itself does not filter.
+Escape, the cross and a click outside close it; nothing is lost by closing. Amounts too small to read — a single-planck
+class lock, a fraction of a cent — are labelled `<0.0001 DOT` / `<$0.01` instead of a ten-digit tail.
 
 **Locked is what the chain freezes, not what the votes add up to.** The chain keeps a per-track class lock that only an
 explicit `unlock` clears, so a vote removed without one leaves the lock behind with nothing voting on it. The row takes
 the larger of the votes' lock and the class lock, which is why an account whose votes are all gone still shows — its
-whole lock is claimable, and releasing it is exactly what the widget is for. The header carries a **Claimable only**
-toggle and a chain filter; rows arrive sorted by claimable, then by locked, so the money the user can take home is on
-top.
+whole lock is claimable, and releasing it is exactly what the widget is for.
 
 **This is the only widget on the tab that acts rather than reports.** Everything else on the Governance tab explains a
 number; this one dispatches the [unlock flow](../governance-unlock-flow/README.md) for the row's account, on the row's
 chain, for exactly the tracks that have expired — so releasing a lock no longer means leaving the dashboard for the
-Governance page. The flow is mounted app-wide rather than inside the widget, so it survives navigation once opened. The
-rows need no manual refresh afterwards: they are derived from live voting and lock data, so a landed release drops out
-of the table on its own — including one that lands later, when the last multisig signatory approves.
+Governance page. The flow is mounted app-wide rather than inside the widget, so it survives navigation once opened and
+opens on top of the full-screen view as readily as on top of the card. The rows need no manual refresh afterwards: they
+are derived from live voting and lock data, so a landed release drops out of the table on its own — including one that
+lands later, when the last multisig signatory approves.
 
 Filtering to a chain or to **Claimable only** can leave nothing on screen; that says "no rows match", not "no locks" —
 the two are different answers and read differently.
@@ -164,6 +134,32 @@ a route _for_ the initiator rather than the initiator itself, so the choice woul
 the selected wallet's account and falls back to the first signer. The payer's balance is not checked here — the flow's
 fee validation reports an unaffordable fee once the fee is known.
 
+## Referendums
+
+Two tabs over the same table: **Active** and **Ended**, both filterable by chain and searchable over the title, the
+referendum id and the chain name.
+
+- **Active** — id, track, title, the user's own votes as chips (aye / nay / abstain / split, with counts), the aye–nay
+  split, time left, and the referendum's own TVL — the network's whole tally, ayes plus nays, which is the context the
+  user's vote sits in rather than a figure about the user. Time left is colour-coded: under a day is critical, under a
+  week is a warning. The Votes column is there only while one of the selected accounts has voted on something — a column
+  of dashes says nothing and takes width from the title. Clicking a row opens the app's own referendum modal — the same
+  one the Governance page uses, so the proposal can be read and voted on without leaving the dashboard. That modal reads
+  its chain from the single global governance network selector, so the row's chain is selected first; a row whose chain
+  has no live connection is dimmed and inert. Opened from here the modal names its chain next to the title and says
+  which wallet a vote is cast from — the dashboard's account selection is not what the vote acts for. Once the modal
+  closes, the selector is put back to the chain the user had chosen on the Governance page: the dashboard only borrowed
+  it.
+- **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
+  and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
+  watching and exactly what keeps holding their tokens.
+
+**A vote's lock outlives the referendum, and only sometimes.** A lock extends past the end only for a vote that backed
+the winning side — conviction is the price of being right, not of participating — so a losing vote, an abstention or a
+cancelled referendum releases at the end block. The Ended detail modal marks each vote **Unlockable**, **Locked until
+~date**, or **Shadowed**: shadowed means another, longer lock on the same track already covers this one, so releasing it
+alone would free nothing.
+
 ## Lifecycle
 
 ```mermaid
@@ -172,11 +168,10 @@ flowchart TD
     CHAIN --> LOCK["Largest lock per account"]
     CHAIN --> SCHED["Estimated claim schedule"]
     LOCK --> OVER["Governance Overview: chain > account > track"]
-    SCHED --> UNLOCK["Unlock Schedule: claimable / pending / by day"]
     CHAIN --> REFS["Referendums: active and ended"]
-    LOCK --> LOCKS["Governance Locks: one row per account x chain"]
-    SCHED --> LOCKS
-    LOCKS --> FLOW["Unlock flow: confirm > sign > submit"]
+    LOCK --> ROWS["Unlock Schedule: one row per account x chain, totals strip"]
+    SCHED --> ROWS
+    ROWS --> FLOW["Unlock flow: confirm > sign > submit"]
 ```
 
 Claim schedules are recomputed only when the block or the underlying voting data actually changes, so scrolling the tab
@@ -193,7 +188,7 @@ different account.
 
 - **Governance entities** (`entities/governance`) — voting, conviction and claim-schedule maths.
 - **Governance page** (`pages/Governance`) — the full governance surface these widgets summarise.
-- [`governance-unlock-flow`](../governance-unlock-flow/README.md) — the confirm/sign/submit flow the Locks widget's
-  Unlock button dispatches; mounted app-wide, and blind to everything the dashboard knows.
+- [`governance-unlock-flow`](../governance-unlock-flow/README.md) — the confirm/sign/submit flow the Unlock Schedule
+  widget's Unlock button dispatches; mounted app-wide, and blind to everything the dashboard knows.
 - [`dashboard-portfolio-overview`](../dashboard-portfolio-overview/README.md) — the Overview tab's balance card, where
   governance locks appear as part of the locked share.
