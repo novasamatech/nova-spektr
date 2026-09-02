@@ -841,13 +841,13 @@
         "endedDate": "Ended {date}"
       }
     },
-    "unlockSchedule": {
-      "title": "Unlock Schedule",
+    "locks": {
+      "title": "Locks",
       "claimableNow": "Claimable",
       "pendingLocks": "Pending",
       "delegated": "Delegated",
       "fullView": "Full view",
-      "fullViewTitle": "Unlock Schedule"
+      "fullViewTitle": "Locks"
     },
     "activeReferendums": {
       "title": "Referenda",

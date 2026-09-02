@@ -24,7 +24,7 @@ type Props = {
  * instance: the filters set here are what the next open shows. Escape, the
  * cross and an outside click all close it; nothing is lost by closing.
  */
-export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => {
+export const LocksFullScreen = ({ state, isOpen, onToggle }: Props) => {
   const { t } = useI18n();
   const {
     rows,
@@ -46,7 +46,7 @@ export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => 
 
   return (
     <Modal isOpen={isOpen} size="3xl" height="full" onToggle={onToggle}>
-      <Modal.Title close>{t('dashboard.unlockSchedule.fullViewTitle')}</Modal.Title>
+      <Modal.Title close>{t('dashboard.locks.fullViewTitle')}</Modal.Title>
 
       {/* The table owns its own scroll region (rows only, strip and filters
           stay put), so the modal must not wrap it in a second scroller. */}

@@ -30,7 +30,7 @@ const Item = memo(({ label, amount, currency, colorClass }: ItemProps) => (
 
 /**
  * Claimable / Pending / Delegated over every row the table holds, in fiat — the
- * one line the old Unlock Schedule widget had that the table did not.
+ * one line the old summary widget had that the table did not.
  */
 export const LocksTotals = memo(({ totals, currency }: Props) => {
   const { t } = useI18n();
@@ -38,19 +38,19 @@ export const LocksTotals = memo(({ totals, currency }: Props) => {
   return (
     <div className="flex gap-4 border-b border-divider pb-2">
       <Item
-        label={t('dashboard.unlockSchedule.claimableNow')}
+        label={t('dashboard.locks.claimableNow')}
         amount={totals.claimable}
         currency={currency}
         colorClass="text-text-positive"
       />
       <Item
-        label={t('dashboard.unlockSchedule.pendingLocks')}
+        label={t('dashboard.locks.pendingLocks')}
         amount={totals.pending}
         currency={currency}
         colorClass="text-text-secondary"
       />
       <Item
-        label={t('dashboard.unlockSchedule.delegated')}
+        label={t('dashboard.locks.delegated')}
         amount={totals.delegated}
         currency={currency}
         colorClass="text-text-tertiary"
