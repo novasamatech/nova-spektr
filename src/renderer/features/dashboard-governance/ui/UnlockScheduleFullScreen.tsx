@@ -36,14 +36,13 @@ export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => 
     setChainFilter,
     claimableOnly,
     setClaimableOnly,
+    showTotals,
   } = state;
 
   const handleChainFilterChange = useCallback(
     (value: string) => setChainFilter(value === ALL_CHAINS ? null : value),
     [setChainFilter],
   );
-
-  const showTotals = totals !== null && rows.length > 0;
 
   return (
     <Modal isOpen={isOpen} size="3xl" height="full" onToggle={onToggle}>
@@ -53,7 +52,7 @@ export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => 
           stay put), so the modal must not wrap it in a second scroller. */}
       <Modal.Content disableScroll>
         <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 py-3">
-          {showTotals && <LocksTotals totals={totals} currency={currency} />}
+          {showTotals && totals && <LocksTotals totals={totals} currency={currency} />}
 
           {rows.length > 0 && (
             <div className={cnTw('flex items-center gap-3', showTotals && 'mt-3')}>

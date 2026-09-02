@@ -68,6 +68,7 @@ const state = (rows: GovernanceLockRow[], overrides: Partial<LocksTableState> = 
   fiatFlag: false,
   currency: null,
   totals: null,
+  showTotals: false,
   uniqueChains: [],
   chainFilter: null,
   setChainFilter: vi.fn(),

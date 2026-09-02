@@ -26,6 +26,8 @@ export type LocksTableState = {
    * to say.
    */
   totals: LockTotals | null;
+  /** The strip has something to show: fiat is on and there is at least one row. */
+  showTotals: boolean;
   uniqueChains: LockChainOption[];
   chainFilter: string | null;
   setChainFilter: (chainId: string | null) => void;
@@ -103,6 +105,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
   );
 
   const totals = useMemo(() => (fiatFlag && currency ? sumLockTotals(rows) : null), [rows, fiatFlag, currency]);
+  const showTotals = totals !== null && rows.length > 0;
 
   return {
     rows,
@@ -111,6 +114,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
     fiatFlag,
     currency,
     totals,
+    showTotals,
     uniqueChains,
     chainFilter,
     setChainFilter,

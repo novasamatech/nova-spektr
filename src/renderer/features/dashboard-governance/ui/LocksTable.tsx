@@ -412,7 +412,12 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
   );
 
   if (isLoading && state.rows.length === 0) {
-    return <TableSkeleton columns={mode === 'compact' ? COMPACT_SKELETON_COLUMNS : FULL_SKELETON_COLUMNS} />;
+    return (
+      <TableSkeleton
+        rows={mode === 'compact' ? 2 : 3}
+        columns={mode === 'compact' ? COMPACT_SKELETON_COLUMNS : FULL_SKELETON_COLUMNS}
+      />
+    );
   }
 
   if (state.rows.length === 0) {

@@ -24,12 +24,12 @@ export const UnlockScheduleWidget = ({ accountIds }: Props) => {
   const [fullScreen, setFullScreen] = useState(false);
 
   const state = useLocksTable(deferredAccountIds);
-  const { rows, totals, currency } = state;
+  const { rows, totals, currency, showTotals } = state;
 
   if (accountIds.length === 0) {
     return (
       <DashboardWidget>
-        <div className="flex h-full min-h-0 flex-col">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden">
           <FootnoteText className="text-text-tertiary">{t('dashboard.unlockSchedule.title')}</FootnoteText>
           <WidgetEmptyState
             title={t('dashboard.noSelection.title')}
@@ -42,7 +42,7 @@ export const UnlockScheduleWidget = ({ accountIds }: Props) => {
 
   return (
     <DashboardWidget>
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
         <div className="flex items-center gap-2">
           <span title={t('dashboard.unlockSchedule.fullView')} className="shrink-0">
             <IconButton
@@ -55,7 +55,7 @@ export const UnlockScheduleWidget = ({ accountIds }: Props) => {
           <FootnoteText className="text-text-tertiary">
             {t('dashboard.unlockSchedule.title')}
             {rows.length > 0 && (
-              <span className="text-text-tertiary">
+              <span>
                 {' · '}
                 {t('dashboard.governanceLocks.rowsCount', { count: rows.length })}
               </span>
@@ -63,7 +63,7 @@ export const UnlockScheduleWidget = ({ accountIds }: Props) => {
           </FootnoteText>
         </div>
 
-        {totals && rows.length > 0 && (
+        {showTotals && totals && (
           <div className="mt-3">
             <LocksTotals totals={totals} currency={currency} />
           </div>
