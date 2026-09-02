@@ -122,7 +122,7 @@ const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUn
   if (row.claimable.isZero()) {
     // Delegation has no unlock date at all — a pending lock at least has one.
     // A delegation-only row shows the Undelegate button instead of a hint.
-    if (!row.delegated.isZero() && row.pending.isZero()) return null;
+    if (row.delegations.length > 0 && row.pending.isZero()) return null;
 
     const hint = row.nextUnlockAtMs
       ? t('dashboard.governanceLocks.hint.nothingClaimableUntil', {
