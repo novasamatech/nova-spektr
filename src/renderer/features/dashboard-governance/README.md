@@ -77,13 +77,15 @@ A half-width card with a totals strip and one row per **account × chain**, and 
 opens the same rows full screen with every column and the filters.
 
 **The strip** — **Claimable**, **Pending**, **Delegated** — sums every row in fiat, because DOT and KSM do not add. It
-reads the same rows the table shows, so a lock that makes a row is in the total too; the strip disappears when show fiat
-is off, the table stays.
+is summed from the same rows the table is built from, so a lock that makes a row is in the total too — and it stays on
+the whole position: in full screen a filtered table can show less than the totals above it. The strip disappears when
+show fiat is off; the table stays.
 
 **In the card** each row is the account (with its chain's icon), the locked amount with one line under it — how much is
-claimable, or when the next part releases — and the Action cell. Three columns fit half the grid; the Action column
-stays pinned to the right edge so the one control in the widget never leaves the screen. Rows arrive sorted by
-claimable, then by locked, so the money the user can take home is on top.
+claimable, or when the next part releases, when there is one — and the Action cell. Three columns fit half the grid;
+below that the rows scroll sideways rather than crushing amounts into wrapped digits, and the Action column stays pinned
+to the right edge so the one control in the widget never leaves the screen. Rows arrive sorted by claimable, then by
+locked, so the money the user can take home is on top.
 
 **Full screen** is the same table given the whole window — the configuration the Accounts table and the validator picker
 use — with Chain, Claimable, Pending (with its estimated release date), Delegated and Tracks as their own columns, a

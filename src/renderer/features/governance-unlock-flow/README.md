@@ -84,9 +84,9 @@ cost a round trip to the node, so they are not awaited: the modal opens immediat
 loaders.
 
 **The request is a snapshot, and the flow trusts it.** Locks, referenda and the claimable amount move with every block;
-the release being signed must not. The host is the one responsible for the request being current — the Locks widget
-re-derives both the claimable actions and the initiator against the live head at the moment of the click, because a
-referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
+the release being signed must not. The host is the one responsible for the request being current — the Unlock Schedule
+widget re-derives both the claimable actions and the initiator against the live head at the moment of the click, because
+a referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
 permissionless payer good enough for the snapshot is no longer allowed to send it. From then on this flow signs exactly
 what it was handed. Nothing here follows the chain, so a block tick cannot disturb a signature in progress.
 
