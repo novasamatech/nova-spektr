@@ -53,7 +53,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const isPermissionless = request.target !== initiator.accountId;
   const hasRemoveVote = request.actions.some((action) => action.type === 'remove_vote');
 
-  const describeAction = (action: ClaimAction) => {
+  const describeAction = (action: ClaimAction): string => {
     const track = t(getTrackMeta(action.trackId).title);
     switch (action.type) {
       case 'unlock':
