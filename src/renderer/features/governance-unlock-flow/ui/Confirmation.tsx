@@ -70,7 +70,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
     <>
       <ScrollArea>
         <div className="mb-2 flex flex-col items-center gap-y-3">
-          <Icon className="text-icon-default" name="unlockMst" size={60} />
+          <Icon className="text-icon-default" name={isUndelegate ? 'undelegateMst' : 'unlockMst'} size={60} />
           {asset && (
             <div className="flex flex-col items-center gap-y-1">
               <AssetBalance
