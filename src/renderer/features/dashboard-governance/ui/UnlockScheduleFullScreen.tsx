@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Switch } from '@/shared/ui';
 import { Modal, Select } from '@/shared/ui-kit';
 import { type LocksTableState } from '../hooks/useLocksTable';
@@ -42,6 +43,8 @@ export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => 
     [setChainFilter],
   );
 
+  const showTotals = totals !== null && rows.length > 0;
+
   return (
     <Modal isOpen={isOpen} size="3xl" height="full" onToggle={onToggle}>
       <Modal.Title close>{t('dashboard.unlockSchedule.fullViewTitle')}</Modal.Title>
@@ -49,11 +52,11 @@ export const UnlockScheduleFullScreen = ({ state, isOpen, onToggle }: Props) => 
       {/* The table owns its own scroll region (rows only, strip and filters
           stay put), so the modal must not wrap it in a second scroller. */}
       <Modal.Content disableScroll>
-        <div className="flex h-full min-h-0 flex-col px-5 py-3">
-          {totals && rows.length > 0 && <LocksTotals totals={totals} currency={currency} />}
+        <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 py-3">
+          {showTotals && <LocksTotals totals={totals} currency={currency} />}
 
           {rows.length > 0 && (
-            <div className="mt-3 flex items-center gap-3">
+            <div className={cnTw('flex items-center gap-3', showTotals && 'mt-3')}>
               <FootnoteText className="text-text-tertiary">
                 {t('dashboard.governanceLocks.rowsCount', { count: visibleRows.length })}
               </FootnoteText>

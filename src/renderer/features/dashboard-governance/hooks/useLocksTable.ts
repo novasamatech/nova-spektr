@@ -37,7 +37,9 @@ export type LocksTableState = {
 /**
  * One table state for the Unlock Schedule card and its full-screen modal: both
  * read the same rows and dispatch the same click, and a filter set in the modal
- * is still in effect the next time it opens.
+ * is still in effect the next time it opens. Call it once, in the card, and
+ * pass the state down — a second call site would get its own filters and its
+ * own data snapshot.
  */
 export const useLocksTable = (accountIds: string[]): LocksTableState => {
   const { t } = useI18n();

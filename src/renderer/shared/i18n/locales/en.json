@@ -735,7 +735,6 @@
       "noStaking": "No active staking positions"
     },
     "governanceLocks": {
-      "title": "Governance Locks",
       "rowsCount_one": "{count} lock",
       "rowsCount_other": "{count} locks",
       "claimableOnly": "Claimable only",
@@ -844,17 +843,7 @@
       "pendingLocks": "Pending",
       "delegated": "Delegated",
       "fullView": "Full view",
-      "fullViewTitle": "Unlock Schedule",
-      "upcomingUnlocks": "Upcoming Unlocks",
-      "noLocks": "No governance locks found",
-      "accountCount": "{count} accounts",
-      "breakdown": {
-        "account": "Account",
-        "amount": "Amount",
-        "chain": "Chain",
-        "share": "Share",
-        "accountCount": "{count} accounts"
-      }
+      "fullViewTitle": "Unlock Schedule"
     },
     "activeReferendums": {
       "title": "Referenda",
