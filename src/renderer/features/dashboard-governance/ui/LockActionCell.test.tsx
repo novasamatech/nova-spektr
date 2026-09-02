@@ -115,6 +115,7 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
 
     expect(screen.getByText('Nothing claimable')).toBeInTheDocument();
     expect(unlockButton()).toBeNull();
+    expect(undelegateButton()).toBeNull();
   });
 
   it('offers Undelegate alone for a delegation-only row', () => {
@@ -123,6 +124,8 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
     expect(unlockButton()).toBeNull();
     expect(screen.queryByText('No unlock date')).toBeNull();
     expect(undelegateButton()).toBeEnabled();
+    // The caption counts the tracks the revoke covers.
+    expect(screen.getByText('1 track')).toBeInTheDocument();
     fireEvent.click(undelegateButton()!);
     expect(onUndelegate).toHaveBeenCalledWith(expect.objectContaining({ accountId: lockedId }));
   });
@@ -132,6 +135,13 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
 
     expect(unlockButton()).toBeEnabled();
     expect(undelegateButton()).toBeEnabled();
+    // Release first, revoke second — the order the design stacks them in.
+    expect(
+      screen
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+        .filter((label) => label === 'Unlock' || label === 'Undelegate'),
+    ).toEqual(['Unlock', 'Undelegate']);
   });
 
   it('disables Undelegate when the key never signs', () => {
@@ -140,6 +150,16 @@ describe('features/dashboard-governance/ui/LockActionCell', () => {
     expect(undelegateButton()).toBeDisabled();
     fireEvent.click(undelegateButton()!);
     expect(onUndelegate).not.toHaveBeenCalled();
+  });
+
+  it('names the reason a disabled Undelegate cannot be signed', () => {
+    renderCell(delegating({ undelegateInitiator: null, undelegateBlockReason: 'watch-only' }));
+
+    // A disabled button cannot be hovered or focused, so its wrapper carries the reason.
+    expect(undelegateButton()?.parentElement).toHaveAttribute(
+      'aria-label',
+      'Undelegate must be signed by the delegator and you hold no key for this address',
+    );
   });
 
   it('disables Undelegate while the chain is disconnected', () => {

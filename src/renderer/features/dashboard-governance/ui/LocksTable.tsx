@@ -103,6 +103,36 @@ const useReleaseLine = (row: GovernanceLockRow) => {
     : t('dashboard.governanceLocks.dateUnavailable');
 };
 
+/**
+ * The one line under the compact Locked amount: what is claimable, else when
+ * the next part releases, else what is delegated.
+ */
+const useLockedCaption = (row: GovernanceLockRow): { text: string; className: string } | null => {
+  const { t } = useI18n();
+  const releaseLine = useReleaseLine(row);
+  const muted = 'text-help-text whitespace-nowrap text-text-tertiary';
+
+  if (!row.claimable.isZero()) {
+    return {
+      text: t('dashboard.governanceLocks.claimableCaption', {
+        amount: formatToken(row.claimable, row.precision, row.symbol),
+      }),
+      className: 'text-help-text whitespace-nowrap text-text-positive',
+    };
+  }
+  if (!row.pending.isZero()) return { text: releaseLine, className: muted };
+  if (!row.delegated.isZero()) {
+    return {
+      text: t('dashboard.governanceLocks.delegatedCaption', {
+        amount: formatToken(row.delegated, row.precision, row.symbol),
+      }),
+      className: muted,
+    };
+  }
+
+  return null;
+};
+
 const PendingCell = memo(
   ({ row, showFiat, currency }: { row: GovernanceLockRow; showFiat: boolean; currency: CurrencyItem | null }) => {
     const releaseLine = useReleaseLine(row);
@@ -129,26 +159,7 @@ const PendingCell = memo(
  */
 const LockedCompactCell = memo(
   ({ row, showFiat, currency }: { row: GovernanceLockRow; showFiat: boolean; currency: CurrencyItem | null }) => {
-    const { t } = useI18n();
-    const releaseLine = useReleaseLine(row);
-
-    const caption = !row.claimable.isZero()
-      ? {
-          text: t('dashboard.governanceLocks.claimableCaption', {
-            amount: formatToken(row.claimable, row.precision, row.symbol),
-          }),
-          className: 'text-help-text whitespace-nowrap text-text-positive',
-        }
-      : !row.pending.isZero()
-        ? { text: releaseLine, className: 'text-help-text whitespace-nowrap text-text-tertiary' }
-        : !row.delegated.isZero()
-          ? {
-              text: t('dashboard.governanceLocks.delegatedCaption', {
-                amount: formatToken(row.delegated, row.precision, row.symbol),
-              }),
-              className: 'text-help-text whitespace-nowrap text-text-tertiary',
-            }
-          : null;
+    const caption = useLockedCaption(row);
 
     return (
       <AmountCell

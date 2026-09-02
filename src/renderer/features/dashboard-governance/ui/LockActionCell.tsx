@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { type ComponentProps, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
@@ -64,8 +64,12 @@ type ActionButtonProps = {
   label: string;
   hint: string;
   caption: string | null;
-  captionClassName?: string;
-  pallet: 'primary' | 'secondary';
+  /**
+   * Warning tone marks a caption the user must act on — a multisig's missing
+   * signatures.
+   */
+  captionTone?: 'default' | 'warning';
+  pallet: ComponentProps<typeof Button>['pallet'];
   disabled: boolean;
   onClick: () => void;
 };
@@ -77,15 +81,27 @@ type ActionButtonProps = {
  * reachable by mouse and, when disabled, by keyboard.
  */
 const ActionButton = memo(
-  ({ label, hint, caption, captionClassName, pallet, disabled, onClick }: ActionButtonProps) => (
+  ({ label, hint, caption, captionTone = 'default', pallet, disabled, onClick }: ActionButtonProps) => (
     <Tooltip>
       <Tooltip.Trigger>
-        <div className="flex flex-col items-end gap-0.5" tabIndex={disabled ? 0 : undefined}>
+        {/* A disabled button is invisible to the tooltip and to focus, so the
+            wrapper carries both — and the reason, for a reader that never hovers. */}
+        <div
+          className="flex flex-col items-end gap-0.5"
+          tabIndex={disabled ? 0 : undefined}
+          aria-label={disabled ? hint : undefined}
+        >
           <Button size="sm" pallet={pallet} className="whitespace-nowrap" disabled={disabled} onClick={onClick}>
             {label}
           </Button>
           {!disabled && caption && (
-            <FootnoteText className={captionClassName ?? 'text-help-text whitespace-nowrap text-text-tertiary'}>
+            <FootnoteText
+              className={
+                captionTone === 'warning'
+                  ? 'text-help-text whitespace-nowrap text-text-warning'
+                  : 'text-help-text whitespace-nowrap text-text-tertiary'
+              }
+            >
               {caption}
             </FootnoteText>
           )}
@@ -156,7 +172,7 @@ const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUn
       label={t('dashboard.governanceLocks.unlock')}
       hint={hint}
       caption={caption}
-      captionClassName={isMultisig ? 'text-help-text whitespace-nowrap text-text-warning' : undefined}
+      captionTone={isMultisig ? 'warning' : 'default'}
       pallet={isPermissionless ? 'secondary' : 'primary'}
       disabled={disabled}
       onClick={() => onUnlock(row)}
@@ -176,14 +192,15 @@ const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props
   const isMultisig = initiator ? accountUtils.isAnyMultisigAccount(initiator) : false;
   const count = row.delegations.length;
 
+  // Same precedence as the Unlock verdict: a missing key outranks a missing
+  // connection, because reconnecting would not make the button work.
   let hint: string;
-  if (!chainConnected) {
-    hint = t('dashboard.governanceLocks.hint.chainDisconnected');
-  } else if (!initiator) {
-    hint =
-      row.undelegateBlockReason === 'watch-only'
+  if (disabled) {
+    hint = !initiator
+      ? row.undelegateBlockReason === 'watch-only'
         ? t('dashboard.governanceLocks.hint.undelegateWatchOnly')
-        : t(BLOCK_REASON_HINT[row.undelegateBlockReason ?? 'no-signer']);
+        : t(BLOCK_REASON_HINT[row.undelegateBlockReason ?? 'no-signer'])
+      : t('dashboard.governanceLocks.hint.chainDisconnected');
   } else if (isMultisig) {
     hint = t('dashboard.governanceLocks.hint.multisig');
   } else {
@@ -199,7 +216,7 @@ const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props
           ? t('dashboard.governanceLocks.needsSignatories')
           : t('dashboard.governanceLocks.tracksCount', { count })
       }
-      captionClassName={isMultisig ? 'text-help-text whitespace-nowrap text-text-warning' : undefined}
+      captionTone={isMultisig ? 'warning' : 'default'}
       pallet="secondary"
       disabled={disabled}
       onClick={() => onUndelegate(row)}
