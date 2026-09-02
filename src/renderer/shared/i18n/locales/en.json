@@ -843,6 +843,8 @@
       "claimableNow": "Claimable",
       "pendingLocks": "Pending",
       "delegated": "Delegated",
+      "fullView": "Full view",
+      "fullViewTitle": "Unlock Schedule",
       "upcomingUnlocks": "Upcoming Unlocks",
       "noLocks": "No governance locks found",
       "accountCount": "{count} accounts",
