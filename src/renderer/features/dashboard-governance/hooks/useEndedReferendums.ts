@@ -5,7 +5,7 @@ import { useMemo, useRef } from 'react';
 import { UnlockChunkType } from '@/shared/api/governance';
 import { type AccountVote, type ChainId, type CompletedReferendum, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
-import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
+import { entries, getRoundedValue, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   useReferendumTitles,
@@ -21,6 +21,7 @@ import { locksService, referendumService, votingService } from '@/entities/gover
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
@@ -100,7 +101,7 @@ function useChainEndedReferendums(
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
   const votingMap = useMemo(() => {
@@ -309,7 +310,7 @@ export const useEndedReferendums = (accountIds: string[], allEntries: AllEntry[]
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const accountIdsKey = accountIds.join(',');
-  const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
+  const typedAccountIds = useMemo(() => toSubstrateAccountIds(accountIds), [accountIdsKey]);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, EntryInfo>();

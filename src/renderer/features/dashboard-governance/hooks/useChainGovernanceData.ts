@@ -6,7 +6,7 @@ import { useMemo, useRef } from 'react';
 import { UnlockChunkType } from '@/shared/api/governance';
 import { type ChainId, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
-import { entries, toAccountId } from '@/shared/lib/utils';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   $referendumsFullyLoaded,
@@ -19,6 +19,7 @@ import {
 import { useBlock, useBlockTime } from '@/domains/network';
 import { votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
+import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 import { type AccountLockSummary, getLockedAmount, summarizeAccountLocks } from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
@@ -129,7 +130,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const api = useApi(chainId);
 
   const accountIdsKey = accountIds.join(',');
-  const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
+  const typedAccountIds = useMemo(() => toSubstrateAccountIds(accountIds), [accountIdsKey]);
 
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
@@ -137,7 +138,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
   // The subscription cache may retain data from previously selected accounts.
