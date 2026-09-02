@@ -13,7 +13,10 @@ export const enum Step {
   SUBMIT,
 }
 
-/** One account's release on one chain, dispatched from the Locks widget. */
+/**
+ * One account's release on one chain, dispatched from the Unlock Schedule
+ * widget.
+ */
 export type UnlockRequest = {
   chain: Chain;
   /** Who signs (or whose signing route is used). */

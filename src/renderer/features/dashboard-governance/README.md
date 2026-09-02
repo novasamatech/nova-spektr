@@ -29,9 +29,10 @@ back any widget hidden on the tab).
 ## Who can use it / when it applies
 
 - Gated by the **`dashboard`** feature flag; the unlock flow the Unlock Schedule widget dispatches also wants
-  **`governance`**, so that widget needs both on. The Overview widget renders nothing at all when the global **show
-  fiat** toggle is off — it leads with a fiat total. Unlock Schedule keeps its table without fiat and hides only its
-  totals strip: DOT and KSM do not add, so a total without a price has nothing to say, but a lock still does.
+  **`governance`**, so that widget needs both on. The Overview and Referendums widgets render nothing at all when the
+  global **show fiat** toggle is off — both lead with fiat figures. Unlock Schedule keeps its table without fiat and
+  hides only its totals strip: DOT and KSM do not add, so a total without a price has nothing to say, but a lock still
+  does.
 - Scoped to the dashboard's **account picker**. With nothing picked, each widget shows the shared "No accounts selected"
   prompt rather than an empty chart.
 - Reads **Polkadot Asset Hub and Kusama Asset Hub** — the two chains the app runs governance on.
