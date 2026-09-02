@@ -12,11 +12,11 @@ that depends on the conviction, the outcome, and every other vote on the same tr
 cost legible — what is locked, what is already claimable, when the rest comes back, and which referendum each lock came
 from.
 
-| Widget                  | The question it answers                                                                                    |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Governance Overview** | How much is locked in governance, split by chain and drillable to account and track                        |
-| **Locks**               | What is claimable, pending and delegated, which account holds which lock, and what I can release right now |
-| **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks                       |
+| Widget                  | The question it answers                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Governance Overview** | How much is locked in governance, split by chain and drillable to account and track                                                |
+| **Locks**               | What is claimable, pending and delegated, which account holds which lock, what I can release right now, and take a delegation back |
+| **Referendums**         | What is being voted on now (and how I voted), and which ended votes still hold locks                                               |
 
 **The tab reads top-down from the total to the decision.** The default layout puts **Governance Overview** and **Locks**
 side by side — the total, then what can be done about it — and **Referendums** full-width beneath them, where the votes
@@ -85,8 +85,8 @@ show fiat is off; the table stays.
 **In the card** each row is the account (with its chain's icon), the locked amount with one line under it — how much is
 claimable, when the next part releases, or how much is delegated, when there is one of those — and the Action cell.
 Three columns fit half the grid; below that the rows scroll sideways rather than crushing amounts into wrapped digits,
-and the Action column stays pinned to the right edge so the one control in the widget never leaves the screen. Rows
-arrive sorted by claimable, then by locked, so the money the user can take home is on top.
+and the Action column stays pinned to the right edge so the row's controls never leave the screen. Rows arrive sorted by
+claimable, then by locked, so the money the user can take home is on top.
 
 **Full screen** is the same table given the whole window — the configuration the Accounts table and the validator picker
 use — with Chain, Claimable, Pending (with its estimated release date), Delegated and Tracks as their own columns, a
@@ -109,12 +109,12 @@ are derived from live voting and lock data, so a landed release drops out of the
 lands later, when the last multisig signatory approves.
 
 **A delegation can be taken back from the same row.** An account that delegates shows **Undelegate** beneath its Unlock
-verdict (alone, when nothing is claimable): one click revokes every delegation the account holds on that chain, whatever
-the delegate — picking delegates or tracks stays on the Governance page. Revoking does not free the balance by itself: a
-delegation with conviction becomes a pending lock that expires after its period, and the row then offers Unlock for it;
-a delegation without conviction expires in the same block, so the release adds the `unlock` to the same transaction and
-the balance comes back at once. `undelegate` is origin-bound like `remove_vote`: the delegator's own key, its multisig
-or a proxy signs, never a bystander paying the fee.
+verdict (alone, when nothing is claimable and nothing is pending): one click revokes every delegation the account holds
+on that chain, whatever the delegate — picking delegates or tracks stays on the Governance page. Revoking does not free
+the balance by itself: a delegation with conviction becomes a pending lock that expires after its period, and the row
+then offers Unlock for it; a delegation without conviction expires in the same block, so the release adds the `unlock`
+to the same transaction and the balance comes back at once. `undelegate` is origin-bound like `remove_vote`: the
+delegator's own key, its multisig or a proxy signs, never a bystander paying the fee.
 
 Filtering to a chain or to **Claimable only** can leave nothing on screen; that says "no rows match", not "no locks" —
 the two are different answers and read differently.
@@ -122,19 +122,19 @@ the two are different answers and read differently.
 **The Action cell is a verdict, not a button that sometimes fails.** Each row says what can be done and why, so the user
 never clicks into a dead end:
 
-| Row                                     | Action cell                                                                          |
-| --------------------------------------- | ------------------------------------------------------------------------------------ |
-| Only a delegation                       | **Undelegate** + the number of tracks; the tooltip says why there is no unlock date  |
-| Nothing claimable                       | "Nothing claimable", with the estimated release date when one is known               |
-| Claimable, but the key never signs      | "Watch-only" — a `remove_vote` is origin-bound and cannot be paid for by proxy       |
-| Claimable, signed by the account itself | **Unlock** + the amount that comes back                                              |
-| Claimable, signed by a multisig         | **Unlock** + "needs signatories" — signing opens a pending operation                 |
-| Claimable, released by a local payer    | **Unlock** (secondary) + "permissionless" — `unlock(track, target)` takes any origin |
-| Claimable, but nothing local can sign   | **Unlock**, disabled, naming the reason                                              |
-| Delegates too                           | **Undelegate** beneath whichever of the above applies                                |
-| Delegation, but the key never signs     | **Undelegate**, disabled — "must be signed by the delegator"                         |
-| Delegation, signed by a multisig        | **Undelegate** + "needs signatories"                                                 |
-| Chain not connected                     | Every button disabled — nothing signs without a live connection                      |
+| Row                                     | Action cell                                                                               |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Only a delegation                       | **Undelegate** + the number of tracks; the tooltip says what revoking does to the balance |
+| Nothing claimable                       | "Nothing claimable", with the estimated release date when one is known                    |
+| Claimable, but the key never signs      | "Watch-only" — a `remove_vote` is origin-bound and cannot be paid for by proxy            |
+| Claimable, signed by the account itself | **Unlock** + the amount that comes back                                                   |
+| Claimable, signed by a multisig         | **Unlock** + "needs signatories" — signing opens a pending operation                      |
+| Claimable, released by a local payer    | **Unlock** (secondary) + "permissionless" — `unlock(track, target)` takes any origin      |
+| Claimable, but nothing local can sign   | **Unlock**, disabled, naming the reason                                                   |
+| Delegates too                           | **Undelegate** beneath whichever of the above applies                                     |
+| Delegation, but the key never signs     | **Undelegate**, disabled — "must be signed by the delegator"                              |
+| Delegation, signed by a multisig        | **Undelegate** + "needs signatories"                                                      |
+| Chain not connected                     | Every button disabled — nothing signs without a live connection                           |
 
 **The claim is re-derived at the moment of the click.** The row's figures come from a periodic snapshot; a referendum
 that ended in between adds a required `remove_vote`, so the schedule is recomputed against the live head before the flow

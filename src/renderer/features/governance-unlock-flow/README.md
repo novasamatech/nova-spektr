@@ -22,8 +22,8 @@ everything it shows is derived from that one snapshot.
 each delegated track whose conviction is None, whose lock expires in the same block) is read as a revocation rather than
 a release: the title, the amount label ("Delegated"), the label over the account it acts for, the hint under the details
 and the icon all switch to undelegate wording. Nothing else changes — the signing route, the multisig handling, the fee
-and deposit validation and the success screens are the same ones the unlock uses, because from the pallet's side both
-are a batch of origin-bound calls on the same account.
+and deposit validation and the success screens are the same ones the unlock uses, because both are a batch of
+conviction-voting calls on one account; who may sign is still decided per call.
 
 The flow is **mounted globally** in the app shell's modal slot, so it opens from wherever the user pressed the button
 rather than from a route, and stays open across navigation.
