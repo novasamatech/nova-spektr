@@ -27,6 +27,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   // Known the moment the button was pressed — this is what lets the modal open
   // on the click rather than on the node.
   const request = useUnit(unlockFlowModel.$request);
+  const isUndelegate = useUnit(unlockFlowModel.$isUndelegate);
   const chain = useUnit(unlockFlowModel.$chain);
   const asset = useUnit(unlockFlowModel.$asset);
   const initiator = useUnit(unlockFlowModel.$initiator);
@@ -95,7 +96,11 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
         <Box padding={[4, 5]}>
           <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
-            <DetailRow label={t('governanceUnlockFlow.confirm.releases')}>
+            <DetailRow
+              label={t(
+                isUndelegate ? 'governanceUnlockFlow.confirm.delegated' : 'governanceUnlockFlow.confirm.releases',
+              )}
+            >
               <div className="flex flex-col items-end gap-y-0.5">
                 <AssetBalance value={amount} asset={asset ?? undefined} showSymbol />
                 {asset && <AssetFiatBalance asset={asset} amount={amount} />}
@@ -103,7 +108,11 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             </DetailRow>
             {/* `unlock` is permissionless: the account released is not necessarily
                 the one signing, so it is always spelled out. */}
-            <DetailRow label={t('governanceUnlockFlow.confirm.target')}>
+            <DetailRow
+              label={t(
+                isUndelegate ? 'governanceUnlockFlow.confirm.undelegateTarget' : 'governanceUnlockFlow.confirm.target',
+              )}
+            >
               <NamedAccount accountId={request.target} chain={chain} variant="short" />
             </DetailRow>
             {/* The calls themselves, not their count: "what exactly am I signing" is
@@ -141,7 +150,11 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         )}
 
         <FootnoteText className="px-5 pt-3 text-text-tertiary">
-          {hasRemoveVote ? t('governanceUnlockFlow.confirm.hint') : t('governanceUnlockFlow.confirm.hintUnlockOnly')}
+          {isUndelegate
+            ? t('governanceUnlockFlow.confirm.hintUndelegate')
+            : hasRemoveVote
+              ? t('governanceUnlockFlow.confirm.hint')
+              : t('governanceUnlockFlow.confirm.hintUnlockOnly')}
         </FootnoteText>
       </ScrollArea>
 

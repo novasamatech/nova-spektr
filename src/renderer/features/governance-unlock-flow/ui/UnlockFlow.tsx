@@ -22,6 +22,7 @@ export const UnlockFlow = () => {
   const { t } = useI18n();
 
   const step = useUnit(unlockFlowModel.$step);
+  const isUndelegate = useUnit(unlockFlowModel.$isUndelegate);
   const [isFlowOpen, closeFlow] = useModalClose(!unlockFlowUtils.isNoneStep(step), unlockFlowModel.flowFinished);
 
   if (unlockFlowUtils.isNoneStep(step)) return null;
@@ -32,7 +33,9 @@ export const UnlockFlow = () => {
 
   return (
     <Modal isOpen={isFlowOpen} size="md" height="fit" onToggle={(open) => !open && closeFlow()}>
-      <Modal.Title close>{t('governanceUnlockFlow.title')}</Modal.Title>
+      <Modal.Title close>
+        {t(isUndelegate ? 'governanceUnlockFlow.undelegateTitle' : 'governanceUnlockFlow.title')}
+      </Modal.Title>
       <Modal.Content>
         {unlockFlowUtils.isConfirmStep(step) && <Confirmation onGoBack={() => unlockFlowModel.flowFinished()} />}
         {unlockFlowUtils.isSignStep(step) && (

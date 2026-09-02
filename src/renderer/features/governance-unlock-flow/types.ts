@@ -14,8 +14,9 @@ export const enum Step {
 }
 
 /**
- * One account's release on one chain, dispatched from the Unlock Schedule
- * widget.
+ * One account's release on one chain, dispatched from the Locks widget: expired
+ * locks (`unlock` / `remove_vote`) or delegations (`undelegate`, plus `unlock`
+ * for the tracks without conviction).
  */
 export type UnlockRequest = {
   chain: Chain;

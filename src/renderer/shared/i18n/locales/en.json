@@ -2534,9 +2534,12 @@
   },
   "governanceUnlockFlow": {
     "title": "Unlock governance lock",
+    "undelegateTitle": "Undelegate",
     "confirm": {
       "releases": "Releases",
       "target": "Unlocks for",
+      "delegated": "Delegated",
+      "undelegateTarget": "Undelegates for",
       "calls": "Calls",
       "callsCount_one": "{count} call",
       "callsCount_other": "{count} calls",
@@ -2545,7 +2548,8 @@
       "undelegateAction": "Undelegate · {track}",
       "permissionlessNotice": "You pay the network fee for this release. The unlocked funds stay on the account they belong to — nothing is transferred to you.",
       "hint": "Releasing removes expired votes and unlocks the conviction lock. The network fee is paid by the signing account.",
-      "hintUnlockOnly": "Releasing unlocks the expired conviction lock. The network fee is paid by the signing account."
+      "hintUnlockOnly": "Releasing unlocks the expired conviction lock. The network fee is paid by the signing account.",
+      "hintUndelegate": "Revoking returns the delegated balance to your control. Delegations with conviction stay locked until their period ends; those without are unlocked in the same transaction."
     }
   },
   "importDB": {

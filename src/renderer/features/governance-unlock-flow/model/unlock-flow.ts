@@ -39,6 +39,14 @@ const $request = createStore<UnlockRequest | null>(null)
   .reset(flowFinished);
 
 /**
+ * An undelegate request reads differently from an unlock: the copy switches on
+ * this, nothing else does.
+ */
+const $isUndelegate = $request.map(
+  (request) => request?.actions.some((action) => action.type === 'undelegate') ?? false,
+);
+
+/**
  * The confirm opens on the click, not on the data.
  *
  * Everything it leads with — the amount released, the account it releases for,
@@ -323,6 +331,7 @@ sample({
 export const unlockFlowModel = {
   $step: readonly($step),
   $request,
+  $isUndelegate,
   $chain,
   $asset,
   $initiator,
