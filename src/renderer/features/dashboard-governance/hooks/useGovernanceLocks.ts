@@ -7,7 +7,7 @@ import { getRoundedValue } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
-import { claimScheduleService, votingService } from '@/entities/governance';
+import { claimScheduleService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
@@ -116,25 +116,9 @@ export const useGovernanceLocks = (accountIds: string[]) => {
     [polkadot, kusama, allAccounts, selectedWalletId],
   );
 
-  /**
-   * Whether the row's account still delegates on the live voting data. The rows
-   * are derived from that same data, so this only differs from the row for a
-   * click that lands right after a revoke elsewhere.
-   */
-  const hasLiveDelegation = useCallback(
-    (row: GovernanceLockRow): boolean => {
-      const data = row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama;
-      const votingByTrack = data?.votingMap[row.accountId];
-      if (!votingByTrack) return row.delegations.length > 0;
-
-      return Object.values(votingByTrack).some((voting) => votingService.isDelegating(voting));
-    },
-    [polkadot, kusama],
-  );
-
   const pending =
     accountIds.length > 0 &&
     ((polkadot === null && kusama === null) || (polkadot?.pending ?? false) || (kusama?.pending ?? false));
 
-  return { rows, pending, fiatFlag: Boolean(fiatFlag), currency, getFreshClaim, hasLiveDelegation };
+  return { rows, pending, fiatFlag: Boolean(fiatFlag), currency, getFreshClaim };
 };

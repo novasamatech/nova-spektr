@@ -52,7 +52,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
   const { t } = useI18n();
   const { toast } = useNotification();
   const unlockRequested = useUnit(governanceUnlockFlow.unlockRequested);
-  const { rows, pending, fiatFlag, currency, getFreshClaim, hasLiveDelegation } = useGovernanceLocks(accountIds);
+  const { rows, pending, fiatFlag, currency, getFreshClaim } = useGovernanceLocks(accountIds);
 
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [claimableOnly, setClaimableOnly] = useState(false);
@@ -89,7 +89,10 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
 
   const onUndelegate = useCallback(
     (row: GovernanceLockRow) => {
-      if (!hasLiveDelegation(row)) {
+      // The row and the button share one live voting subscription, so an empty
+      // action list here means a click on a row that was already redrawn — say
+      // so rather than sending an empty batch.
+      if (row.undelegateActions.length === 0) {
         toast.info(t('dashboard.governanceLocks.toast.nothingDelegated'));
 
         return;
@@ -111,7 +114,7 @@ export const useLocksTable = (accountIds: string[]): LocksTableState => {
         amount: row.delegated,
       });
     },
-    [hasLiveDelegation, unlockRequested, toast, t],
+    [unlockRequested, toast, t],
   );
 
   const uniqueChains = useMemo(() => {
