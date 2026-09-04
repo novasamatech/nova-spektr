@@ -22,8 +22,8 @@ export type FreshClaim =
 /**
  * The live slice of one chain's governance data: everything needed to run the
  * claim schedule again against the head, rather than the snapshot the row was
- * drawn from. `null` — as a whole or in `scheduleInputs`/`liveBlock` — means
- * the chain has nothing live to re-run against.
+ * drawn from. A `null` `liveBlock` or `scheduleInputs` means the chain has
+ * nothing live to re-run against — and so does no slice at all.
  */
 export type LiveClaimInputs = {
   votingMap: VotingMap;
@@ -35,7 +35,16 @@ export type LiveClaimInputs = {
     undecidingTimeout: number;
     voteLockingPeriod: number;
   } | null;
-} | null;
+};
+
+type Params = {
+  row: GovernanceLockRow;
+  /** `null` when the row's chain has no live data at all. */
+  live: LiveClaimInputs | null;
+  allAccounts: AnyAccount[];
+  /** The wallet whose accounts win a tie — see `resolveUnlockAccount`. */
+  preferredWalletId?: ID | null;
+};
 
 /**
  * Re-runs one row's claim schedule against the live head and re-resolves who
@@ -47,17 +56,17 @@ export type LiveClaimInputs = {
  * snapshot allowed may no longer be allowed to send it, and the initiator has
  * to be resolved again on the fresh actions rather than reused from the row.
  */
-export function deriveFreshClaim(
-  row: GovernanceLockRow,
-  live: LiveClaimInputs,
-  allAccounts: AnyAccount[],
-  preferredWalletId?: ID | null,
-): FreshClaim {
+export function deriveFreshClaim({ row, live, allAccounts, preferredWalletId }: Params): FreshClaim {
   const votingByTrack = live?.votingMap[row.accountId];
 
   // Nothing live to re-run against: sign exactly what the row shows.
   if (!live?.scheduleInputs || live.liveBlock === null || !votingByTrack) {
     if (row.claimableActions.length === 0) return { status: 'blocked', reason: 'nothing-claimable' };
+    // The fallback is unreachable: the row flattens an `UnlockAccountResolution`,
+    // which pairs a null initiator with a reason by construction. It is here
+    // because the two fields are separate on the row, not because a row without
+    // both has ever been seen — unlike the undelegate reason elsewhere, which is
+    // genuinely null when the account delegates nothing.
     if (!row.initiator) return { status: 'blocked', reason: row.blockReason ?? 'no-signer' };
 
     return {

@@ -1,4 +1,4 @@
-import { type ClaimAction } from '@/shared/api/governance';
+import { type ClaimAction } from './claim-types';
 
 /**
  * Whether the release can be signed by anyone at all.
@@ -9,8 +9,8 @@ import { type ClaimAction } from '@/shared/api/governance';
  * send them. An empty list is not a release — it builds a signable
  * `utility.batchAll([])`, a real fee for a call that frees nothing.
  *
- * The flow guards its incoming requests with this and the dashboard picks a
- * payer with it, so both sides read "who may send this" from one rule.
+ * The unlock flow guards its incoming requests with this and the dashboard
+ * picks a payer with it, so both sides read "who may send this" from one rule.
  */
 export const isPermissionlessRelease = (actions: ClaimAction[]) =>
   actions.length > 0 && actions.every((action) => action.type === 'unlock');

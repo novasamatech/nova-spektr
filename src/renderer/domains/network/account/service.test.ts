@@ -662,6 +662,18 @@ describe('account service', () => {
         reason: 'chain-unsupported',
       });
 
+      // A candidate list mixing the two picks the one that can actually sign
+      // here — the off-chain proxied account is skipped rather than deciding
+      // the verdict for the whole list, even listed first.
+      const vaultOnPolkadot = createKeyed({ id: 'vault', walletId: 4 });
+
+      expect(
+        accountService.resolveSigningAccount([proxiedOnKusama, vaultOnPolkadot], polkadotChain, [
+          proxiedOnKusama,
+          vaultOnPolkadot,
+        ]).account,
+      ).toBe(vaultOnPolkadot);
+
       // …and on the chain it belongs to it signs through its local delegate.
       const delegate = createKeyed({
         id: 'delegate',

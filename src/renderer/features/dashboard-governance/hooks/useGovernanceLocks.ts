@@ -58,7 +58,12 @@ export const useGovernanceLocks = (accountIds: string[]) => {
 
   const getFreshClaim = useCallback(
     (row: GovernanceLockRow): FreshClaim =>
-      deriveFreshClaim(row, row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama, allAccounts, selectedWalletId),
+      deriveFreshClaim({
+        row,
+        live: row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama,
+        allAccounts,
+        preferredWalletId: selectedWalletId,
+      }),
     [polkadot, kusama, allAccounts, selectedWalletId],
   );
 

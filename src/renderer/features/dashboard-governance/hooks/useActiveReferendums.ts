@@ -7,7 +7,7 @@ import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useReferendumTitles, useReferendums, useTracks, useUndecidingTimeout, useVoting } from '@/domains/governance';
-import { useBlock, useBlockTime } from '@/domains/network';
+import { useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
@@ -16,6 +16,7 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
 import { BLOCK_SNAPSHOT_THROTTLE_MS, KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
+import { useThrottledBlock } from './useThrottledBlock';
 
 export type VoteDirection = 'aye' | 'nay' | 'abstain' | 'split';
 
@@ -107,7 +108,7 @@ function useChainActiveReferendums(
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
-  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const { snapshot: currentBlock } = useThrottledBlock(timelineApi, timelineChainId);
   const blockTime = useThrottledSnapshot(
     useBlockTime(timelineApi, chains[timelineChainId]).data,
     BLOCK_SNAPSHOT_THROTTLE_MS,

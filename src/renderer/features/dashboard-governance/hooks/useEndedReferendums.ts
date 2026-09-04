@@ -15,7 +15,7 @@ import {
   useUndecidingTimeout,
   useVoting,
 } from '@/domains/governance';
-import { useBlock, useBlockTime } from '@/domains/network';
+import { useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { locksService, referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
@@ -33,6 +33,7 @@ import {
   formatConviction,
   getVoteDirection,
 } from './useActiveReferendums';
+import { useThrottledBlock } from './useThrottledBlock';
 
 export type EndedVote = OurVote & {
   unlockable: boolean;
@@ -126,13 +127,13 @@ function useChainEndedReferendums(
 
   const { data: referendums } = useReferendums({ api });
 
-  const govCurrentBlock = useThrottledSnapshot(useBlock(api).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const { snapshot: govCurrentBlock } = useThrottledBlock(api, chainId);
 
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
 
-  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const { snapshot: currentBlock } = useThrottledBlock(timelineApi, timelineChainId);
   const blockTime = useThrottledSnapshot(
     useBlockTime(timelineApi, chains[timelineChainId]).data,
     BLOCK_SNAPSHOT_THROTTLE_MS,

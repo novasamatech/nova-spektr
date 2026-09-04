@@ -2,6 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample, split } from 'effector';
 import { readonly } from 'patronum';
 
+import { isPermissionlessRelease } from '@/shared/api/governance';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -24,7 +25,6 @@ import {
   submitModel,
 } from '@/features/operations/OperationSubmit';
 import { createSigningPathModel } from '@/features/signing-path';
-import { isPermissionlessRelease } from '../lib/isPermissionlessRelease';
 import { type UnlockConfirm, type UnlockRequest, Step } from '../types';
 
 import { confirmModel } from './confirm';

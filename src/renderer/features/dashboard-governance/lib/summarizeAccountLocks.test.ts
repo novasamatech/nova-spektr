@@ -76,6 +76,20 @@ describe('summarizeAccountLocks', () => {
     expect(summary.claimableActions).toEqual([]);
   });
 
+  it('names the claimable tracks first whatever order the chunks arrive in', () => {
+    // A real schedule folds every claimable lock into one chunk at index 0
+    // (`claimScheduleService.toUnlockChunks`), so this order is what the widget
+    // ever sees — pinned here because the summary now collects the claimable
+    // tracks ahead of the rest rather than walking the array once.
+    const summary = summarizeAccountLocks(
+      [pendingLock(30, 2_000, '5'), claimable(100, [{ type: 'unlock', trackId: '0' }])],
+      new BN(130),
+      [],
+    );
+
+    expect(summary.tracks).toEqual(['0', '5']);
+  });
+
   it('has a null next block when nothing is pending', () => {
     const summary = summarizeAccountLocks([claimable(1, [{ type: 'unlock', trackId: '0' }])], new BN(1), []);
 

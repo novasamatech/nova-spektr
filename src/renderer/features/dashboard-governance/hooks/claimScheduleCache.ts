@@ -1,4 +1,6 @@
 import { type Chunks } from '@/shared/api/governance';
+import { type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService } from '@/entities/governance';
 
 type CacheEntry = {
@@ -20,10 +22,15 @@ export const EMPTY_TRACK_LOCKS: Record<string, never> = {};
  * change. The chain has to be in the key: the same account is scheduled once
  * per Asset Hub, and an accountId-only key had the two chains overwrite each
  * other's entry on every pass, so the cache almost never hit.
+ *
+ * Every caller reads the block from `useThrottledBlock`, which keeps one
+ * snapshot per chain. That is what makes the entry worth keeping: two hooks
+ * throttling the same head on their own would settle on different heights and
+ * miss — and evict — each other on every pass.
  */
 export function cachedEstimateClaimSchedule(
-  chainId: string,
-  accountId: string,
+  chainId: ChainId,
+  accountId: AccountId,
   params: Parameters<typeof claimScheduleService.estimateClaimSchedule>[0],
   votingRef: object,
   trackLocksRef: object,

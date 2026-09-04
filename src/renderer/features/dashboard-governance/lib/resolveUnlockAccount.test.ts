@@ -22,7 +22,7 @@ const chainAccount = (overrides: Partial<ChainAccount> & Pick<ChainAccount, 'id'
   ...overrides,
 });
 
-// Mirrors the watch-only fixture from aggregates/vesting-portfolio/lib/resolveClaimAccount.test.ts
+// Mirrors the watch-only fixture from domains/network/account/service.test.ts (`resolveSigningAccount`)
 const watchOnly = (): WatchOnlyAccount => ({
   id: 'watch-only',
   type: 'universal',
@@ -43,8 +43,8 @@ const UNDELEGATE: ClaimAction[] = [
 ];
 
 /**
- * Mirrors resolveClaimAccount.test.ts: these DI pipelines have no default
- * handler.
+ * Mirrors `resolveSigningAccount` in domains/network/account/service.test.ts:
+ * these DI pipelines have no default handler.
  */
 const registerHandlers = () => {
   accountService.accountAvailabilityOnChainAnyOf.registerHandler({

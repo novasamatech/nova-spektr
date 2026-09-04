@@ -76,7 +76,7 @@ const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => (
 });
 
 /** A chain with everything the re-derivation needs; the schedule is stubbed. */
-const live = (overrides: Partial<NonNullable<LiveClaimInputs>> = {}): LiveClaimInputs => ({
+const live = (overrides: Partial<LiveClaimInputs> = {}): LiveClaimInputs => ({
   votingMap: { [lockedId]: {} },
   tracks: {},
   liveBlock: 1_000,
@@ -92,6 +92,9 @@ const claimableChunk = (amount: number, actions: ClaimAction[]): Chunks => ({
 
 const stubSchedule = (schedule: Chunks[]) =>
   vi.spyOn(claimScheduleService, 'estimateClaimSchedule').mockReturnValue(schedule);
+
+const derive = (row: GovernanceLockRow, live: LiveClaimInputs | null, allAccounts: AnyAccount[]) =>
+  deriveFreshClaim({ row, live, allAccounts });
 
 describe('deriveFreshClaim', () => {
   beforeEach(() => {
@@ -115,7 +118,7 @@ describe('deriveFreshClaim', () => {
     it('signs the row exactly as drawn', () => {
       const estimate = stubSchedule([]);
 
-      const result = deriveFreshClaim(row(), null, [signer]);
+      const result = derive(row(), null, [signer]);
 
       expect(result).toEqual({
         status: 'ready',
@@ -128,25 +131,31 @@ describe('deriveFreshClaim', () => {
     });
 
     it('falls back to the row when the chain has a head but no schedule inputs', () => {
-      const result = deriveFreshClaim(row(), live({ scheduleInputs: null }), [signer]);
+      const result = derive(row(), live({ scheduleInputs: null }), [signer]);
+
+      expect(result).toMatchObject({ status: 'ready', initiator: signer });
+    });
+
+    it('falls back to the row while the head has not arrived', () => {
+      const result = derive(row(), live({ liveBlock: null }), [signer]);
 
       expect(result).toMatchObject({ status: 'ready', initiator: signer });
     });
 
     it('falls back to the row when the account is not in the live voting map', () => {
-      const result = deriveFreshClaim(row(), live({ votingMap: {} }), [signer]);
+      const result = derive(row(), live({ votingMap: {} }), [signer]);
 
       expect(result).toMatchObject({ status: 'ready', initiator: signer });
     });
 
     it('reports a row drawn with nothing to claim', () => {
-      const result = deriveFreshClaim(row({ claimableActions: [], claimable: BN_ZERO }), null, [signer]);
+      const result = derive(row({ claimableActions: [], claimable: BN_ZERO }), null, [signer]);
 
       expect(result).toEqual({ status: 'blocked', reason: 'nothing-claimable' });
     });
 
     it('reports the row block reason when nothing signs for it', () => {
-      const result = deriveFreshClaim(row({ initiator: null, blockReason: 'no-local-account' }), null, []);
+      const result = derive(row({ initiator: null, blockReason: 'no-local-account' }), null, []);
 
       expect(result).toEqual({ status: 'blocked', reason: 'no-local-account' });
     });
@@ -156,7 +165,7 @@ describe('deriveFreshClaim', () => {
     // The lock was released (or re-held) between the snapshot and the click.
     stubSchedule([claimableChunk(0, [UNLOCK])]);
 
-    const result = deriveFreshClaim(row(), live(), [signer]);
+    const result = derive(row(), live(), [signer]);
 
     expect(result).toEqual({ status: 'blocked', reason: 'nothing-claimable' });
   });
@@ -164,7 +173,7 @@ describe('deriveFreshClaim', () => {
   it('re-derives the amount and the actions against the live head', () => {
     stubSchedule([claimableChunk(250, [UNLOCK, REMOVE_VOTE])]);
 
-    const result = deriveFreshClaim(row(), live(), [signer]);
+    const result = derive(row(), live(), [signer]);
 
     expect(result).toEqual({
       status: 'ready',
@@ -181,7 +190,7 @@ describe('deriveFreshClaim', () => {
     // never does.
     stubSchedule([claimableChunk(100, [UNLOCK, REMOVE_VOTE])]);
 
-    const result = deriveFreshClaim(row({ initiator: payer, claimableActions: [UNLOCK] }), live(), [watchOnly, payer]);
+    const result = derive(row({ initiator: payer, claimableActions: [UNLOCK] }), live(), [watchOnly, payer]);
 
     expect(result).toEqual({ status: 'blocked', reason: 'watch-only' });
   });
@@ -189,7 +198,7 @@ describe('deriveFreshClaim', () => {
   it('keeps the permissionless payer while the fresh actions stay unlock-only', () => {
     stubSchedule([claimableChunk(100, [UNLOCK])]);
 
-    const result = deriveFreshClaim(row({ initiator: payer, claimableActions: [UNLOCK] }), live(), [watchOnly, payer]);
+    const result = derive(row({ initiator: payer, claimableActions: [UNLOCK] }), live(), [watchOnly, payer]);
 
     expect(result).toMatchObject({ status: 'ready', initiator: payer, target: lockedId });
   });

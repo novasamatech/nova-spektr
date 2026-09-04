@@ -1,8 +1,7 @@
-import { type ClaimAction } from '@/shared/api/governance';
+import { type ClaimAction, isPermissionlessRelease } from '@/shared/api/governance';
 import { type Chain, type ID } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type SigningBlockReason, accountService } from '@/domains/network';
-import { isPermissionlessRelease } from '@/features/governance-unlock-flow';
 
 /**
  * Why a locked account cannot be released from here. Same four verdicts every

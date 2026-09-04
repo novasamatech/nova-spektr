@@ -9,7 +9,6 @@ import { unlockFlowModel } from './model/unlock-flow';
 import { UnlockFlow } from './ui/UnlockFlow';
 
 export type { UnlockRequest } from './types';
-export { isPermissionlessRelease } from './lib/isPermissionlessRelease';
 
 export const governanceUnlockFlowFeature = createFeature({
   name: 'governance/unlock-flow',

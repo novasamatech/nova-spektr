@@ -3,7 +3,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
-import { type ChainId, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
+import { type ChainId, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -15,9 +15,10 @@ import {
   useUndecidingTimeout,
   useVoting,
 } from '@/domains/governance';
-import { useBlock, useBlockTime } from '@/domains/network';
+import { useBlockTime } from '@/domains/network';
 import { votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
+import { type LiveClaimInputs } from '../lib/deriveFreshClaim';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 import {
   type AccountLockSummary,
@@ -28,6 +29,7 @@ import {
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
 import { BLOCK_SNAPSHOT_THROTTLE_MS } from './constants';
+import { useThrottledBlock } from './useThrottledBlock';
 
 type ClaimResult = {
   claimable: BN;
@@ -38,12 +40,19 @@ const EMPTY_CLAIM: ClaimResult = {
   locksByAccount: {},
 };
 
-export type ChainGovernanceData = {
+/**
+ * Everything a chain's widgets read. It carries `LiveClaimInputs` whole — the
+ * voting map, the tracks, the live head and the schedule inputs — so the shape
+ * the click-time re-derivation consumes is declared once, in the lib that
+ * consumes it, and cannot drift from the hook that produces it.
+ */
+export type ChainGovernanceData = LiveClaimInputs & {
   activeVotingAccounts: number;
   totalLocked: string;
   claimableAmount: string;
   averageConviction: number;
   blockTimeMs: number | null;
+  /** A `BLOCK_SNAPSHOT_THROTTLE_MS` snapshot of `liveBlock`. */
   currentBlock: number | null;
   chainId: ChainId;
   chainName: string;
@@ -52,22 +61,8 @@ export type ChainGovernanceData = {
   icon: { monochrome: string; colored: string };
   priceId: string;
   pending: boolean;
-  votingMap: VotingMap;
-  tracks: Record<string, TrackInfo>;
   /** Per selected account with governance activity on this chain. */
   locksByAccount: Record<string, AccountLockSummary>;
-  /** Inputs a caller needs to re-run the claim schedule against the live head. */
-  scheduleInputs: {
-    referendums: Referendum[];
-    trackLocks: Record<string, Record<TrackId, BN>>;
-    undecidingTimeout: number;
-    voteLockingPeriod: number;
-  } | null;
-  /**
-   * Unthrottled head — `currentBlock` is a `BLOCK_SNAPSHOT_THROTTLE_MS`
-   * snapshot.
-   */
-  liveBlock: number | null;
 };
 
 function computeGovernanceStats(votingMap: VotingMap) {
@@ -177,8 +172,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
-  const liveBlock = useBlock(api).data;
-  const currentBlock = useThrottledSnapshot(liveBlock, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const { live: liveBlock, snapshot: currentBlock } = useThrottledBlock(api, chainId);
   const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, BLOCK_SNAPSHOT_THROTTLE_MS);
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
