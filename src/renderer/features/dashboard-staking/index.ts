@@ -42,7 +42,7 @@ dashboardStakingSummaryFeature.inject(
     order: 3,
     label: 'dashboard.stakingSummary.title',
     render: StakingSummaryWidget,
-    defaultSize: { w: 2, h: 3 },
+    defaultSize: { w: 1, h: 2 },
     minSize: { w: 1, h: 2 },
   }),
 );
