@@ -4,38 +4,18 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  type MultisigAccount,
-  type Wallet,
-  AccountType,
-  ConnectionStatus,
-  SigningType,
-  WalletType,
-} from '@/shared/core';
+import { type MultisigAccount, AccountType, ConnectionStatus, SigningType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
-import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { createAccountId, polkadotChainId } from '@/shared/mocks';
 import { ThemeProvider } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { lockedId, makeLockRow, signer } from '../lib/__tests__/fixtures';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
 
 import { LockActionCell } from './LockActionCell';
 
-const lockedId = createAccountId('locked');
 const payerId = createAccountId('payer');
-
-const wallet: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
-
-const signer: AnyAccount = {
-  id: 'signer',
-  type: 'universal',
-  name: '',
-  walletId: wallet.id,
-  accountId: lockedId,
-  cryptoType: 0,
-  signingType: SigningType.POLKADOT_VAULT,
-  createdAt: 0,
-};
 
 const payer: AnyAccount = { ...signer, id: 'payer', accountId: payerId };
 
@@ -53,40 +33,19 @@ const multisig: MultisigAccount = {
   createdAt: 0,
 };
 
-/** A releasable row signed by the locked account itself. */
-const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => ({
-  key: 'row',
-  accountId: lockedId,
-  chainId: polkadotChainId,
-  chain: polkadotChain,
-  chainName: 'Polkadot',
-  chainIcon: '',
-  symbol: 'DOT',
-  precision: 10,
-  wallet,
-  locked: new BN(100),
-  lockedFiat: null,
-  claimable: new BN(100),
-  claimableFiat: null,
-  claimableActions: [{ type: 'unlock', trackId: '0' }],
-  pending: BN_ZERO,
-  pendingFiat: null,
-  nextUnlockAtMs: null,
-  daysUntilNextUnlock: null,
-  delegated: BN_ZERO,
-  delegatedFiat: null,
-  delegations: [],
-  undelegateActions: [],
-  undelegateInitiator: null,
-  undelegateBlockReason: null,
-  tracks: ['0'],
-  initiator: signer,
-  target: lockedId,
-  blockReason: null,
-  claimableNum: 100,
-  lockedNum: 100,
-  ...overrides,
-});
+/**
+ * The shared releasable row, cut down to dust — 100 planck of a 10-decimal
+ * token — because most of these cases are about the button's caption, and a
+ * claim that rounds to nothing is the interesting one.
+ */
+const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow =>
+  makeLockRow({
+    locked: new BN(100),
+    claimable: new BN(100),
+    claimableNum: 100,
+    lockedNum: 100,
+    ...overrides,
+  });
 
 /** A row whose only lock is a delegation, signed by the account itself. */
 const delegating = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow =>

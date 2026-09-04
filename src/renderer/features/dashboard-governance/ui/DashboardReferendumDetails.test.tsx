@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { type Scope, fork, scopeBind } from 'effector';
 import { Provider } from 'effector-react';
+import { type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { type ChainId, type ReferendumId } from '@/shared/core';
@@ -14,24 +15,31 @@ import { networkSelectorModel } from '@/features/governance';
 
 import { DashboardReferendumDetails, NETWORK_WAIT_TIMEOUT_MS } from './DashboardReferendumDetails';
 
-/** A referendum id the page never resolves — the modal then keeps spinning. */
-const UNREACHABLE_REFERENDUM_ID: ReferendumId = '404';
+/**
+ * A referendum id the page never resolves — the modal then keeps spinning.
+ * Hoisted with the mock that reads it, which runs before the module body.
+ */
+const { UNREACHABLE_REFERENDUM_ID } = vi.hoisted(() => ({ UNREACHABLE_REFERENDUM_ID: '404' }));
 
 // The page's referendum modal drags the whole Governance page behind it. The
 // adapter's job is what happens around it — which chain is selected, when the
-// body is allowed to mount, and what the wait says — so it stands in as a
-// marker carrying the chain it was handed.
+// body is allowed to mount, what the wait says, and the chain badge it dresses
+// the modal with — so it stands in as a marker that shows all of them.
 vi.mock('@/pages/Governance', () => ({
-  GovernanceReferendumDetailsModal: ({ chainId }: { chainId: ChainId }) => (
-    <div data-testid="details-body" data-chain={chainId} />
+  GovernanceReferendumDetailsModal: ({ chainId, titleBadge }: { chainId: ChainId; titleBadge: ReactNode }) => (
+    <div data-testid="details-body" data-chain={chainId}>
+      {titleBadge}
+    </div>
   ),
-  useReferendum: (referendumId: ReferendumId) => (referendumId === '404' ? null : { referendumId }),
+  useReferendum: (referendumId: ReferendumId) => (referendumId === UNREACHABLE_REFERENDUM_ID ? null : { referendumId }),
 }));
 
 // A resolved network is what the governance list aggregate subscribes on, and
 // the subscription talks to a real node. The adapter's behaviour is upstream of
 // it, so the subscription is cut loose — otherwise the fake api leaves a
-// rejected promise behind every test that lets the network resolve.
+// rejected promise behind every test that lets the network resolve. This works
+// because `features/governance/aggregates/list.ts` reaches `referendumModel`
+// through this barrel; a deep import there would reinstate the live subscription.
 vi.mock('@/entities/governance', async (importOriginal) => {
   const { createEvent } = await import('effector');
   const actual = await importOriginal<typeof GovernanceEntities>();
@@ -65,14 +73,15 @@ const createScope = ({ previousChainId = kusamaChainId, connected = [polkadotCha
     ],
   });
 
-const renderDetails = (scope: Scope, referendumId: ReferendumId = '42', chainId: ChainId = polkadotChainId) => {
+// The row always opens on Polkadot; the scope says what the selector held before.
+const renderDetails = (scope: Scope, referendumId: ReferendumId = '42') => {
   const onClose = vi.fn();
 
   const view = render(
     <Provider value={scope}>
       <I18Provider>
         <ThemeProvider>
-          <DashboardReferendumDetails chainId={chainId} referendumId={referendumId} onClose={onClose} />
+          <DashboardReferendumDetails chainId={polkadotChainId} referendumId={referendumId} onClose={onClose} />
         </ThemeProvider>
       </I18Provider>
     </Provider>,
@@ -101,6 +110,8 @@ describe('features/dashboard-governance/ui/DashboardReferendumDetails', () => {
 
     expect(selectedChainId(scope)).toEqual(polkadotChainId);
     expect(screen.getByTestId('details-body')).toHaveAttribute('data-chain', polkadotChainId);
+    // Opened from a mixed-chain list, the modal has to name its own chain.
+    expect(screen.getByText('Polkadot')).toBeInTheDocument();
   });
 
   it('holds the details back while the chain has no resolved network', () => {
@@ -159,12 +170,23 @@ describe('features/dashboard-governance/ui/DashboardReferendumDetails', () => {
     expect(selectedChainId(scope)).toEqual(polkadotChainId);
   });
 
+  it('lets the user out of a wait that is going nowhere', () => {
+    const { onClose } = renderDetails(createScope({ connected: [] }));
+
+    expect(screen.getByTestId('Modal')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('leaves the spinner unexplained until the wait is out', () => {
     vi.useFakeTimers();
     renderDetails(createScope({ connected: [] }));
 
     waitOut(NETWORK_WAIT_TIMEOUT_MS - 1);
 
+    // Still spinning, just without an excuse for it yet.
+    expect(screen.getByTestId('Icon:loader')).toBeInTheDocument();
     expect(screen.queryByText(loadingHint)).toBeNull();
   });
 

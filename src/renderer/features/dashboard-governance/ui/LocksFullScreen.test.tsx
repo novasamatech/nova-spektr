@@ -1,15 +1,12 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Wallet, SigningType, WalletType } from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
-import { createAccountId, kusamaChain, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { kusamaChain, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { ThemeProvider } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { type LocksTableState } from '../hooks/useLocksTable';
-import { type GovernanceLockRow } from '../lib/buildLockRows';
+import { makeLockRow as row, makeLocksTableState } from '../lib/__tests__/fixtures';
 
 import { LocksFullScreen } from './LocksFullScreen';
 
@@ -19,79 +16,18 @@ vi.mock('@/widgets/NameResolver', () => ({
   NamedAccount: ({ accountId }: { accountId: string }) => <span>{accountId}</span>,
 }));
 
-const lockedId = createAccountId('locked');
-const wallet: Wallet = { id: 1, name: 'Vault', type: WalletType.POLKADOT_VAULT, accounts: [] };
-const signer: AnyAccount = {
-  id: 'signer',
-  type: 'universal',
-  name: '',
-  walletId: wallet.id,
-  accountId: lockedId,
-  cryptoType: 0,
-  signingType: SigningType.POLKADOT_VAULT,
-  createdAt: 0,
-};
-
-const row = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockRow => ({
-  key: 'row',
-  accountId: lockedId,
-  chainId: polkadotChainId,
-  chain: polkadotChain,
-  chainName: 'Polkadot',
-  chainIcon: 'polkadot.svg',
-  symbol: 'DOT',
-  precision: 10,
-  wallet,
-  locked: new BN('1000000000000'),
-  lockedFiat: null,
-  claimable: new BN('1000000000000'),
-  claimableFiat: null,
-  claimableActions: [{ type: 'unlock', trackId: '0' }],
-  pending: BN_ZERO,
-  pendingFiat: null,
-  nextUnlockAtMs: null,
-  daysUntilNextUnlock: null,
-  delegated: BN_ZERO,
-  delegatedFiat: null,
-  delegations: [],
-  undelegateActions: [],
-  undelegateInitiator: null,
-  undelegateBlockReason: null,
-  tracks: ['0'],
-  initiator: signer,
-  target: lockedId,
-  blockReason: null,
-  claimableNum: 1e12,
-  lockedNum: 1e12,
-  ...overrides,
-});
-
-const state = (overrides: Partial<LocksTableState> = {}): LocksTableState => {
-  const rows = overrides.rows ?? [row()];
-
-  return {
-    rows,
-    visibleRows: rows,
-    pending: false,
-    fiatFlag: false,
-    currency: null,
-    totals: null,
-    showTotals: false,
+/** The chain picker has something to pick from, unlike the compact card's. */
+const state = (overrides: Partial<LocksTableState> = {}): LocksTableState =>
+  makeLocksTableState({
+    rows: [row()],
     uniqueChains: [
       { chainId: polkadotChainId, chainName: polkadotChain.name, chainIcon: polkadotChain.icon },
       { chainId: kusamaChainId, chainName: kusamaChain.name, chainIcon: kusamaChain.icon },
     ],
-    chainFilter: null,
-    setChainFilter: vi.fn(),
-    claimableOnly: false,
-    setClaimableOnly: vi.fn(),
-    onUnlock: vi.fn(),
-    onUndelegate: vi.fn(),
     ...overrides,
-  };
-};
+  });
 
-const renderFullScreen = (tableState: LocksTableState) =>
+const renderFullScreen = (tableState: LocksTableState) => {
   render(
     <I18Provider>
       <ThemeProvider>
@@ -99,18 +35,22 @@ const renderFullScreen = (tableState: LocksTableState) =>
       </ThemeProvider>
     </I18Provider>,
   );
-
-// Ariakit paints the popover with pointer-events off until it is positioned,
-// which never happens without a layout engine.
-const user = userEvent.setup({ pointerEventsCheck: 0 });
+};
 
 // The Select's popover portals to the body, outside the modal, so Radix's
 // dialog marks it `aria-hidden` — `hidden: true` looks past that. In the app
 // the popover is on top of the modal and reachable.
 const chainOption = (name: string) => screen.findByRole('option', { name, hidden: true });
 
+// Ariakit paints the popover with pointer-events off until it is positioned,
+// which never happens without a layout engine. Only the picker needs the
+// escape hatch; the switch is clicked as a user would.
 const openChainSelect = async () => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 });
+
   await user.click(screen.getByTestId('Select'));
+
+  return user;
 };
 
 describe('features/dashboard-governance/ui/LocksFullScreen', () => {
@@ -118,7 +58,7 @@ describe('features/dashboard-governance/ui/LocksFullScreen', () => {
     const tableState = state({ chainFilter: polkadotChainId });
     renderFullScreen(tableState);
 
-    await openChainSelect();
+    const user = await openChainSelect();
     await user.click(await chainOption('All chains'));
 
     expect(tableState.setChainFilter).toHaveBeenCalledWith(null);
@@ -128,13 +68,14 @@ describe('features/dashboard-governance/ui/LocksFullScreen', () => {
     const tableState = state();
     renderFullScreen(tableState);
 
-    await openChainSelect();
+    const user = await openChainSelect();
     await user.click(await chainOption('Kusama'));
 
     expect(tableState.setChainFilter).toHaveBeenCalledWith(kusamaChainId);
   });
 
   it('turns the claimable-only filter on from the switch', async () => {
+    const user = userEvent.setup();
     const tableState = state();
     renderFullScreen(tableState);
 
@@ -144,6 +85,7 @@ describe('features/dashboard-governance/ui/LocksFullScreen', () => {
   });
 
   it('turns the claimable-only filter off again', async () => {
+    const user = userEvent.setup();
     const tableState = state({ claimableOnly: true });
     renderFullScreen(tableState);
 
@@ -160,10 +102,51 @@ describe('features/dashboard-governance/ui/LocksFullScreen', () => {
     expect(screen.getAllByRole('row')).toHaveLength(2); // header + the single visible row
   });
 
+  it('keeps the filters reachable when they have hidden every row', () => {
+    // The bar gates on `rows`, not `visibleRows` — filtering down to nothing
+    // must not take away the controls that would undo it.
+    renderFullScreen(state({ rows: [row()], visibleRows: [] }));
+
+    expect(screen.getByRole('switch')).toBeInTheDocument();
+    expect(screen.getByTestId('Select')).toBeInTheDocument();
+    expect(screen.getByText('0 locks')).toBeInTheDocument();
+  });
+
   it('keeps the filter bar out of the way when there is nothing to filter', () => {
-    renderFullScreen(state({ rows: [], visibleRows: [] }));
+    renderFullScreen(state({ rows: [] }));
 
     expect(screen.queryByRole('switch')).toBeNull();
     expect(screen.queryByTestId('Select')).toBeNull();
+  });
+
+  it('tops the table with the fiat totals strip when there is one', () => {
+    renderFullScreen(
+      state({
+        showTotals: true,
+        totals: { claimable: '120', pending: '30', delegated: '0' },
+        currency: {
+          id: 1,
+          code: 'usd',
+          name: 'US Dollar',
+          symbol: '$',
+          category: 'fiat',
+          popular: true,
+          coingeckoId: 'usd',
+        },
+      }),
+    );
+
+    // The row has no pending or delegated balance, so those two columns are
+    // absent from the table and the labels can only be the strip's.
+    expect(screen.getByText('Pending')).toBeInTheDocument();
+    expect(screen.getByText('Delegated')).toBeInTheDocument();
+    expect(screen.getByText('$120')).toBeInTheDocument();
+  });
+
+  it('leaves the strip out when there is nothing to total', () => {
+    renderFullScreen(state());
+
+    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('Delegated')).toBeNull();
   });
 });
