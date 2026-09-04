@@ -165,10 +165,11 @@ referendum id and the chain name.
   has no live connection is dimmed and inert. Opened from here the modal names its chain next to the title and says
   which wallet a vote is cast from — the dashboard's account selection is not what the vote acts for. Once the modal
   closes, the selector is put back to the chain the user had chosen on the Governance page: the dashboard only borrowed
-  it. Until the chain and then the referendum itself arrive, the modal is a spinner in the shape of the real one; after
-  fifteen seconds it adds that this is taking longer than usual and the chain may be disconnected or still syncing, so a
-  wait that will never end is not left looking like one that is about to. A row that was already offline could not be
-  clicked in the first place, so that line means the chain dropped or stalled after the modal opened.
+  it. Until the chain and then the referendum itself arrive, the modal is a spinner in the shape of the real one;
+  fifteen seconds after it opens it adds that this is taking longer than usual and the chain may be disconnected or
+  still syncing, so a wait that will never end is not left looking like one that is about to. A row that was already
+  offline could not be clicked in the first place, so that line means the chain dropped or stalled after the modal
+  opened.
 - **Ended** — the outcome (approved, rejected, cancelled, timed out, killed), when it ended, how much is still locked
   and how much of that is unlockable now. The tab exists because an ended referendum is exactly what a user stops
   watching and exactly what keeps holding their tokens.

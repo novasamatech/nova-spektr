@@ -228,6 +228,11 @@
   background-image: linear-gradient(var(--action-background-hover), var(--action-background-hover));
 }
 
+/* A disabled row does not react to the pointer — the pinned cell included. */
+.table-row--disabled:hover .table-cell--pinned-right {
+  background-image: none;
+}
+
 /*
  * The selected tints repeated on the pinned cell: the cell paints an opaque
  * surface of its own, so the row's background never shows through it.
@@ -237,6 +242,13 @@
  * .table-cell--pinned-right` above, which is (0,3,0) — so on a hovered selected
  * row it is the (0,4,0) `.table-row--selected:hover` rule, and only that rule,
  * that keeps the accent tint instead of the plain hover grey.
+ *
+ * That last rule ties at (0,4,0) with the disabled rule above it, so the order
+ * decides, and it is deliberate: on a row that is both selected and disabled,
+ * selection wins and the pinned cell keeps the accent. It has to, because the
+ * row behind it settles the same tie the same way — `.table-row--selected:hover`
+ * is written after `.table-row--disabled:hover`, so the row shows the accent —
+ * and a pinned cell that went grey there would cut a hole in its own row.
  */
 .table-row--selected .table-cell--pinned-right {
   background-image: linear-gradient(var(--table-row-selected), var(--table-row-selected));
@@ -244,9 +256,4 @@
 
 .table-row--selected:hover .table-cell--pinned-right {
   background-image: linear-gradient(var(--table-row-selected-hover), var(--table-row-selected-hover));
-}
-
-/* A disabled row does not react to the pointer — the pinned cell included. */
-.table-row--disabled:hover .table-cell--pinned-right {
-  background-image: none;
 }

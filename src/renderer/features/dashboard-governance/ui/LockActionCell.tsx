@@ -45,8 +45,10 @@ type Props = {
   onUndelegate: (row: GovernanceLockRow) => void;
 };
 
-/** Whether the row's chain has a live connection — nothing signs without one. */
-type WithConnection = { chainConnected: boolean };
+type WithConnection = {
+  /** Whether the row's chain has a live connection — nothing signs without one. */
+  chainConnected: boolean;
+};
 
 type ActionButtonProps = {
   label: string;

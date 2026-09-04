@@ -76,9 +76,11 @@ export const DashboardReferendumDetails = ({ chainId, referendumId, onClose }: P
 
   // Two waits can outlive their welcome — a chain that never connects, and a
   // referendum that never arrives on one that did — and a spinner says nothing
-  // about either. One timer from the moment the modal opens covers both: it is
-  // read only where a spinner is on screen, so it is spent harmlessly once the
-  // details are up.
+  // about either. One timer from the moment the modal opens covers both. It
+  // fires once at T+15s whatever is on screen by then, costing one re-render of
+  // the details when they are already up; the flag it sets is only ever read by
+  // the two spinner branches, so the hint cannot appear over a rendered
+  // referendum.
   const [waitedOut, setWaitedOut] = useState(false);
 
   useEffect(() => {
