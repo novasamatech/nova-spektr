@@ -164,6 +164,32 @@ describe('governance unlock flow — signing route and transaction', () => {
     expect(env.scope.getState(unlockFlowModel.$coreTx)).toBeNull();
   });
 
+  it('drops a permissionless request that carries an origin-bound call', async () => {
+    // A payer may release someone else's expired lock, but `remove_vote` is
+    // signed by the voter — such a request can never be sent, so it never opens.
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await allSettled(unlockFlowModel.unlockRequested, {
+      scope: env.scope,
+      params: {
+        chain: polkadotChain,
+        initiator: senderAccount,
+        target: signatoryAccount.accountId,
+        actions: [
+          { type: 'remove_vote', trackId: '0', referendumId: '12' },
+          { type: 'unlock', trackId: '0' },
+        ],
+        amount: new BN(5),
+      },
+    });
+
+    expect(env.scope.getState(unlockFlowModel.$step)).toBe(Step.NONE);
+    expect(env.scope.getState(unlockFlowModel.$request)).toBeNull();
+    expect(consoleError).toHaveBeenCalled();
+
+    consoleError.mockRestore();
+  });
+
   it('builds a single unlock call when one action is requested', async () => {
     await allSettled(unlockFlowModel.unlockRequested, {
       scope: env.scope,

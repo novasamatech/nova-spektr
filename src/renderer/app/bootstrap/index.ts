@@ -28,6 +28,7 @@ import { dashboardStakingPositionsFeature } from '@/features/dashboard-staking-p
 import { dashboardStakingRewardsChartFeature } from '@/features/dashboard-staking-rewards-chart';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { governanceUnlockFlowFeature } from '@/features/governance-unlock-flow';
 import { multiTransferFeature } from '@/features/multi-transfer';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
@@ -85,6 +86,7 @@ export const bootstrap = () => {
     dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
     dashboardLocksFeature,
+    governanceUnlockFlowFeature,
     dashboardStakingSummaryFeature,
     dashboardStakingTotalStakedFeature,
     dashboardStakingApyFeature,
@@ -153,7 +155,6 @@ export const bootstrap = () => {
 
     import('@/features/governance-operation-details').then(({ governanceOperationDetailFeature }) => governanceOperationDetailFeature),
     import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
-    import('@/features/governance-unlock-flow').then(({ governanceUnlockFlowFeature }) => governanceUnlockFlowFeature),
 
     import('@/features/transfer-operation-details').then(({ transferOperationDetailFeature }) => transferOperationDetailFeature),
     import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),

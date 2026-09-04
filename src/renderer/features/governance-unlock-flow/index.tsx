@@ -20,11 +20,23 @@ export const governanceUnlockFlowFeature = createFeature({
  * because `modalsSlot` has none of its own — a throw here would otherwise take
  * the whole shell down.
  *
+ * The boundary also has to close the flow, not just hide it. Unmounting the UI
+ * leaves the model where it was: a throw while `$step` is SIGN keeps it there
+ * with no modal to leave it, and the next app-wide `signModel.signed` — from
+ * any other operation — would be claimed and submitted as this flow's own.
+ * `flowFinished` returns the model to NONE so the invisible flow can't.
+ *
  * Plain function component, never `memo`/`lazy`/`forwardRef`: the slot render
  * system calls it directly as a function.
  */
 const UnlockFlowIsolated = () => (
-  <ErrorBoundary fallback={null}>
+  <ErrorBoundary
+    fallback={null}
+    onError={(error) => {
+      console.error('[governance-unlock-flow] render failed, closing the flow', error);
+      unlockFlowModel.flowFinished();
+    }}
+  >
     <UnlockFlow />
   </ErrorBoundary>
 );

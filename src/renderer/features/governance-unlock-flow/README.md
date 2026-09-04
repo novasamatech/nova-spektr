@@ -1,6 +1,6 @@
 # Governance unlock flow
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-02
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-04
 
 ## Overview
 
@@ -40,8 +40,8 @@ rather than from a route, and stays open across navigation.
   - a **proxied account**, signed by its delegate;
   - a **local payer releasing someone else's lock**. `convictionVoting.unlock(class, target)` takes any origin, so a
     watched address whose votes are all gone can still be released by any local key that can pay. This is available for
-    an **unlock-only** release and no other: `removeVote` must be signed by the voter, so as soon as one is required the
-    payer route is off the table.
+    an **unlock-only** release and no other: `removeVote` and `undelegate` must be signed by the voter, so as soon as
+    one is required the payer route is off the table — a request that asks for it anyway is dropped, not shown.
 - The **signing route** is seeded with the default path and can be changed on the confirm screen. It is not cosmetic —
   the account at the end of the route is the one that pays the fee and reserves the multisig deposit — so it is never
   picked silently when the wallet offers more than one. Changing it re-wraps the transaction, re-prices the fee and
@@ -63,17 +63,17 @@ flowchart TD
     SIGN -->|back| CONFIRM
 ```
 
-| State               | When it appears                                                         | What the user sees                                                                                                                                                                                   |
-| ------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| None                | No release requested                                                    | Nothing — the flow renders no modal                                                                                                                                                                  |
-| Confirm             | An unlock was requested                                                 | The released amount in token and fiat, who it unlocks for, the calls the release is made of (one line per `unlock`/`remove vote`, with its track), the signing-path chooser, network fee, and a hint |
-| Confirm — preparing | The wrapped transaction, the fee or the validation is still in flight   | The figures are already there; fee and deposit sit behind their own loaders and **Sign stays disabled** until all three land                                                                         |
-| Confirm — multisig  | The route runs through a multisig                                       | An extra multisig-deposit row alongside the fee                                                                                                                                                      |
-| Confirm — unpayable | The signer cannot cover the fee, or cannot reserve the multisig deposit | The reason is spelled out and **Sign is blocked**. Switching the signing route re-checks it                                                                                                          |
-| Sign                | Sign pressed                                                            | The wallet's standard signing screen; going back returns to Confirm with everything intact                                                                                                           |
-| Submit              | The signature arrived                                                   | The standard submission screen                                                                                                                                                                       |
-| Released            | The extrinsic landed and the initiator is not a multisig                | Success. Nothing is pushed back to the host — the dashboard's rows update on their own                                                                                                               |
-| Multisig initiated  | The extrinsic landed but the release still needs signatories            | Success for the _initiation_; closing the flow opens the resulting pending operation                                                                                                                 |
+| State               | When it appears                                                         | What the user sees                                                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None                | No release requested                                                    | Nothing — the flow renders no modal                                                                                                                                                                               |
+| Confirm             | An unlock was requested                                                 | The released amount in token and fiat, who it unlocks for, the calls the release is made of (one line per `unlock`/`remove vote`/`undelegate`, with its track), the signing-path chooser, network fee, and a hint |
+| Confirm — preparing | The wrapped transaction, the fee or the validation is still in flight   | The figures are already there; fee and deposit sit behind their own loaders and **Sign stays disabled** until all three land                                                                                      |
+| Confirm — multisig  | The route runs through a multisig                                       | An extra multisig-deposit row alongside the fee                                                                                                                                                                   |
+| Confirm — unpayable | The signer cannot cover the fee, or cannot reserve the multisig deposit | The reason is spelled out and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                       |
+| Sign                | Sign pressed                                                            | The wallet's standard signing screen; going back returns to Confirm with everything intact                                                                                                                        |
+| Submit              | The signature arrived                                                   | The standard submission screen                                                                                                                                                                                    |
+| Released            | The extrinsic landed and the initiator is not a multisig                | Success. Nothing is pushed back to the host — the dashboard's rows update on their own                                                                                                                            |
+| Multisig initiated  | The extrinsic landed but the release still needs signatories            | Success for the _initiation_; closing the flow opens the resulting pending operation                                                                                                                              |
 
 **The account the lock is released for is always spelled out**, on its own row, next to the account that signs. For a
 permissionless release the two differ, and the confirm says so in words — a notice that the user pays the fee and that

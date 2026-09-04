@@ -1,5 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
@@ -17,7 +17,12 @@ import { accountUtils } from '@/entities/wallet';
 import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign';
-import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import {
+  type ErrorResult,
+  type SuccessResult,
+  ExtrinsicResult,
+  submitModel,
+} from '@/features/operations/OperationSubmit';
 import { createSigningPathModel } from '@/features/signing-path';
 import { type UnlockConfirm, type UnlockRequest, Step } from '../types';
 
@@ -30,12 +35,40 @@ const stepChanged = createEvent<Step>();
 const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
 
 /**
+ * A payer may only release someone else's lock, never vote on their behalf:
+ * `convictionVoting.unlock(class, target)` takes any origin, while
+ * `remove_vote` and `undelegate` are signed by the voter. So a `target` other
+ * than the initiator is valid for an unlock-only release and nothing else.
+ */
+const isValidRequest = (request: UnlockRequest) =>
+  request.target === request.initiator.accountId || request.actions.every((action) => action.type === 'unlock');
+
+const reportInvalidRequestFx = createEffect((request: UnlockRequest) => {
+  console.error(
+    '[governance-unlock-flow] dropped a request whose target differs from the initiator on origin-bound calls',
+    { target: request.target, initiator: request.initiator.accountId, actions: request.actions.map((a) => a.type) },
+  );
+});
+
+sample({
+  clock: unlockRequested,
+  filter: (request) => !isValidRequest(request),
+  target: reportInvalidRequestFx,
+});
+
+/** Every request the flow acts on — the malformed ones never get this far. */
+const validRequest = sample({
+  clock: unlockRequested,
+  filter: isValidRequest,
+});
+
+/**
  * The release the user pressed on, snapshotted. Locks, referenda and the
  * claimable amount all keep moving with every block; the one being signed must
  * not.
  */
 const $request = createStore<UnlockRequest | null>(null)
-  .on(unlockRequested, (_, request) => request)
+  .on(validRequest, (_, request) => request)
   .reset(flowFinished);
 
 /**
@@ -56,7 +89,7 @@ const $isUndelegate = $request.map(
  * the sign button stays disabled until they land.
  */
 sample({
-  clock: unlockRequested,
+  clock: validRequest,
   fn: () => Step.CONFIRM,
   target: stepChanged,
 });
@@ -67,14 +100,11 @@ const $asset = $chain.map((chain) => (chain ? (getNativeAsset(chain.assets) ?? n
 const $api = combine(networkModel.$apis, $chain, (apis, chain) => (chain ? (apis[chain.chainId] ?? null) : null));
 
 /**
- * The signing route: the initiator, plus any multisig/proxy hops between it and
- * an account that can actually sign.
- *
- * Seeded with the default path and overridable on the confirm screen. The
- * choice is load-bearing rather than cosmetic — the account at the end of the
- * route is the one that pays the fee and reserves the multisig deposit — so it
- * must not be made silently on the user's behalf when their wallet offers more
- * than one.
+ * The signing route: the initiator plus any multisig/proxy hops to an account
+ * that can sign. Seeded with the default path, overridable on the confirm — the
+ * choice decides who pays the fee and reserves the deposit, so it is never made
+ * silently. See `features/vesting-claim/model/claim.ts` for the full
+ * reasoning.
  */
 const { $signingPath, signingPathChanged, $signatoryFromPath, $pathRoute } = createSigningPathModel({
   initiator: $initiator,
@@ -101,17 +131,11 @@ const $coreTx = $request.map((request) =>
 );
 
 /**
- * Who signs the release.
- *
- * A multisig or proxied initiator signs through the path — its leaf is the
- * signer. A **regular account signs for itself**, and for one the signing path
- * is empty by design (`pickDefaultPath` bails on any initiator that is neither
- * multisig nor proxied), so the path yields no signatory at all.
- *
- * Falling back to the initiator is therefore not a nicety: without it the route
- * comes out empty, the wrapping step throws "Signatory is required", and the
- * transaction — and with it the fee — is never built. The confirm then sits on
- * a fee spinner that never resolves, with no way to sign.
+ * Who signs the release. A multisig or proxied initiator signs through the
+ * path; a regular account signs for itself and its path is empty by design, so
+ * the fallback to the initiator is what keeps the route — and with it the
+ * transaction and the fee — buildable at all. See
+ * `features/vesting-claim/model/claim.ts` for the full reasoning.
  */
 const $routeSignatory = combine($signatoryFromPath, $initiator, (fromPath, initiator) => fromPath ?? initiator);
 
@@ -264,9 +288,9 @@ sample({
  * something that looks like success would leave the user with no trace of it,
  * so the close navigates to that operation instead.
  */
-const $redirectAfterSubmitPath = createStore<string | null>(null).reset(unlockRequested);
+const $redirectAfterSubmitPath = createStore<string | null>(null).reset(validRequest);
 
-const findSuccessResult = (results: (SuccessResult | { result: ExtrinsicResult })[]) =>
+const findSuccessResult = (results: (SuccessResult | ErrorResult)[]) =>
   results.find((result): result is SuccessResult => result.result === ExtrinsicResult.SUCCESS) ?? null;
 
 /**
