@@ -12,9 +12,9 @@ import { referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from '../lib/constants';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { useThrottledBlock } from './useThrottledBlock';
 
 export type VoteDirection = 'aye' | 'nay' | 'abstain' | 'split';

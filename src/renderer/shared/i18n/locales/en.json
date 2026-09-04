@@ -841,7 +841,7 @@
         "endedDate": "Ended {date}"
       },
       "hint": {
-        "chainDisconnected": "Chain is not connected — the referendum can't load until it reconnects"
+        "loadingTimeout": "Taking longer than usual — the chain may be disconnected or still syncing"
       }
     },
     "locks": {

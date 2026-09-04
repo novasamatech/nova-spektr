@@ -7,13 +7,20 @@ import { FootnoteText, Loader } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { networkSelectorModel } from '@/features/governance';
 import { GovernanceReferendumDetailsModal, useReferendum } from '@/pages/Governance';
-import { NETWORK_WAIT_TIMEOUT_MS } from '../lib/constants';
 
 /**
  * The height the real modal takes, so the placeholder standing in for it is the
  * same box. Spelled as a class because Tailwind reads the literal from source.
  */
 const DETAILS_BODY_HEIGHT_CLASS = 'h-[70vh]';
+
+/**
+ * How long the modal spins before it says the wait is not normal. Long enough
+ * for a slow node handshake and the referendum fetch behind it, short enough
+ * that a spinner which will never resolve is not left alone with a close
+ * button. Exported for the test that measures the wait.
+ */
+export const NETWORK_WAIT_TIMEOUT_MS = 15_000;
 
 type Props = {
   chainId: ChainId;
@@ -67,41 +74,43 @@ export const DashboardReferendumDetails = ({ chainId, referendumId, onClose }: P
   // otherwise the gate would snapshot the previous network.
   const ready = selectedChainId === chainId && network !== null;
 
-  // A chain that never connects leaves the selector unresolved forever, and the
-  // spinner has nothing to say about it. After a bounded wait the modal says
-  // what it is waiting for, so the close button is a choice rather than the
-  // only thing on screen.
+  // Two waits can outlive their welcome — a chain that never connects, and a
+  // referendum that never arrives on one that did — and a spinner says nothing
+  // about either. One timer from the moment the modal opens covers both: it is
+  // read only where a spinner is on screen, so it is spent harmlessly once the
+  // details are up.
   const [waitedOut, setWaitedOut] = useState(false);
 
   useEffect(() => {
-    if (ready) return;
-
-    setWaitedOut(false);
     const timeout = setTimeout(() => setWaitedOut(true), NETWORK_WAIT_TIMEOUT_MS);
 
     return () => clearTimeout(timeout);
-  }, [ready]);
+  }, []);
+
+  const loadingHint = waitedOut ? t('dashboard.referendums.hint.loadingTimeout') : undefined;
 
   if (!ready) {
-    return (
-      <LoadingModal hint={waitedOut ? t('dashboard.referendums.hint.chainDisconnected') : null} onClose={onClose} />
-    );
+    return <LoadingModal hint={loadingHint} onClose={onClose} />;
   }
 
-  return <ReferendumBody chain={network.chain} referendumId={referendumId} onClose={onClose} />;
+  return (
+    <ReferendumBody chain={network.chain} referendumId={referendumId} loadingHint={loadingHint} onClose={onClose} />
+  );
 };
 
 type BodyProps = {
   chain: Chain;
   referendumId: ReferendumId;
+  /** Shown once the wait is out and the referendum is still on its way. */
+  loadingHint?: string;
   onClose: () => void;
 };
 
-const ReferendumBody = ({ chain, referendumId, onClose }: BodyProps) => {
+const ReferendumBody = ({ chain, referendumId, loadingHint, onClose }: BodyProps) => {
   const referendum = useReferendum(referendumId);
 
   if (!referendum) {
-    return <LoadingModal onClose={onClose} />;
+    return <LoadingModal hint={loadingHint} onClose={onClose} />;
   }
 
   return (
@@ -132,7 +141,7 @@ const ChainBadge = ({ chain }: { chain: Chain }) => (
  * the real one is a fill-in rather than a jump from a small box to a large one.
  * The hint, when there is one, says why the wait is not ending.
  */
-const LoadingModal = ({ hint, onClose }: { hint?: string | null; onClose: () => void }) => (
+const LoadingModal = ({ hint, onClose }: { hint?: string; onClose: () => void }) => (
   <Modal isOpen size="xl" onToggle={(open) => !open && onClose()}>
     <Modal.Content>
       <div

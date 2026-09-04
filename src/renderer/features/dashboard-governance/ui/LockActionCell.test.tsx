@@ -1,12 +1,22 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { fork } from 'effector';
+import { Provider } from 'effector-react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type MultisigAccount, type Wallet, AccountType, SigningType, WalletType } from '@/shared/core';
+import {
+  type MultisigAccount,
+  type Wallet,
+  AccountType,
+  ConnectionStatus,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
 import { I18Provider } from '@/shared/i18n';
 import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { ThemeProvider } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
 
 import { LockActionCell } from './LockActionCell';
@@ -94,13 +104,25 @@ const delegating = (overrides: Partial<GovernanceLockRow> = {}): GovernanceLockR
     ...overrides,
   });
 
+/** The cell reads the row's chain status itself, so the scope is what states it. */
 const renderCell = (lockRow: GovernanceLockRow, chainConnected = true, onUnlock = vi.fn(), onUndelegate = vi.fn()) => {
+  const scope = fork({
+    values: [
+      [
+        networkModel.$connectionStatuses,
+        { [polkadotChainId]: chainConnected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED },
+      ],
+    ],
+  });
+
   render(
-    <I18Provider>
-      <ThemeProvider>
-        <LockActionCell row={lockRow} chainConnected={chainConnected} onUnlock={onUnlock} onUndelegate={onUndelegate} />
-      </ThemeProvider>
-    </I18Provider>,
+    <Provider value={scope}>
+      <I18Provider>
+        <ThemeProvider>
+          <LockActionCell row={lockRow} onUnlock={onUnlock} onUndelegate={onUndelegate} />
+        </ThemeProvider>
+      </I18Provider>
+    </Provider>,
   );
 
   return { onUnlock, onUndelegate };

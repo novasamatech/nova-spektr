@@ -1,8 +1,11 @@
+import { useStoreMap } from 'effector-react';
 import { type ComponentProps, memo } from 'react';
 
+import { ConnectionStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
 import { DISPLAY_DATE_FORMAT } from '../lib/constants';
@@ -38,11 +41,12 @@ const HintText = memo(({ text, hint }: HintProps) => (
 
 type Props = {
   row: GovernanceLockRow;
-  /** Whether the row's chain has a live connection — nothing signs without one. */
-  chainConnected: boolean;
   onUnlock: (row: GovernanceLockRow) => void;
   onUndelegate: (row: GovernanceLockRow) => void;
 };
+
+/** Whether the row's chain has a live connection — nothing signs without one. */
+type WithConnection = { chainConnected: boolean };
 
 type ActionButtonProps = {
   label: string;
@@ -100,7 +104,7 @@ const ActionButton = memo(
  * The Unlock verdict — what the widget always showed. `null` when the row only
  * delegates.
  */
-const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUndelegate'>) => {
+const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUndelegate'> & WithConnection) => {
   const { t, formatDate } = useI18n();
 
   if (row.claimable.isZero()) {
@@ -170,7 +174,7 @@ const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUn
  * The Undelegate button — only for a row that delegates. Always origin-bound,
  * never permissionless.
  */
-const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props, 'onUnlock'>) => {
+const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props, 'onUnlock'> & WithConnection) => {
   const { t } = useI18n();
 
   const initiator = row.undelegateInitiator;
@@ -214,11 +218,25 @@ const UndelegateAction = memo(({ row, chainConnected, onUndelegate }: Omit<Props
  * The row's verdicts, stacked: what can be released now on top, and beneath it
  * — when the account delegates — the button that takes the delegation back.
  */
-export const LockActionCell = memo(({ row, chainConnected, onUnlock, onUndelegate }: Props) => (
-  <div className="flex flex-col items-end gap-1.5">
-    <UnlockVerdict row={row} chainConnected={chainConnected} onUnlock={onUnlock} />
-    {row.delegations.length > 0 && (
-      <UndelegateAction row={row} chainConnected={chainConnected} onUndelegate={onUndelegate} />
-    )}
-  </div>
-));
+export const LockActionCell = memo(({ row, onUnlock, onUndelegate }: Props) => {
+  /**
+   * The cell reads its own chain's status rather than being handed it: the
+   * whole record changes whenever any of the app's networks flips, and a table
+   * that passed it down would rebuild its columns and re-render every row for a
+   * network none of them shows.
+   */
+  const chainConnected = useStoreMap({
+    store: networkModel.$connectionStatuses,
+    keys: [row.chainId],
+    fn: (statuses, [chainId]) => statuses[chainId] === ConnectionStatus.CONNECTED,
+  });
+
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      <UnlockVerdict row={row} chainConnected={chainConnected} onUnlock={onUnlock} />
+      {row.delegations.length > 0 && (
+        <UndelegateAction row={row} chainConnected={chainConnected} onUndelegate={onUndelegate} />
+      )}
+    </div>
+  );
+});

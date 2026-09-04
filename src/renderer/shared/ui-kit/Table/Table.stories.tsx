@@ -109,6 +109,19 @@ export const ControlledSorting: Story = {
 
 export const RowStates: Story = {
   args: {
+    // The pinned column paints its own surface over the row's, so it is the one
+    // place selected, hover and disabled have to be re-stated — this story is
+    // where that is visible.
+    columns: [
+      ...columns,
+      {
+        key: 'status',
+        title: 'Action',
+        width: '120px',
+        pin: 'right',
+        render: () => <button className="rounded bg-blue-500 px-3 py-1 text-xs text-white">Act</button>,
+      },
+    ],
     getRowKey: item => String(item.id),
     rowProps: item => ({
       disabled: item.status === 'inactive',

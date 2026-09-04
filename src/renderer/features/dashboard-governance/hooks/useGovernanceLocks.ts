@@ -8,9 +8,9 @@ import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type GovernanceLockRow, type ToFiat, buildLockRows, compareLockRows } from '../lib/buildLockRows';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from '../lib/constants';
 import { type FreshClaim, deriveFreshClaim } from '../lib/deriveFreshClaim';
 
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { useChainGovernanceData } from './useChainGovernanceData';
 
 export type { GovernanceLockRow } from '../lib/buildLockRows';

@@ -1,14 +1,11 @@
 import { type BN } from '@polkadot/util';
-import { useStoreMap } from 'effector-react';
 import { type ReactNode, memo, useMemo } from 'react';
 
-import { ConnectionStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { TrackInfo, getTrackMeta } from '@/shared/ui-entities';
 import { type Column, Table, Tooltip } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
-import { networkModel } from '@/entities/network';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type LocksTableState } from '../hooks/useLocksTable';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
@@ -268,25 +265,6 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
   const { t } = useI18n();
   const { currency, fiatFlag, onUnlock, onUndelegate, pending: isLoading } = state;
 
-  const rowChainIds = useMemo(() => [...new Set(rows.map((row) => row.chainId))].sort(), [rows]);
-
-  /**
-   * Connectivity for the rows' own chains, and nothing else. The columns are
-   * built once per change of it, so reading the whole status record here would
-   * rebuild every column — and re-render every row — each time any of the app's
-   * networks changed state, most of which this table never shows. A joined
-   * string rather than a set: the value has to keep its identity while the
-   * record around it churns.
-   */
-  const connectedChainIdsKey = useStoreMap({
-    store: networkModel.$connectionStatuses,
-    keys: rowChainIds,
-    fn: (statuses, chainIds) =>
-      chainIds.filter((chainId) => statuses[chainId] === ConnectionStatus.CONNECTED).join(','),
-  });
-
-  const connectedChainIds = useMemo(() => new Set(connectedChainIdsKey.split(',')), [connectedChainIdsKey]);
-
   // A column that is "—" on every row says nothing and costs the width the
   // other columns need; it comes back the moment one row fills it.
   const showPending = useMemo(() => mode === 'full' && rows.some((row) => !row.pending.isZero()), [mode, rows]);
@@ -304,14 +282,7 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
       title: t('dashboard.governanceLocks.action'),
       width: `${COLUMN_WIDTH.action}px`,
       pin: 'right',
-      render: (_value, row) => (
-        <LockActionCell
-          row={row}
-          chainConnected={connectedChainIds.has(row.chainId)}
-          onUnlock={onUnlock}
-          onUndelegate={onUndelegate}
-        />
-      ),
+      render: (_value, row) => <LockActionCell row={row} onUnlock={onUnlock} onUndelegate={onUndelegate} />,
     };
 
     if (mode === 'compact') {
@@ -430,7 +401,7 @@ export const LocksTable = ({ mode, state, rows }: Props) => {
     ];
 
     return all.filter((column): column is Column<GovernanceLockRow> => column !== null);
-  }, [mode, t, currency, fiatFlag, connectedChainIds, onUnlock, onUndelegate, showPending, showDelegated]);
+  }, [mode, t, currency, fiatFlag, onUnlock, onUndelegate, showPending, showDelegated]);
 
   // The table's floor: below the sum of its columns it scrolls sideways rather
   // than crushing the amounts into wrapped digits.
