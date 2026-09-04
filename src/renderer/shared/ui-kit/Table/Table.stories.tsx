@@ -9,13 +9,15 @@ type SampleData = {
   rank: number;
   status: 'active' | 'inactive';
   joinDate: string;
+  /** The label of the row's own control — the pinned column renders it. */
+  action: string;
 };
 
 const sampleData: SampleData[] = [
-  { id: 1, name: 'Alice Johnson', rank: 3, status: 'active', joinDate: '2023-01-15' },
-  { id: 2, name: 'Bob Smith', rank: 2, status: 'active', joinDate: '2023-03-22' },
-  { id: 3, name: 'Charlie Brown', rank: 4, status: 'inactive', joinDate: '2022-11-08' },
-  { id: 4, name: 'Diana Prince', rank: 1, status: 'active', joinDate: '2023-06-10' },
+  { id: 1, name: 'Alice Johnson', rank: 3, status: 'active', joinDate: '2023-01-15', action: 'Act' },
+  { id: 2, name: 'Bob Smith', rank: 2, status: 'active', joinDate: '2023-03-22', action: 'Act' },
+  { id: 3, name: 'Charlie Brown', rank: 4, status: 'inactive', joinDate: '2022-11-08', action: 'Act' },
+  { id: 4, name: 'Diana Prince', rank: 1, status: 'active', joinDate: '2023-06-10', action: 'Act' },
 ];
 
 const columns: Column<SampleData>[] = [
@@ -109,13 +111,27 @@ export const ControlledSorting: Story = {
 
 export const RowStates: Story = {
   args: {
+    // The pinned column paints its own surface over the row's, so it is the one
+    // place selected, hover and disabled have to be re-stated — this story is
+    // where that is visible.
+    columns: [
+      ...columns,
+      {
+        key: 'action',
+        title: 'Action',
+        width: '120px',
+        pin: 'right',
+        render: value => <button className="rounded bg-blue-500 px-3 py-1 text-xs text-white">{value}</button>,
+      },
+    ],
     getRowKey: item => String(item.id),
+    // Row 2 is selected only; row 3 is both selected and disabled — the tie
+    // the pinned cell's hover rules have to settle.
     rowProps: item => ({
       disabled: item.status === 'inactive',
-      selected: item.id === 2,
+      selected: item.id === 2 || item.id === 3,
     }),
     onRowClick: item => {
-      // eslint-disable-next-line no-console
       console.log('row click', item.id);
     },
   },

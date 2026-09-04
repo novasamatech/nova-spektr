@@ -1,24 +1,75 @@
+import { useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
+import { type ChainId, type ReferendumId, ConnectionStatus } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon } from '@/shared/ui';
 import { TrackInfo, VoteChart } from '@/shared/ui-entities';
-import { type Column, SearchInput, Select, Skeleton, Table, Tooltip } from '@/shared/ui-kit';
+import { type Column, SearchInput, Select, Table, Tooltip } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
 import { type EndedReferendum, useEndedReferendums } from '../hooks/useEndedReferendums';
+import { ALL_CHAINS } from '../lib/constants';
 
+import { DashboardReferendumDetails } from './DashboardReferendumDetails';
 import { EndedReferendumDetailModal } from './EndedReferendumDetailModal';
-import { ReferendumDetailModal } from './ReferendumDetailModal';
+import { TableSkeleton } from './TableSkeleton';
+import { WidgetEmptyState } from './WidgetEmptyState';
 import { OUTCOME_I18N_KEY, OUTCOME_STYLES, formatEndDate } from './referendum-helpers';
+
+/**
+ * The narrowest the Proposal column may get before the table scrolls sideways
+ * instead: the title is the one thing the row is read for, so it is the last
+ * column allowed to give up width.
+ */
+const PROPOSAL_MIN_WIDTH = 240;
+/**
+ * Fixed-width columns of the Active table, px; the Proposal column takes the
+ * rest.
+ */
+const ACTIVE_COLUMN_WIDTH = { icon: 40, id: 56, track: 192, votes: 160, time: 80, ayeNay: 144, tvl: 110 } as const;
+/** Fixed-width columns of the Ended table, px. */
+const ENDED_COLUMN_WIDTH = {
+  icon: 40,
+  id: 56,
+  track: 192,
+  outcome: 100,
+  ended: 110,
+  unlockable: 110,
+  locks: 60,
+} as const;
+
+/**
+ * The track chip's loading plate — narrower than the Track column, the way the
+ * chip itself is.
+ */
+const SKELETON_TRACK_WIDTH = '160px';
+/** Loading plates of the Active table, after the leading avatar + name pair. */
+const ACTIVE_SKELETON_COLUMNS = [
+  SKELETON_TRACK_WIDTH,
+  `${PROPOSAL_MIN_WIDTH}px`,
+  `${ACTIVE_COLUMN_WIDTH.time}px`,
+  `${ACTIVE_COLUMN_WIDTH.ayeNay}px`,
+  `${ACTIVE_COLUMN_WIDTH.tvl}px`,
+];
+/** Loading plates of the Ended table, after the leading avatar + name pair. */
+const ENDED_SKELETON_COLUMNS = [
+  SKELETON_TRACK_WIDTH,
+  `${PROPOSAL_MIN_WIDTH}px`,
+  `${ENDED_COLUMN_WIDTH.outcome}px`,
+  `${ENDED_COLUMN_WIDTH.ended}px`,
+  `${ENDED_COLUMN_WIDTH.unlockable}px`,
+];
+
+const sumWidths = (widths: Record<string, number>) => Object.values(widths).reduce((sum, width) => sum + width, 0);
 
 type Props = {
   accountIds: string[];
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
-const ALL_CHAINS = '__all__';
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
@@ -67,7 +118,8 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     pending: activePending,
     fiatFlag,
   } = useActiveReferendums(deferredAccountIds, allEntries);
-  const [selectedActive, setSelectedActive] = useState<ActiveReferendum | null>(null);
+  const [selected, setSelected] = useState<{ chainId: ChainId; referendumId: ReferendumId } | null>(null);
+  const connectionStatuses = useUnit(networkModel.$connectionStatuses);
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [endedCount, setEndedCount] = useState<number | null>(null);
@@ -105,64 +157,85 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     [activeRefs, chainFilter, searchQuery],
   );
 
-  const activeColumns = useMemo(
-    (): Column<ReferendumRow>[] => [
+  // A Votes column that is "—" on every row only takes width from the title;
+  // it comes back the moment one of the selected accounts has voted.
+  const showVotes = useMemo(() => activeRows.some((row) => row.ourVotes.length > 0), [activeRows]);
+
+  const activeColumns = useMemo((): Column<ReferendumRow>[] => {
+    const columns: (Column<ReferendumRow> | null)[] = [
       {
         key: 'chainIcon',
         title: '',
-        width: '52px',
-        render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} className="h-10 w-10" />,
+        width: `${ACTIVE_COLUMN_WIDTH.icon}px`,
+        render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} width={24} height={24} className="h-6 w-6" />,
       },
       {
         key: 'idNumeric',
         title: t('dashboard.activeReferendums.id'),
         sortable: true,
-        width: '56px',
+        width: `${ACTIVE_COLUMN_WIDTH.id}px`,
         render: (_v, row) => <FootnoteText className="font-mono text-text-tertiary">#{row.id}</FootnoteText>,
       },
       {
         key: 'trackId',
         title: t('dashboard.activeReferendums.track'),
-        width: '192px',
+        width: `${ACTIVE_COLUMN_WIDTH.track}px`,
         render: (_v, row) => <TrackCell trackId={row.trackId} />,
       },
       {
         key: 'title',
         title: t('dashboard.activeReferendums.proposal'),
-        render: (_v, row) => <FootnoteText className="line-clamp-2 text-text-primary">{row.title}</FootnoteText>,
+        render: (_v, row) => (
+          <span title={row.title}>
+            <FootnoteText className="line-clamp-2 text-text-primary">{row.title}</FootnoteText>
+          </span>
+        ),
       },
-      {
-        key: 'ourVotes',
-        title: t('dashboard.activeReferendums.votes'),
-        width: '160px',
-        render: (_v, row) => <VoteChipsCell ourVotes={row.ourVotes} t={t} />,
-      },
+      showVotes
+        ? {
+            key: 'ourVotes',
+            title: t('dashboard.activeReferendums.votes'),
+            width: `${ACTIVE_COLUMN_WIDTH.votes}px`,
+            render: (_v, row) => <VoteChipsCell ourVotes={row.ourVotes} t={t} />,
+          }
+        : null,
       {
         key: 'timeLeftMs',
         title: t('dashboard.activeReferendums.time'),
         sortable: true,
-        width: '80px',
+        width: `${ACTIVE_COLUMN_WIDTH.time}px`,
         render: (_v, row) => <TimeLeftCell timeLeftMs={row.timeLeftMs} />,
       },
       {
         key: 'ayePercent',
         title: '',
-        width: '144px',
+        width: `${ACTIVE_COLUMN_WIDTH.ayeNay}px`,
         render: (_v, row) => <AyeNayCell ayePercent={row.ayePercent} t={t} />,
       },
       {
         key: 'tvlNumeric',
         title: t('dashboard.activeReferendums.tvl'),
         sortable: true,
-        width: '110px',
+        width: `${ACTIVE_COLUMN_WIDTH.tvl}px`,
         render: (_v, row) => <TvlCell referendum={row} />,
       },
-    ],
-    [t],
+    ];
+
+    return columns.filter((column): column is Column<ReferendumRow> => column !== null);
+  }, [t, showVotes]);
+
+  const activeMinWidth =
+    PROPOSAL_MIN_WIDTH + sumWidths(ACTIVE_COLUMN_WIDTH) - (showVotes ? 0 : ACTIVE_COLUMN_WIDTH.votes);
+
+  // A row whose chain has no live connection cannot open its modal: it is
+  // dimmed and inert rather than clickable-then-refused.
+  const activeRowProps = useCallback(
+    (row: ReferendumRow) => ({ disabled: connectionStatuses[row.chainId] !== ConnectionStatus.CONNECTED }),
+    [connectionStatuses],
   );
 
-  const handleActiveRowClick = useCallback((_row: ReferendumRow) => {
-    setSelectedActive(_row);
+  const handleActiveRowClick = useCallback((row: ReferendumRow) => {
+    setSelected({ chainId: row.chainId, referendumId: row.id });
   }, []);
 
   if (!fiatFlag) return null;
@@ -170,10 +243,12 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   if (accountIds.length === 0) {
     return (
       <DashboardWidget>
-        <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
-        <div className="flex flex-col items-center gap-y-1 py-6">
-          <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
-          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
+        <div className="flex h-full min-h-0 flex-col">
+          <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
+          <WidgetEmptyState
+            title={t('dashboard.noSelection.title')}
+            description={t('dashboard.noSelection.governanceDescription')}
+          />
         </div>
       </DashboardWidget>
     );
@@ -185,103 +260,103 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   return (
     <>
       <DashboardWidget>
-        <div className="flex items-center gap-2">
-          <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
-        </div>
-
-        {/* Tab bar */}
-        <div className="mt-2 flex items-center gap-2">
-          <div className="flex gap-1">
-            <TabButton
-              active={isActiveTab}
-              count={activeRefs.length}
-              label={t('dashboard.referendums.activeTab')}
-              onClick={setActiveTab}
-            />
-            <TabButton
-              active={!isActiveTab}
-              count={endedCount}
-              label={t('dashboard.referendums.endedTab')}
-              onClick={setEndedTab}
-            />
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="flex items-center gap-2">
+            <FootnoteText className="text-text-tertiary">{t('dashboard.activeReferendums.title')}</FootnoteText>
           </div>
-          {showFilters && (
-            <div className="ml-auto flex items-center gap-2">
-              <div className="w-[140px]">
-                <Select
-                  height="sm"
-                  placeholder={t('dashboard.activeReferendums.allChains')}
-                  value={chainFilter}
-                  onChange={handleChainFilterChange}
-                >
-                  <Select.Item value={ALL_CHAINS}>
-                    <span>{t('dashboard.activeReferendums.allChains')}</span>
-                  </Select.Item>
-                  {uniqueChains.map((c) => (
-                    <Select.Item key={c.chainId} value={c.chainId}>
-                      <div className="flex items-center gap-1.5">
-                        <img src={c.chainIcon} alt={c.chainName} className="h-5 w-5" />
-                        <span>{c.chainName}</span>
-                      </div>
-                    </Select.Item>
-                  ))}
-                </Select>
-              </div>
-              <div className="w-[200px]">
-                <SearchInput
-                  placeholder={t('dashboard.activeReferendums.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                />
-              </div>
+
+          {/* Tab bar */}
+          <div className="mt-2 flex items-center gap-2">
+            <div className="flex gap-1">
+              <TabButton
+                active={isActiveTab}
+                count={activeRefs.length}
+                label={t('dashboard.referendums.activeTab')}
+                onClick={setActiveTab}
+              />
+              <TabButton
+                active={!isActiveTab}
+                count={endedCount}
+                label={t('dashboard.referendums.endedTab')}
+                onClick={setEndedTab}
+              />
             </div>
+            {showFilters && (
+              <div className="ml-auto flex items-center gap-2">
+                <div className="w-[140px]">
+                  <Select
+                    height="sm"
+                    placeholder={t('dashboard.activeReferendums.allChains')}
+                    value={chainFilter}
+                    onChange={handleChainFilterChange}
+                  >
+                    <Select.Item value={ALL_CHAINS}>
+                      <span>{t('dashboard.activeReferendums.allChains')}</span>
+                    </Select.Item>
+                    {uniqueChains.map((c) => (
+                      <Select.Item key={c.chainId} value={c.chainId}>
+                        <div className="flex items-center gap-1.5">
+                          <img src={c.chainIcon} alt={c.chainName} className="h-5 w-5" />
+                          <span>{c.chainName}</span>
+                        </div>
+                      </Select.Item>
+                    ))}
+                  </Select>
+                </div>
+                <div className="w-[200px]">
+                  <SearchInput
+                    placeholder={t('dashboard.activeReferendums.searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Active tab content */}
+          {isActiveTab && (
+            <>
+              {activePending && activeRefs.length === 0 && <TableSkeleton columns={ACTIVE_SKELETON_COLUMNS} />}
+
+              {!activePending && activeRefs.length === 0 && (
+                <WidgetEmptyState description={t('dashboard.activeReferendums.noReferendums')} />
+              )}
+
+              {activeRefs.length > 0 && activeRows.length === 0 && (
+                <WidgetEmptyState description={t('dashboard.activeReferendums.noResults')} />
+              )}
+
+              {activeRows.length > 0 && (
+                <div className="mt-3 min-h-0 flex-1 overflow-auto overscroll-contain">
+                  <div style={{ minWidth: activeMinWidth }}>
+                    <Table
+                      columns={activeColumns}
+                      data={activeRows}
+                      rowProps={activeRowProps}
+                      stickyHeader
+                      onRowClick={handleActiveRowClick}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Ended tab content — lazy-mounted to avoid expensive hooks until needed */}
+          {!isActiveTab && (
+            <EndedTabContent
+              accountIds={deferredAccountIds}
+              allEntries={allEntries}
+              chainFilter={chainFilter}
+              searchQuery={searchQuery}
+              onCountChange={setEndedCount}
+            />
           )}
         </div>
-
-        {/* Active tab content */}
-        {isActiveTab && (
-          <>
-            {activePending && activeRefs.length === 0 && (
-              <div className="my-4 flex flex-col gap-3">
-                <Skeleton width="100%" height={10} />
-                <Skeleton width="100%" height={10} />
-                <Skeleton width="100%" height={10} />
-              </div>
-            )}
-
-            {!activePending && activeRefs.length === 0 && (
-              <div className="flex flex-col items-center gap-y-1 py-6">
-                <BodyText className="text-text-tertiary">{t('dashboard.activeReferendums.noReferendums')}</BodyText>
-              </div>
-            )}
-
-            {activeRefs.length > 0 && activeRows.length === 0 && (
-              <div className="flex flex-col items-center gap-y-1 py-6">
-                <BodyText className="text-text-tertiary">{t('dashboard.activeReferendums.noResults')}</BodyText>
-              </div>
-            )}
-
-            {activeRows.length > 0 && (
-              <div className="mt-3 max-h-[400px] overflow-y-auto">
-                <Table columns={activeColumns} data={activeRows} onRowClick={handleActiveRowClick} />
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Ended tab content — lazy-mounted to avoid expensive hooks until needed */}
-        {!isActiveTab && (
-          <EndedTabContent
-            accountIds={deferredAccountIds}
-            allEntries={allEntries}
-            chainFilter={chainFilter}
-            searchQuery={searchQuery}
-            onCountChange={setEndedCount}
-          />
-        )}
       </DashboardWidget>
 
-      {selectedActive && <ReferendumDetailModal referendum={selectedActive} onClose={() => setSelectedActive(null)} />}
+      {selected && <DashboardReferendumDetails {...selected} onClose={() => setSelected(null)} />}
     </>
   );
 };
@@ -442,11 +517,19 @@ const UnlockableCell = memo(({ referendum }: { referendum: EndedReferendum }) =>
   const { formatted: tokenFormatted } = formatBalance(referendum.unlockableAmount, referendum.precision);
   const hasUnlockable = referendum.unlockableAmount !== '0';
 
+  // Nothing to release is the common case; a column of "0 DOT" would drown the
+  // rows where there is something.
+  if (!hasUnlockable) {
+    return (
+      <div className="text-right">
+        <FootnoteText className="text-text-tertiary">&mdash;</FootnoteText>
+      </div>
+    );
+  }
+
   return (
     <div className="text-right">
-      <FootnoteText
-        className={cnTw('tabular-nums', hasUnlockable ? 'font-semibold text-text-positive' : 'text-text-tertiary')}
-      >
+      <FootnoteText className="font-semibold whitespace-nowrap text-text-positive tabular-nums">
         {tokenFormatted} {referendum.symbol}
       </FootnoteText>
       {hasUnlockable && (
@@ -485,52 +568,58 @@ const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onC
       {
         key: 'chainIcon',
         title: '',
-        width: '52px',
-        render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} className="h-10 w-10" />,
+        width: `${ENDED_COLUMN_WIDTH.icon}px`,
+        render: (_v, row) => <img src={row.chainIcon} alt={row.chainName} width={24} height={24} className="h-6 w-6" />,
       },
       {
         key: 'idNumeric',
         title: t('dashboard.activeReferendums.id'),
         sortable: true,
-        width: '56px',
+        width: `${ENDED_COLUMN_WIDTH.id}px`,
         render: (_v, row) => <FootnoteText className="font-mono text-text-tertiary">#{row.id}</FootnoteText>,
       },
       {
         key: 'trackId',
         title: t('dashboard.activeReferendums.track'),
-        width: '192px',
+        width: `${ENDED_COLUMN_WIDTH.track}px`,
         render: (_v, row) => <TrackCell trackId={row.trackId} />,
       },
       {
         key: 'title',
         title: t('dashboard.activeReferendums.proposal'),
-        render: (_v, row) => <FootnoteText className="line-clamp-2 text-text-primary">{row.title}</FootnoteText>,
+        render: (_v, row) => (
+          <span title={row.title}>
+            <FootnoteText className="line-clamp-2 text-text-primary">{row.title}</FootnoteText>
+          </span>
+        ),
       },
       {
         key: 'outcome',
         title: t('dashboard.referendums.outcome'),
-        width: '100px',
+        width: `${ENDED_COLUMN_WIDTH.outcome}px`,
         render: (_v, row) => <OutcomeCell outcome={row.outcome} t={t} />,
       },
       {
         key: 'endedAtMs',
         title: t('dashboard.referendums.ended'),
         sortable: true,
-        width: '90px',
+        width: `${ENDED_COLUMN_WIDTH.ended}px`,
         render: (_v, row) => (
-          <FootnoteText className="text-text-tertiary">{formatEndDate(row.endedAtMs, t, formatDate)}</FootnoteText>
+          <FootnoteText className="whitespace-nowrap text-text-tertiary">
+            {formatEndDate(row.endedAtMs, t, formatDate)}
+          </FootnoteText>
         ),
       },
       {
         key: 'unlockableAmount',
         title: t('dashboard.referendums.unlockable'),
-        width: '110px',
+        width: `${ENDED_COLUMN_WIDTH.unlockable}px`,
         render: (_v, row) => <UnlockableCell referendum={row} />,
       },
       {
         key: 'addressesWithLocks',
         title: t('dashboard.referendums.locks'),
-        width: '60px',
+        width: `${ENDED_COLUMN_WIDTH.locks}px`,
         render: (_v, row) => (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-chip-icon px-1.5 text-help-text font-semibold text-white">
             {row.addressesWithLocks}
@@ -547,29 +636,21 @@ const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onC
 
   return (
     <>
-      {endedPending && endedRefs.length === 0 && (
-        <div className="my-4 flex flex-col gap-3">
-          <Skeleton width="100%" height={10} />
-          <Skeleton width="100%" height={10} />
-          <Skeleton width="100%" height={10} />
-        </div>
-      )}
+      {endedPending && endedRefs.length === 0 && <TableSkeleton columns={ENDED_SKELETON_COLUMNS} />}
 
       {!endedPending && endedRefs.length === 0 && (
-        <div className="flex flex-col items-center gap-y-1 py-6">
-          <BodyText className="text-text-tertiary">{t('dashboard.referendums.noEndedReferendums')}</BodyText>
-        </div>
+        <WidgetEmptyState description={t('dashboard.referendums.noEndedReferendums')} />
       )}
 
       {endedRefs.length > 0 && endedRows.length === 0 && (
-        <div className="flex flex-col items-center gap-y-1 py-6">
-          <BodyText className="text-text-tertiary">{t('dashboard.activeReferendums.noResults')}</BodyText>
-        </div>
+        <WidgetEmptyState description={t('dashboard.activeReferendums.noResults')} />
       )}
 
       {endedRows.length > 0 && (
-        <div className="mt-3 max-h-[400px] overflow-y-auto">
-          <Table columns={endedColumns} data={endedRows} onRowClick={handleEndedRowClick} />
+        <div className="mt-3 min-h-0 flex-1 overflow-auto overscroll-contain">
+          <div style={{ minWidth: PROPOSAL_MIN_WIDTH + sumWidths(ENDED_COLUMN_WIDTH) }}>
+            <Table columns={endedColumns} data={endedRows} stickyHeader onRowClick={handleEndedRowClick} />
+          </div>
         </div>
       )}
 

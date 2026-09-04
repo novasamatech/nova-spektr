@@ -16,7 +16,7 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { dashboardAccountsTableFeature } from '@/features/dashboard-accounts-table';
-import { dashboardGovernanceFeature } from '@/features/dashboard-governance';
+import { dashboardGovernanceFeature, dashboardLocksFeature } from '@/features/dashboard-governance';
 import { dashboardNavigationFeature } from '@/features/dashboard-navigation';
 import { dashboardOperationsQueueFeature } from '@/features/dashboard-operations-queue';
 import { dashboardPortfolioOverviewFeature } from '@/features/dashboard-portfolio-overview';
@@ -28,6 +28,7 @@ import { dashboardStakingPositionsFeature } from '@/features/dashboard-staking-p
 import { dashboardStakingRewardsChartFeature } from '@/features/dashboard-staking-rewards-chart';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { governanceUnlockFlowFeature } from '@/features/governance-unlock-flow';
 import { multiTransferFeature } from '@/features/multi-transfer';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
@@ -84,6 +85,11 @@ export const bootstrap = () => {
     dashboardPriceChartsFeature,
     dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
+    dashboardLocksFeature,
+    // Eager, not lazy: the Locks widget above imports this feature statically
+    // and can dispatch `unlockRequested` on the first click, which a lazy
+    // registration might not be around to answer.
+    governanceUnlockFlowFeature,
     dashboardStakingSummaryFeature,
     dashboardStakingTotalStakedFeature,
     dashboardStakingApyFeature,

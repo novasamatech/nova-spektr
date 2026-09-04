@@ -6,8 +6,8 @@ import { type ChainId, type VotingMap } from '@/shared/core';
 import { getRoundedValue } from '@/shared/lib/utils';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
 import { currencySelect } from '@/aggregates/currency-select';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from '../lib/constants';
 
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { type ChainGovernanceData, useChainGovernanceData } from './useChainGovernanceData';
 
 export type ChainGovernanceSummary = ChainGovernanceData & {

@@ -4,8 +4,7 @@ import { useMemo, useRef } from 'react';
 
 import { UnlockChunkType } from '@/shared/api/governance';
 import { type AccountVote, type ChainId, type CompletedReferendum, type VotingMap } from '@/shared/core';
-import { useThrottledSnapshot } from '@/shared/lib/hooks';
-import { entries, getRoundedValue, toAccountId, toShortAddress } from '@/shared/lib/utils';
+import { entries, getRoundedValue, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   useReferendumTitles,
@@ -15,15 +14,16 @@ import {
   useUndecidingTimeout,
   useVoting,
 } from '@/domains/governance';
-import { useBlock, useBlockTime } from '@/domains/network';
+import { useBlockTime } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
 import { locksService, referendumService, votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from '../lib/constants';
+import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import {
   type AllEntry,
   type EntryInfo,
@@ -32,6 +32,7 @@ import {
   formatConviction,
   getVoteDirection,
 } from './useActiveReferendums';
+import { useThrottledBlock } from './useThrottledBlock';
 
 export type EndedVote = OurVote & {
   unlockable: boolean;
@@ -100,7 +101,7 @@ function useChainEndedReferendums(
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
   const votingMap = useMemo(() => {
@@ -125,14 +126,15 @@ function useChainEndedReferendums(
 
   const { data: referendums } = useReferendums({ api });
 
-  const govCurrentBlock = useThrottledSnapshot(useBlock(api).data, 300_000);
+  const { snapshot: govCurrentBlock } = useThrottledBlock(api, chainId);
 
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
 
-  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, 300_000);
-  const blockTime = useThrottledSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
+  const { snapshot: currentBlock } = useThrottledBlock(timelineApi, timelineChainId);
+  // Block time is a per-chain constant (the resource never goes stale).
+  const blockTime = useBlockTime(timelineApi, chains[timelineChainId]).data;
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
@@ -156,6 +158,7 @@ function useChainEndedReferendums(
       const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
+        chainId,
         accountId,
         {
           currentBlockNumber: govCurrentBlock,
@@ -182,7 +185,7 @@ function useChainEndedReferendums(
     }
 
     return set;
-  }, [api, govCurrentBlock, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
+  }, [api, chainId, govCurrentBlock, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
 
   const data = useMemo((): EndedReferendum[] => {
     if (!chain || !asset || !api || currentBlock === null || govCurrentBlock === null || blockTime === null) return [];
@@ -309,7 +312,7 @@ export const useEndedReferendums = (accountIds: string[], allEntries: AllEntry[]
   const { data: prices } = useAssetsPrices(pricesParams);
 
   const accountIdsKey = accountIds.join(',');
-  const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
+  const typedAccountIds = useMemo(() => toSubstrateAccountIds(accountIds), [accountIdsKey]);
 
   const entryMap = useMemo(() => {
     const map = new Map<string, EntryInfo>();

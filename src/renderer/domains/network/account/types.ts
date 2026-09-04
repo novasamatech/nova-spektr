@@ -64,3 +64,23 @@ export type AccountValidationError = { account: AnyAccount; message: string };
  * (`<NamedAccount walletNameAs>`) and the search side so they cannot drift.
  */
 export type WalletNameMode = 'override' | 'fallback';
+
+/**
+ * Why nothing local can sign for a key on a chain.
+ *
+ * - `no-local-account` — a contact, or a key held only by a hidden wallet.
+ * - `chain-unsupported` — the wallet holds the key but cannot act on this chain,
+ *   e.g. a WalletConnect session paired without it.
+ * - `watch-only` — the key is imported for watching only; it never signs.
+ * - `no-signer` — the account is on this chain, but nothing signs for it, e.g. a
+ *   proxied account whose delegate is not local.
+ */
+export type SigningBlockReason = 'no-local-account' | 'chain-unsupported' | 'watch-only' | 'no-signer';
+
+/**
+ * Either an account to sign with, or the reason there is none — never both,
+ * never neither, so a caller that checked `account` needs no fallback reason.
+ */
+export type SigningAccountResolution =
+  | { account: AnyAccount; reason: null }
+  | { account: null; reason: SigningBlockReason };

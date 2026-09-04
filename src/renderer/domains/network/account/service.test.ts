@@ -83,6 +83,58 @@ describe('account service', () => {
     accountService.accountCollectChildrenPipeline.resetHandlers();
   });
 
+  /**
+   * The derived constructs every graph test needs: a proxied account reaching
+   * its delegate, a multisig reaching its signatories.
+   */
+  interface TestProxied extends ChainAccount {
+    accountType: AccountType.PROXIED;
+    connections: { proxyAccountId: AccountId }[];
+  }
+
+  interface TestMultisig extends UniversalAccount {
+    accountType: AccountType.MULTISIG;
+    signatories: { accountId: AccountId }[];
+  }
+
+  const isTestProxied = (account: AnyAccount): account is TestProxied =>
+    'accountType' in account && account.accountType === AccountType.PROXIED;
+
+  const isTestMultisig = (account: AnyAccount): account is TestMultisig =>
+    'accountType' in account && account.accountType === AccountType.MULTISIG;
+
+  /**
+   * Mirrors the real SDK handlers: an account acts on the chain it is bound to,
+   * a key the user holds signs while a derived construct does not, and a
+   * proxied / multisig collects its delegate / signatories as children.
+   */
+  const registerHandlers = () => {
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
+      available: () => true,
+    });
+    // a "signable" leaf is a key the user holds — a Vault or WalletConnect
+    // account; proxied, multisig and watch-only constructs are not
+    accountService.accountActionPermissionAnyOf.registerHandler({
+      body: ({ account }) =>
+        account.signingType === SigningType.POLKADOT_VAULT || account.signingType === SigningType.WALLET_CONNECT,
+      available: () => true,
+    });
+    accountService.accountCollectChildrenPipeline.registerHandler({
+      body(children, { account, accounts }) {
+        if (isTestProxied(account)) {
+          return accounts.filter(a => account.connections.some(c => c.proxyAccountId === a.accountId)).concat(children);
+        }
+        if (isTestMultisig(account)) {
+          return accounts.filter(a => account.signatories.some(s => s.accountId === a.accountId)).concat(children);
+        }
+
+        return children;
+      },
+      available: () => true,
+    });
+  };
+
   it('should check account types', async () => {
     expect(accountService.isChainAccount(chainAccount)).toEqual(true);
     expect(accountService.isChainAccount(universalAccount)).toEqual(false);
@@ -402,52 +454,9 @@ describe('account service', () => {
   });
 
   describe('findAccountsWithoutSigners', () => {
-    interface TestProxied extends ChainAccount {
-      accountType: AccountType.PROXIED;
-      connections: { proxyAccountId: AccountId }[];
-    }
-
-    interface TestMultisig extends UniversalAccount {
-      accountType: AccountType.MULTISIG;
-      signatories: { accountId: AccountId }[];
-    }
-
-    const isTestProxied = (account: AnyAccount): account is TestProxied =>
-      'accountType' in account && account.accountType === AccountType.PROXIED;
-
-    const isTestMultisig = (account: AnyAccount): account is TestMultisig =>
-      'accountType' in account && account.accountType === AccountType.MULTISIG;
-
     const chains: Record<string, Chain> = {
       [polkadotChainId]: polkadotChain,
       [kusamaChainId]: kusamaChain,
-    };
-
-    const registerHandlers = () => {
-      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
-        body: ({ account, chain }) =>
-          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
-        available: () => true,
-      });
-      // a "signable" leaf is a Polkadot Vault key; derived accounts are watch-only
-      accountService.accountActionPermissionAnyOf.registerHandler({
-        body: ({ account }) => account.signingType === SigningType.POLKADOT_VAULT,
-        available: () => true,
-      });
-      accountService.accountCollectChildrenPipeline.registerHandler({
-        body(children, { account, accounts }) {
-          if (isTestProxied(account)) {
-            return accounts
-              .filter(a => account.connections.some(c => c.proxyAccountId === a.accountId))
-              .concat(children);
-          }
-          if (isTestMultisig(account)) {
-            return accounts.filter(a => account.signatories.some(s => s.accountId === a.accountId)).concat(children);
-          }
-          return children;
-        },
-        available: () => true,
-      });
     };
 
     const signerKey: ChainAccount = {
@@ -555,6 +564,206 @@ describe('account service', () => {
 
       // no chains to build a graph on → nothing is evaluated, so nothing is deleted
       expect(accountService.findAccountsWithoutSigners([proxied], {})).toEqual([]);
+    });
+  });
+
+  describe('resolveSigningAccount', () => {
+    /**
+     * A watch-only wallet stores its key as a universal account tagged
+     * WATCH_ONLY.
+     */
+    interface TestWatchOnly extends UniversalAccount {
+      accountType: AccountType.WATCH_ONLY;
+    }
+
+    const keyId = createAccountId('locked');
+    const signatoryId = createAccountId('signatory');
+    const delegateId = createAccountId('delegate');
+
+    const createKeyed = (overrides: Partial<ChainAccount> & Pick<ChainAccount, 'id'>): ChainAccount => ({
+      type: 'chain',
+      name: '',
+      walletId: 1,
+      chainId: polkadotChainId,
+      accountId: keyId,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.POLKADOT_VAULT,
+      createdAt: 0,
+      ...overrides,
+    });
+
+    const createWatchOnly = (): TestWatchOnly => ({
+      id: 'watch-only',
+      type: 'universal',
+      name: '',
+      walletId: 4,
+      accountId: keyId,
+      accountType: AccountType.WATCH_ONLY,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: 0,
+    });
+
+    const createMultisig = (): TestMultisig => ({
+      id: 'multisig',
+      type: 'universal',
+      name: '',
+      walletId: 2,
+      accountId: keyId,
+      accountType: AccountType.MULTISIG,
+      signatories: [{ accountId: signatoryId }],
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.MULTISIG,
+      createdAt: 0,
+    });
+
+    it('reports no-local-account when the key belongs to nobody local', () => {
+      registerHandlers();
+
+      expect(accountService.resolveSigningAccount([], polkadotChain, [])).toEqual({
+        account: null,
+        reason: 'no-local-account',
+      });
+    });
+
+    it('reports chain-unsupported for a WalletConnect session that never covered the chain', () => {
+      registerHandlers();
+
+      // A WalletConnect wallet carries one account per session chain, all
+      // sharing the key. Every one of them can sign — none of them is on
+      // Polkadot, so the block is about the chain, not about the key.
+      const wcAccounts = [kusamaChainId].map((chainId, index) => ({
+        ...createKeyed({ id: `wc-${index}`, walletId: 18, chainId, signingType: SigningType.WALLET_CONNECT }),
+        accountType: AccountType.WALLET_CONNECT,
+      }));
+
+      expect(wcAccounts.every(account => accountService.hasPermissionToMakeActions(account))).toBe(true);
+      expect(accountService.resolveSigningAccount(wcAccounts, polkadotChain, wcAccounts)).toEqual({
+        account: null,
+        reason: 'chain-unsupported',
+      });
+
+      // …and it signs normally on a chain the session does cover.
+      expect(accountService.resolveSigningAccount(wcAccounts, kusamaChain, wcAccounts).account).toBe(wcAccounts[0]);
+    });
+
+    it('reports chain-unsupported for a proxied account bound to another chain', () => {
+      registerHandlers();
+
+      const proxiedOnKusama: TestProxied = {
+        ...createKeyed({ id: 'proxied', walletId: 2, chainId: kusamaChainId }),
+        accountType: AccountType.PROXIED,
+        signingType: SigningType.WATCH_ONLY,
+        connections: [{ proxyAccountId: delegateId }],
+      };
+
+      expect(accountService.resolveSigningAccount([proxiedOnKusama], polkadotChain, [proxiedOnKusama])).toEqual({
+        account: null,
+        reason: 'chain-unsupported',
+      });
+
+      // A candidate list mixing the two picks the one that can actually sign
+      // here — the off-chain proxied account is skipped rather than deciding
+      // the verdict for the whole list, even listed first.
+      const vaultOnPolkadot = createKeyed({ id: 'vault', walletId: 4 });
+
+      expect(
+        accountService.resolveSigningAccount([proxiedOnKusama, vaultOnPolkadot], polkadotChain, [
+          proxiedOnKusama,
+          vaultOnPolkadot,
+        ]).account,
+      ).toBe(vaultOnPolkadot);
+
+      // …and on the chain it belongs to it signs through its local delegate.
+      const delegate = createKeyed({
+        id: 'delegate',
+        walletId: 3,
+        chainId: kusamaChainId,
+        accountId: delegateId,
+      });
+
+      expect(
+        accountService.resolveSigningAccount([proxiedOnKusama], kusamaChain, [proxiedOnKusama, delegate]).account,
+      ).toBe(proxiedOnKusama);
+    });
+
+    it('reports watch-only when nothing but a watch-only account holds the key', () => {
+      registerHandlers();
+
+      const watchOnly = createWatchOnly();
+
+      expect(accountService.resolveSigningAccount([watchOnly], polkadotChain, [watchOnly])).toEqual({
+        account: null,
+        reason: 'watch-only',
+      });
+    });
+
+    it('reports no-signer when an unsignable non-watch-only account shares the key', () => {
+      registerHandlers();
+
+      // The generic text has to win: "this is a watch-only account" would be a
+      // lie about the orphan multisig sharing the key.
+      const candidates = [createWatchOnly(), createMultisig()];
+
+      expect(accountService.resolveSigningAccount(candidates, polkadotChain, candidates)).toEqual({
+        account: null,
+        reason: 'no-signer',
+      });
+    });
+
+    it('falls back to a multisig that reaches a local signatory', () => {
+      registerHandlers();
+
+      const multisig = createMultisig();
+      const signatory = createKeyed({ id: 'signatory', walletId: 3, accountId: signatoryId });
+
+      expect(accountService.resolveSigningAccount([multisig], polkadotChain, [multisig, signatory]).account).toBe(
+        multisig,
+      );
+    });
+
+    it('prefers the account signing directly over an equally valid multisig route', () => {
+      registerHandlers();
+
+      const multisig = createMultisig();
+      const signatory = createKeyed({ id: 'signatory', walletId: 3, accountId: signatoryId });
+      const keyed = createKeyed({ id: 'vault', walletId: 1 });
+
+      // Multisig first, as auto-discovery would order it.
+      expect(
+        accountService.resolveSigningAccount([multisig, keyed], polkadotChain, [multisig, keyed, signatory]).account,
+      ).toBe(keyed);
+    });
+
+    it('lets the preferred wallet win the tie when the same key lives in two wallets', () => {
+      registerHandlers();
+
+      const inVault = createKeyed({ id: 'vault', walletId: 1 });
+      const inOtherWallet = createKeyed({ id: 'other', walletId: 7 });
+      const candidates = [inVault, inOtherWallet];
+
+      expect(
+        accountService.resolveSigningAccount(candidates, polkadotChain, candidates, { preferredWalletId: 7 }).account,
+      ).toBe(inOtherWallet);
+      // …and without a preference the input order stands.
+      expect(accountService.resolveSigningAccount(candidates, polkadotChain, candidates).account).toBe(inVault);
+    });
+
+    it('keeps the preference a tie-break within a tier, not an override across tiers', () => {
+      registerHandlers();
+
+      const inVault = createKeyed({ id: 'vault', walletId: 1 });
+      const multisig = { ...createMultisig(), walletId: 7 };
+      const signatory = createKeyed({ id: 'signatory', walletId: 3, accountId: signatoryId });
+      const candidates = [inVault, multisig];
+
+      // The multisig sits in the preferred wallet and still loses: signing
+      // directly is one click, the multisig route needs signatures collected.
+      expect(
+        accountService.resolveSigningAccount(candidates, polkadotChain, [...candidates, signatory], {
+          preferredWalletId: 7,
+        }).account,
+      ).toBe(inVault);
     });
   });
 

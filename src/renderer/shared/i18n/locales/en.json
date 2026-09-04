@@ -562,7 +562,8 @@
     },
     "noSelection": {
       "title": "No accounts selected",
-      "description": "Select accounts above to view your balance"
+      "description": "Select accounts above to view your balance",
+      "governanceDescription": "Select accounts above to see their governance activity"
     },
     "operationsQueue": {
       "title": "Operations Queue",
@@ -733,6 +734,60 @@
       "totalStaked": "Total staked",
       "noStaking": "No active staking positions"
     },
+    "governanceLocks": {
+      "rowsCount_one": "{count} lock",
+      "rowsCount_other": "{count} locks",
+      "claimableOnly": "Claimable only",
+      "allChains": "All chains",
+      "account": "Account",
+      "chain": "Chain",
+      "locked": "Locked",
+      "claimable": "Claimable",
+      "pending": "Pending",
+      "delegated": "Delegated",
+      "tracks": "Tracks",
+      "action": "Action",
+      "noLocks": "No governance locks found",
+      "noLocksDescription": "Locks appear once one of the selected accounts votes or delegates on Polkadot or Kusama Asset Hub",
+      "noResults": "No locks match your filters",
+      "unlock": "Unlock",
+      "undelegate": "Undelegate",
+      "needsSignatories": "Needs signatories",
+      "permissionless": "permissionless",
+      "watchOnly": "Watch-only",
+      "nothingClaimable": "Nothing claimable",
+      "inDays_one": "~in {count} day · {date}",
+      "inDays_other": "~in {count} days · {date}",
+      "dateUnavailable": "date unavailable",
+      "claimableCaption": "{amount} claimable",
+      "delegatedCaption": "{amount} delegated",
+      "moreTracks": "+{count}",
+      "tracksCount_one": "{count} track",
+      "tracksCount_other": "{count} tracks",
+      "toast": {
+        "nothingClaimable": "Nothing left to unlock — the lock was released or is held by an active vote again",
+        "nothingDelegated": "Nothing left to undelegate — the delegation was already revoked"
+      },
+      "hint": {
+        "unlock": "Release {amount} — signed by this account",
+        "multisig": "Signing creates a pending operation; the funds stay locked until the signatories approve",
+        "permissionless": "unlock(track, target) is permissionless — a local account pays the fee and releases this address' expired lock",
+        "watchOnly": "Remove vote must be signed by the voter and you hold no key for this address",
+        "noLocalAccount": "This account isn't in your wallets",
+        "chainUnsupported": "Your wallet can't sign on this network",
+        "noSigner": "No account in your wallets can sign this unlock",
+        "nothingClaimable": "The whole lock is still held by an active vote",
+        "nothingClaimableUntil": "The whole lock is still held by an active vote — estimated release {date}",
+        "undelegate_one": "Revokes the delegation on 1 track; balance with conviction stays locked until its period ends",
+        "undelegate_other": "Revokes the delegation on {count} tracks; balance with conviction stays locked until its period ends",
+        "undelegateWatchOnly": "Undelegate must be signed by the delegator and you hold no key for this address",
+        "chainDisconnected": "Chain is not connected",
+        "lockedTooltip": "The largest of the account's locks on this chain — never the sum of its votes",
+        "claimableTooltip": "Net amount that becomes transferable once released",
+        "pendingTooltip": "Still locked by an active vote. Dates are estimated from block height",
+        "delegatedTooltip": "Locked by delegation — released only when the delegation is removed"
+      }
+    },
     "governanceOverview": {
       "title": "Governance Overview",
       "votingAccounts": "Voting accounts",
@@ -784,23 +839,18 @@
         "endedTitle": "Ended Referendum",
         "lockStatus": "Lock Status",
         "endedDate": "Ended {date}"
+      },
+      "hint": {
+        "loadingTimeout": "Taking longer than usual — the chain may be disconnected or still syncing"
       }
     },
-    "unlockSchedule": {
-      "title": "Unlock Schedule",
+    "locks": {
+      "title": "Locks",
       "claimableNow": "Claimable",
       "pendingLocks": "Pending",
       "delegated": "Delegated",
-      "upcomingUnlocks": "Upcoming Unlocks",
-      "noLocks": "No governance locks found",
-      "accountCount": "{count} accounts",
-      "breakdown": {
-        "account": "Account",
-        "amount": "Amount",
-        "chain": "Chain",
-        "share": "Share",
-        "accountCount": "{count} accounts"
-      }
+      "fullView": "Full view",
+      "fullViewTitle": "Locks"
     },
     "activeReferendums": {
       "title": "Referenda",
@@ -820,13 +870,11 @@
       "time": "Time",
       "tvl": "TVL",
       "detail": {
-        "title": "Referendum Details",
         "ourVotes": "Our Votes",
         "account": "Account",
         "vote": "Vote",
         "amount": "Amount",
-        "conviction": "Conviction",
-        "value": "Value (USD)"
+        "conviction": "Conviction"
       }
     },
     "priceCharts": {
@@ -2349,7 +2397,8 @@
       "votes_one": "{votes} vote",
       "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
-      "votingSummary": "Summary"
+      "votingSummary": "Summary",
+      "votingAs": "Voting as {wallet}"
     },
     "referendums": {
       "approved": "Approved",
@@ -2484,6 +2533,26 @@
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
       "title": "My votes"
+    }
+  },
+  "governanceUnlockFlow": {
+    "title": "Unlock governance lock",
+    "undelegateTitle": "Undelegate",
+    "confirm": {
+      "releases": "Releases",
+      "target": "Unlocks for",
+      "delegated": "Delegated",
+      "undelegateTarget": "Undelegates for",
+      "calls": "Calls",
+      "callsCount_one": "{count} call",
+      "callsCount_other": "{count} calls",
+      "unlockAction": "Unlock · {track}",
+      "removeVoteAction": "Remove vote · #{referendum} · {track}",
+      "undelegateAction": "Undelegate · {track}",
+      "permissionlessNotice": "You pay the network fee for this release. The unlocked funds stay on the account they belong to — nothing is transferred to you.",
+      "hint": "Releasing removes expired votes and unlocks the conviction lock. The network fee is paid by the signing account.",
+      "hintUnlockOnly": "Releasing unlocks the expired conviction lock. The network fee is paid by the signing account.",
+      "hintUndelegate": "Revoking returns the delegated balance to your control. Delegations with conviction stay locked until their period ends; those without are unlocked in the same transaction."
     }
   },
   "importDB": {

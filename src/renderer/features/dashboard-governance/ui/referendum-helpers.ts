@@ -1,6 +1,7 @@
 import { type TFunction } from 'i18next';
 
 import { type EndedReferendum } from '../hooks/useEndedReferendums';
+import { DISPLAY_DATE_FORMAT } from '../lib/constants';
 
 type FormatDate = (date: Date | number, format: string) => string;
 
@@ -28,5 +29,5 @@ export function formatEndDate(ms: number, t: TFunction, formatDate: FormatDate):
   if (daysAgo === 1) return t('dashboard.referendums.time.daysAgo', { count: 1 });
   if (daysAgo < 30) return t('dashboard.referendums.time.daysAgo', { count: daysAgo });
 
-  return formatDate(ms, 'MMM d, yyyy');
+  return formatDate(ms, DISPLAY_DATE_FORMAT);
 }

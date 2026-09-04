@@ -3,10 +3,8 @@ import { default as BigNumber } from 'bignumber.js';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
-import { type Chunks, UnlockChunkType } from '@/shared/api/governance';
-import { type ChainId, type TrackInfo, type VotingMap } from '@/shared/core';
-import { useThrottledSnapshot } from '@/shared/lib/hooks';
-import { entries, toAccountId } from '@/shared/lib/utils';
+import { type ChainId, type VotingMap } from '@/shared/core';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   $referendumsFullyLoaded,
@@ -16,37 +14,43 @@ import {
   useUndecidingTimeout,
   useVoting,
 } from '@/domains/governance';
-import { useBlock, useBlockTime } from '@/domains/network';
-import { locksService, votingService } from '@/entities/governance';
+import { useBlockTime } from '@/domains/network';
+import { votingService } from '@/entities/governance';
 import { networkModel, useApi } from '@/entities/network';
+import { type LiveClaimInputs } from '../lib/deriveFreshClaim';
+import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
+import {
+  type AccountLockSummary,
+  type Delegation,
+  getLockedAmount,
+  summarizeAccountLocks,
+} from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
+import { useThrottledBlock } from './useThrottledBlock';
 
 type ClaimResult = {
   claimable: BN;
-  claimableByAccount: Record<string, BN>;
-  unlockChunks: AccountUnlockChunk[];
-  delegated: BN;
+  locksByAccount: Record<string, AccountLockSummary>;
 };
-const EMPTY_CLAIM: ClaimResult = { claimable: BN_ZERO, claimableByAccount: {}, unlockChunks: [], delegated: BN_ZERO };
-
-export type AccountUnlockChunk = {
-  accountId: string;
-  block: number;
-  amount: string;
-  tracks: string[];
-  type: 'pending_lock' | 'pending_delegation';
+const EMPTY_CLAIM: ClaimResult = {
+  claimable: BN_ZERO,
+  locksByAccount: {},
 };
 
-export type ChainGovernanceData = {
+/**
+ * Everything a chain's widgets read. It carries `LiveClaimInputs` whole — the
+ * voting map, the tracks, the live head and the schedule inputs — so the shape
+ * the click-time re-derivation consumes is declared once, in the lib that
+ * consumes it, and cannot drift from the hook that produces it.
+ */
+export type ChainGovernanceData = LiveClaimInputs & {
   activeVotingAccounts: number;
   totalLocked: string;
   claimableAmount: string;
-  claimableByAccount: Record<string, string>;
   averageConviction: number;
-  unlockChunks: AccountUnlockChunk[];
-  delegatedAmount: string;
   blockTimeMs: number | null;
+  /** A `BLOCK_SNAPSHOT_THROTTLE_MS` snapshot of `liveBlock`. */
   currentBlock: number | null;
   chainId: ChainId;
   chainName: string;
@@ -55,8 +59,8 @@ export type ChainGovernanceData = {
   icon: { monochrome: string; colored: string };
   priceId: string;
   pending: boolean;
-  votingMap: VotingMap;
-  tracks: Record<string, TrackInfo>;
+  /** Per selected account with governance activity on this chain. */
+  locksByAccount: Record<string, AccountLockSummary>;
 };
 
 function computeGovernanceStats(votingMap: VotingMap) {
@@ -64,8 +68,9 @@ function computeGovernanceStats(votingMap: VotingMap) {
   let totalLocked = new BN(0);
   let totalWeight = new BigNumber(0);
   let weightedConvictionSum = new BigNumber(0);
+  const maxLockByAccount: Record<string, BN> = {};
 
-  for (const [, trackVoting] of Object.entries(votingMap)) {
+  for (const [accountId, trackVoting] of Object.entries(votingMap)) {
     let accountMaxLock = new BN(0);
     let hasActivity = false;
 
@@ -111,36 +116,14 @@ function computeGovernanceStats(votingMap: VotingMap) {
 
     if (hasActivity) {
       activeVotingAccounts++;
+      maxLockByAccount[accountId] = accountMaxLock;
     }
     totalLocked = totalLocked.add(accountMaxLock);
   }
 
   const averageConviction = totalWeight.gt(0) ? weightedConvictionSum.div(totalWeight).toNumber() : 0;
 
-  return { activeVotingAccounts, totalLocked, averageConviction };
-}
-
-function collectChunks(schedule: Chunks[], accountId: string, target: AccountUnlockChunk[]) {
-  for (const chunk of schedule) {
-    if (chunk.type === UnlockChunkType.PENDING_LOCK && locksService.isClaimAt(chunk.claimableAt)) {
-      const chunkTracks = [...new Set(chunk.affected.map((a) => a.trackId))];
-      target.push({
-        accountId,
-        block: chunk.claimableAt.block,
-        amount: chunk.amount.toString(),
-        tracks: chunkTracks,
-        type: 'pending_lock',
-      });
-    } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
-      target.push({
-        accountId,
-        block: 0,
-        amount: chunk.amount.toString(),
-        tracks: [],
-        type: 'pending_delegation',
-      });
-    }
-  }
+  return { activeVotingAccounts, totalLocked, averageConviction, maxLockByAccount };
 }
 
 export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) => {
@@ -148,7 +131,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const api = useApi(chainId);
 
   const accountIdsKey = accountIds.join(',');
-  const typedAccountIds = useMemo(() => accountIds.map((id) => toAccountId(id)), [accountIdsKey]);
+  const typedAccountIds = useMemo(() => toSubstrateAccountIds(accountIds), [accountIdsKey]);
 
   const { data: tracks, pending: tracksPending } = useTracks({ api });
   const trackIds = useMemo(() => Object.keys(tracks), [tracks]);
@@ -156,7 +139,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   const { data: rawVotingMap, pending: votingPending } = useVoting({
     api,
     tracks: trackIds.length > 0 ? trackIds : null,
-    accounts: typedAccountIds,
+    accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
   // The subscription cache may retain data from previously selected accounts.
@@ -187,8 +170,12 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     accounts: typedAccountIds.length > 0 ? typedAccountIds : null,
   });
 
-  const currentBlock = useThrottledSnapshot(useBlock(api).data, 300_000);
-  const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, 300_000);
+  const { live: liveBlock, snapshot: currentBlock } = useThrottledBlock(api, chainId);
+  // Block time is a per-chain constant (the resource never goes stale), so it
+  // needs no snapshot of its own.
+  const blockTime = useBlockTime(api, chains[chainId]).data;
+
+  const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 
   const claimData = useMemo(() => {
     if (
@@ -205,9 +192,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
 
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
     let totalClaimable = BN_ZERO;
-    let totalDelegated = BN_ZERO;
-    const claimableByAccount: Record<string, BN> = {};
-    const allChunks: AccountUnlockChunk[] = [];
+    const locksByAccount: Record<string, AccountLockSummary> = {};
 
     for (const accountId of typedAccountIds) {
       const votingByTrack = votingMap[accountId];
@@ -216,6 +201,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
+        chainId,
         accountId,
         {
           currentBlockNumber: currentBlock,
@@ -231,25 +217,35 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
         referendums,
       );
 
-      collectChunks(schedule, accountId, allChunks);
-
-      let accountClaimable = BN_ZERO;
-      for (const chunk of schedule) {
-        if (chunk.type === UnlockChunkType.CLAIMABLE && !chunk.amount.isZero()) {
-          totalClaimable = totalClaimable.add(chunk.amount);
-          accountClaimable = accountClaimable.add(chunk.amount);
-        } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
-          totalDelegated = totalDelegated.add(chunk.amount);
+      const delegations: Delegation[] = [];
+      for (const [trackId, voting] of entries(votingByTrack)) {
+        if (votingService.isDelegating(voting)) {
+          delegations.push({
+            trackId,
+            target: voting.target,
+            balance: voting.balance,
+            conviction: voting.conviction,
+          });
         }
       }
-      if (!accountClaimable.isZero()) {
-        claimableByAccount[accountId] = accountClaimable;
-      }
+
+      const summary = summarizeAccountLocks(
+        schedule,
+        getLockedAmount(stats.maxLockByAccount[accountId] ?? BN_ZERO, accountTrackLocks),
+        delegations,
+      );
+
+      locksByAccount[accountId] = summary;
+      totalClaimable = totalClaimable.add(summary.claimable);
     }
 
-    return { claimable: totalClaimable, claimableByAccount, unlockChunks: allChunks, delegated: totalDelegated };
+    return {
+      claimable: totalClaimable,
+      locksByAccount,
+    };
   }, [
     api,
+    chainId,
     currentBlock,
     typedAccountIds,
     votingMap,
@@ -258,9 +254,21 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     trackLocks,
     undecidingTimeout,
     referendumsFullyLoaded,
+    stats,
   ]);
 
-  const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
+  const scheduleInputs = useMemo(() => {
+    if (!api || !referendumsFullyLoaded || Object.keys(tracks).length === 0 || referendums.length === 0) {
+      return null;
+    }
+
+    return {
+      referendums,
+      trackLocks,
+      undecidingTimeout,
+      voteLockingPeriod: api.consts.convictionVoting.voteLockingPeriod.toNumber(),
+    };
+  }, [api, referendumsFullyLoaded, tracks, referendums, trackLocks, undecidingTimeout]);
 
   // Sticky pending — only show skeleton on initial load, not on account changes.
   // Flip when pending states resolve (not when data appears), so accounts with
@@ -282,12 +290,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     activeVotingAccounts: stats.activeVotingAccounts,
     totalLocked: stats.totalLocked.toString(),
     claimableAmount: claimData.claimable.toString(),
-    claimableByAccount: Object.fromEntries(
-      Object.entries(claimData.claimableByAccount).map(([id, bn]) => [id, bn.toString()]),
-    ),
     averageConviction: stats.averageConviction,
-    unlockChunks: claimData.unlockChunks,
-    delegatedAmount: claimData.delegated.toString(),
     blockTimeMs: blockTime?.toNumber() ?? null,
     currentBlock,
     chainId,
@@ -299,5 +302,8 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     pending,
     votingMap,
     tracks,
+    locksByAccount: claimData.locksByAccount,
+    liveBlock: liveBlock ?? null,
+    scheduleInputs,
   } satisfies ChainGovernanceData;
 };

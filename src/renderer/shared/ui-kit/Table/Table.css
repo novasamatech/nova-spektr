@@ -6,6 +6,13 @@
    * in one place rather than being spelled `white` in four.
    */
   --table-surface: white;
+  /*
+   * The selected row's tint, named because it is painted twice: as the row's
+   * background, and again on the pinned cell, which hides the row behind its
+   * own opaque surface.
+   */
+  --table-row-selected: color-mix(in srgb, var(--accent-background) 6%, transparent);
+  --table-row-selected-hover: color-mix(in srgb, var(--accent-background) 10%, transparent);
 
   border: none;
   background-color: var(--table-surface);
@@ -168,7 +175,7 @@
 }
 
 .table-row--selected {
-  background-color: color-mix(in srgb, var(--accent-background) 6%, transparent);
+  background-color: var(--table-row-selected);
 }
 
 /*
@@ -181,7 +188,7 @@
 }
 
 .table-row--selected:hover {
-  background-color: color-mix(in srgb, var(--accent-background) 10%, transparent);
+  background-color: var(--table-row-selected-hover);
 }
 
 .table-cell {
@@ -193,4 +200,62 @@
   line-height: 20px;
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.13px;
+}
+
+/*
+ * A column pinned to the right edge of the caller's horizontal scroll. It
+ * paints its own surface so the columns sliding under it stay hidden, and the
+ * hover tint composites on top of that surface the same way the sticky header
+ * does — a plain `background-color` swap would drop the tint entirely.
+ */
+.table-header-cell--pinned-right,
+.table-cell--pinned-right {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  box-shadow: inset 1px 0 0 var(--divider);
+  background-color: var(--table-surface);
+}
+
+.table-container--sticky-header .table-header-cell--pinned-right {
+  z-index: 2;
+  box-shadow:
+    inset 1px 0 0 var(--divider),
+    inset 0 -1px 0 var(--divider);
+}
+
+.table-row:hover .table-cell--pinned-right {
+  background-image: linear-gradient(var(--action-background-hover), var(--action-background-hover));
+}
+
+/* A disabled row does not react to the pointer — the pinned cell included. */
+.table-row--disabled:hover .table-cell--pinned-right {
+  background-image: none;
+}
+
+/*
+ * The selected tints repeated on the pinned cell: the cell paints an opaque
+ * surface of its own, so the row's background never shows through it.
+ *
+ * Both rules are needed, and neither is redundant. `.table-row--selected
+ * .table-cell--pinned-right` is (0,2,0) and *loses* to `.table-row:hover
+ * .table-cell--pinned-right` above, which is (0,3,0) — so on a hovered selected
+ * row it is the `.table-row--selected:hover` rule, and only that rule, that
+ * keeps the accent tint instead of the plain hover grey. It has the same
+ * (0,3,0) specificity as the plain hover rule and wins only because it comes
+ * later in the file — do not reorder these rules.
+ *
+ * It also ties at (0,3,0) with the disabled rule above it, so again the order
+ * decides, and it is deliberate: on a row that is both selected and disabled,
+ * selection wins and the pinned cell keeps the accent. It has to, because the
+ * row behind it settles the same tie the same way — `.table-row--selected:hover`
+ * is written after `.table-row--disabled:hover`, so the row shows the accent —
+ * and a pinned cell that went grey there would cut a hole in its own row.
+ */
+.table-row--selected .table-cell--pinned-right {
+  background-image: linear-gradient(var(--table-row-selected), var(--table-row-selected));
+}
+
+.table-row--selected:hover .table-cell--pinned-right {
+  background-image: linear-gradient(var(--table-row-selected-hover), var(--table-row-selected-hover));
 }

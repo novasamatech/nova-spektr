@@ -36,7 +36,7 @@ export const GovernanceOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <FootnoteText className="text-text-tertiary">{t('dashboard.governanceOverview.title')}</FootnoteText>
         <div className="flex flex-col items-center gap-y-1 py-6">
           <SmallTitleText className="text-text-tertiary">{t('dashboard.noSelection.title')}</SmallTitleText>
-          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.description')}</BodyText>
+          <BodyText className="text-text-tertiary">{t('dashboard.noSelection.governanceDescription')}</BodyText>
         </div>
       </DashboardWidget>
     );
@@ -106,8 +106,9 @@ type ChainRowProps = {
 };
 
 const ChainRow = memo(({ chain, currency, t, onClick }: ChainRowProps) => {
-  const { formatted, suffix } = formatBalance(chain.totalLocked, chain.precision);
-  const { formatted: claimFormatted, suffix: claimSuffix } = formatBalance(chain.claimableAmount, chain.precision);
+  // `formatted` already carries the magnitude suffix (`8.9M`).
+  const { formatted } = formatBalance(chain.totalLocked, chain.precision);
+  const { formatted: claimFormatted } = formatBalance(chain.claimableAmount, chain.precision);
   const hasClaimable = chain.claimableAmount !== '0';
 
   return (
@@ -121,8 +122,7 @@ const ChainRow = memo(({ chain, currency, t, onClick }: ChainRowProps) => {
           <div>
             <FootnoteText className="text-text-primary">{chain.chainName}</FootnoteText>
             <FootnoteText className="text-text-tertiary">
-              {formatted}
-              {suffix ? ` ${suffix}` : ''} {chain.symbol}
+              {formatted} {chain.symbol}
               {' · '}
               {t('dashboard.governanceOverview.votingAccounts')}: {chain.activeVotingAccounts}
               {' · '}
@@ -139,8 +139,7 @@ const ChainRow = memo(({ chain, currency, t, onClick }: ChainRowProps) => {
       {hasClaimable && (
         <div className="flex items-center justify-between pr-2 pl-10">
           <FootnoteText className="text-text-positive">
-            {t('dashboard.governanceOverview.unlockable')} {claimFormatted}
-            {claimSuffix ? ` ${claimSuffix}` : ''} {chain.symbol}
+            {t('dashboard.governanceOverview.unlockable')} {claimFormatted} {chain.symbol}
           </FootnoteText>
           <FootnoteText className="text-text-positive">
             <Price amount={chain.claimableFiat} currency={currency} />
