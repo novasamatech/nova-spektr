@@ -1,20 +1,29 @@
 import { type ClaimAction } from '@/shared/api/governance';
 import { type Chain, type ID } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { type AnyAccount, type SigningBlockReason, accountService } from '@/domains/network';
 
 /**
- * Why a locked account cannot be released from here.
+ * Why a locked account cannot be released from here. Same four verdicts every
+ * signer lookup produces (see `SigningBlockReason`), read for a release:
  *
- * - `no-local-account` — a contact, or a key held only by a hidden wallet.
- * - `chain-unsupported` — the wallet holds the key but cannot act on this chain.
  * - `watch-only` — the key never signs and an origin-bound call (`remove_vote`,
  *   `undelegate`) is required.
  * - `no-signer` — nothing local signs for it, and no local payer can release it
  *   permissionlessly.
  */
-export type UnlockBlockReason = 'no-local-account' | 'chain-unsupported' | 'watch-only' | 'no-signer';
+export type UnlockBlockReason = SigningBlockReason;
+
+/**
+ * I18n key spelling out each block reason — shared by the row's tooltip and the
+ * widget's click-time verdict.
+ */
+export const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
+  'no-local-account': 'dashboard.governanceLocks.hint.noLocalAccount',
+  'chain-unsupported': 'dashboard.governanceLocks.hint.chainUnsupported',
+  'watch-only': 'dashboard.governanceLocks.hint.watchOnly',
+  'no-signer': 'dashboard.governanceLocks.hint.noSigner',
+};
 
 export type UnlockAccountResolution = {
   /**
@@ -52,16 +61,11 @@ type Params = {
 const isPermissionlessRelease = (actions: ClaimAction[]) =>
   actions.length > 0 && actions.every((action) => action.type === 'unlock');
 
-/** Stable: keeps the input order among accounts of the same wallet. */
-const preferWallet = (accounts: AnyAccount[], walletId: ID | null | undefined): AnyAccount[] =>
-  walletId == null
-    ? accounts
-    : [...accounts].sort((a, b) => Number(b.walletId === walletId) - Number(a.walletId === walletId));
-
 /**
  * `convictionVoting.unlock(class, target)` is permissionless; `removeVote` must
  * be signed by the voter. So the locked account signs for itself whenever it
- * can, and a local payer may step in only for an unlock-only release.
+ * can — the shared signer lookup — and a local payer may step in only for an
+ * unlock-only release.
  *
  * The payer's balance is not checked here — the flow's fee validation reports
  * an unaffordable fee once the fee is known, and the row cannot know it yet.
@@ -76,35 +80,28 @@ export const resolveUnlockAccount = ({
 }: Params): UnlockAccountResolution => {
   const target = lockedAccountId;
 
-  const onChain = preferWallet(
-    candidates.filter((account) => accountService.isAccountAvailableOnChain(account, chain)),
+  const { account: own, reason } = accountService.resolveSigningAccount(candidates, chain, allAccounts, {
     preferredWalletId,
-  );
-  const own =
-    onChain.find((candidate) => accountService.hasPermissionToMakeActions(candidate)) ??
-    onChain.find((candidate) => accountService.findSignatories(candidate, allAccounts, chain).length > 0) ??
-    null;
+  });
 
   if (own) return { initiator: own, target, reason: null };
 
   if (isPermissionlessRelease(actions)) {
+    const payers = accountService.sortByPreferredWallet(
+      accountService.filterAccountsOnChain(allAccounts, chain),
+      preferredWalletId,
+    );
     const payer =
-      preferWallet(allAccounts, preferredWalletId).find(
-        (account) =>
-          account.accountId !== lockedAccountId &&
-          accountService.isAccountAvailableOnChain(account, chain) &&
-          accountService.hasPermissionToMakeActions(account),
+      payers.find(
+        (account) => account.accountId !== lockedAccountId && accountService.hasPermissionToMakeActions(account),
       ) ?? null;
 
     if (payer) return { initiator: payer, target, reason: null };
   }
 
-  if (candidates.length === 0) return { initiator: null, target, reason: 'no-local-account' };
+  if (reason === 'no-local-account') return { initiator: null, target, reason };
   // Unlock-only and still nobody to pay: the key's own status is irrelevant, the gap is a payer.
   if (isPermissionlessRelease(actions)) return { initiator: null, target, reason: 'no-signer' };
-  if (onChain.length === 0) return { initiator: null, target, reason: 'chain-unsupported' };
 
-  const watchOnly = onChain.every((candidate) => accountUtils.isWatchOnlyAccount(candidate));
-
-  return { initiator: null, target, reason: watchOnly ? 'watch-only' : 'no-signer' };
+  return { initiator: null, target, reason };
 };

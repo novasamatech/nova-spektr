@@ -15,6 +15,8 @@ export type {
   AnyAccount,
   AnyAccountDraft,
   ChainAccount,
+  SigningAccountResolution,
+  SigningBlockReason,
   UniversalAccount,
   WalletNameMode,
 } from './account/types';

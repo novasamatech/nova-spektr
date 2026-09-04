@@ -1,6 +1,6 @@
 # Dashboard Governance
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-02
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-04
 
 ## Overview
 

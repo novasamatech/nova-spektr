@@ -6,18 +6,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
 import { formatToken } from '../lib/formatToken';
-import { type UnlockBlockReason } from '../lib/resolveUnlockAccount';
-
-/**
- * I18n key spelling out each block reason — shared with the widget's click-time
- * verdict.
- */
-export const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
-  'no-local-account': 'dashboard.governanceLocks.hint.noLocalAccount',
-  'chain-unsupported': 'dashboard.governanceLocks.hint.chainUnsupported',
-  'watch-only': 'dashboard.governanceLocks.hint.watchOnly',
-  'no-signer': 'dashboard.governanceLocks.hint.noSigner',
-};
+import { BLOCK_REASON_HINT } from '../lib/resolveUnlockAccount';
 
 /**
  * The date format every estimate in the tab uses — same as the Ended tab's

@@ -6,8 +6,8 @@ import { useNotification } from '@/shared/ui-kit';
 import { type CurrencyItem } from '@/domains/price';
 import { governanceUnlockFlow } from '@/features/governance-unlock-flow';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
+import { BLOCK_REASON_HINT } from '../lib/resolveUnlockAccount';
 import { type LockTotals, sumLockTotals } from '../lib/sumLockTotals';
-import { BLOCK_REASON_HINT } from '../ui/LockActionCell';
 
 import { useGovernanceLocks } from './useGovernanceLocks';
 

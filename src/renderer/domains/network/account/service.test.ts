@@ -558,6 +558,175 @@ describe('account service', () => {
     });
   });
 
+  describe('resolveSigningAccount', () => {
+    interface TestMultisig extends UniversalAccount {
+      accountType: AccountType.MULTISIG;
+      signatories: { accountId: AccountId }[];
+    }
+
+    /**
+     * A watch-only wallet stores its key as a universal account tagged
+     * WATCH_ONLY.
+     */
+    interface TestWatchOnly extends UniversalAccount {
+      accountType: AccountType.WATCH_ONLY;
+    }
+
+    const isTestMultisig = (account: AnyAccount): account is TestMultisig =>
+      'accountType' in account && account.accountType === AccountType.MULTISIG;
+
+    const keyId = createAccountId('locked');
+    const signatoryId = createAccountId('signatory');
+
+    /**
+     * Mirrors the real SDK handlers: an account is available on the chain it is
+     * bound to, only a keyed account signs, and a multisig collects its
+     * signatories as children.
+     */
+    const registerHandlers = () => {
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: ({ account }) => account.signingType === SigningType.POLKADOT_VAULT,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isTestMultisig(account)) {
+            return accounts.filter(a => account.signatories.some(s => s.accountId === a.accountId)).concat(children);
+          }
+
+          return children;
+        },
+        available: () => true,
+      });
+    };
+
+    const createKeyed = (overrides: Partial<ChainAccount> & Pick<ChainAccount, 'id'>): ChainAccount => ({
+      type: 'chain',
+      name: '',
+      walletId: 1,
+      chainId: polkadotChainId,
+      accountId: keyId,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.POLKADOT_VAULT,
+      createdAt: 0,
+      ...overrides,
+    });
+
+    const createWatchOnly = (): TestWatchOnly => ({
+      id: 'watch-only',
+      type: 'universal',
+      name: '',
+      walletId: 4,
+      accountId: keyId,
+      accountType: AccountType.WATCH_ONLY,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      createdAt: 0,
+    });
+
+    const createMultisig = (): TestMultisig => ({
+      id: 'multisig',
+      type: 'universal',
+      name: '',
+      walletId: 2,
+      accountId: keyId,
+      accountType: AccountType.MULTISIG,
+      signatories: [{ accountId: signatoryId }],
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.MULTISIG,
+      createdAt: 0,
+    });
+
+    it('reports no-local-account when the key belongs to nobody local', () => {
+      registerHandlers();
+
+      expect(accountService.resolveSigningAccount([], polkadotChain, [])).toEqual({
+        account: null,
+        reason: 'no-local-account',
+      });
+    });
+
+    it('reports chain-unsupported when every candidate is bound to another chain', () => {
+      registerHandlers();
+
+      const onKusama = createKeyed({ id: 'kusama', chainId: kusamaChainId });
+
+      expect(accountService.resolveSigningAccount([onKusama], polkadotChain, [onKusama])).toEqual({
+        account: null,
+        reason: 'chain-unsupported',
+      });
+      // …and it signs normally on the chain it is bound to.
+      expect(accountService.resolveSigningAccount([onKusama], kusamaChain, [onKusama]).account).toBe(onKusama);
+    });
+
+    it('reports watch-only when nothing but a watch-only account holds the key', () => {
+      registerHandlers();
+
+      const watchOnly = createWatchOnly();
+
+      expect(accountService.resolveSigningAccount([watchOnly], polkadotChain, [watchOnly])).toEqual({
+        account: null,
+        reason: 'watch-only',
+      });
+    });
+
+    it('reports no-signer when an unsignable non-watch-only account shares the key', () => {
+      registerHandlers();
+
+      // The generic text has to win: "this is a watch-only account" would be a
+      // lie about the orphan multisig sharing the key.
+      const candidates = [createWatchOnly(), createMultisig()];
+
+      expect(accountService.resolveSigningAccount(candidates, polkadotChain, candidates)).toEqual({
+        account: null,
+        reason: 'no-signer',
+      });
+    });
+
+    it('falls back to a multisig that reaches a local signatory', () => {
+      registerHandlers();
+
+      const multisig = createMultisig();
+      const signatory = createKeyed({ id: 'signatory', walletId: 3, accountId: signatoryId });
+
+      expect(accountService.resolveSigningAccount([multisig], polkadotChain, [multisig, signatory]).account).toBe(
+        multisig,
+      );
+    });
+
+    it('prefers the account signing directly over an equally valid multisig route', () => {
+      registerHandlers();
+
+      const multisig = createMultisig();
+      const signatory = createKeyed({ id: 'signatory', walletId: 3, accountId: signatoryId });
+      const keyed = createKeyed({ id: 'vault', walletId: 1 });
+
+      // Multisig first, as auto-discovery would order it.
+      expect(
+        accountService.resolveSigningAccount([multisig, keyed], polkadotChain, [multisig, keyed, signatory]).account,
+      ).toBe(keyed);
+    });
+
+    it('lets the preferred wallet win the tie when the same key lives in two wallets', () => {
+      registerHandlers();
+
+      const inVault = createKeyed({ id: 'vault', walletId: 1 });
+      const inOtherWallet = createKeyed({ id: 'other', walletId: 7 });
+      const candidates = [inVault, inOtherWallet];
+
+      expect(
+        accountService.resolveSigningAccount(candidates, polkadotChain, candidates, { preferredWalletId: 7 }).account,
+      ).toBe(inOtherWallet);
+      // …and without a preference the input order stands.
+      expect(accountService.resolveSigningAccount(candidates, polkadotChain, candidates).account).toBe(inVault);
+    });
+  });
+
   describe('resolveAccountName', () => {
     const accountId = createAccountId('test');
     const chains: Record<string, Chain> = {

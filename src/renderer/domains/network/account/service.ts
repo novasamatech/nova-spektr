@@ -9,6 +9,7 @@ import {
   type Chain,
   type ChainId,
   type Contact,
+  type ID,
   type Wallet,
   AccountNameType,
   AccountType,
@@ -45,6 +46,7 @@ import {
   type AnyAccount,
   type AnyAccountDraft,
   type ChainAccount,
+  type SigningAccountResolution,
   type UniversalAccount,
 } from './types';
 
@@ -659,6 +661,69 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 }
 
 /**
+ * A watch-only wallet stores its key as a universal account tagged WATCH_ONLY.
+ * Kept local to the domain — `accountUtils` lives above it and importing it
+ * back here would close a cycle.
+ */
+function isWatchOnlyAccount(account: AnyAccount): boolean {
+  return isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.WATCH_ONLY;
+}
+
+type ResolveSigningAccountOptions = {
+  /**
+   * The wallet whose accounts win a tie — usually the selected one. The same
+   * key can live in several wallets, and nothing else distinguishes them.
+   */
+  preferredWalletId?: ID | null;
+};
+
+/** Stable: keeps the input order among accounts of the same wallet. */
+function sortByPreferredWallet(accounts: AnyAccount[], walletId: ID | null | undefined): AnyAccount[] {
+  if (nullable(walletId)) return accounts;
+
+  return [...accounts].sort((a, b) => Number(b.walletId === walletId) - Number(a.walletId === walletId));
+}
+
+/**
+ * Who signs for a key on a chain. One key can back several local accounts — a
+ * signable wallet plus an auto-discovered proxied wallet, or a WalletConnect
+ * wallet carrying one account per chain of its session — so the caller passes
+ * every candidate behind the key and gets the one that actually reaches a
+ * signer here.
+ *
+ * Prefer the account that signs directly, then one that routes to a signatory
+ * (multisig, proxy). When none does, report why, so the UI can say the action
+ * is unavailable instead of silently dropping the button.
+ */
+function resolveSigningAccount(
+  candidates: AnyAccount[],
+  chain: Chain,
+  allAccounts: AnyAccount[],
+  options: ResolveSigningAccountOptions = {},
+): SigningAccountResolution {
+  if (candidates.length === 0) return { account: null, reason: 'no-local-account' };
+
+  const onChain = sortByPreferredWallet(
+    candidates.filter(candidate => isAccountAvailableOnChain(candidate, chain)),
+    options.preferredWalletId,
+  );
+  if (onChain.length === 0) return { account: null, reason: 'chain-unsupported' };
+
+  const account =
+    onChain.find(candidate => hasPermissionToMakeActions(candidate)) ??
+    onChain.find(candidate => findSignatories(candidate, allAccounts, chain).length > 0) ??
+    null;
+
+  if (account) return { account, reason: null };
+
+  // Watch-only is the everyday reason nothing signs here, and the user can act
+  // on it (re-import the key properly) — name it instead of the generic text.
+  const watchOnly = onChain.every(isWatchOnlyAccount);
+
+  return { account: null, reason: watchOnly ? 'watch-only' : 'no-signer' };
+}
+
+/**
  * Derived accounts (multisig, flexible multisig, proxied) exist locally only
  * because a signable local account sits behind them as a signatory or
  * delegate.
@@ -911,6 +976,7 @@ export const accountService = {
 
   filterAccountsOnChain,
   filterAccountsByWallet,
+  sortByPreferredWallet,
   findRelatedAccount,
   resolveSelectedAccount,
   getWalletAccountId,
@@ -924,6 +990,7 @@ export const accountService = {
   createAccountGraphs: createAccountGraphs,
   findLeafs,
   findSignatories,
+  resolveSigningAccount,
   findAccountsWithoutSigners,
   findInitiators,
   findRoute,
