@@ -1,35 +1,31 @@
-import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useCallback, useMemo } from 'react';
 
-import { type ClaimAction } from '@/shared/api/governance';
 import { getRoundedValue } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
 import { useAssetsPrices } from '@/domains/price';
-import { claimScheduleService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type GovernanceLockRow, type ToFiat, buildLockRows, compareLockRows } from '../lib/buildLockRows';
-import { collectClaimable } from '../lib/collectClaimable';
-import { type UnlockBlockReason, resolveUnlockAccount } from '../lib/resolveUnlockAccount';
+import { type FreshClaim, deriveFreshClaim } from '../lib/deriveFreshClaim';
 
 import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import { useChainGovernanceData } from './useChainGovernanceData';
 
 export type { GovernanceLockRow } from '../lib/buildLockRows';
+export type { FreshClaim } from '../lib/deriveFreshClaim';
 
 /**
- * The release re-derived at the moment of the click, or why there is none:
- * `nothing-claimable` when the lock was released (or re-held) since the row was
- * drawn, otherwise the block reason the fresh actions ran into.
+ * The Locks widget's data: one row per account x chain across both Asset Hubs,
+ * sorted claimable-first, plus the click-time re-derivation the Unlock button
+ * needs.
+ *
+ * Both chains are read here rather than in the widget so the rows arrive as one
+ * sorted list — the biggest claim on top wherever it lives. `getFreshClaim`
+ * hands back the release for one row measured against the live head, because
+ * the rows themselves are drawn from a periodic block snapshot.
  */
-export type FreshClaim =
-  | { status: 'ready'; actions: ClaimAction[]; amount: BN; initiator: AnyAccount; target: AccountId }
-  | { status: 'blocked'; reason: UnlockBlockReason | 'nothing-claimable' };
-
 export const useGovernanceLocks = (accountIds: string[]) => {
   const fiatFlag = useUnit(currencySelect.$fiatFlag);
   const currency = useUnit(currencySelect.$activeCurrency);
@@ -60,59 +56,9 @@ export const useGovernanceLocks = (accountIds: string[]) => {
     ].sort(compareLockRows);
   }, [polkadot, kusama, chains, allAccounts, wallets, selectedWalletId, fiatFlag, prices, currency]);
 
-  /**
-   * Re-runs the claim schedule for one row against the live head. The row's
-   * figures come from a 5-minute block snapshot; a referendum that ended since
-   * may have added a required remove_vote.
-   */
   const getFreshClaim = useCallback(
-    (row: GovernanceLockRow): FreshClaim => {
-      const data = row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama;
-      const votingByTrack = data?.votingMap[row.accountId];
-
-      // Nothing live to re-run against: sign exactly what the row shows.
-      if (!data?.scheduleInputs || data.liveBlock === null || !votingByTrack) {
-        if (row.claimableActions.length === 0) return { status: 'blocked', reason: 'nothing-claimable' };
-        if (!row.initiator) return { status: 'blocked', reason: row.blockReason ?? 'no-signer' };
-
-        return {
-          status: 'ready',
-          actions: row.claimableActions,
-          amount: row.claimable,
-          initiator: row.initiator,
-          target: row.target,
-        };
-      }
-
-      const schedule = claimScheduleService.estimateClaimSchedule({
-        currentBlockNumber: data.liveBlock,
-        referendums: data.scheduleInputs.referendums,
-        tracks: data.tracks,
-        trackLocks: data.scheduleInputs.trackLocks[row.accountId] ?? {},
-        votingByTrack,
-        undecidingTimeout: data.scheduleInputs.undecidingTimeout,
-        voteLockingPeriod: data.scheduleInputs.voteLockingPeriod,
-      });
-
-      const { actions, amount } = collectClaimable(schedule);
-      if (actions.length === 0) return { status: 'blocked', reason: 'nothing-claimable' };
-
-      // The initiator on the row was resolved against the snapshot's actions. A
-      // remove_vote that appeared since is origin-bound, so a permissionless
-      // payer would no longer be allowed to send it — resolve again on the
-      // fresh actions.
-      const { initiator, target, reason } = resolveUnlockAccount({
-        lockedAccountId: row.accountId,
-        candidates: allAccounts.filter((account) => account.accountId === row.accountId),
-        chain: row.chain,
-        allAccounts,
-        actions,
-        preferredWalletId: selectedWalletId,
-      });
-      if (!initiator) return { status: 'blocked', reason };
-
-      return { status: 'ready', actions, amount, initiator, target };
-    },
+    (row: GovernanceLockRow): FreshClaim =>
+      deriveFreshClaim(row, row.chainId === POLKADOT_AH_CHAIN_ID ? polkadot : kusama, allAccounts, selectedWalletId),
     [polkadot, kusama, allAccounts, selectedWalletId],
   );
 

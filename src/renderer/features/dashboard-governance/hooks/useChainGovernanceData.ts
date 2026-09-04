@@ -3,7 +3,6 @@ import { default as BigNumber } from 'bignumber.js';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
-import { UnlockChunkType } from '@/shared/api/governance';
 import { type ChainId, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
 import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries } from '@/shared/lib/utils';
@@ -28,6 +27,7 @@ import {
 } from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
+import { BLOCK_SNAPSHOT_THROTTLE_MS } from './constants';
 
 type ClaimResult = {
   claimable: BN;
@@ -63,7 +63,10 @@ export type ChainGovernanceData = {
     undecidingTimeout: number;
     voteLockingPeriod: number;
   } | null;
-  /** Unthrottled head — `currentBlock` is a 5-minute snapshot. */
+  /**
+   * Unthrottled head — `currentBlock` is a `BLOCK_SNAPSHOT_THROTTLE_MS`
+   * snapshot.
+   */
   liveBlock: number | null;
 };
 
@@ -175,8 +178,8 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   });
 
   const liveBlock = useBlock(api).data;
-  const currentBlock = useThrottledSnapshot(liveBlock, 300_000);
-  const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, 300_000);
+  const currentBlock = useThrottledSnapshot(liveBlock, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, BLOCK_SNAPSHOT_THROTTLE_MS);
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 
@@ -204,6 +207,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
       const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
+        chainId,
         accountId,
         {
           currentBlockNumber: currentBlock,
@@ -231,17 +235,14 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
         }
       }
 
-      locksByAccount[accountId] = summarizeAccountLocks(
+      const summary = summarizeAccountLocks(
         schedule,
         getLockedAmount(stats.maxLockByAccount[accountId] ?? BN_ZERO, accountTrackLocks),
         delegations,
       );
 
-      for (const chunk of schedule) {
-        if (chunk.type === UnlockChunkType.CLAIMABLE && !chunk.amount.isZero()) {
-          totalClaimable = totalClaimable.add(chunk.amount);
-        }
-      }
+      locksByAccount[accountId] = summary;
+      totalClaimable = totalClaimable.add(summary.claimable);
     }
 
     return {
@@ -250,6 +251,7 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
     };
   }, [
     api,
+    chainId,
     currentBlock,
     typedAccountIds,
     votingMap,

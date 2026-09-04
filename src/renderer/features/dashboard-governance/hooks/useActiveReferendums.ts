@@ -15,7 +15,7 @@ import { currencySelect } from '@/aggregates/currency-select';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
+import { BLOCK_SNAPSHOT_THROTTLE_MS, KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 
 export type VoteDirection = 'aye' | 'nay' | 'abstain' | 'split';
 
@@ -107,8 +107,11 @@ function useChainActiveReferendums(
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
-  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, 300_000);
-  const blockTime = useThrottledSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
+  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const blockTime = useThrottledSnapshot(
+    useBlockTime(timelineApi, chains[timelineChainId]).data,
+    BLOCK_SNAPSHOT_THROTTLE_MS,
+  );
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,

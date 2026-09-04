@@ -53,6 +53,15 @@ describe('summarizeAccountLocks', () => {
     expect(summary.tracks).toEqual(['0', '1']);
   });
 
+  it('ignores a zero-amount claimable chunk, calls and track alike', () => {
+    // It releases nothing, so its `unlock` would be a fee for no money.
+    const summary = summarizeAccountLocks([claimable(0, [{ type: 'unlock', trackId: '0' }])], new BN(10), []);
+
+    expect(summary.claimable.isZero()).toBe(true);
+    expect(summary.claimableActions).toEqual([]);
+    expect(summary.tracks).toEqual([]);
+  });
+
   it('reports pending amount, the earliest unlock block and delegated separately', () => {
     const summary = summarizeAccountLocks(
       [pendingLock(30, 2_000, '5'), pendingLock(20, 1_000, '6'), pendingDelegation(70)],

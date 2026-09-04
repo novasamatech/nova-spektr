@@ -24,7 +24,7 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
-import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
+import { BLOCK_SNAPSHOT_THROTTLE_MS, KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import {
   type AllEntry,
   type EntryInfo,
@@ -126,14 +126,17 @@ function useChainEndedReferendums(
 
   const { data: referendums } = useReferendums({ api });
 
-  const govCurrentBlock = useThrottledSnapshot(useBlock(api).data, 300_000);
+  const govCurrentBlock = useThrottledSnapshot(useBlock(api).data, BLOCK_SNAPSHOT_THROTTLE_MS);
 
   const chain = chains[chainId] ?? null;
   const timelineChainId = chain?.additional?.timelineChain ?? chainId;
   const timelineApi = useApi(timelineChainId);
 
-  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, 300_000);
-  const blockTime = useThrottledSnapshot(useBlockTime(timelineApi, chains[timelineChainId]).data, 300_000);
+  const currentBlock = useThrottledSnapshot(useBlock(timelineApi).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  const blockTime = useThrottledSnapshot(
+    useBlockTime(timelineApi, chains[timelineChainId]).data,
+    BLOCK_SNAPSHOT_THROTTLE_MS,
+  );
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,
@@ -157,6 +160,7 @@ function useChainEndedReferendums(
       const accountTrackLocks = trackLocks[accountId] ?? EMPTY_TRACK_LOCKS;
 
       const schedule = cachedEstimateClaimSchedule(
+        chainId,
         accountId,
         {
           currentBlockNumber: govCurrentBlock,
@@ -183,7 +187,7 @@ function useChainEndedReferendums(
     }
 
     return set;
-  }, [api, govCurrentBlock, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
+  }, [api, chainId, govCurrentBlock, votingMap, referendums, tracks, trackLocks, undecidingTimeout]);
 
   const data = useMemo((): EndedReferendum[] => {
     if (!chain || !asset || !api || currentBlock === null || govCurrentBlock === null || blockTime === null) return [];

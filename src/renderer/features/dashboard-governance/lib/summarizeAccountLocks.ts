@@ -5,6 +5,8 @@ import { type Conviction, type TrackId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { locksService } from '@/entities/governance';
 
+import { collectClaimable } from './collectClaimable';
+
 /** One delegation of the account on one track, as the chain holds it. */
 export type Delegation = {
   trackId: TrackId;
@@ -49,27 +51,26 @@ export function getLockedAmount(votesMaxLock: BN, trackLocks: Record<TrackId, BN
 }
 
 export function summarizeAccountLocks(schedule: Chunks[], maxLock: BN, delegations: Delegation[]): AccountLockSummary {
-  let claimable = BN_ZERO;
+  // What is releasable right now is exactly what the release flow signs, so it
+  // is folded by the one function the click path also uses.
+  const { actions: claimableActions, amount: claimable } = collectClaimable(schedule);
+
   let pending = BN_ZERO;
   let delegated = BN_ZERO;
   let nextUnlockBlock: number | null = null;
-  const claimableActions: ClaimAction[] = [];
   const tracks = new Set<string>();
 
+  for (const action of claimableActions) tracks.add(action.trackId);
+
   for (const chunk of schedule) {
-    if (chunk.type === UnlockChunkType.CLAIMABLE) {
-      if (chunk.amount.isZero()) continue;
-      claimable = claimable.add(chunk.amount);
-      claimableActions.push(...chunk.actions);
-      for (const action of chunk.actions) tracks.add(action.trackId);
-    } else if (chunk.type === UnlockChunkType.PENDING_LOCK) {
+    if (chunk.type === UnlockChunkType.PENDING_LOCK) {
       pending = pending.add(chunk.amount);
       if (locksService.isClaimAt(chunk.claimableAt)) {
         nextUnlockBlock =
           nextUnlockBlock === null ? chunk.claimableAt.block : Math.min(nextUnlockBlock, chunk.claimableAt.block);
       }
       for (const affect of chunk.affected) tracks.add(affect.trackId);
-    } else {
+    } else if (chunk.type === UnlockChunkType.PENDING_DELEGATION) {
       delegated = delegated.add(chunk.amount);
     }
   }
