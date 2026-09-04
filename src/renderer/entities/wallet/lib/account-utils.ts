@@ -70,12 +70,8 @@ export const accountUtils = {
 // Account types
 
 function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyAccount {
-  return (
-    // @ts-expect-error Partial type breaks required type field usage
-    accountService.isUniversalAccount(account) &&
-    'accountType' in account &&
-    account.accountType === AccountType.WATCH_ONLY
-  );
+  // @ts-expect-error Partial type breaks required type field usage
+  return accountService.isWatchOnlyAccount(account);
 }
 
 function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {

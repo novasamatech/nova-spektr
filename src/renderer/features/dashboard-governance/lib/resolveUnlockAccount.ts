@@ -2,6 +2,7 @@ import { type ClaimAction } from '@/shared/api/governance';
 import { type Chain, type ID } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type SigningBlockReason, accountService } from '@/domains/network';
+import { isPermissionlessRelease } from '@/features/governance-unlock-flow';
 
 /**
  * Why a locked account cannot be released from here. Same four verdicts every
@@ -51,13 +52,6 @@ type Params = {
    */
   preferredWalletId?: ID | null;
 };
-
-/**
- * `unlock` is the only call anyone may send; `remove_vote` and `undelegate`
- * need the account's own origin.
- */
-const isPermissionlessRelease = (actions: ClaimAction[]) =>
-  actions.length > 0 && actions.every((action) => action.type === 'unlock');
 
 /**
  * `convictionVoting.unlock(class, target)` is permissionless; `removeVote` must

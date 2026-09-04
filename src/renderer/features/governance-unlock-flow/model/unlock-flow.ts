@@ -24,6 +24,7 @@ import {
   submitModel,
 } from '@/features/operations/OperationSubmit';
 import { createSigningPathModel } from '@/features/signing-path';
+import { isPermissionlessRelease } from '../lib/isPermissionlessRelease';
 import { type UnlockConfirm, type UnlockRequest, Step } from '../types';
 
 import { confirmModel } from './confirm';
@@ -47,7 +48,7 @@ const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
  */
 const isValidRequest = (request: UnlockRequest) =>
   request.actions.length > 0 &&
-  (request.target === request.initiator.accountId || request.actions.every((action) => action.type === 'unlock'));
+  (request.target === request.initiator.accountId || isPermissionlessRelease(request.actions));
 
 /**
  * The host already enforces both rules — `dashboard-governance`'s

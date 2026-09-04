@@ -662,12 +662,9 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 
 /**
  * A watch-only wallet stores its key as a universal account tagged WATCH_ONLY.
- *
- * Duplicates `accountUtils.isWatchOnlyAccount`
- * (`entities/wallet/lib/account-utils.ts`) on purpose: that module imports
- * `accountService`, so importing it back here would close a load-time cycle.
- * Whoever migrates `entities/wallet` into the domains layer should collapse the
- * two.
+ * `accountUtils.isWatchOnlyAccount` (`entities/wallet/lib/account-utils.ts`)
+ * delegates here — the domain owns the rule, the entity keeps the narrowing
+ * signature its `Partial<AnyAccount>` call sites rely on.
  */
 function isWatchOnlyAccount(account: AnyAccount): boolean {
   return isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.WATCH_ONLY;
@@ -975,6 +972,7 @@ export const accountService = {
 
   isChainAccount,
   isUniversalAccount,
+  isWatchOnlyAccount,
   isAccountAvailableOnChain,
   isAccountSchemeMatchChain,
   isCryptoMatch,
