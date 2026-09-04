@@ -3,7 +3,15 @@ import { createStore, sample } from 'effector';
 import { type ChainId } from '@/shared/core';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { block } from '@/domains/network';
-import { BLOCK_SNAPSHOT_THROTTLE_MS } from '../hooks/constants';
+
+/**
+ * How long a head is held before the next one is taken. Everything on the tab
+ * derived from it — the unlock schedule, the referendum timelines — is measured
+ * in days, so it has nothing to say between one block and the next; re-deriving
+ * on every ~6 s block would re-render the whole tab for a change no one can
+ * see.
+ */
+export const BLOCK_SNAPSHOT_THROTTLE_MS = 300_000;
 
 /** One chain's held head, and the moment it was held. */
 export type ThrottledHead = { block: BlockHeight; takenAtMs: number };
@@ -20,13 +28,19 @@ export type ThrottledHeads = Record<ChainId, ThrottledHead>;
  *
  * There is no timer behind the window. Heads arrive every ~6 s, so the first
  * one after the window expires lands by itself: the snapshot is late by at most
- * one block, and the whole delayed-re-emit machinery disappears.
+ * one block, and the whole delayed-re-emit machinery disappears. Which is also
+ * why a clock that jumps _backwards_ — an NTP correction, a resumed VM — has to
+ * take the head rather than hold it: with no timer, a window that ends in the
+ * past would freeze the chain's figures until the clock caught up again.
  */
 export function acceptHead(heads: ThrottledHeads, chainId: ChainId, head: BlockHeight, nowMs: number): ThrottledHeads {
   const current = heads[chainId];
 
-  if (current && (current.block === head || nowMs - current.takenAtMs < BLOCK_SNAPSHOT_THROTTLE_MS)) {
-    return heads;
+  if (current) {
+    const heldForMs = nowMs - current.takenAtMs;
+    const withinWindow = heldForMs >= 0 && heldForMs < BLOCK_SNAPSHOT_THROTTLE_MS;
+
+    if (current.block === head || withinWindow) return heads;
   }
 
   return { ...heads, [chainId]: { block: head, takenAtMs: nowMs } };
@@ -50,6 +64,8 @@ export const $throttledHeads = createStore<ThrottledHeads>({});
 sample({
   clock: block.blockResource.push,
   source: $throttledHeads,
+  // The one impure step, deliberately kept to this line: reading the clock is
+  // what decides the window, and everything that acts on it is in `acceptHead`.
   fn: (heads, { params, result }) => acceptHead(heads, params.api.genesisHash.toHex(), result, Date.now()),
   target: $throttledHeads,
 });

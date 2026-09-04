@@ -1,14 +1,15 @@
+import { type ApiPromise } from '@polkadot/api';
 import { allSettled, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
 import { type ChainId } from '@/shared/core';
-import { kusamaChainId, polkadotChainId } from '@/shared/mocks';
+import { kusamaAssetHubChainId, kusamaChainId, polkadotChainId } from '@/shared/mocks';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { block } from '@/domains/network';
 
-import { type ThrottledHeads, $throttledHeads, acceptHead } from './throttled-heads';
+import { type ThrottledHeads, $throttledHeads, BLOCK_SNAPSHOT_THROTTLE_MS, acceptHead } from './throttled-heads';
 
-const WINDOW_MS = 300_000;
+const WINDOW_MS = BLOCK_SNAPSHOT_THROTTLE_MS;
 const START_MS = 1_700_000_000_000;
 
 const height = (value: number) => value as BlockHeight;
@@ -19,22 +20,27 @@ const heads = (entries: Record<string, { block: number; takenAtMs: number }>): T
   );
 
 /**
- * A subscription that hands the resource the heights it is told to, so the
- * store can be driven through the real wiring. `push` is readonly, so this is
- * the only way in from a test.
+ * A subscription that hands the resource the heights it is told to, each at its
+ * own moment on the fake clock, so the store can be driven through the real
+ * wiring. `blockResource.push` is readonly and cannot be targeted from a test —
+ * starting the subscription is the only way in.
  */
-const fakeApi = (chainId: ChainId, heights: number[]) => ({
-  genesisHash: { toHex: () => chainId },
-  rpc: {
-    chain: {
-      subscribeNewHeads: (callback: (header: { number: { toNumber: () => number } }) => void) => {
-        for (const value of heights) callback({ number: { toNumber: () => value } });
+const fakeApi = (chainId: ChainId, deliveries: { atMs: number; height: number }[]) =>
+  ({
+    genesisHash: { toHex: () => chainId },
+    rpc: {
+      chain: {
+        subscribeNewHeads: (callback: (header: { number: { toNumber: () => number } }) => void) => {
+          for (const { atMs, height } of deliveries) {
+            vi.setSystemTime(atMs);
+            callback({ number: { toNumber: () => height } });
+          }
 
-        return Promise.resolve(() => {});
+          return Promise.resolve(() => {});
+        },
       },
     },
-  },
-});
+  }) as unknown as ApiPromise;
 
 describe('acceptHead', () => {
   it('takes the first head of a chain immediately', () => {
@@ -63,6 +69,15 @@ describe('acceptHead', () => {
     expect(acceptHead(current, polkadotChainId, height(100), START_MS + 10 * WINDOW_MS)).toBe(current);
   });
 
+  it('takes the head when the clock jumps backwards', () => {
+    // An NTP correction or a resumed VM puts `now` before the window started.
+    // Nothing but the next head would ever release it, so the next head wins.
+    const current = heads({ [polkadotChainId]: { block: 100, takenAtMs: START_MS } });
+    const result = acceptHead(current, polkadotChainId, height(101), START_MS - 60_000);
+
+    expect(result[polkadotChainId]).toEqual({ block: height(101), takenAtMs: START_MS - 60_000 });
+  });
+
   it('windows each chain on its own', () => {
     const current = heads({ [polkadotChainId]: { block: 100, takenAtMs: START_MS } });
     const result = acceptHead(current, kusamaChainId, height(7), START_MS + 1);
@@ -73,7 +88,7 @@ describe('acceptHead', () => {
 });
 
 describe('$throttledHeads', () => {
-  it('holds the first head a chain pushes and ignores the rest of the window', async () => {
+  it('drops the heads inside the window and takes the first one after it', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(START_MS);
 
@@ -82,21 +97,52 @@ describe('$throttledHeads', () => {
 
       await allSettled(block.blockResource.start, {
         scope,
-        params: { api: fakeApi(polkadotChainId, [100, 101, 102]) as never },
+        params: {
+          api: fakeApi(polkadotChainId, [
+            { atMs: START_MS, height: 100 },
+            // Same window: dropped, or the store would follow every block.
+            { atMs: START_MS + WINDOW_MS - 1, height: 101 },
+            // Window over: taken, with no timer having been involved.
+            { atMs: START_MS + WINDOW_MS, height: 102 },
+            // …which opens a window of its own, so this one is dropped too.
+            { atMs: START_MS + WINDOW_MS + 1, height: 103 },
+          ]),
+        },
       });
 
-      expect(scope.getState($throttledHeads)[polkadotChainId]?.block).toBe(100);
+      // Both halves are pinned by this one value: 101 was dropped (or the head
+      // would read 101, its own window swallowing 102), and 102 was taken (or
+      // the head would still read 100).
+      expect(scope.getState($throttledHeads)[polkadotChainId]).toEqual({
+        block: 102,
+        takenAtMs: START_MS + WINDOW_MS,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
-      // …and the first push once the window has passed replaces it, with no
-      // timer of its own: the next block does the work.
-      vi.setSystemTime(START_MS + WINDOW_MS);
+  // The resource's subscription pool is module-level, so a chain already
+  // subscribed in another test would not be subscribed again — each test drives
+  // chains of its own.
+  it('windows the two chains independently', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(START_MS);
+
+    try {
+      const scope = fork();
+
       await allSettled(block.blockResource.start, {
         scope,
-        params: { api: fakeApi(kusamaChainId, [7]) as never },
+        params: { api: fakeApi(kusamaChainId, [{ atMs: START_MS, height: 100 }]) },
+      });
+      await allSettled(block.blockResource.start, {
+        scope,
+        params: { api: fakeApi(kusamaAssetHubChainId, [{ atMs: START_MS + 1, height: 7 }]) },
       });
 
-      expect(scope.getState($throttledHeads)[kusamaChainId]?.block).toBe(7);
-      expect(scope.getState($throttledHeads)[polkadotChainId]?.block).toBe(100);
+      expect(scope.getState($throttledHeads)[kusamaChainId]?.block).toBe(100);
+      expect(scope.getState($throttledHeads)[kusamaAssetHubChainId]?.block).toBe(7);
     } finally {
       vi.useRealTimers();
     }
