@@ -4,7 +4,6 @@ import { useMemo, useRef } from 'react';
 
 import { UnlockChunkType } from '@/shared/api/governance';
 import { type AccountVote, type ChainId, type CompletedReferendum, type VotingMap } from '@/shared/core';
-import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries, getRoundedValue, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -24,7 +23,7 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { toSubstrateAccountIds } from '../lib/substrateAccountIds';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
-import { BLOCK_SNAPSHOT_THROTTLE_MS, KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
+import { KUSAMA_AH_CHAIN_ID, POLKADOT_AH_CHAIN_ID } from './constants';
 import {
   type AllEntry,
   type EntryInfo,
@@ -134,10 +133,8 @@ function useChainEndedReferendums(
   const timelineApi = useApi(timelineChainId);
 
   const { snapshot: currentBlock } = useThrottledBlock(timelineApi, timelineChainId);
-  const blockTime = useThrottledSnapshot(
-    useBlockTime(timelineApi, chains[timelineChainId]).data,
-    BLOCK_SNAPSHOT_THROTTLE_MS,
-  );
+  // Block time is a per-chain constant (the resource never goes stale).
+  const blockTime = useBlockTime(timelineApi, chains[timelineChainId]).data;
   const { data: titles } = useReferendumTitles({
     chain,
     service: metaProvider?.service ?? null,

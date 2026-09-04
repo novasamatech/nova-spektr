@@ -4,7 +4,6 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo, useRef } from 'react';
 
 import { type ChainId, type VotingMap } from '@/shared/core';
-import { useThrottledSnapshot } from '@/shared/lib/hooks';
 import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -28,7 +27,6 @@ import {
 } from '../lib/summarizeAccountLocks';
 
 import { EMPTY_TRACK_LOCKS, cachedEstimateClaimSchedule } from './claimScheduleCache';
-import { BLOCK_SNAPSHOT_THROTTLE_MS } from './constants';
 import { useThrottledBlock } from './useThrottledBlock';
 
 type ClaimResult = {
@@ -173,7 +171,9 @@ export const useChainGovernanceData = (chainId: ChainId, accountIds: string[]) =
   });
 
   const { live: liveBlock, snapshot: currentBlock } = useThrottledBlock(api, chainId);
-  const blockTime = useThrottledSnapshot(useBlockTime(api, chains[chainId]).data, BLOCK_SNAPSHOT_THROTTLE_MS);
+  // Block time is a per-chain constant (the resource never goes stale), so it
+  // needs no snapshot of its own.
+  const blockTime = useBlockTime(api, chains[chainId]).data;
 
   const stats = useMemo(() => computeGovernanceStats(votingMap), [votingMap]);
 
