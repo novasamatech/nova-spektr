@@ -6,11 +6,12 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance, formatFiatBalance, performSearch } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { TrackInfo, VoteChart } from '@/shared/ui-entities';
-import { type Column, SearchInput, Select, Table, Tooltip, useNotification } from '@/shared/ui-kit';
+import { type Column, SearchInput, Select, Table, Tooltip } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { type ActiveReferendum, useActiveReferendums } from '../hooks/useActiveReferendums';
 import { type EndedReferendum, useEndedReferendums } from '../hooks/useEndedReferendums';
+import { ALL_CHAINS } from '../lib/constants';
 
 import { DashboardReferendumDetails } from './DashboardReferendumDetails';
 import { EndedReferendumDetailModal } from './EndedReferendumDetailModal';
@@ -40,6 +41,28 @@ const ENDED_COLUMN_WIDTH = {
   locks: 60,
 } as const;
 
+/**
+ * The track chip's loading plate — narrower than the Track column, the way the
+ * chip itself is.
+ */
+const SKELETON_TRACK_WIDTH = '160px';
+/** Loading plates of the Active table, after the leading avatar + name pair. */
+const ACTIVE_SKELETON_COLUMNS = [
+  SKELETON_TRACK_WIDTH,
+  `${PROPOSAL_MIN_WIDTH}px`,
+  `${ACTIVE_COLUMN_WIDTH.time}px`,
+  `${ACTIVE_COLUMN_WIDTH.ayeNay}px`,
+  `${ACTIVE_COLUMN_WIDTH.tvl}px`,
+];
+/** Loading plates of the Ended table, after the leading avatar + name pair. */
+const ENDED_SKELETON_COLUMNS = [
+  SKELETON_TRACK_WIDTH,
+  `${PROPOSAL_MIN_WIDTH}px`,
+  `${ENDED_COLUMN_WIDTH.outcome}px`,
+  `${ENDED_COLUMN_WIDTH.ended}px`,
+  `${ENDED_COLUMN_WIDTH.unlockable}px`,
+];
+
 const sumWidths = (widths: Record<string, number>) => Object.values(widths).reduce((sum, width) => sum + width, 0);
 
 type Props = {
@@ -47,7 +70,6 @@ type Props = {
   allEntries: { accountId: string; name: string; address: string }[];
 };
 
-const ALL_CHAINS = '__all__';
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
@@ -98,7 +120,6 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
   } = useActiveReferendums(deferredAccountIds, allEntries);
   const [selected, setSelected] = useState<{ chainId: ChainId; referendumId: ReferendumId } | null>(null);
   const connectionStatuses = useUnit(networkModel.$connectionStatuses);
-  const { toast } = useNotification();
   const [chainFilter, setChainFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [endedCount, setEndedCount] = useState<number | null>(null);
@@ -213,20 +234,9 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
     [connectionStatuses],
   );
 
-  const handleActiveRowClick = useCallback(
-    (row: ReferendumRow) => {
-      // The details modal reads its chain from the governance network selector,
-      // which only resolves once the chain is connected.
-      if (connectionStatuses[row.chainId] !== ConnectionStatus.CONNECTED) {
-        toast.info(t('dashboard.governanceLocks.hint.chainDisconnected'));
-
-        return;
-      }
-
-      setSelected({ chainId: row.chainId, referendumId: row.id });
-    },
-    [connectionStatuses, toast, t],
-  );
+  const handleActiveRowClick = useCallback((row: ReferendumRow) => {
+    setSelected({ chainId: row.chainId, referendumId: row.id });
+  }, []);
 
   if (!fiatFlag) return null;
 
@@ -307,9 +317,7 @@ export const ReferendumsWidget = ({ accountIds, allEntries }: Props) => {
           {/* Active tab content */}
           {isActiveTab && (
             <>
-              {activePending && activeRefs.length === 0 && (
-                <TableSkeleton columns={['160px', '240px', '80px', '144px', '110px']} />
-              )}
+              {activePending && activeRefs.length === 0 && <TableSkeleton columns={ACTIVE_SKELETON_COLUMNS} />}
 
               {!activePending && activeRefs.length === 0 && (
                 <WidgetEmptyState description={t('dashboard.activeReferendums.noReferendums')} />
@@ -628,9 +636,7 @@ const EndedTabContent = ({ accountIds, allEntries, chainFilter, searchQuery, onC
 
   return (
     <>
-      {endedPending && endedRefs.length === 0 && (
-        <TableSkeleton columns={['160px', '240px', '100px', '110px', '110px']} />
-      )}
+      {endedPending && endedRefs.length === 0 && <TableSkeleton columns={ENDED_SKELETON_COLUMNS} />}
 
       {!endedPending && endedRefs.length === 0 && (
         <WidgetEmptyState description={t('dashboard.referendums.noEndedReferendums')} />

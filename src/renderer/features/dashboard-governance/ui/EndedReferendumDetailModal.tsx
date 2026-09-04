@@ -8,6 +8,7 @@ import { type Column, Modal, Table } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { type EndedReferendum, type EndedVote } from '../hooks/useEndedReferendums';
+import { DISPLAY_DATE_FORMAT } from '../lib/constants';
 
 import { OUTCOME_I18N_KEY, OUTCOME_STYLES, formatEndDate } from './referendum-helpers';
 
@@ -92,7 +93,7 @@ export const EndedReferendumDetailModal = memo(({ referendum, onClose }: Props) 
           if (item.unlockAtMs) {
             return (
               <FootnoteText className="text-text-warning">
-                {t('dashboard.referendums.lockedUntil', { date: formatDate(item.unlockAtMs, 'MMM d, yyyy') })}
+                {t('dashboard.referendums.lockedUntil', { date: formatDate(item.unlockAtMs, DISPLAY_DATE_FORMAT) })}
               </FootnoteText>
             );
           }

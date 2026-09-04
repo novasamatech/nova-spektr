@@ -5,14 +5,9 @@ import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
 import { type GovernanceLockRow } from '../lib/buildLockRows';
+import { DISPLAY_DATE_FORMAT } from '../lib/constants';
 import { formatToken } from '../lib/formatToken';
 import { BLOCK_REASON_HINT } from '../lib/resolveUnlockAccount';
-
-/**
- * The date format every estimate in the tab uses — same as the Ended tab's
- * dates.
- */
-export const ESTIMATE_DATE_FORMAT = 'MMM d, yyyy';
 
 type HintProps = {
   text: string;
@@ -115,7 +110,9 @@ const UnlockVerdict = memo(({ row, chainConnected, onUnlock }: Omit<Props, 'onUn
 
     const hint = row.nextUnlockAtMs
       ? t('dashboard.governanceLocks.hint.nothingClaimableUntil', {
-          date: formatDate(row.nextUnlockAtMs, ESTIMATE_DATE_FORMAT),
+          // Estimates read the same as the Ended tab's dates — one format for
+          // every date on the tab.
+          date: formatDate(row.nextUnlockAtMs, DISPLAY_DATE_FORMAT),
         })
       : t('dashboard.governanceLocks.hint.nothingClaimable');
 

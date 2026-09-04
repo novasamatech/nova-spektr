@@ -5,11 +5,10 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Switch } from '@/shared/ui';
 import { Modal, Select } from '@/shared/ui-kit';
 import { type LocksTableState } from '../hooks/useLocksTable';
+import { ALL_CHAINS } from '../lib/constants';
 
 import { LocksTable } from './LocksTable';
 import { LocksTotals } from './LocksTotals';
-
-const ALL_CHAINS = '__all__';
 
 type Props = {
   state: LocksTableState;
