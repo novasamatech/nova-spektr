@@ -662,8 +662,12 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 
 /**
  * A watch-only wallet stores its key as a universal account tagged WATCH_ONLY.
- * Kept local to the domain — `accountUtils` lives above it and importing it
- * back here would close a cycle.
+ *
+ * Duplicates `accountUtils.isWatchOnlyAccount`
+ * (`entities/wallet/lib/account-utils.ts`) on purpose: that module imports
+ * `accountService`, so importing it back here would close a load-time cycle.
+ * Whoever migrates `entities/wallet` into the domains layer should collapse the
+ * two.
  */
 function isWatchOnlyAccount(account: AnyAccount): boolean {
   return isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.WATCH_ONLY;
@@ -677,9 +681,13 @@ type ResolveSigningAccountOptions = {
   preferredWalletId?: ID | null;
 };
 
-/** Stable: keeps the input order among accounts of the same wallet. */
+/**
+ * Stable: keeps the input order among accounts of the same wallet. Always a
+ * copy, so a caller can sort or splice the result without reaching back into
+ * the array it passed in.
+ */
 function sortByPreferredWallet(accounts: AnyAccount[], walletId: ID | null | undefined): AnyAccount[] {
-  if (nullable(walletId)) return accounts;
+  if (nullable(walletId)) return [...accounts];
 
   return [...accounts].sort((a, b) => Number(b.walletId === walletId) - Number(a.walletId === walletId));
 }
@@ -692,7 +700,10 @@ function sortByPreferredWallet(accounts: AnyAccount[], walletId: ID | null | und
  * signer here.
  *
  * Prefer the account that signs directly, then one that routes to a signatory
- * (multisig, proxy). When none does, report why, so the UI can say the action
+ * (multisig, proxy). `preferredWalletId` breaks a tie _within_ a tier, never
+ * across them: a direct signer beats a multisig route even when the multisig
+ * sits in the preferred wallet — one click versus a signature the user still
+ * has to collect. When nothing signs, report why, so the UI can say the action
  * is unavailable instead of silently dropping the button.
  */
 function resolveSigningAccount(

@@ -25,16 +25,14 @@ export const BLOCK_REASON_HINT: Record<UnlockBlockReason, string> = {
   'no-signer': 'dashboard.governanceLocks.hint.noSigner',
 };
 
-export type UnlockAccountResolution = {
-  /**
-   * The account that originates the transaction; `null` when `reason` says why
-   * not.
-   */
-  initiator: AnyAccount | null;
-  /** The account whose lock is released — the locked account itself, always. */
-  target: AccountId;
-  reason: UnlockBlockReason | null;
-};
+/**
+ * Either an initiator, or the reason there is none. The target — the account
+ * whose lock is released, the locked account itself — is known either way.
+ */
+export type UnlockAccountResolution = { target: AccountId } & (
+  | { initiator: AnyAccount; reason: null }
+  | { initiator: null; reason: UnlockBlockReason }
+);
 
 type Params = {
   /** The key whose lock is released. */

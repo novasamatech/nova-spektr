@@ -77,8 +77,10 @@ export type WalletNameMode = 'override' | 'fallback';
  */
 export type SigningBlockReason = 'no-local-account' | 'chain-unsupported' | 'watch-only' | 'no-signer';
 
-export type SigningAccountResolution = {
-  /** The account to sign with; `null` when `reason` says why that is impossible. */
-  account: AnyAccount | null;
-  reason: SigningBlockReason | null;
-};
+/**
+ * Either an account to sign with, or the reason there is none — never both,
+ * never neither, so a caller that checked `account` needs no fallback reason.
+ */
+export type SigningAccountResolution =
+  | { account: AnyAccount; reason: null }
+  | { account: null; reason: SigningBlockReason };

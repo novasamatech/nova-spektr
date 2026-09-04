@@ -109,7 +109,7 @@ export const useGovernanceLocks = (accountIds: string[]) => {
         actions,
         preferredWalletId: selectedWalletId,
       });
-      if (!initiator) return { status: 'blocked', reason: reason ?? 'no-signer' };
+      if (!initiator) return { status: 'blocked', reason };
 
       return { status: 'ready', actions, amount, initiator, target };
     },
