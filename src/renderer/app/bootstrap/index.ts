@@ -86,6 +86,9 @@ export const bootstrap = () => {
     dashboardOperationsQueueFeature,
     dashboardGovernanceFeature,
     dashboardLocksFeature,
+    // Eager, not lazy: the Locks widget above imports this feature statically
+    // and can dispatch `unlockRequested` on the first click, which a lazy
+    // registration might not be around to answer.
     governanceUnlockFlowFeature,
     dashboardStakingSummaryFeature,
     dashboardStakingTotalStakedFeature,

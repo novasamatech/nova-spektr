@@ -55,6 +55,7 @@ describe('governance unlock flow — signing route and transaction', () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await env?.cleanup();
   });
 
@@ -185,9 +186,52 @@ describe('governance unlock flow — signing route and transaction', () => {
 
     expect(env.scope.getState(unlockFlowModel.$step)).toBe(Step.NONE);
     expect(env.scope.getState(unlockFlowModel.$request)).toBeNull();
-    expect(consoleError).toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('dropped an unsignable request'),
+      expect.anything(),
+    );
+  });
 
-    consoleError.mockRestore();
+  it('drops a request with no actions rather than batching nothing', async () => {
+    // An empty batch is still signable, and still costs a fee.
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await allSettled(unlockFlowModel.unlockRequested, {
+      scope: env.scope,
+      params: {
+        chain: polkadotChain,
+        initiator: senderAccount,
+        target: senderAccount.accountId,
+        actions: [],
+        amount: new BN(0),
+      },
+    });
+
+    expect(env.scope.getState(unlockFlowModel.$step)).toBe(Step.NONE);
+    expect(env.scope.getState(unlockFlowModel.$request)).toBeNull();
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('dropped an unsignable request'),
+      expect.anything(),
+    );
+  });
+
+  it('opens a payer release whose target is not the initiator', async () => {
+    // The permissionless case the guard must let through: every call is an
+    // `unlock`, so any origin may send it.
+    await allSettled(unlockFlowModel.unlockRequested, {
+      scope: env.scope,
+      params: {
+        chain: polkadotChain,
+        initiator: senderAccount,
+        target: signatoryAccount.accountId,
+        actions: [{ type: 'unlock', trackId: '0' }],
+        amount: new BN(5),
+      },
+    });
+
+    expect(env.scope.getState(unlockFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(env.scope.getState(unlockFlowModel.$request)?.target).toBe(signatoryAccount.accountId);
+    expect(env.scope.getState(unlockFlowModel.$coreTx)?.args.target).toBe(signatoryAccount.accountId);
   });
 
   it('builds a single unlock call when one action is requested', async () => {

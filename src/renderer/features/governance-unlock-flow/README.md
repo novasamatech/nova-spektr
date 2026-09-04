@@ -83,6 +83,10 @@ the details matches the release: it mentions removing votes only when a `remove 
 **Closing resets everything.** Whatever step it is on, closing the flow clears the request, the signing route and the
 confirm, so the next unlock starts clean rather than inheriting the last one.
 
+**A render crash closes the flow too.** If the modal itself throws, it is caught rather than taken out on the app shell,
+and the flow is reset to None the same way closing it would be — no step left stranded mid-signature, and the Unlock
+button works again on the next click.
+
 ## Lifecycle
 
 **The confirm opens on the click, not on the data.** Everything it leads with — the amount, the account, the chain, the

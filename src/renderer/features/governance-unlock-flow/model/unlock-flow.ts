@@ -1,5 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample, split } from 'effector';
 import { readonly } from 'patronum';
 
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
@@ -35,32 +35,38 @@ const stepChanged = createEvent<Step>();
 const $step = createStore(Step.NONE).on(stepChanged, (_, step) => step);
 
 /**
- * A payer may only release someone else's lock, never vote on their behalf:
+ * Two ways a request cannot be signed as handed over.
+ *
+ * An **empty** action list builds a signable `utility.batchAll([])` — a real
+ * fee for a call that releases nothing.
+ *
+ * And a payer may release someone else's lock but never vote on their behalf:
  * `convictionVoting.unlock(class, target)` takes any origin, while
  * `remove_vote` and `undelegate` are signed by the voter. So a `target` other
  * than the initiator is valid for an unlock-only release and nothing else.
  */
 const isValidRequest = (request: UnlockRequest) =>
-  request.target === request.initiator.accountId || request.actions.every((action) => action.type === 'unlock');
+  request.actions.length > 0 &&
+  (request.target === request.initiator.accountId || request.actions.every((action) => action.type === 'unlock'));
 
+/**
+ * The host already enforces both rules — `dashboard-governance`'s
+ * `resolveUnlockAccount` picks a payer only for an unlock-only release and
+ * blocks an empty one — so getting here is a programming error, not something
+ * the user did. Log it and drop it: there is no wording that would help them.
+ */
 const reportInvalidRequestFx = createEffect((request: UnlockRequest) => {
-  console.error(
-    '[governance-unlock-flow] dropped a request whose target differs from the initiator on origin-bound calls',
-    { target: request.target, initiator: request.initiator.accountId, actions: request.actions.map((a) => a.type) },
-  );
+  console.error('[governance-unlock-flow] dropped an unsignable request', {
+    target: request.target,
+    initiator: request.initiator.accountId,
+    actions: request.actions.map((action) => action.type),
+  });
 });
 
-sample({
-  clock: unlockRequested,
-  filter: (request) => !isValidRequest(request),
-  target: reportInvalidRequestFx,
-});
+/** Every request the flow acts on — the unsignable ones never get this far. */
+const { valid: validRequest, __: invalidRequest } = split(unlockRequested, { valid: isValidRequest });
 
-/** Every request the flow acts on — the malformed ones never get this far. */
-const validRequest = sample({
-  clock: unlockRequested,
-  filter: isValidRequest,
-});
+sample({ clock: invalidRequest, target: reportInvalidRequestFx });
 
 /**
  * The release the user pressed on, snapshotted. Locks, referenda and the
