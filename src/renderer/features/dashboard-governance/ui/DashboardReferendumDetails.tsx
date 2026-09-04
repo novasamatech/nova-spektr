@@ -1,11 +1,19 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { type Chain, type ChainId, type ReferendumId } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { networkSelectorModel } from '@/features/governance';
 import { GovernanceReferendumDetailsModal, useReferendum } from '@/pages/Governance';
+import { NETWORK_WAIT_TIMEOUT_MS } from '../lib/constants';
+
+/**
+ * The height the real modal takes, so the placeholder standing in for it is the
+ * same box. Spelled as a class because Tailwind reads the literal from source.
+ */
+const DETAILS_BODY_HEIGHT_CLASS = 'h-[70vh]';
 
 type Props = {
   chainId: ChainId;
@@ -24,6 +32,7 @@ type Props = {
  * the user last chose there, not on the one they last peeked at here.
  */
 export const DashboardReferendumDetails = ({ chainId, referendumId, onClose }: Props) => {
+  const { t } = useI18n();
   const [selectedChainId, network, selectNetwork] = useUnit([
     networkSelectorModel.$governanceChainId,
     networkSelectorModel.$network,
@@ -58,8 +67,25 @@ export const DashboardReferendumDetails = ({ chainId, referendumId, onClose }: P
   // otherwise the gate would snapshot the previous network.
   const ready = selectedChainId === chainId && network !== null;
 
+  // A chain that never connects leaves the selector unresolved forever, and the
+  // spinner has nothing to say about it. After a bounded wait the modal says
+  // what it is waiting for, so the close button is a choice rather than the
+  // only thing on screen.
+  const [waitedOut, setWaitedOut] = useState(false);
+
+  useEffect(() => {
+    if (ready) return;
+
+    setWaitedOut(false);
+    const timeout = setTimeout(() => setWaitedOut(true), NETWORK_WAIT_TIMEOUT_MS);
+
+    return () => clearTimeout(timeout);
+  }, [ready]);
+
   if (!ready) {
-    return <LoadingModal onClose={onClose} />;
+    return (
+      <LoadingModal hint={waitedOut ? t('dashboard.referendums.hint.chainDisconnected') : null} onClose={onClose} />
+    );
   }
 
   return <ReferendumBody chain={network.chain} referendumId={referendumId} onClose={onClose} />;
@@ -103,14 +129,17 @@ const ChainBadge = ({ chain }: { chain: Chain }) => (
 
 /**
  * Sized like the modal it stands in for — `xl`, full height — so the swap to
- * the real one is a fill-in rather than a jump from a small box to a large
- * one.
+ * the real one is a fill-in rather than a jump from a small box to a large one.
+ * The hint, when there is one, says why the wait is not ending.
  */
-const LoadingModal = ({ onClose }: { onClose: () => void }) => (
+const LoadingModal = ({ hint, onClose }: { hint?: string | null; onClose: () => void }) => (
   <Modal isOpen size="xl" onToggle={(open) => !open && onClose()}>
     <Modal.Content>
-      <div className="flex h-[70vh] w-modal-xl items-center justify-center bg-main-app-background">
+      <div
+        className={`flex w-modal-xl flex-col items-center justify-center gap-3 bg-main-app-background ${DETAILS_BODY_HEIGHT_CLASS}`}
+      >
         <Loader color="primary" size={32} />
+        {hint && <FootnoteText className="text-text-tertiary">{hint}</FootnoteText>}
       </div>
     </Modal.Content>
   </Modal>

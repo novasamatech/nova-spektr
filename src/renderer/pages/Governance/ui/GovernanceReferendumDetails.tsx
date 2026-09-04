@@ -18,11 +18,9 @@ export const GovernanceReferendumDetails = memo(() => {
 
   const currentReferendums = useUnit(governancePageAggregate.$currentReferendums);
 
-  if (!referendumId) {
-    return null;
-  }
-
-  const selectedReferendumId = referendaPallet.helpers.toReferendumId(parseInt(referendumId));
+  // Computed null-safe rather than behind an early return: every hook below has
+  // to run on every render.
+  const selectedReferendumId = referendumId ? referendaPallet.helpers.toReferendumId(parseInt(referendumId)) : null;
 
   const selectedReferendum = useMemo(() => {
     if (!selectedReferendumId) return null;

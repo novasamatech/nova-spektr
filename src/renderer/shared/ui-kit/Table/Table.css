@@ -220,3 +220,28 @@
 .table-row:hover .table-cell--pinned-right {
   background-image: linear-gradient(var(--action-background-hover), var(--action-background-hover));
 }
+
+/*
+ * The row tints below are the row's own selected mixes, repeated on the pinned
+ * cell: the cell paints an opaque surface of its own, so the row's background
+ * cannot show through it. They come after the hover rule because a selected
+ * row's own tint has the same specificity as `.table-row:hover`.
+ */
+.table-row--selected .table-cell--pinned-right {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--accent-background) 6%, transparent),
+    color-mix(in srgb, var(--accent-background) 6%, transparent)
+  );
+}
+
+.table-row--selected:hover .table-cell--pinned-right {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--accent-background) 10%, transparent),
+    color-mix(in srgb, var(--accent-background) 10%, transparent)
+  );
+}
+
+/* A disabled row does not react to the pointer — the pinned cell included. */
+.table-row--disabled:hover .table-cell--pinned-right {
+  background-image: none;
+}

@@ -839,6 +839,9 @@
         "endedTitle": "Ended Referendum",
         "lockStatus": "Lock Status",
         "endedDate": "Ended {date}"
+      },
+      "hint": {
+        "chainDisconnected": "Chain is not connected — the referendum can't load until it reconnects"
       }
     },
     "locks": {
