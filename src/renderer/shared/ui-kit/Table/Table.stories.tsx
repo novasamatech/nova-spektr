@@ -125,8 +125,8 @@ export const RowStates: Story = {
       },
     ],
     getRowKey: item => String(item.id),
-    // Row 2 is selected, row 3 disabled, and row 3 is both — the tie the pinned
-    // cell's hover rules have to settle.
+    // Row 2 is selected only; row 3 is both selected and disabled — the tie
+    // the pinned cell's hover rules have to settle.
     rowProps: item => ({
       disabled: item.status === 'inactive',
       selected: item.id === 2 || item.id === 3,

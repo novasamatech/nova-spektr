@@ -41,7 +41,8 @@ rather than from a route, and stays open across navigation.
   - a **local payer releasing someone else's lock**. `convictionVoting.unlock(class, target)` takes any origin, so a
     watched address whose votes are all gone can still be released by any local key that can pay. This is available for
     an **unlock-only** release and no other: `removeVote` and `undelegate` must be signed by the voter, so as soon as
-    one is required the payer route is off the table — a request that asks for it anyway is dropped, not shown.
+    one is required the payer route is off the table — a request that asks for it anyway is dropped, not shown. A
+    request with no calls at all is dropped the same way: it would build a signable, fee-bearing empty batch.
 - The **signing route** is seeded with the default path and can be changed on the confirm screen. It is not cosmetic —
   the account at the end of the route is the one that pays the fee and reserves the multisig deposit — so it is never
   picked silently when the wallet offers more than one. Changing it re-wraps the transaction, re-prices the fee and

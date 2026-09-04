@@ -240,10 +240,12 @@
  * Both rules are needed, and neither is redundant. `.table-row--selected
  * .table-cell--pinned-right` is (0,2,0) and *loses* to `.table-row:hover
  * .table-cell--pinned-right` above, which is (0,3,0) — so on a hovered selected
- * row it is the (0,4,0) `.table-row--selected:hover` rule, and only that rule,
- * that keeps the accent tint instead of the plain hover grey.
+ * row it is the `.table-row--selected:hover` rule, and only that rule, that
+ * keeps the accent tint instead of the plain hover grey. It has the same
+ * (0,3,0) specificity as the plain hover rule and wins only because it comes
+ * later in the file — do not reorder these rules.
  *
- * That last rule ties at (0,4,0) with the disabled rule above it, so the order
+ * It also ties at (0,3,0) with the disabled rule above it, so again the order
  * decides, and it is deliberate: on a row that is both selected and disabled,
  * selection wins and the pinned cell keeps the accent. It has to, because the
  * row behind it settles the same tie the same way — `.table-row--selected:hover`
