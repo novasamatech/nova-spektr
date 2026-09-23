@@ -1,9 +1,13 @@
-import { attach, combine, createStore, sample } from 'effector';
+import { type StoreValue, combine, createStore, sample } from 'effector';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
-import { contactModel } from '@/entities/contact';
+// The entity barrel re-exports contact UI, which reaches back into
+// domains/network through shared/ui-entities. Importing the model directly keeps
+// that cycle out of this module's graph, so contacts are always defined here.
+// eslint-disable-next-line boundaries/entry-point
+import { contactModel } from '@/entities/contact/model/contact-model';
 import { networkModel } from '@/entities/network';
 import { identity } from '../identity/store';
 
@@ -41,16 +45,52 @@ export type AccountsNameParams = {
 
 type NameCache = Record<string, string>;
 
-const getContactsStore = () => contactModel?.$contacts ?? createStore([]);
+const $nameSources = combine({
+  contacts: contactModel.$contacts,
+  identities: identity.$list,
+  chains: networkModel.$chains,
+  accounts: accounts.$list,
+});
 
-const getNameResolverSource = () => {
-  return combine({
-    contacts: getContactsStore(),
-    identities: identity.$list,
-    chains: networkModel.$chains,
-    accounts: accounts.$list,
+type NameSources = StoreValue<typeof $nameSources>;
+
+function resolveAccountNameFromSources(params: AccountNameParams, sources: NameSources): string {
+  return accountService.resolveAccountName({
+    accountId: params.accountId,
+    chain: params.chain,
+    title: params.title,
+    fallbackName: params.fallbackName,
+    account: params.account,
+    ...sources,
   });
-};
+}
+
+function resolveWalletNameFromSources({ wallet }: WalletNameParams, sources: NameSources): string {
+  return accountService.resolveWalletName({ wallet, ...sources });
+}
+
+/** Returns a copy of `cache` with every entry recomputed by `resolve`. */
+function withResolvedNames<T>(cache: NameCache, entries: [key: string, params: T][], resolve: (params: T) => string) {
+  const next = { ...cache };
+  for (const [key, params] of entries) {
+    next[key] = resolve(params);
+  }
+  return next;
+}
+
+const toAccountNameEntry = (params: AccountNameParams): [string, AccountNameParams] => [
+  createAccountNameCacheKey(params),
+  params,
+];
+
+const toWalletNameEntry = (wallet: Wallet): [string, WalletNameParams] => [
+  createWalletNameCacheKey({ wallet }),
+  { wallet },
+];
+
+function toAccountsNameParams({ accounts, chain }: AccountsNameParams): AccountNameParams[] {
+  return accounts.map(account => ({ accountId: account.accountId, chain, account }));
+}
 
 export const createAccountNameCacheKey = ({
   accountId,
@@ -86,38 +126,19 @@ export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string =
 export const $accountNameCache = createStore<NameCache>({});
 export const $walletNameCache = createStore<NameCache>({});
 
+// The resources below only drive request bookkeeping (keys, pending, start /
+// stop). Names are never resolved inside the request: a request reads its
+// sources when it starts and completes microtasks later, so an address book
+// landing in between used to be dropped and the stale short address written
+// over it. Resolution happens on `push` instead, from the sources as they are
+// at that moment (see "Resolve on push" below).
+const noNameRequest = () => true;
+
 export const accountNameResource = createQueryResource<AccountNameParams>({
   key: createAccountNameCacheKey,
 })
-  .request(
-    attach({
-      source: getNameResolverSource(),
-      effect: ({ contacts, identities, chains, accounts }, params) => {
-        return accountService.resolveAccountName({
-          accountId: params.accountId,
-          chain: params.chain,
-          title: params.title,
-          fallbackName: params.fallbackName,
-          account: params.account,
-          contacts,
-          identities,
-          chains,
-          accounts,
-        });
-      },
-    }),
-  )
-  .cache({
-    store: $accountNameCache,
-    map(cache, result, params) {
-      const key = createAccountNameCacheKey(params);
-
-      return {
-        ...cache,
-        [key]: result,
-      };
-    },
-  })
+  .request(noNameRequest)
+  .cache({ store: $accountNameCache, map: cache => cache })
   .build();
 
 type WalletsNameParams = {
@@ -131,37 +152,8 @@ export const walletsNameResource = createQueryResource<WalletsNameParams>({
       .sort()
       .join(','),
 })
-  .request(
-    attach({
-      source: getNameResolverSource(),
-      effect: ({ contacts, identities, chains, accounts }, { wallets }) => {
-        const result: Record<string, string> = {};
-
-        for (const wallet of wallets) {
-          const key = createWalletNameCacheKey({ wallet });
-          const name = accountService.resolveWalletName({
-            wallet,
-            contacts,
-            identities,
-            chains,
-            accounts,
-          });
-          result[key] = name;
-        }
-
-        return result;
-      },
-    }),
-  )
-  .cache({
-    store: $walletNameCache,
-    map(cache, result) {
-      return {
-        ...cache,
-        ...result,
-      };
-    },
-  })
+  .request(noNameRequest)
+  .cache({ store: $walletNameCache, map: cache => cache })
   .build();
 
 export const accountsNameResource = createQueryResource<AccountsNameParams>({
@@ -170,9 +162,8 @@ export const accountsNameResource = createQueryResource<AccountsNameParams>({
     // Key on each account's own id, not accountId — two different account lists
     // sharing an accountId (e.g. across wallets) must not collide here. A
     // collision would make the second request reuse the first's cached
-    // response wholesale (see requestsCache.get in createQueryResource), and
-    // since that response is keyed per-account by createAccountNameCacheKey,
-    // the second list's accounts would never get their own entries written.
+    // response (see requestsCache.get in createQueryResource), which skips its
+    // push, so the second list's accounts would never get their own entries.
     const accountKeys = accounts
       .map(a => a.id)
       .sort()
@@ -180,46 +171,36 @@ export const accountsNameResource = createQueryResource<AccountsNameParams>({
     return `${chainKey}:${accountKeys}`;
   },
 })
-  .request(
-    attach({
-      source: getNameResolverSource(),
-      effect: ({ contacts, identities, chains, accounts: allAccounts }, { accounts, chain }) => {
-        const result: Record<string, string> = {};
-
-        for (const account of accounts) {
-          const key = createAccountNameCacheKey({
-            accountId: account.accountId,
-            chain,
-            title: undefined,
-            account,
-          });
-          const name = accountService.resolveAccountName({
-            accountId: account.accountId,
-            chain,
-            title: undefined,
-            account,
-            contacts,
-            identities,
-            chains,
-            accounts: allAccounts,
-          });
-          result[key] = name;
-        }
-
-        return result;
-      },
-    }),
-  )
-  .cache({
-    store: $accountNameCache,
-    map(cache, result) {
-      return {
-        ...cache,
-        ...result,
-      };
-    },
-  })
+  .request(noNameRequest)
+  .cache({ store: $accountNameCache, map: cache => cache })
   .build();
+
+// Resolve on push: write each requested name from the live sources.
+sample({
+  clock: accountNameResource.push,
+  source: { cache: $accountNameCache, sources: $nameSources },
+  fn: ({ cache, sources }, { params }) =>
+    withResolvedNames(cache, [toAccountNameEntry(params)], p => resolveAccountNameFromSources(p, sources)),
+  target: $accountNameCache,
+});
+
+sample({
+  clock: accountsNameResource.push,
+  source: { cache: $accountNameCache, sources: $nameSources },
+  fn: ({ cache, sources }, { params }) =>
+    withResolvedNames(cache, toAccountsNameParams(params).map(toAccountNameEntry), p =>
+      resolveAccountNameFromSources(p, sources),
+    ),
+  target: $accountNameCache,
+});
+
+sample({
+  clock: walletsNameResource.push,
+  source: { cache: $walletNameCache, sources: $nameSources },
+  fn: ({ cache, sources }, { params }) =>
+    withResolvedNames(cache, params.wallets.map(toWalletNameEntry), p => resolveWalletNameFromSources(p, sources)),
+  target: $walletNameCache,
+});
 
 // useResource only re-fetches a resource when its request params change, so
 // once an account/wallet name is resolved and cached it stays cached even
@@ -229,21 +210,32 @@ export const accountsNameResource = createQueryResource<AccountsNameParams>({
 // would otherwise show a stale name until it remounts. Track the params
 // behind every resolved cache entry, then recompute them all whenever any of
 // that data changes so mounted views pick up the update live.
-const $contacts = getContactsStore();
-
-// Bounds how many resolved-name params stay tracked for live recompute.
-// Without a cap this grows forever (full Wallet snapshots for wallet names),
-// since nothing currently signals when a consumer unmounts.
+//
+// The cap bounds how many params stay tracked: without it the map grows forever
+// (full Wallet snapshots for wallet names), since nothing currently signals when
+// a consumer unmounts.
 const MAX_TRACKED_NAME_PARAMS = 500;
 
-function withCapacityLimit<T>(next: Record<string, T>, limit: number): Record<string, T> {
-  const keys = Object.keys(next);
-  const excess = keys.length - limit;
-  if (excess <= 0) {
-    return next;
+/**
+ * Adds (or re-adds) entries and evicts the least recently used ones above
+ * `limit`. Re-adding moves an entry to the end, so a name that keeps being
+ * requested is never the one dropped — an evicted entry stops being recomputed
+ * and would otherwise freeze on whatever it last resolved to.
+ */
+export function trackNameParams<T>(
+  state: Record<string, T>,
+  entries: [key: string, params: T][],
+  limit: number = MAX_TRACKED_NAME_PARAMS,
+): Record<string, T> {
+  const next = { ...state };
+
+  for (const [key, params] of entries) {
+    delete next[key];
+    next[key] = params;
   }
 
-  for (const key of keys.slice(0, excess)) {
+  const keys = Object.keys(next);
+  for (const key of keys.slice(0, Math.max(0, keys.length - limit))) {
     delete next[key];
   }
 
@@ -255,24 +247,14 @@ const $accountNameParams = createStore<Record<string, AccountNameParams>>({});
 sample({
   clock: accountNameResource.push,
   source: $accountNameParams,
-  fn: (state, { params }) =>
-    withCapacityLimit({ ...state, [createAccountNameCacheKey(params)]: params }, MAX_TRACKED_NAME_PARAMS),
+  fn: (state, { params }) => trackNameParams(state, [toAccountNameEntry(params)]),
   target: $accountNameParams,
 });
 
 sample({
   clock: accountsNameResource.push,
   source: $accountNameParams,
-  fn: (state, { params }) => {
-    const next = { ...state };
-
-    for (const account of params.accounts) {
-      const accountParams: AccountNameParams = { accountId: account.accountId, chain: params.chain, account };
-      next[createAccountNameCacheKey(accountParams)] = accountParams;
-    }
-
-    return withCapacityLimit(next, MAX_TRACKED_NAME_PARAMS);
-  },
+  fn: (state, { params }) => trackNameParams(state, toAccountsNameParams(params).map(toAccountNameEntry)),
   target: $accountNameParams,
 });
 
@@ -281,83 +263,33 @@ const $walletNameParams = createStore<Record<string, WalletNameParams>>({});
 sample({
   clock: walletsNameResource.push,
   source: $walletNameParams,
-  fn: (state, { params }) => {
-    const next = { ...state };
-
-    for (const wallet of params.wallets) {
-      const walletParams: WalletNameParams = { wallet };
-      next[createWalletNameCacheKey(walletParams)] = walletParams;
-    }
-
-    return withCapacityLimit(next, MAX_TRACKED_NAME_PARAMS);
-  },
+  fn: (state, { params }) => trackNameParams(state, params.wallets.map(toWalletNameEntry)),
   target: $walletNameParams,
 });
 
+// Clocked on the underlying stores, not on the derived $nameSources: a derived
+// store as a sample clock does not track emissions per scope under fork().
+const nameSourceUpdated = [contactModel.$contacts, identity.$list, accounts.$list, networkModel.$chains];
+
 // Keeps already-resolved names fresh when a *source* of resolution changes.
-// The resources' own pushes are deliberately not clocks here: a push already
-// carries the name resolved from these very sources and writes it to the cache
-// itself, so re-resolving on push is pure duplicate work — and quadratic, since
-// every push re-resolves every tracked param (mounting N rows that each hold a
-// name hook then costs N pushes × N params).
+// Pushes are deliberately not clocks here: each push resolves its own params
+// (see "Resolve on push"), and re-resolving every tracked param on every push
+// would be quadratic (mounting N rows that each hold a name hook costs N pushes
+// × N params).
 sample({
-  clock: [$contacts, identity.$list, accounts.$list, networkModel.$chains],
-  source: {
-    accountParams: $accountNameParams,
-    cache: $accountNameCache,
-    contacts: $contacts,
-    identities: identity.$list,
-    chains: networkModel.$chains,
-    accounts: accounts.$list,
-  },
+  clock: nameSourceUpdated,
+  source: { accountParams: $accountNameParams, cache: $accountNameCache, sources: $nameSources },
   filter: ({ accountParams }) => Object.keys(accountParams).length > 0,
-  fn: ({ accountParams, cache, contacts, identities, chains, accounts: allAccounts }) => {
-    const next = { ...cache };
-
-    for (const [key, params] of Object.entries(accountParams)) {
-      next[key] = accountService.resolveAccountName({
-        accountId: params.accountId,
-        chain: params.chain,
-        title: params.title,
-        fallbackName: params.fallbackName,
-        account: params.account,
-        contacts,
-        identities,
-        chains,
-        accounts: allAccounts,
-      });
-    }
-
-    return next;
-  },
+  fn: ({ accountParams, cache, sources }) =>
+    withResolvedNames(cache, Object.entries(accountParams), p => resolveAccountNameFromSources(p, sources)),
   target: $accountNameCache,
 });
 
 sample({
-  clock: [$contacts, identity.$list, accounts.$list, networkModel.$chains],
-  source: {
-    walletParams: $walletNameParams,
-    cache: $walletNameCache,
-    contacts: $contacts,
-    identities: identity.$list,
-    chains: networkModel.$chains,
-    accounts: accounts.$list,
-  },
+  clock: nameSourceUpdated,
+  source: { walletParams: $walletNameParams, cache: $walletNameCache, sources: $nameSources },
   filter: ({ walletParams }) => Object.keys(walletParams).length > 0,
-  fn: ({ walletParams, cache, contacts, identities, chains, accounts: allAccounts }) => {
-    const next = { ...cache };
-
-    for (const [key, params] of Object.entries(walletParams)) {
-      next[key] = accountService.resolveWalletName({
-        wallet: params.wallet,
-        contacts,
-        identities,
-        chains,
-        accounts: allAccounts,
-      });
-    }
-
-    return next;
-  },
+  fn: ({ walletParams, cache, sources }) =>
+    withResolvedNames(cache, Object.entries(walletParams), p => resolveWalletNameFromSources(p, sources)),
   target: $walletNameCache,
 });

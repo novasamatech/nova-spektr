@@ -1,5 +1,5 @@
 import { type Chain, ChainOptions } from '@/shared/core';
-import { toAddress, validateAddress } from '../address';
+import { isGeneratedAccountName, toAccountId, toAddress, toShortAddress, validateAddress } from '../address';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '../constants';
 
 describe('toAddress', () => {
@@ -82,5 +82,33 @@ describe('validateAddress', () => {
   test('short address is not valid', () => {
     const result = validateAddress('F7NZ', substrateChain);
     expect(result).toEqual(false);
+  });
+});
+
+describe('isGeneratedAccountName', () => {
+  const accountId = toAccountId(TEST_ADDRESS);
+  const shortOwn = (chunk: number, prefix?: number) => toShortAddress(toAddress(accountId, { prefix }), chunk);
+
+  test('should match the own address shortened with the app chunk sizes and fallback prefixes', () => {
+    expect(isGeneratedAccountName(shortOwn(5), accountId, undefined)).toBe(true);
+    expect(isGeneratedAccountName(shortOwn(6), accountId, undefined)).toBe(true);
+    expect(isGeneratedAccountName(shortOwn(5, 42), accountId, undefined)).toBe(true);
+    expect(isGeneratedAccountName(toShortAddress(accountId, 5), accountId, undefined)).toBe(true);
+  });
+
+  test('should match the own address under the given chain prefix only when it is passed', () => {
+    expect(isGeneratedAccountName(shortOwn(5, 2), accountId, 2)).toBe(true);
+    expect(isGeneratedAccountName(shortOwn(5, 2), accountId, undefined)).toBe(false);
+  });
+
+  test('should match proxy names built over the own address', () => {
+    expect(isGeneratedAccountName(`Any for ${shortOwn(6)}`, accountId, undefined)).toBe(true);
+    expect(isGeneratedAccountName(`Any for pure ${shortOwn(5)}`, accountId, undefined)).toBe(true);
+  });
+
+  test('should not match user names or another address', () => {
+    expect(isGeneratedAccountName('Team...Fund', accountId, undefined)).toBe(false);
+    expect(isGeneratedAccountName('Team treasury', accountId, undefined)).toBe(false);
+    expect(isGeneratedAccountName(toShortAddress(toAddress(TEST_ACCOUNTS[1]), 5), accountId, undefined)).toBe(false);
   });
 });

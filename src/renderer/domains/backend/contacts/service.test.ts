@@ -216,4 +216,97 @@ describe('backendContactsService.fetchAllContacts', () => {
       message: expect.stringContaining('Internal Server Error'),
     });
   });
+
+  describe('unstable paging', () => {
+    // The backend pages with OFFSET over an order that is not unique (contacts
+    // sharing a name), so two page queries can return the same row and skip
+    // another. A contact missing from the list silently drops its name from
+    // every wallet row that should show it.
+    const page = (prefix: string, length: number) =>
+      Array.from({ length }, (_, i) => rawContact({ id: `${prefix}-${i}`, name: `${prefix}-${i}` }));
+
+    const serve = (pagesByAttempt: Record<number, unknown[]>[], total: number) => {
+      let attempt = -1;
+      authFetchMock.mockImplementation((url: string) => {
+        const pageNumber = Number(/page=(\d+)&/.exec(url)?.[1]);
+        if (pageNumber === 1) attempt += 1;
+        return Promise.resolve(jsonResponse({ data: pagesByAttempt[attempt]?.[pageNumber] ?? [], total }));
+      });
+    };
+
+    it('drops a contact repeated across pages and refetches to recover the one it pushed out', async () => {
+      const first = page('a', 100);
+      const second = page('b', 100);
+      const shiftedSecond = [first[99], ...second.slice(0, 99)];
+
+      serve(
+        [
+          { 1: first, 2: shiftedSecond },
+          { 1: first, 2: second },
+        ],
+        200,
+      );
+
+      const result = await backendContactsService.fetchAllContacts('https://backend.test');
+
+      expect(result.map(c => c.id)).toEqual([...first, ...second].map(c => c.id));
+      expect(authFetchMock).toHaveBeenCalledTimes(4);
+    });
+
+    it('does not refetch when every row arrived, counting rows skipped as invalid', async () => {
+      const first = page('a', 100);
+      const second = [...page('b', 99), { id: 'broken', name: 'Broken' }];
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      serve([{ 1: first, 2: second }], 200);
+
+      const result = await backendContactsService.fetchAllContacts('https://backend.test');
+
+      expect(result).toHaveLength(199);
+      expect(authFetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps the first pass when the refetch fails instead of dropping every contact', async () => {
+      const first = page('a', 100);
+      const shiftedSecond = [first[99], ...page('b', 99)];
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      let pageOneCalls = 0;
+
+      authFetchMock.mockImplementation((url: string) => {
+        if (url.includes('page=1&')) {
+          pageOneCalls += 1;
+          if (pageOneCalls > 1) return Promise.reject(new Error('network down'));
+          return Promise.resolve(jsonResponse({ data: first, total: 200 }));
+        }
+        return Promise.resolve(jsonResponse({ data: shiftedSecond, total: 200 }));
+      });
+
+      const result = await backendContactsService.fetchAllContacts('https://backend.test');
+
+      expect(result).toHaveLength(199);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[BackendContacts] Refetch of an incomplete contact list failed'),
+        expect.any(Error),
+      );
+    });
+
+    it('returns what it has and warns when the list is still incomplete after the refetch', async () => {
+      const first = page('a', 100);
+      const shiftedSecond = [first[99], ...page('b', 99)];
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      serve(
+        [
+          { 1: first, 2: shiftedSecond },
+          { 1: first, 2: shiftedSecond },
+        ],
+        200,
+      );
+
+      const result = await backendContactsService.fetchAllContacts('https://backend.test');
+
+      expect(result).toHaveLength(199);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('[BackendContacts] Incomplete contact list'));
+    });
+  });
 });

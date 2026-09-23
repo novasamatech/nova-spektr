@@ -148,3 +148,57 @@ const validateEvmAddress = (address: string): boolean => {
 
   return u8aToU8a(address).length === ETHEREUM_PUBLIC_KEY_LENGTH_BYTES;
 };
+
+// Every place the app names an account on the user's behalf shortens the
+// account's own address with `toShortAddress` and one of these chunk sizes:
+// 5 (multisig creation, account sync, name resolution) or 6 (proxy discovery).
+const GENERATED_NAME_CHUNKS = [5, 6];
+
+// Prefixes a stored auto-name may have been built with: the chain's own, the
+// app default and the generic substrate one. Callers without chain data still
+// get the last two.
+const GENERATED_NAME_FALLBACK_PREFIXES = [SS58_DEFAULT_PREFIX, 42];
+
+/**
+ * Every string the app could have stored as this account's auto-generated name:
+ * its address shortened with each historical chunk size and prefix, plus the
+ * raw hex account id shortened the same way (the flexible multisig flow named
+ * its pure proxy from the hex id).
+ */
+const getGeneratedAccountNames = (accountId: AccountId, addressPrefix: number | undefined): string[] => {
+  const prefixes = new Set([
+    ...(addressPrefix === undefined ? [] : [addressPrefix]),
+    ...GENERATED_NAME_FALLBACK_PREFIXES,
+  ]);
+  const sources = [accountId, ...Array.from(prefixes, (prefix) => toAddress(accountId, { prefix }))];
+
+  return sources.flatMap((source) => GENERATED_NAME_CHUNKS.map((chunk) => toShortAddress(source, chunk)));
+};
+
+/**
+ * Whether `name` is one the app generated for this account rather than one the
+ * user typed.
+ *
+ * `nameType` is the real answer to that question, but it cannot be trusted on
+ * older profiles: storage migration 14 stamped `CUSTOM` onto every account that
+ * predated the flag — including multisigs and proxied wallets, whose names have
+ * always been derived from their address. Migration 21 repaired Polkadot Vault
+ * keys and migration 22 the accounts whose name regenerates without chain data;
+ * a proxied account named with a chain-specific prefix is only caught at
+ * runtime, when the caller passes that prefix.
+ *
+ * A generated name is always a shortening of the account's _own_ address (on
+ * its own, or as the tail of a proxy's "<ProxyType> for [pure] <address>"), so
+ * the check regenerates those candidates and compares exactly. Matching a loose
+ * "xxxx...xxxx" shape instead would swallow user names like `Team...Fund` or
+ * `Main...Vault`.
+ */
+export const isGeneratedAccountName = (
+  name: string,
+  accountId: AccountId,
+  addressPrefix: number | undefined,
+): boolean => {
+  return getGeneratedAccountNames(accountId, addressPrefix).some(
+    (shortened) => name === shortened || name.endsWith(` for ${shortened}`) || name.endsWith(` for pure ${shortened}`),
+  );
+};
