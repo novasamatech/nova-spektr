@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { type BackendContact, type Contact, type ContactField } from '@/shared/core';
-import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 
 export class HttpError extends Error {
   constructor(
@@ -103,7 +103,7 @@ async function fetchContactsPage(
   baseUrl: string,
   page: number,
   pageSize: number,
-): Promise<{ data: Contact[]; total: number }> {
+): Promise<{ data: Contact[]; total: number; rowIds: string[] }> {
   const result = await authFetch(`${baseUrl}/contacts?page=${page}&pageSize=${pageSize}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -115,6 +115,7 @@ async function fetchContactsPage(
 
   const body: unknown = JSON.parse(result.body);
   const { raw, total } = extractContacts(body);
+  const rowIds = raw.map(readRowId).filter(nonNullable);
 
   const contacts: Contact[] = [];
   for (const item of raw) {
@@ -131,22 +132,75 @@ async function fetchContactsPage(
     }
   }
 
-  return { data: contacts, total };
+  return { data: contacts, total, rowIds };
 }
 
-async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
-  const firstPage = await fetchContactsPage(baseUrl, 1, PAGE_SIZE);
+function readRowId(item: unknown): string | null {
+  if (typeof item !== 'object' || item === null || !('id' in item)) return null;
 
-  if (firstPage.total <= PAGE_SIZE) {
-    return firstPage.data;
+  return typeof item.id === 'string' ? item.id : null;
+}
+
+function uniqueById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+
+  return items.filter(item => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+type ContactsSnapshot = { contacts: Contact[]; total: number; rowIds: Set<string> };
+
+async function fetchContactsSnapshot(baseUrl: string): Promise<ContactsSnapshot> {
+  const firstPage = await fetchContactsPage(baseUrl, 1, PAGE_SIZE);
+  const pages = [firstPage];
+
+  if (firstPage.total > PAGE_SIZE) {
+    const totalPages = Math.ceil(firstPage.total / PAGE_SIZE);
+    const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+
+    pages.push(...(await Promise.all(remainingPages.map(page => fetchContactsPage(baseUrl, page, PAGE_SIZE)))));
   }
 
-  const totalPages = Math.ceil(firstPage.total / PAGE_SIZE);
-  const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  return {
+    contacts: uniqueById(pages.flatMap(page => page.data)),
+    total: firstPage.total,
+    rowIds: new Set(pages.flatMap(page => page.rowIds)),
+  };
+}
 
-  const remainingResults = await Promise.all(remainingPages.map(page => fetchContactsPage(baseUrl, page, PAGE_SIZE)));
+const isComplete = ({ rowIds, total }: Pick<ContactsSnapshot, 'rowIds' | 'total'>) => rowIds.size >= total;
 
-  return [firstPage.data, ...remainingResults.map(r => r.data)].flat();
+/**
+ * Each page is a separate OFFSET query, and the backend's order is not unique
+ * (contacts can share a name), so across queries a row can land on two pages
+ * while another lands on none. The total still reads right, but the missing
+ * contact's name silently disappears from every row that should show it.
+ * Duplicates are dropped by id; an incomplete list is fetched once more and
+ * merged, which recovers rows that moved between the two passes.
+ */
+async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
+  const first = await fetchContactsSnapshot(baseUrl);
+  if (isComplete(first)) {
+    return first.contacts;
+  }
+
+  const second = await fetchContactsSnapshot(baseUrl);
+  const merged = {
+    contacts: uniqueById([...first.contacts, ...second.contacts]),
+    total: second.total,
+    rowIds: new Set([...first.rowIds, ...second.rowIds]),
+  };
+
+  if (!isComplete(merged)) {
+    console.warn(
+      `[BackendContacts] Incomplete contact list: received ${merged.rowIds.size} of ${merged.total} rows after a refetch`,
+    );
+  }
+
+  return merged.contacts;
 }
 
 export const backendContactsService = { fetchAllContacts };
