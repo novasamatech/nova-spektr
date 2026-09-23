@@ -777,6 +777,79 @@ describe('account service', () => {
     const emptyContacts: Contact[] = [];
     const emptyIdentities: IdentityMap = {};
 
+    // See the matching block under resolveWalletName: a CUSTOM stamp over an
+    // app-generated name (migration 14) must not hide the address book.
+    describe('CUSTOM-stamped app-generated names', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'backend-1',
+          accountId,
+          name: 'FINOPS_DOT_MSIG',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      it('should let the contact win over the shortened own address stamped CUSTOM', () => {
+        const account: UniversalAccount = {
+          ...universalAccount,
+          accountId,
+          name: toShortAddress(toAddress(accountId), 5),
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveAccountName({
+          accountId,
+          chain: null,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
+      it('should regenerate the name with the prefix of the requested chain', () => {
+        const account: ChainAccount = {
+          ...kusamaChainAccount,
+          accountId,
+          name: toShortAddress(toAddress(accountId, { prefix: kusamaChain.addressPrefix }), 5),
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveAccountName({
+          accountId,
+          chain: kusamaChain,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
+      it('should keep a name the user typed over the contact', () => {
+        const account: UniversalAccount = {
+          ...universalAccount,
+          accountId,
+          name: 'Team treasury',
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveAccountName({
+          accountId,
+          chain: null,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('Team treasury');
+      });
+    });
+
     it('should return title if provided', () => {
       const result = accountService.resolveAccountName({
         accountId,
@@ -1252,6 +1325,82 @@ describe('account service', () => {
     };
     const emptyContacts: Contact[] = [];
     const emptyIdentities: IdentityMap = {};
+
+    // Storage migration 14 stamped CUSTOM onto every pre-existing account,
+    // including multisig / proxied wallets whose stored name is the shortened
+    // address the app itself generated. Such a name is not user-chosen, so the
+    // address book must still win over it.
+    describe('CUSTOM-stamped app-generated names', () => {
+      const wallet = createSingleShardWallet(walletId, { rootAccountId: accountId, name: 'x' });
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'backend-1',
+          accountId,
+          name: 'FINOPS_DOT_MSIG',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+
+      it('should let the contact win over the shortened own address stamped CUSTOM', () => {
+        const account: UniversalAccount = {
+          ...universalAccount,
+          accountId,
+          walletId,
+          name: toShortAddress(toAddress(accountId), 5),
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveWalletName({
+          wallet,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
+      it('should regenerate a proxied name with the chain prefix of the account', () => {
+        const account: ChainAccount = {
+          ...kusamaChainAccount,
+          accountId,
+          walletId,
+          name: `Any for ${toShortAddress(toAddress(accountId, { prefix: kusamaChain.addressPrefix }), 6)}`,
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveWalletName({
+          wallet,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
+      it('should keep a name the user typed over the contact', () => {
+        const account: UniversalAccount = {
+          ...universalAccount,
+          accountId,
+          walletId,
+          name: 'Team treasury',
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveWalletName({
+          wallet,
+          accounts: [account],
+          contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('Team treasury');
+      });
+    });
 
     it('should return wallet name if no accountId found', () => {
       const wallet = createSingleShardWallet(walletId, {

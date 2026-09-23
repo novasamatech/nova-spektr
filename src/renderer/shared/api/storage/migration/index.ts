@@ -19,3 +19,4 @@ export { backupContactsBeforePKChange, migrateContactsToStringIds, restoreContac
 export { dropPersistedBackendContacts } from './migration-19';
 export { migrateWalletsHiddenReason } from './migration-20';
 export { resetVaultAccountNameType } from './migration-21';
+export { resetGeneratedAccountNameType } from './migration-22';

@@ -37,6 +37,7 @@ import {
   migrateWalletsHiddenReason,
   removeDeprecatedProxiedAccounts,
   renameBlockNumberToEntropyBlockNumber,
+  resetGeneratedAccountNameType,
   resetVaultAccountNameType,
   restoreContactsAfterPKChange,
 } from '../migration';
@@ -182,6 +183,8 @@ class DexieStorage extends Dexie {
 
     this.version(53).upgrade(resetVaultAccountNameType);
 
+    this.version(54).upgrade(resetGeneratedAccountNameType);
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -211,12 +214,16 @@ export const exportDb = async () => {
 export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
 
-  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, dexie.contacts, async (t) => {
+  await dexie.transaction('rw', dexie.wallets, dexie.accounts2, dexie.notifications, dexie.contacts, async (t) => {
     await addAccountNameType(t);
     await migrateNotificationStructure(t);
     await addFlexibleMultisigProxyType(t);
     await addAccountCreatedAt(t);
     await migrateContactsToStringIds(t);
+    // addAccountNameType stamps CUSTOM onto imported accounts that predate the
+    // flag; these two undo it where the name was never user-chosen.
+    await resetVaultAccountNameType(t);
+    await resetGeneratedAccountNameType(t);
   });
 };
 
