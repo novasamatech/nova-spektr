@@ -209,12 +209,14 @@ type ResolveAccountNameParams = {
  * AccountId alone doesn't disambiguate between accounts that share it across
  * different wallets (e.g. a Vault derived key and an unrelated watch-only
  * account for the same address). Prefer a chain-matching account, then one with
- * a user-chosen (CUSTOM) name, before falling back to array order.
+ * a name the user actually chose (see `isUserChosenAccountName`), before
+ * falling back to array order.
  */
 function findRelatedAccount(
   accounts: AnyAccount[],
   accountId: AccountId,
   chain?: Chain | null,
+  chains: Record<string, Chain> = {},
 ): AnyAccount | undefined {
   const candidates = accounts.filter(account => account.accountId === accountId);
   if (candidates.length <= 1) {
@@ -230,7 +232,11 @@ function findRelatedAccount(
     }
   }
 
-  return candidates.find(isCustomAccountName) ?? candidates[0];
+  const userNamed = candidates.find(candidate =>
+    isUserChosenAccountName(candidate, getAccountAddressPrefix(chain, candidate, chains)),
+  );
+
+  return userNamed ?? candidates[0];
 }
 
 /**
@@ -430,7 +436,7 @@ function resolveAccountName({
     return title;
   }
 
-  const relatedAccount = account ?? findRelatedAccount(accounts, accountId, chain);
+  const relatedAccount = account ?? findRelatedAccount(accounts, accountId, chain, chains);
   const prefix = getAccountAddressPrefix(chain, relatedAccount, chains);
 
   if (relatedAccount && isUserChosenAccountName(relatedAccount, prefix)) {

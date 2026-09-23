@@ -266,6 +266,30 @@ describe('backendContactsService.fetchAllContacts', () => {
       expect(authFetchMock).toHaveBeenCalledTimes(2);
     });
 
+    it('keeps the first pass when the refetch fails instead of dropping every contact', async () => {
+      const first = page('a', 100);
+      const shiftedSecond = [first[99], ...page('b', 99)];
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      let pageOneCalls = 0;
+
+      authFetchMock.mockImplementation((url: string) => {
+        if (url.includes('page=1&')) {
+          pageOneCalls += 1;
+          if (pageOneCalls > 1) return Promise.reject(new Error('network down'));
+          return Promise.resolve(jsonResponse({ data: first, total: 200 }));
+        }
+        return Promise.resolve(jsonResponse({ data: shiftedSecond, total: 200 }));
+      });
+
+      const result = await backendContactsService.fetchAllContacts('https://backend.test');
+
+      expect(result).toHaveLength(199);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[BackendContacts] Refetch of an incomplete contact list failed'),
+        expect.any(Error),
+      );
+    });
+
     it('returns what it has and warns when the list is still incomplete after the refetch', async () => {
       const first = page('a', 100);
       const shiftedSecond = [first[99], ...page('b', 99)];

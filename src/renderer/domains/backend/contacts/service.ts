@@ -187,7 +187,16 @@ async function fetchAllContacts(baseUrl: string): Promise<Contact[]> {
     return first.contacts;
   }
 
-  const second = await fetchContactsSnapshot(baseUrl);
+  let second: ContactsSnapshot;
+  try {
+    second = await fetchContactsSnapshot(baseUrl);
+  } catch (error) {
+    // The first pass succeeded; losing the whole address book to a failed
+    // top-up would be worse than showing it with a few rows missing.
+    console.warn('[BackendContacts] Refetch of an incomplete contact list failed:', error);
+    return first.contacts;
+  }
+
   const merged = {
     contacts: uniqueById([...first.contacts, ...second.contacts]),
     total: second.total,

@@ -829,6 +829,36 @@ describe('account service', () => {
         expect(result).toBe('FINOPS_DOT_MSIG');
       });
 
+      it('should prefer the account the user named over a legacy CUSTOM-stamped generated one', () => {
+        const legacyAccount: UniversalAccount = {
+          ...universalAccount,
+          id: 'legacy',
+          walletId: 1,
+          accountId,
+          name: toShortAddress(toAddress(accountId), 5),
+          nameType: AccountNameType.CUSTOM,
+        };
+        const namedAccount: UniversalAccount = {
+          ...universalAccount,
+          id: 'named',
+          walletId: 2,
+          accountId,
+          name: 'Team treasury',
+          nameType: AccountNameType.CUSTOM,
+        };
+
+        const result = accountService.resolveAccountName({
+          accountId,
+          chain: null,
+          accounts: [legacyAccount, namedAccount],
+          contacts: emptyContacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('Team treasury');
+      });
+
       it('should keep a name the user typed over the contact', () => {
         const account: UniversalAccount = {
           ...universalAccount,
