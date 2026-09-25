@@ -54,15 +54,23 @@ const $nameSources = combine({
 
 type NameSources = StoreValue<typeof $nameSources>;
 
-function resolveAccountNameFromSources(params: AccountNameParams, sources: NameSources): string {
-  return accountService.resolveAccountName({
-    accountId: params.accountId,
-    chain: params.chain,
-    title: params.title,
-    fallbackName: params.fallbackName,
-    account: params.account,
-    ...sources,
-  });
+/**
+ * Tracked params keep the account object they were requested with, and a rename
+ * keeps its cache key — so resolve from the account as it is now, not from that
+ * snapshot, or the refresh keeps writing the old name back.
+ */
+function createAccountNameResolver(sources: NameSources) {
+  const liveAccounts = new Map(sources.accounts.map(account => [account.id, account]));
+
+  return (params: AccountNameParams): string =>
+    accountService.resolveAccountName({
+      accountId: params.accountId,
+      chain: params.chain,
+      title: params.title,
+      fallbackName: params.fallbackName,
+      account: params.account && (liveAccounts.get(params.account.id) ?? params.account),
+      ...sources,
+    });
 }
 
 function resolveWalletNameFromSources({ wallet }: WalletNameParams, sources: NameSources): string {
@@ -146,11 +154,15 @@ type WalletsNameParams = {
 };
 
 export const walletsNameResource = createQueryResource<WalletsNameParams>({
+  // Key on each wallet's cache key, not its id: a wallet whose name or accounts
+  // change gets a new cache key, and only a new request key makes the consumer
+  // request (and push) it. Keyed on ids, an unchanged wallet set would never
+  // resolve the new entry and the row would fall back to the stored name.
   key: ({ wallets }) =>
     wallets
-      .map(w => w.id)
+      .map(wallet => createWalletNameCacheKey({ wallet }))
       .sort()
-      .join(','),
+      .join('|'),
 })
   .request(noNameRequest)
   .cache({ store: $walletNameCache, map: cache => cache })
@@ -180,7 +192,7 @@ sample({
   clock: accountNameResource.push,
   source: { cache: $accountNameCache, sources: $nameSources },
   fn: ({ cache, sources }, { params }) =>
-    withResolvedNames(cache, [toAccountNameEntry(params)], p => resolveAccountNameFromSources(p, sources)),
+    withResolvedNames(cache, [toAccountNameEntry(params)], createAccountNameResolver(sources)),
   target: $accountNameCache,
 });
 
@@ -188,9 +200,7 @@ sample({
   clock: accountsNameResource.push,
   source: { cache: $accountNameCache, sources: $nameSources },
   fn: ({ cache, sources }, { params }) =>
-    withResolvedNames(cache, toAccountsNameParams(params).map(toAccountNameEntry), p =>
-      resolveAccountNameFromSources(p, sources),
-    ),
+    withResolvedNames(cache, toAccountsNameParams(params).map(toAccountNameEntry), createAccountNameResolver(sources)),
   target: $accountNameCache,
 });
 
@@ -281,7 +291,7 @@ sample({
   source: { accountParams: $accountNameParams, cache: $accountNameCache, sources: $nameSources },
   filter: ({ accountParams }) => Object.keys(accountParams).length > 0,
   fn: ({ accountParams, cache, sources }) =>
-    withResolvedNames(cache, Object.entries(accountParams), p => resolveAccountNameFromSources(p, sources)),
+    withResolvedNames(cache, Object.entries(accountParams), createAccountNameResolver(sources)),
   target: $accountNameCache,
 });
 
