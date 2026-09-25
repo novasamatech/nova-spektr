@@ -36,11 +36,13 @@ export const createCache = <K extends PropertyKey, T>({ now: getTs }: { now(): n
 
     set(key: K, value: T, ttl: Ttl<T>) {
       const now = getTs();
-      const record: CachedRecord<T> = {
-        expires: now + (typeof ttl === 'function' ? ttl(value) : ttl),
-        value,
-      };
-      records.set(key, record);
+      const lifetime = typeof ttl === 'function' ? ttl(value) : ttl;
+      const record: CachedRecord<T> = { expires: now + lifetime, value };
+      // A record with no lifetime is never served again, so keeping it would
+      // only grow the map; the returned record still answers in-flight waiters.
+      if (lifetime > 0) {
+        records.set(key, record);
+      }
       return record;
     },
 

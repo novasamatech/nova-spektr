@@ -1,16 +1,11 @@
 import { type Contact, type LocalContact, isLocalContact } from '@/shared/core';
 import { isGeneratedAccountName, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
-
-type SignatoryDraft = {
-  name: string;
-  address: string;
-  walletId?: string;
-};
+import { type SignatoryInfo } from '../types';
 
 type Params = {
   /** The first signatory is the signer (an own account) and is never saved. */
-  signatories: SignatoryDraft[];
+  signatories: Omit<SignatoryInfo, 'index'>[];
   contacts: Contact[];
   accounts: AnyAccount[];
   /** Prefix of the network the addresses were entered for. */
