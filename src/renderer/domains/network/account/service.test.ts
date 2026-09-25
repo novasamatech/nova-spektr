@@ -809,6 +809,31 @@ describe('account service', () => {
         expect(result).toBe('FINOPS_DOT_MSIG');
       });
 
+      // Creating a multisig used to save a signatory's auto-filled name as a
+      // local contact, and for a synced account that name is its own short
+      // address. Such a contact carries no name, so it must not hide the
+      // address book entry for the same account.
+      it('should let the backend contact win over a local contact named by its own short address', () => {
+        const localContact: Contact = {
+          id: 'local-1',
+          accountId,
+          name: toShortAddress(toAddress(accountId), 5),
+          address: toAddress(accountId),
+          source: 'local',
+        };
+
+        const result = accountService.resolveAccountName({
+          accountId,
+          chain: null,
+          accounts: [],
+          contacts: [localContact, ...contacts],
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
       it('should regenerate the name with the prefix of the requested chain', () => {
         const account: ChainAccount = {
           ...kusamaChainAccount,
@@ -1384,6 +1409,33 @@ describe('account service', () => {
           wallet,
           accounts: [account],
           contacts,
+          identities: emptyIdentities,
+          chains,
+        });
+
+        expect(result).toBe('FINOPS_DOT_MSIG');
+      });
+
+      it('should let the backend contact win over a local contact named by its own short address', () => {
+        const account: UniversalAccount = {
+          ...universalAccount,
+          accountId,
+          walletId,
+          name: toShortAddress(toAddress(accountId), 5),
+          nameType: AccountNameType.GENERATED,
+        };
+        const localContact: Contact = {
+          id: 'local-1',
+          accountId,
+          name: toShortAddress(toAddress(accountId), 5),
+          address: toAddress(accountId),
+          source: 'local',
+        };
+
+        const result = accountService.resolveWalletName({
+          wallet,
+          accounts: [account],
+          contacts: [localContact, ...contacts],
           identities: emptyIdentities,
           chains,
         });

@@ -1,6 +1,6 @@
 # Multisig Wallet Create
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-25
 
 ## Overview
 
@@ -78,8 +78,10 @@ flowchart TD
   visible name, not only the stored one. Contacts match by name and address. Already-picked signatories are hidden from
   the options.
 - The **name field auto-fills** from the matched account or contact and is locked for own accounts. Every signatory
-  needs a name: external signatories are saved to the address book on success (new contacts created, renamed ones
-  updated), so other flows show consistent names.
+  needs a name: external signatories are saved to the local contacts on success (new contacts created, renamed local
+  ones updated), so other flows show consistent names. Only external addresses are saved — an address of any of the
+  user's own accounts is skipped even when it was pasted or picked from Contacts, and so is a name that is just the
+  signatory's own short address. External address book (backend) contacts are never changed by this flow.
 - Duplicated addresses and addresses not valid on the selected network are flagged inline; both block submission.
 - The threshold select unlocks once at least two rows are filled; minimum threshold is 2.
 
@@ -94,8 +96,8 @@ flow auto-switches to an available one.
 
 **Classic:** pick type → fill signatories, threshold, name (optionally change the fee network) → confirmation summary →
 sign with the first signatory → submit. On success the multisig wallet is created locally, becomes the selected wallet,
-account sync starts discovering its on-chain history, and contacts are created/updated for external signatories. The
-modal closes itself shortly after submission.
+account sync starts discovering its on-chain history, and local contacts are created/updated for external signatories.
+The modal closes itself shortly after submission.
 
 **Flexible:** pick type → name + network → signatories + threshold → confirmation with two actions:
 

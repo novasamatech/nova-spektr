@@ -6,9 +6,9 @@ import { and, delay, or, spread } from 'patronum';
 
 import { balanceService as deprecatedBalanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
-import { type Asset, type Chain, type Contact, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
+import { type Asset, type Chain, type Transaction, type Wallet, ProxyTypes } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
-import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
   createFeeCalculator,
   createSelectedInitiatorStore,
@@ -24,6 +24,7 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
+import { getSignatoryContactChanges } from '../../common/signatory-contacts';
 
 import { confirmModel } from './confirm-model';
 import { flexibleMultisigFeature } from './feature';
@@ -422,54 +423,30 @@ sample({
 });
 
 // Contacts
-sample({
+const signatoryContactsChanged = sample({
   clock: signModel.signed,
   source: {
     signatories: signatoryModel.$signatories,
     contacts: contactModel.$contacts,
+    allAccounts: accounts.$list,
+    chain: formModel.$chain,
   },
-  fn: ({ signatories, contacts }) => {
-    const signatoriesWithoutsignatory = signatories.slice(1);
-    const filtredSignatories = signatoriesWithoutsignatory.filter(s => !s.walletId);
+  fn: ({ signatories, contacts, allAccounts, chain }) =>
+    getSignatoryContactChanges({ signatories, contacts, accounts: allAccounts, addressPrefix: chain?.addressPrefix }),
+});
 
-    const contactMap = new Map(contacts.map(c => [c.accountId, c]));
-    const updatedContacts: Contact[] = [];
-
-    for (const { address, name } of filtredSignatories) {
-      const contact = contactMap.get(toAccountId(address));
-
-      if (!contact) continue;
-
-      updatedContacts.push({
-        ...contact,
-        name,
-      });
-    }
-
-    return updatedContacts;
-  },
+sample({
+  clock: signatoryContactsChanged,
+  filter: ({ updated }) => updated.length > 0,
+  fn: ({ updated }) => updated,
   target: contactModel.effects.updateContactsFx,
 });
 
 sample({
-  clock: signModel.signed,
-  source: {
-    signatories: signatoryModel.$signatories,
-    contacts: contactModel.$contacts,
-  },
-  fn: ({ signatories, contacts }) => {
-    const contactsSet = new Set(contacts.map(c => c.accountId));
-
-    return signatories
-      .slice(1)
-      .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
-      .map(({ address, name }) => ({
-        address: toAddress(address),
-        name: name,
-        accountId: toAccountId(address),
-        source: 'local' as const,
-      }));
-  },
+  clock: signatoryContactsChanged,
+  source: contactModel.effects.createContactsFx.pending,
+  filter: (pending, { created }) => !pending && created.length > 0,
+  fn: (_, { created }) => created,
   target: contactModel.effects.createContactsFx,
 });
 
