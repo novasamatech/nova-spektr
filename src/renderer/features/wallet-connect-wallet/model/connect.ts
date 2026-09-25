@@ -1,7 +1,7 @@
 import { type default as Client } from '@walletconnect/sign-client';
 import { type EngineTypes, type SessionTypes } from '@walletconnect/types';
 import { SDK_ERRORS, getSdkError } from '@walletconnect/utils';
-import { attach, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { produce } from 'immer';
 import { isObject } from 'lodash';
 import { readonly } from 'patronum';
@@ -21,22 +21,37 @@ const $sessions = createStore<Record<string, SessionTypes.Struct>>({});
 const updateUri = createEvent<string>();
 const $pairingUri = restore(updateUri, '');
 
+/**
+ * Reports that the session request which published this uri has settled.
+ */
+const releaseUri = createEvent<string>();
+
+// Only the attempt that published the uri clears it. An attempt the user has left behind must not
+// blank the QR code of the one on screen.
+sample({
+  clock: releaseUri,
+  source: $pairingUri,
+  filter: (current, uri) => current === uri,
+  fn: () => '',
+  target: updateUri,
+});
+
 const populateSessionsFx = createEffect(async (client: Client) => {
   return client.session.getAll();
 });
 
 const subscribeSessionsFx = createEffect((client: Client) => {
-  client.on('proposal_expire', () => {
-    updateUri('');
-  });
+  // Client events fire outside the effect, so the call needs the scope this client was created in.
+  const populate = scopeBind(populateSessionsFx, { safe: true });
 
   client.on('session_delete', () => {
-    populateSessionsFx(client);
+    populate(client);
   });
 
+  // The uri is left alone here: a session expiry names no proposal, and the request that published the
+  // uri rejects on its own expiry.
   client.on('session_expire', () => {
-    updateUri('');
-    populateSessionsFx(client);
+    populate(client);
   });
 });
 
@@ -56,14 +71,27 @@ sample({
 
 const createSessionFx = createEffect(
   async ({ pairingTopic, chains, client }: { pairingTopic?: string; chains: ChainId[]; client: Client }) => {
+    // Both calls happen after `await`, so they need the scope the request started in.
+    const publish = scopeBind(updateUri, { safe: true });
+    const release = scopeBind(releaseUri, { safe: true });
+
+    // The previous request's uri stays valid for the rest of its proposal. Drop it before connecting,
+    // so nobody scans a code whose session this request cannot use.
+    publish('');
+
     const optionalNamespaces = walletConnectService.createNamespaces(chains);
     const connect = await client.connect({ pairingTopic, optionalNamespaces });
+    const { uri } = connect;
 
-    if (connect.uri) {
-      updateUri(connect.uri);
+    if (uri) {
+      publish(uri);
     }
 
-    return connect.approval().finally(() => updateUri(''));
+    return connect.approval().finally(() => {
+      if (uri) {
+        release(uri);
+      }
+    });
   },
 );
 
@@ -203,4 +231,9 @@ export const walletConnect = {
   refreshSession: refreshSessionFx,
   removeSession: removeSessionFx,
   removePairing: removePairingFx,
+
+  __test: {
+    $client: signClient.$client,
+    createClient: signClient.createClient,
+  },
 };
