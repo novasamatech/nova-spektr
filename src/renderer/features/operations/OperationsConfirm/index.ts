@@ -1,5 +1,3 @@
-export { createTransactionConfirmStore } from './lib/createTransactionConfirmStore';
-
 export * from './Transfer';
 export * from './AddProxy';
 export * from './AddPureProxied';
@@ -29,8 +27,6 @@ export * from './FellowshipSalaryRequest';
 export * from './FellowshipSalaryPayout';
 export * from './FellowshipSubmitEvidence';
 export * from './FellowshipEvidenceVoting';
-
-export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 
 export { ConfirmSlider } from './common/ConfirmSlider';
 export { MultisigExistsAlert } from './common/MultisigExistsAlert';
