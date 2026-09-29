@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
-import { type NetworkAvgRate, type NetworkAvgRateParams, apy } from '@/domains/staking';
+import { type NetworkAvgRate, type NetworkAvgRateParams, apy, readEraScoped } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 
 import { useChainEras } from './useChainEras';
@@ -44,9 +44,9 @@ export const useNetworkAvgRates = (chainIds: ChainId[]): Record<ChainId, Network
     const result: Record<ChainId, NetworkAvgRate | null> = {};
 
     for (const chainId of chainIds) {
-      result[chainId] = cache[chainId] ?? null;
+      result[chainId] = readEraScoped(cache[chainId], eras[chainId]) ?? null;
     }
 
     return result;
-  }, [chainIds, cache]);
+  }, [chainIds, cache, eras]);
 };

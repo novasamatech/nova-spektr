@@ -1,6 +1,7 @@
 import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
+import { readEraScoped } from '../era-scoped';
 import { type ValidatorMap } from '../types';
 
 import { mapEraValidatorsToLegacy } from './helpers';
@@ -40,8 +41,8 @@ export const useValidators = (params: NullableMap<ValidatorsResourceParams>) => 
   return useResource(validatorsResource, {
     params: resolveParams(params),
     defaultValue: EMPTY_LEGACY_MAP,
-    map: (cache, { chainId }) => {
-      const validators = cache[chainId];
+    map: (cache, { chainId, era }) => {
+      const validators = readEraScoped(cache[chainId], era);
 
       return validators ? mapEraValidatorsToLegacy(validators, chainId) : undefined;
     },
@@ -52,7 +53,7 @@ export const useEraValidators = (params: NullableMap<ValidatorsResourceParams>) 
   return useResource(validatorsResource, {
     params: resolveParams(params),
     defaultValue: EMPTY_ERA_MAP,
-    map: (cache, { chainId }) => cache[chainId],
+    map: (cache, { chainId, era }) => readEraScoped(cache[chainId], era),
   });
 };
 

@@ -21,17 +21,21 @@ import { stakingValidators } from '@/aggregates/staking-validators';
 import { DEFAULT_FILTERS, DEFAULT_SORT, OPEN_FILTERS } from '../../lib';
 import { validatorSelectionModel } from '../validator-selection-model';
 
-import { $identityCache, $validatorsCache, requestIdentitiesFx } from './domainMocks';
+import { $eraCache, $identityCache, $validatorsCache, requestIdentitiesFx } from './domainMocks';
 
 vi.mock('@/domains/staking', async (importOriginal) => {
   const actual = await importOriginal<typeof StakingDomain>();
-  const { $validatorsCache } = await import('./domainMocks');
+  const { $validatorsCache, $eraCache } = await import('./domainMocks');
 
   return {
     ...actual,
     validators: {
       ...actual.validators,
       validatorsResource: { ...actual.validators.validatorsResource, $cache: $validatorsCache },
+    },
+    era: {
+      ...actual.era,
+      eraResource: { ...actual.era.eraResource, $cache: $eraCache },
     },
   };
 });
@@ -48,6 +52,7 @@ vi.mock('@/domains/network', async (importOriginal) => {
 
 const CHAIN_ID: ChainId = DEFAULT_STAKING_CHAIN;
 const ADDRESS_PREFIX = 2;
+const ERA = 100;
 
 const ASSET: Asset = {
   name: 'Test',
@@ -115,7 +120,11 @@ const forkWith = ({
 } = {}) => {
   return fork({
     values: [
-      [$validatorsCache, { [CHAIN_ID]: Object.fromEntries(validators.map((v) => [v.accountId, v])) }],
+      [$eraCache, { [CHAIN_ID]: ERA }],
+      [
+        $validatorsCache,
+        { [CHAIN_ID]: { era: ERA, value: Object.fromEntries(validators.map((v) => [v.accountId, v])) } },
+      ],
       [$identityCache, { [CHAIN_ID]: Object.fromEntries(identities.map((i) => [i.accountId, i])) }],
       [contactModel.$localContacts, contacts],
     ],
@@ -260,7 +269,7 @@ describe('validatorSelectionModel init', () => {
 
     await initiate(scope, {});
 
-    expect(scope.getState(validatorSelectionModel.$meta)).toEqual({ validatorCount: 4, era: null });
+    expect(scope.getState(validatorSelectionModel.$meta)).toEqual({ validatorCount: 4, era: ERA });
   });
 });
 

@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -302,7 +302,9 @@ window, and the unclaimed payout scan per stash), each through the shared ref-co
 the same data joins the request in flight instead of duplicating it. The benchmark is one more era-keyed read per chain
 (`networkAvgRateResource`: `erasValidatorPrefs` for the current median commission, plus `erasValidatorReward` and
 `erasTotalStakeMulti` batched over the trailing window) — cached like the network APY read it sits beside, so a rollover
-is the only thing that ever triggers a refetch.
+is the only thing that ever triggers a refetch. Both values are remembered together with the era they were computed for
+and are only shown for the chain's active era: right after a rollover the figure reads as not loaded yet (skeleton)
+until the new era's answer lands, rather than showing last era's number as current.
 
 ## Related
 
