@@ -1,14 +1,14 @@
 import { default as BigNumber } from 'bignumber.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, HelpText, Loader, SmallTitleText, TitleText } from '@/shared/ui';
 import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
+import { useBalanceCoverage } from '@/features/assets-balances';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
-import { useBalancesArrived } from '../hooks/useBalancesArrived';
 import { useBalancesSyncing } from '../hooks/useBalancesSyncing';
 import { type ChainHolding, useChainHoldings } from '../hooks/useChainHoldings';
 import { type Holding, useHoldings } from '../hooks/useHoldings';
@@ -47,41 +47,20 @@ const toggleButtonClass = 'cursor-pointer rounded px-4 py-1.5 text-footnote font
 const activeToggleClass = 'bg-white text-text-primary shadow-sm';
 const inactiveToggleClass = 'text-text-tertiary hover:text-text-secondary';
 
-/**
- * Backstop for an account set whose balances never arrive at all.
- *
- * Not the mechanism that decides emptiness — that is `balancesArrived`, below.
- * This only bounds the wait, because a chain whose RPC is down keeps retrying
- * for the life of the app and would otherwise pin the skeleton forever. Long on
- * purpose: the cost of it being short is the very bug it replaced — a "no
- * tokens" shown to a user who has plenty, while the Portfolio page is still
- * shimmering for the same accounts. Matches the deadline the vesting aggregate
- * gives chains for the same reason.
- */
-const EMPTY_BACKSTOP_MS = 30_000;
-
 export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
   const { chainHoldings } = useChainHoldings(accountIds);
   const allocation = useBalanceAllocation(accountIds);
-  const isSyncing = useBalancesSyncing();
-  const balancesArrived = useBalancesArrived(accountIds);
+  const networksSyncing = useBalancesSyncing();
+  const coverage = useBalanceCoverage(accountIds);
+  // Still waiting on some selected account: the total is a partial sum that is
+  // about to grow, which reads the same as a chain still connecting.
+  const isSyncing = networksSyncing || (!coverage.complete && !coverage.timedOut);
   const [viewMode, setViewMode] = useState<ViewMode>('asset');
   const [balanceTypeFilter, setBalanceTypeFilter] = useState<BalanceType | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
-
-  // Re-armed per account set: a new selection is a new question, and its
-  // balances may not be in the store yet even though the previous one's were.
-  const accountKey = accountIds.join(',');
-  const [backstopElapsed, setBackstopElapsed] = useState(false);
-  useEffect(() => {
-    setBackstopElapsed(false);
-    const id = setTimeout(() => setBackstopElapsed(true), EMPTY_BACKSTOP_MS);
-
-    return () => clearTimeout(id);
-  }, [accountKey]);
 
   const switchToAssetView = useCallback(() => setViewMode('asset'), []);
   const switchToChainView = useCallback(() => setViewMode('chain'), []);
@@ -183,12 +162,13 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   // zero, which reads off the raw `holdings`, not the filtered rows.
   const isEmpty = holdings.length === 0 && !allocation;
   if (isEmpty) {
-    // Nothing has been read for these accounts yet, so there is nothing to be
+    // Not every selected account has been read yet, so there is nothing to be
     // empty about — shimmer, exactly as the Portfolio page does for a row whose
     // balance has not landed. Zero holdings is not evidence on its own: a
-    // balance of zero produces none either, so the two are indistinguishable
-    // until the first record arrives.
-    if (!balancesArrived && !backstopElapsed) {
+    // balance of zero produces none either, and one account read as empty says
+    // nothing about the others. The wait is bounded (`useBalanceCoverage`), so
+    // an account whose chain never answers cannot pin the skeleton.
+    if (!coverage.complete && !coverage.timedOut) {
       return (
         <DashboardWidget>
           <PortfolioOverviewSkeleton />

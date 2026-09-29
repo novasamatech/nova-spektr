@@ -148,6 +148,11 @@ export const AccountsTableView = ({ table, className, leadingAction }: Props) =>
               accounts: table.groups.length,
             })}
           </FootnoteText>
+          {table.awaitingCount > 0 ? (
+            <FootnoteText className="truncate text-text-tertiary">
+              {t('dashboard.accountsTable.footer.incomplete', { count: table.awaitingCount })}
+            </FootnoteText>
+          ) : null}
         </div>
       ) : null}
     </div>
