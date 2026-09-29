@@ -1004,6 +1004,60 @@ describe('account service', () => {
       expect(result).toBe('Identity Name');
     });
 
+    it('should skip an address book contact with an empty name and fall through to identity', () => {
+      const contacts: Contact[] = [
+        createBackendContact({
+          id: 'backend-empty',
+          accountId,
+          name: '',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        }),
+      ];
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+            website: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Identity Name');
+    });
+
+    it('should skip an identity with an empty name and use the fallback name', () => {
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: { chainId: polkadotChainId, accountId, name: '', email: '', image: '', website: '' },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts: emptyContacts,
+        identities,
+        chains,
+        fallbackName: 'Wallet Name',
+      });
+
+      expect(result).toBe('Wallet Name');
+    });
+
     it('should return short address if no contact, identity or stored account name', () => {
       const result = accountService.resolveAccountName({
         accountId,

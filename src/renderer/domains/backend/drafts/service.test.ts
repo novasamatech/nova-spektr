@@ -115,4 +115,44 @@ describe('draftsService.fetchDrafts', () => {
     expect(drafts).toHaveLength(102);
     expect(drafts.at(-1)?.operation).toEqual({ id: 'op-2' });
   });
+
+  it('removes invisible and control characters from contact names', async () => {
+    authFetchMock.mockResolvedValue(
+      okResponse({
+        data: [
+          {
+            ...makeBackendDraft('named-1', null),
+            proxyContact: { name: '\u202EAlice\n', accountId: ACCOUNT_ID },
+            createdByContact: { name: ' Bob\u200B ', accountId: ACCOUNT_ID },
+          },
+        ],
+        total: 1,
+      }),
+    );
+
+    const [draft] = await draftsService.fetchDrafts('https://backend.test');
+
+    expect(draft?.proxyContact?.name).toBe('Alice');
+    expect(draft?.createdByContact?.name).toBe('Bob');
+  });
+
+  it('drops a contact whose name has no visible characters', async () => {
+    authFetchMock.mockResolvedValue(
+      okResponse({
+        data: [
+          {
+            ...makeBackendDraft('unnamed-1', null),
+            proxyContact: { name: '\u202E\u200B', accountId: ACCOUNT_ID },
+            createdByContact: { name: '  ', accountId: ACCOUNT_ID },
+          },
+        ],
+        total: 1,
+      }),
+    );
+
+    const [draft] = await draftsService.fetchDrafts('https://backend.test');
+
+    expect(draft?.proxyContact).toBeNull();
+    expect(draft?.createdByContact).toBeNull();
+  });
 });

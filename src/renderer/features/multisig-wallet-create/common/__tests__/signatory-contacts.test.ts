@@ -83,4 +83,27 @@ describe('getSignatoryContactChanges', () => {
     expect(created).toEqual([]);
     expect(updated).toEqual([]);
   });
+
+  it('should save a name cleaned of invisible and control characters', () => {
+    const { created } = getSignatoryContactChanges({
+      signatories: [signer, { ...external, name: ' \u202EAlice\u200B\n' }],
+      contacts: [],
+      accounts: [],
+    });
+
+    expect(created).toEqual([
+      { accountId: externalId, address: toAddress(externalId), name: 'Alice', source: 'local' },
+    ]);
+  });
+
+  it('should not save a name that has no visible characters', () => {
+    const { created, updated } = getSignatoryContactChanges({
+      signatories: [signer, { ...external, name: '\u202E\u200B' }],
+      contacts: [localContact()],
+      accounts: [],
+    });
+
+    expect(created).toEqual([]);
+    expect(updated).toEqual([]);
+  });
 });

@@ -1,19 +1,22 @@
 import { type HexString } from '@/shared/core';
 
 /**
- * Sanitizes a contact name by:
+ * Sanitizes a name shown to the user as a single line of text — contact, wallet
+ * or identity name — by:
  *
+ * - Replacing control characters and line/paragraph separators with a space
  * - Removing Unicode "Format" category characters (invisible chars, bidi
  *   controls, etc.)
  * - Trimming leading/trailing whitespace
  * - Normalizing Unicode to NFC form
  *
- * @param name Contact name to sanitize
+ * @param name Name to sanitize
  *
  * @returns {String} Sanitized name
  */
-export const sanitizeContactName = (name: string): string => {
+export const sanitizeDisplayName = (name: string): string => {
   return name
+    .replace(/[\p{Cc}\p{Zl}\p{Zp}]/gu, ' ')
     .replace(/\p{Cf}/gu, '')
     .trim()
     .normalize('NFC');
@@ -27,7 +30,7 @@ export const sanitizeContactName = (name: string): string => {
  * @returns {Boolean}
  */
 export const isValidContactName = (name: string): boolean => {
-  return sanitizeContactName(name).length > 0;
+  return sanitizeDisplayName(name).length > 0;
 };
 
 /**
