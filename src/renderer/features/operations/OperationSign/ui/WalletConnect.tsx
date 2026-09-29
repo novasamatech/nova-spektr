@@ -9,9 +9,10 @@ import { ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Modal } from '@/shared/ui-kit';
-import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { WalletConnectQrCode } from '@/features/wallet-connect-wallet-pairing';
+import { ValidationErrorLabels } from '../lib/constants';
+import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
@@ -47,30 +48,34 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   // TODO move validation to effector model
   const handleSignature = async (signatures: HexString[]) => {
-    let isVerified;
-    let balanceValidationError;
+    const payloads = transactions.map((x) => x.payload);
 
-    for (const [index, signature] of signatures.entries()) {
-      const transaction = transactions[index];
+    const isVerified = operationSignUtils.verifySignatures({
+      payloads,
+      signatures,
+      accountIds: signingPayloads.map((p) => p.signatory.accountId),
+    });
 
-      isVerified =
-        transaction &&
-        transactionService.verifySignature(transaction.payload, signature as HexString, payload!.signatory.accountId);
-      balanceValidationError = validateBalance && (await validateBalance());
+    if (!isVerified) {
+      setValidationError(ValidationErrors.INVALID_SIGNATURE);
+
+      return;
     }
 
-    if (isVerified && balanceValidationError) {
-      setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
-    } else if (transactions.length) {
-      onResult(
-        signatures,
-        transactions.map((x) => x.payload),
-      );
+    const balanceValidationError = validateBalance && (await validateBalance());
+
+    if (balanceValidationError) {
+      setValidationError(balanceValidationError);
+
+      return;
     }
+
+    onResult(signatures, payloads);
   };
 
   const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
+  const isValidationErrorOpen = !!validationError && validationError !== ValidationErrors.EXPIRED;
   const isErrorModalOpen = step === 'rejected' || step === 'failed';
   const isReconnectModalOpen = step === 'reconnect';
   const isReconnecting = step === 'reconnecting';
@@ -161,6 +166,13 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
             <Animation variant="loading" loop />
           )
         }
+        onClose={onGoBack}
+      />
+
+      <StatusModal
+        isOpen={isValidationErrorOpen}
+        title={validationError ? t(ValidationErrorLabels[validationError]) : ''}
+        content={<Animation variant="error" />}
         onClose={onGoBack}
       />
 

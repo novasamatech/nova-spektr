@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, getCurrentBlockNumber, isEraExpired, nullable } from '@/shared/lib/utils';
+import { ValidationErrors, getCurrentBlockNumber, isEraExpired } from '@/shared/lib/utils';
 import { Button, FootnoteText, Loader } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -12,7 +12,6 @@ import {
   QrReaderWrapper,
   ScanMultiframeQr,
   ScanSingleframeQr,
-  transactionService,
   useCameraAvailability,
 } from '@/entities/transaction';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -43,28 +42,11 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
       ? scanResult.map(operationSignUtils.transformEcdsaSignature)
       : [scanResult].map(operationSignUtils.transformEcdsaSignature);
 
-    const accountIds = signingPayloads.map((p) => p.signatory.accountId);
-
-    let isVerified = false;
-
-    if (signatures.length > 1) {
-      isVerified = true;
-    } else {
-      isVerified = signatures.every((signature, index) => {
-        const payload = txPayloads.at(index);
-        const accountId = accountIds.at(index);
-
-        if (nullable(payload) || nullable(accountId)) return false;
-
-        const verifiablePayload = payload.slice(1);
-        const verifiableComplexPayload = payload.slice(2);
-
-        const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
-        const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
-
-        return isVerified || isComplexVerified;
-      });
-    }
+    const isVerified = operationSignUtils.verifySignatures({
+      payloads: txPayloads,
+      signatures,
+      accountIds: signingPayloads.map((p) => p.signatory.accountId),
+    });
 
     const balanceValidationError = validateBalance && (await validateBalance());
 
