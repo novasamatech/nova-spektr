@@ -396,9 +396,7 @@ persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOper
  * - Rows persisted before the indexer call-hash check may still carry call data
  *   (and decoded semantics) unrelated to their hash — that data is discarded
  *   and the row flagged, exactly as a fresh indexer response would be, so the
- *   UI never shows a stale mismatching call;
- * - Rows persisted with an indexer-supplied section/method but no call data lose
- *   that name — names only come from validated call data.
+ *   UI never shows a stale mismatching call.
  *
  * Only ever runs for a cache that {@link needsSanitising}: hydration already has
  * a writer (persist itself), and adding a second one for a cache that is fine
@@ -407,26 +405,17 @@ persist({ store: $cachedOperations, key: 'multisig-operations', done: cachedOper
 const hasMismatchingCallData = ({ callData, callHash }: MultisigOperation): boolean =>
   nonNullable(callData) && !validateCallData(callData, callHash);
 
-const hasUnbackedName = ({ callData, section, method }: MultisigOperation): boolean =>
-  nullable(callData) && (nonNullable(section) || nonNullable(method));
-
 const needsSanitising = (value: MultisigOperation[]): boolean =>
-  value.some(op => !op.multisigAccountId || hasMismatchingCallData(op) || hasUnbackedName(op));
+  value.some(op => !op.multisigAccountId || hasMismatchingCallData(op));
 
 const sanitiseCachedOperations = (value: MultisigOperation[]): MultisigOperation[] => {
   if (value.some(op => !op.multisigAccountId)) return [];
 
-  return value.map(op => {
-    if (hasMismatchingCallData(op)) {
-      return { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true };
-    }
-
-    if (hasUnbackedName(op)) {
-      return { ...op, section: null, method: null };
-    }
-
-    return op;
-  });
+  return value.map(op =>
+    hasMismatchingCallData(op)
+      ? { ...op, callData: null, transaction: null, section: null, method: null, callDataMismatch: true }
+      : op,
+  );
 };
 
 sample({
