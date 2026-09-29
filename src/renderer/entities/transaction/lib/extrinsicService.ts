@@ -2,10 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { hexToU8a, isHex } from '@polkadot/util';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
+import { type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { multisigOperationService } from '@/domains/network';
 
 import { isControllerMissing, isOldMultisigPallet } from './common/utils';
 
@@ -189,45 +188,6 @@ export const getExtrinsic: Record<
 function handleXcmTransaction(args: Record<string, any>, _api: ApiPromise) {
   return args.spellExtrinsic as SubmittableExtrinsic<'promise'>;
 }
-
-type WrapAsMultiParams<T extends Transaction = Transaction> = {
-  api: ApiPromise;
-  transaction: T;
-  txWrapper: MultisigTxWrapper;
-};
-export const wrapAsMulti = <T extends Transaction = Transaction>({
-  api,
-  transaction,
-  txWrapper,
-}: WrapAsMultiParams<T>): Transaction => {
-  let callData = '';
-  let callHash = '';
-  try {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    callData = extrinsic.method.toHex();
-    callHash = extrinsic.method.hash.toHex();
-  } catch {
-    console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
-  }
-
-  const otherSignatories = multisigOperationService.getOtherSignatories(
-    txWrapper.multisigAccount,
-    txWrapper.signer.accountId,
-  );
-
-  return {
-    chainId: transaction.chainId,
-    accountId: txWrapper.signer.accountId,
-    type: TransactionType.MULTISIG_AS_MULTI,
-    args: {
-      threshold: txWrapper.multisigAccount.threshold,
-      otherSignatories,
-      maybeTimepoint: null,
-      callData,
-      callHash,
-    },
-  };
-};
 
 type WrapAsProxyParams = {
   transaction: Transaction;

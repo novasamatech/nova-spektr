@@ -1,16 +1,23 @@
+import { ApiPromise } from '@polkadot/api';
+import { MockProvider } from '@polkadot/rpc-provider/mock';
+import { TypeRegistry } from '@polkadot/types';
+
 import {
   type DecodedTransaction,
   type HexString,
   type MultisigAccount,
+  type Transaction,
   AccountType,
   CryptoType,
   SigningType,
+  TransactionType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { createAccountId, kusamaChainId, polkadotChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '../account/service';
 import { type AnyAccount } from '../account/types';
+import { metadata } from '../transaction/service.mocks';
 
 import { CONTACT_MULTISIG_WALLET_ID } from './contact-multisigs';
 import { multisigOperationService } from './service';
@@ -698,5 +705,94 @@ describe('multisig operation service', () => {
         );
       });
     });
+  });
+});
+
+describe('getWrappedMultisigCallHash', () => {
+  const REAL = '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242';
+  const OTHER_SIGNATORY = '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a243';
+  const MAX_WEIGHT = { refTime: 1_000_000, proofSize: 1_000 };
+
+  let api: ApiPromise;
+
+  beforeAll(async () => {
+    const registry = new TypeRegistry();
+    const provider = new MockProvider(registry);
+    const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
+
+    api = await ApiPromise.create({ metadata: { [`${genesisHash}-0`]: metadata }, provider, registry });
+  });
+
+  afterAll(async () => {
+    await api.disconnect();
+  });
+
+  const createTransaction = (type: TransactionType, args: Record<string, unknown>): Transaction => ({
+    type,
+    args,
+    chainId: '0x00',
+    accountId: toAccountId(REAL),
+  });
+
+  const createTransfer = () => api.tx.balances.transferKeepAlive(REAL, 1000);
+
+  it('returns the hash of the call inside asMulti', () => {
+    const transfer = createTransfer();
+    const transaction = createTransaction(TransactionType.MULTISIG_AS_MULTI, { call: transfer.method.toHex() });
+
+    expect(multisigOperationService.getWrappedMultisigCallHash(transaction, api)).toEqual(transfer.method.hash.toHex());
+  });
+
+  it('returns the proxy call hash for a flexible multisig, not the core call hash', () => {
+    const transfer = createTransfer();
+    const proxyCall = api.tx.proxy.proxy(REAL, 'Any', transfer);
+    const transaction = createTransaction(TransactionType.MULTISIG_AS_MULTI, {
+      call: proxyCall.method.toHex(),
+      callHash: proxyCall.method.hash.toHex(),
+    });
+
+    const callHash = multisigOperationService.getWrappedMultisigCallHash(transaction, api);
+
+    expect(callHash).toEqual(proxyCall.method.hash.toHex());
+    expect(callHash).not.toEqual(transfer.method.hash.toHex());
+  });
+
+  it('returns the callHash of approveAsMulti', () => {
+    const callHash = createTransfer().method.hash.toHex();
+    const transaction = createTransaction(TransactionType.MULTISIG_APPROVE_AS_MULTI, { callHash });
+
+    expect(multisigOperationService.getWrappedMultisigCallHash(transaction, api)).toEqual(callHash);
+  });
+
+  it('looks through a proxy layer around asMulti', () => {
+    const transfer = createTransfer();
+    const asMulti = api.tx.multisig.asMulti(1, [OTHER_SIGNATORY], null, transfer, MAX_WEIGHT);
+    const transaction = createTransaction(TransactionType.PROXY, {
+      real: REAL,
+      forceProxyType: 'Any',
+      call: asMulti.method.toHex(),
+    });
+
+    expect(multisigOperationService.getWrappedMultisigCallHash(transaction, api)).toEqual(transfer.method.hash.toHex());
+  });
+
+  it('returns null when there is no multisig call', () => {
+    const transfer = createTransfer();
+    const proxyTransaction = createTransaction(TransactionType.PROXY, {
+      real: REAL,
+      forceProxyType: 'Any',
+      call: transfer.method.toHex(),
+    });
+    const transferTransaction = createTransaction(TransactionType.TRANSFER, { dest: REAL, value: '1000' });
+
+    expect(multisigOperationService.getWrappedMultisigCallHash(proxyTransaction, api)).toBeNull();
+    expect(multisigOperationService.getWrappedMultisigCallHash(transferTransaction, api)).toBeNull();
+  });
+
+  it('returns null for undecodable call data', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const transaction = createTransaction(TransactionType.PROXY, { real: REAL, call: '0xffff' });
+
+    expect(multisigOperationService.getWrappedMultisigCallHash(transaction, api)).toBeNull();
   });
 });

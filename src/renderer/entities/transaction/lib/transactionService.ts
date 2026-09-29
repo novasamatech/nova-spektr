@@ -31,7 +31,7 @@ import { accountService } from '@/domains/network';
 import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
-import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import { getExtrinsic, wrapAsProxy } from './extrinsicService';
 
 // TODO transaction service should be inside network domain
 
@@ -214,22 +214,23 @@ type WrapperParams = {
 export type WrappedTransactions = {
   wrappedTx: Transaction;
   coreTx: Transaction;
-  multisigTx?: Transaction;
 };
 
-function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams): WrappedTransactions {
+/**
+ * Wraps a transaction with proxy layers.
+ *
+ * Multisig wrapping is not supported here: it needs the call weight, which is
+ * only available through the async `transactionService.wrapLegacyTransaction`
+ * from `@/domains/network`. A multisig wrapper makes this function throw
+ * instead of producing an `asMulti` call with incomplete arguments.
+ */
+function getWrappedTransaction({ transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
       if (isMultisig(txWrapper)) {
-        const multisigTx = wrapAsMulti({
-          api,
-          transaction: acc.wrappedTx,
-          txWrapper: txWrapper,
-        });
-
-        acc.coreTx = acc.wrappedTx;
-        acc.wrappedTx = multisigTx;
-        acc.multisigTx = multisigTx;
+        throw new Error(
+          'Multisig wrapping is not supported by getWrappedTransaction, use transactionService.wrapLegacyTransaction',
+        );
       }
 
       if (isProxy(txWrapper)) {
@@ -241,7 +242,7 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
 
       return acc;
     },
-    { wrappedTx: transaction, multisigTx: undefined, coreTx: transaction },
+    { wrappedTx: transaction, coreTx: transaction },
   );
 }
 
