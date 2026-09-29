@@ -48,9 +48,9 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
-import { tryDecodeCallData } from '../lib/decode-call-data';
+import { createRoundTrippedCall, tryDecodeCallData } from '../lib/decode-call-data';
 import { findSubmittableInitiator } from '../lib/draft-initiator';
-import { getDraftDestinationAccountId } from '../lib/get-destination-account-id';
+import { getDraftRecipientCheck, getRecipientAccountIds } from '../lib/get-destination-account-id';
 import { preserveSigningPath } from '../lib/preserve-signing-path';
 
 import './drafts-model'; // side-effect: orchestration wiring
@@ -112,16 +112,27 @@ const $transaction = $draft.map((draft): EncodedTransaction | null => {
   };
 });
 
+// Call data that doesn't round-trip exactly is never signed: the extrinsic
+// builder decodes leniently (dropping trailing bytes), so it could sign a call
+// other than the one the recipient check read. Undecided until the api is up.
+const $callDataUndecodable = combine({ draft: $draft, api: $api }, ({ draft, api }) => {
+  if (!draft?.callData || !api) return false;
+
+  return !createRoundTrippedCall(draft.callData, api);
+});
+
 // --- Unknown recipient gate ---
 
-const $destinationAccountId = combine({ draft: $draft, api: $api, chain: $chain }, ({ draft, api, chain }) =>
-  getDraftDestinationAccountId(draft, api, chain),
+const $recipientCheck = combine({ draft: $draft, api: $api, chain: $chain }, ({ draft, api, chain }) =>
+  getDraftRecipientCheck(draft, api, chain),
 );
 
+const $destinationAccountIds = $recipientCheck.map(getRecipientAccountIds);
+
 const $recipientWarning = combine(
-  recipientVerificationModel.$resolveWarning,
-  $destinationAccountId,
-  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+  recipientVerificationModel.$resolveCheckWarning,
+  $recipientCheck,
+  (resolveWarning, recipientCheck) => resolveWarning(recipientCheck),
 );
 
 const riskAcknowledgedToggled = createEvent<boolean>();
@@ -260,8 +271,8 @@ const $route = $pathRoute.map((resolved) => resolved ?? []);
 // the authored route. Withholding the transaction keeps `$wrappedTx` null, so
 // the confirm step can't init and the Sign button never appears.
 const $transactionToWrap = combine(
-  { transaction: $transaction, pathError: $pathResolutionError },
-  ({ transaction, pathError }) => (pathError ? null : transaction),
+  { transaction: $transaction, pathError: $pathResolutionError, callDataUndecodable: $callDataUndecodable },
+  ({ transaction, pathError, callDataUndecodable }) => (pathError || callDataUndecodable ? null : transaction),
 );
 
 const {
@@ -283,15 +294,16 @@ const $extrinsicCreationFailed = createStore(false).reset(flowFinished, flowStar
 const $wrappedTxErrorKind = combine(
   {
     extrinsicFailed: $extrinsicCreationFailed,
+    callDataUndecodable: $callDataUndecodable,
     pathMissing: $pathMissingError,
     pathUnresolved: $pathUnresolvedError,
   },
-  ({ extrinsicFailed, pathMissing, pathUnresolved }): WrappedTxErrorKind | null => {
+  ({ extrinsicFailed, callDataUndecodable, pathMissing, pathUnresolved }): WrappedTxErrorKind | null => {
     // Distinct from `unresolved`: nothing to add locally would fix it, so the
     // UI says "recreate the draft" instead of naming an account.
     if (pathMissing) return 'signing-path-missing';
     if (pathUnresolved) return 'signing-path-unresolved';
-    if (extrinsicFailed) return 'extrinsic';
+    if (extrinsicFailed || callDataUndecodable) return 'extrinsic';
     return null;
   },
 );
@@ -1066,7 +1078,7 @@ export const submitDraftModel = {
   $pendingCallDataDecoded,
   $pendingCallDataError,
   $canConfirmCallData,
-  $destinationAccountId,
+  $destinationAccountIds,
   $recipientWarning,
   $isRiskAcknowledged,
   $recipientRiskAccepted,

@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -213,8 +213,13 @@ submit flow (see [States / scenarios](#states--scenarios)).
 
 Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md), which is itself gated on the
 external address book connection — a user who never connected it sees nothing here. Only drafts whose call data decodes
-to a transfer (or XCM transfer) have a recipient; every other draft is unaffected. Proxy-only drafts (a proxied source
-with no multisig hop) are covered the same way as multisig ones.
+to a transfer (or XCM transfer) have a recipient; every other draft is unaffected. Transfers wrapped in `proxy.proxy` or
+`utility.batch` / `batchAll` / `forceBatch` are found too — a batch has every recipient it pays, and warns when any of
+them is unknown. Proxy-only drafts (a proxied source with no multisig hop) are covered the same way as multisig ones.
+
+- **An unreadable recipient is an unknown one.** Call data that is present but can't be decoded, or a transfer whose
+  recipient can't be read, warns exactly like an unknown recipient (acknowledgement required) — never "nothing to
+  check".
 
 - **Create → Confirm.** When the decoded recipient is not known (`unknown`) or cannot be checked (`unverifiable`), an
   amber acknowledgement box appears below the transaction card, above the "This does not sign yet" note. **Create
@@ -229,8 +234,8 @@ with no multisig hop) are covered the same way as multisig ones.
   the Sign button; **Sign** is disabled until ticked, and the signing step refuses to start without the tick. The
   acknowledgement resets on every flow start and finish, and when late-filled call data replaces the draft.
 - **Recipient row.** Whenever the call data decodes to a transfer, the submit confirm shows its recipient as a
-  **Recipient** row in the details (own accounts resolve to their wallet name) — the warning never points at an address
-  the user can't see.
+  **Recipient** row in the details (own accounts resolve to their wallet name), and the create confirm summary does the
+  same — a batch lists every recipient, so the warning never points at an address the user can't see.
 
 ## States / scenarios
 
@@ -240,8 +245,8 @@ with no multisig hop) are covered the same way as multisig ones.
 | Path unresolvable               | Any account on the saved path has no local counterpart (a wallet on the route was removed, or the draft was authored by a co-signer) | The flow is **blocked**: the submitter is shown _which_ account is missing — name and address — and told to add it to submit along this path. The transaction is never built, so there is no Sign button to press |
 | Extrinsic build failure         | Wrapping the call fails                                                                                                              | The blocked verdict for invalid call data (see below)                                                                                                                                                             |
 | No signatories                  | The wallet holds no account that can sign                                                                                            | An empty-account warning, with an add-account affordance for Polkadot Vault                                                                                                                                       |
-| Undecodable / missing call data | Bad or absent call data at create or submit entry                                                                                    | Blocked with a clear hint                                                                                                                                                                                         |
-| Unknown recipient               | The draft's transfer recipient is not a contact / own account, or the address book can't vouch                                       | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
+| Undecodable / missing call data | Bad or absent call data at create or submit entry; at submit, call data that does not re-encode to exactly the stored bytes          | Blocked with a clear hint — the transaction is never built, so nothing reaches signing                                                                                                                            |
+| Unknown recipient               | A transfer recipient of the draft is not a contact / own account, can't be read, or the address book can't vouch                     | An acknowledgement checkbox gates **Create** (create flow) and **Sign** (submit flow)                                                                                                                             |
 | Post-submit sync failure        | Recording the operation description fails after a successful on-chain submit                                                         | A toast with a **Retry** action; the draft stays visible and retryable                                                                                                                                            |
 | Source picker, book offline     | Draft mode is on and the address book was connected before but is unreachable now                                                    | No picker at all — the mode card carries the Reconnect prompt, and a dead list under it would only contradict it                                                                                                  |
 | Source picker, nothing to offer | The book is reachable but no address in it can start a draft here — a pinned position that is a plain contact, or no multisig at all | "No account available to create this draft" and the reason (naming the pinned address); **Open address book** only if the host passes `onLeaveFlow` (global-slot modals outlive navigation)                       |

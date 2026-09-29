@@ -27,7 +27,7 @@ type Props = {
   decodedCallData: object | null;
   titleData: OperationTitle | null;
   operationIcon: IconNames | null;
-  destinationAccountId: AccountId | null;
+  destinationAccountIds: AccountId[];
   recipientWarning: RecipientWarning;
   /**
    * Call data is on hand but the chain api isn't — the recipient can't be
@@ -52,7 +52,7 @@ export const StepReview = ({
   decodedCallData,
   titleData,
   operationIcon,
-  destinationAccountId,
+  destinationAccountIds,
   recipientWarning,
   recipientCheckPending,
   riskAcknowledged,
@@ -119,7 +119,7 @@ export const StepReview = ({
             walletType={walletType ?? undefined}
             chain={chain}
             titleData={summaryTitleData}
-            destinationAccountId={destinationAccountId}
+            destinationAccountIds={destinationAccountIds}
             callData={callData || undefined}
             jsonArgs={decodedCallData}
             threshold={threshold}
