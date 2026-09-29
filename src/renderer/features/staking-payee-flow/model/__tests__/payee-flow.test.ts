@@ -2,7 +2,7 @@ import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'e
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Wallet, ConnectionStatus, CryptoType, SigningType, TransactionType } from '@/shared/core';
-import { type RecipientWarning } from '@/shared/lib/recipient-verification';
+import { type RecipientCheck, type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { createPolkadotWallet, dotAsset, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -66,7 +66,10 @@ vi.mock('@/aggregates/recipient-verification', async () => {
   const $resolveWarning = createStore<(accountId: AccountId | null) => RecipientWarning>(() => 'none');
   resolveWarningMock.$store = $resolveWarning;
 
-  return { recipientVerificationModel: { $resolveWarning, $mode: createStore('off') } };
+  // The draft modal (reachable through the draft branch) reads the check-based resolver.
+  const $resolveCheckWarning = createStore<(check: RecipientCheck) => RecipientWarning>(() => 'none');
+
+  return { recipientVerificationModel: { $resolveWarning, $resolveCheckWarning, $mode: createStore('off') } };
 });
 
 // The basket writes to storage; here it only has to be observable.
