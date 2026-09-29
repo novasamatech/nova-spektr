@@ -1,6 +1,6 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -41,7 +41,7 @@ proportions with a fixed-width Total.
 flowchart TD
     START["Overview tab opens"] --> Q1{"Any accounts selected?"}
     Q1 -- "no" --> NOSEL["No accounts selected"]
-    Q1 -- "yes" --> Q2{"Balance store holds a\nrecord for the selection?"}
+    Q1 -- "yes" --> Q2{"Every selected account has a\nbalance record, or 30s passed?"}
     Q2 -- "no" --> SKEL["Skeleton: 4 group headers × 3 rows"]
     Q2 -- "yes" --> Q3{"Any non-zero balances\nfor the selection?"}
     Q3 -- "no" --> NOBAL["No balances to show"]
@@ -50,21 +50,27 @@ flowchart TD
     Q4 -- "no" --> TABLE["Grouped table"]
 ```
 
-| State                     | When it appears                                                              | What the user sees                                                                                                                                                                                      |
-| ------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No selection              | The dashboard's account picker has nothing selected                          | Centered "no accounts selected" message; header chrome and footer are hidden                                                                                                                            |
-| Loading                   | Accounts selected, but the balance store holds no record yet for any of them | Skeleton mirroring the real layout: 4 group headers, 3 stub rows each                                                                                                                                   |
-| Loaded                    | The balance store holds at least one record for the selection                | Grouped table: header row, per-account groups with subtotals, data rows; the footer states how many rows over how many accounts — the only place the table counts itself; it carries no other hint text |
-| Zero balances             | Selection resolved, but every (account, chain, asset) balance is zero        | "No balances to show" empty state — a real answer, not a loading artifact                                                                                                                               |
-| Empty after filter/search | Filters and/or the search box are active and nothing matches                 | "No rows match your filters" + explainer + "Clear filters" button; chips row stays visible                                                                                                              |
-| Filters/search active     | At least one filter or a non-empty search query is set                       | Chips row under the header (one chip per active filter, ×), a count on the Filters button, filtered table                                                                                               |
-| Fiat off                  | Global "show fiat" toggle is off                                             | Same rows and controls, minus every group's fiat subtotal                                                                                                                                               |
+| State                     | When it appears                                                                                                           | What the user sees                                                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No selection              | The dashboard's account picker has nothing selected                                                                       | Centered "no accounts selected" message; header chrome and footer are hidden                                                                                             |
+| Loading                   | Accounts selected, but at least one of them (that lives on any chain) has no balance record yet, and less than 30s passed | Skeleton mirroring the real layout: 4 group headers, 3 stub rows each                                                                                                    |
+| Loaded                    | Every selected account that lives on any chain has at least one balance record                                            | Grouped table: header row, per-account groups with subtotals, data rows; the footer states how many rows over how many accounts — the only place the table counts itself |
+| Loaded, incomplete        | 30s passed and some selected accounts still have no record (their chain never answered)                                   | The same table with what has arrived; the footer adds "Balances of N accounts have not loaded yet"                                                                       |
+| Zero balances             | Selection resolved, but every (account, chain, asset) balance is zero                                                     | "No balances to show" empty state — a real answer, not a loading artifact                                                                                                |
+| Empty after filter/search | Filters and/or the search box are active and nothing matches                                                              | "No rows match your filters" + explainer + "Clear filters" button; chips row stays visible                                                                               |
+| Filters/search active     | At least one filter or a non-empty search query is set                                                                    | Chips row under the header (one chip per active filter, ×), a count on the Filters button, filtered table                                                                |
+| Fiat off                  | Global "show fiat" toggle is off                                                                                          | Same rows and controls, minus every group's fiat subtotal                                                                                                                |
 
 The **skeleton vs. empty** distinction follows the same rule as `dashboard-portfolio-overview`: the balance subscription
-writes a record for every (account, chain, asset) it queries, zero balances included, so the first record landing is the
-moment "nothing to show" becomes a statement about the accounts rather than about the app's own progress
-(`hasBalanceRecords` in `lib/balanceRecords.ts`). Until then the widget shows its skeleton, never an empty table or a
-row of zeros.
+writes a record for every (account, chain, asset) it queries, zero balances included, so an account with no record at
+all has not been read yet. The table waits until **every** selected account that can hold balances on at least one known
+chain (wallet accounts: chains they are available on; contacts: chains of a matching address scheme) has a record — one
+fast account does not stand in for the rest (`useBalanceCoverage` from `features/assets-balances`). Until then the
+widget shows its skeleton, never an empty table, a row of zeros or a partial list presented as final.
+
+The wait is bounded at **30s per selection**, because a chain whose RPC is down keeps retrying for the life of the app
+and an account that lives only there never gets a record. After that the table renders what has arrived and the footer
+says how many accounts are still missing.
 
 ## The purpose split
 
@@ -274,7 +280,7 @@ Deferred from the approved design for this first ship:
 
 - `pages/Dashboard` — hosts `dashboardWidgetsSlot`, owns the account selection this widget reads.
 - `features/dashboard-portfolio-overview` — the fiat-snapshot card at the top of the same tab; this table shares its
-  balance-subscription wiring pattern and its `hasBalanceRecords` skeleton rule.
+  balance-subscription wiring pattern and its `useBalanceCoverage` skeleton rule.
 - `features/dashboard-staking-positions` — tracks the same address-book contact ids for staking positions from the
   Staking tab; see "Subscription cost" above for the coordination.
 - `aggregates/staking-positions` — the source of every `Staked` bucket value.
