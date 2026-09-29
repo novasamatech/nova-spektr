@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -120,10 +120,10 @@ exclusive — an operation is at most one of them.
 ### Undecoded and unrecognised operations
 
 When the call data has not been supplied yet, only the call hash is known, so the operation cannot be decoded. It then
-shows as **"Unknown Operation"** with a generic icon (tinted by status) and no amount. A call that _is_ decoded but
-belongs to none of the families above (a bare batch, a remark, a collective call, …) shows its raw **"Section: Method"**
-label — e.g. "Utility: Batch all" — with the same generic icon. In both cases the **Advanced** panel still shows the
-call hash and on-chain time point.
+shows as **"Unknown Operation"** with a generic icon (tinted by status) and no amount — a name the indexer reports
+without call data behind it is not used. A call that _is_ decoded but belongs to none of the families above (a bare
+batch, a remark, a collective call, …) shows its raw **"Section: Method"** label — e.g. "Utility: Batch all" — with the
+same generic icon. In both cases the **Advanced** panel still shows the call hash and on-chain time point.
 
 An undecoded operation is still actionable: if the current user is the final required signer, an **"Add call data"**
 action lets them paste the hex call data — validated against the call hash — which both decodes the display and unblocks
