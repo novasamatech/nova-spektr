@@ -66,6 +66,7 @@ vi.mock('@/domains/network', async importOriginal => {
 });
 
 const CHAIN: ChainId = DEFAULT_STAKING_CHAIN;
+const SEEDED_ERA: EraIndex = 100;
 
 const accountId = (index: number): AccountId => toAccountId(`0x${index.toString(16).padStart(64, '0')}`);
 
@@ -114,7 +115,8 @@ const forkWith = ({
 }: ScenarioParams = {}) => {
   return fork({
     values: [
-      [$validatorsCache, { [CHAIN]: toValidatorMap(validators) }],
+      [$eraCache, { [CHAIN]: SEEDED_ERA }],
+      [$validatorsCache, { [CHAIN]: { era: SEEDED_ERA, value: toValidatorMap(validators) } }],
       [$identityCache, { [CHAIN]: toIdentityMap(identities) }],
       [$persistedCriteria, criteria],
     ],
@@ -431,6 +433,74 @@ describe('stakingValidators request health', () => {
     await allSettled(networkModel.$apis, { scope, params: { [CHAIN]: api } });
 
     expect(scope.getState(stakingValidators.$loading)).toBe(true);
+  });
+});
+
+describe('stakingValidators era rollover', () => {
+  const ERA: EraIndex = 100;
+  const NEXT_ERA: EraIndex = 101;
+  const api = {} as unknown as ApiPromise;
+
+  const forkRollover = async () => {
+    const scope = fork({
+      values: [
+        [$eraCache, { [CHAIN]: ERA }],
+        [$validatorsCache, { [CHAIN]: { era: ERA, value: toValidatorMap([makeValidator(1)]) } }],
+      ],
+      handlers: [[requestIdentitiesFx, () => ({})]],
+    });
+    await allSettled(networkModel.$apis, { scope, params: { [CHAIN]: api } });
+
+    return scope;
+  };
+
+  it('serves the set cached for the active era', async () => {
+    const scope = await forkRollover();
+
+    expect(scope.getState(stakingValidators.$validatorList)).toHaveLength(1);
+    expect(scope.getState(stakingValidators.$pending)).toBe(false);
+  });
+
+  it('reports pending instead of the previous era set once the era moves on', async () => {
+    const scope = await forkRollover();
+
+    await allSettled($eraCache, { scope, params: { [CHAIN]: NEXT_ERA } });
+
+    expect(scope.getState(stakingValidators.$validators)).toEqual({});
+    expect(scope.getState(stakingValidators.$recommended)).toEqual([]);
+    expect(scope.getState(stakingValidators.$pending)).toBe(true);
+  });
+
+  it('serves the new set once the next era lands', async () => {
+    const scope = await forkRollover();
+
+    await allSettled($eraCache, { scope, params: { [CHAIN]: NEXT_ERA } });
+    await allSettled($validatorsCache, {
+      scope,
+      params: { [CHAIN]: { era: NEXT_ERA, value: toValidatorMap([makeValidator(2), makeValidator(3)]) } },
+    });
+
+    expect(scope.getState(stakingValidators.$validatorList).map(validator => validator.accountId)).toEqual([
+      accountId(2),
+      accountId(3),
+    ]);
+    expect(scope.getState(stakingValidators.$pending)).toBe(false);
+  });
+
+  it('reports the failure without the previous era set when the next era request fails', async () => {
+    const scope = await forkRollover();
+
+    await allSettled($eraCache, { scope, params: { [CHAIN]: NEXT_ERA } });
+    await allSettled(validatorsFail, {
+      scope,
+      params: {
+        params: { chainId: CHAIN, api, era: NEXT_ERA, timelineApi: api },
+        error: new Error('rpc'),
+      },
+    });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(true);
+    expect(scope.getState(stakingValidators.$validatorList)).toEqual([]);
   });
 });
 

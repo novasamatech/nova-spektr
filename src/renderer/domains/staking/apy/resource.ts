@@ -4,6 +4,7 @@ import { createStore } from 'effector';
 import { type Chain, type ChainId, type EraIndex } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { createQueryResource } from '@/shared/query';
+import { type EraScopedCache, writeEraScoped } from '../era-scoped';
 
 import { perbillToPercent } from './calculator';
 import { type NetworkAvgRate, apyService } from './service';
@@ -17,7 +18,7 @@ export type ApyResourceParams = {
   era: EraIndex;
 };
 
-const $apyCache = createStore<Record<ChainId, string | null>>({});
+const $apyCache = createStore<EraScopedCache<string | null>>({});
 
 export const apyResource = createQueryResource<ApyResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
@@ -31,14 +32,14 @@ export const apyResource = createQueryResource<ApyResourceParams>({
   })
   .cache({
     store: $apyCache,
-    map: (state, apy, { chainId }) => ({ ...state, [chainId]: apy }),
+    map: (state, apy, { chainId, era }) => writeEraScoped(state, chainId, era, apy),
     staleAfter: Number.POSITIVE_INFINITY,
   })
   .build();
 
 export type NetworkAvgRateParams = ApyResourceParams;
 
-const $networkAvgRateCache = createStore<Record<ChainId, NetworkAvgRate | null>>({});
+const $networkAvgRateCache = createStore<EraScopedCache<NetworkAvgRate | null>>({});
 
 /**
  * Trailing ~30d network average reward rate per chain. Era-keyed like
@@ -65,7 +66,7 @@ export const networkAvgRateResource = createQueryResource<NetworkAvgRateParams>(
   })
   .cache({
     store: $networkAvgRateCache,
-    map: (state, rate, { chainId }) => ({ ...state, [chainId]: rate }),
+    map: (state, rate, { chainId, era }) => writeEraScoped(state, chainId, era, rate),
     staleAfter: Number.POSITIVE_INFINITY,
   })
   .build();

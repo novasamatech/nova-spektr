@@ -24,6 +24,7 @@ import {
   exposures as exposuresModel,
   nominations as nominationsModel,
   positionsService,
+  readEraScoped,
   staking as stakingModel,
   validatorPrefs as validatorPrefsModel,
   validators as validatorsModel,
@@ -459,7 +460,7 @@ const $positions = combine(
       // `null`, not `{}`, while the subscription has not answered — the drawer
       // must show a shimmer, not "—", for the seconds in between.
       const chainPayees = payees[chainId] ?? null;
-      const chainValidators = validators[chainId] ?? null;
+      const chainValidators = readEraScoped(validators[chainId], activeEra) ?? null;
       const pagesKey = exposurePagesCacheKey(chainId, activeEra, nominated[chainId] ?? EMPTY_VALIDATORS);
       // `null`, not `{}`. The pages land well after the ledgers, and an empty
       // map reads as "no validator backs this stash" — every nominating

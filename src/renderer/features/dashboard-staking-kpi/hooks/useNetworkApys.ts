@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
-import { type ApyResourceParams, apy } from '@/domains/staking';
+import { type ApyResourceParams, apy, readEraScoped } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 
 import { useChainEras } from './useChainEras';
@@ -44,11 +44,11 @@ export const useNetworkApys = (chainIds: ChainId[]): Record<ChainId, number | nu
     const result: Record<ChainId, number | null> = {};
 
     for (const chainId of chainIds) {
-      const value = cache[chainId];
+      const value = readEraScoped(cache[chainId], eras[chainId]);
       const parsed = value === null || value === undefined ? Number.NaN : Number(value);
       result[chainId] = Number.isFinite(parsed) ? parsed : null;
     }
 
     return result;
-  }, [chainIds, cache]);
+  }, [chainIds, cache, eras]);
 };

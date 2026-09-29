@@ -1,6 +1,6 @@
 # Staking Validators
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-19
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -57,8 +57,12 @@ chain whose set failed shows the failure again rather than pretending the data i
 a set for that chain lands anyway — another consumer retried, or the era moved on — so the aggregate never asks the user
 to retry something that has already succeeded.
 
-A failure does not discard whatever was fetched before. A chain that has an older set keeps showing it; the consumer's
-job is to say the set on screen may be stale, not to blank it.
+### A set belongs to one era
+
+The elected set is only ever served for the network's **active era**. When the era rolls over, the previous era's set is
+no longer an answer: the aggregate drops back to No data yet until the new era's set arrives, instead of presenting last
+era's commissions, stakes and oversubscription as current. If the new era's request fails, the user sees the failure on
+its own — never the failure next to the previous era's list.
 
 ### Strict criteria never produce an empty list
 
