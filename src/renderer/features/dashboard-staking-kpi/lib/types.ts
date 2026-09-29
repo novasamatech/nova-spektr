@@ -1,6 +1,11 @@
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type NetworkAvgRate, type UnbondingChunk, type UnclaimedPayout } from '@/domains/staking';
+import {
+  type DataCompleteness,
+  type NetworkAvgRate,
+  type UnbondingChunk,
+  type UnclaimedPayout,
+} from '@/domains/staking';
 
 import { type Access } from './access';
 
@@ -17,13 +22,14 @@ export type ClaimRow = {
   /** Unclaimed rewards, planck. */
   unclaimed: string;
   /**
-   * The payout scan has answered for this position.
+   * How far the payout scan has answered for this position.
    *
-   * `false` is not "nothing to claim" — it is "not asked yet". The two look
-   * identical in a `'0'` and the screen must not announce the first while it
-   * means the second.
+   * Only `complete` makes a `'0'` mean "nothing to claim". `pending` is "not
+   * asked yet", `partial` is "at least this much", `unavailable` is "could not
+   * check" — they all look identical in a `'0'` and the screen must not
+   * announce the first while it means one of the others.
    */
-  unclaimedKnown: boolean;
+  unclaimedStatus: DataCompleteness | 'pending';
   unclaimedFiat: string;
   /** Eras with something unclaimed, ascending. */
   eras: number[];

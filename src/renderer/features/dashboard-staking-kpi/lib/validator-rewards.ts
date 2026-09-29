@@ -198,3 +198,27 @@ export function toClaimRequests(
 
   return [...byChain.values()];
 }
+
+export type UnclaimedScan = {
+  /** Chains with a payout scan that has not answered yet. */
+  pending: Set<ChainId>;
+  /**
+   * Chains with a scan that answered, but not completely — what it found is
+   * real, what it did not find is unknown. "Nothing outstanding" is never true
+   * of them.
+   */
+  incomplete: Set<ChainId>;
+};
+
+/** Where the payout scans of the claim rows stand, per chain. */
+export function getUnclaimedScan(rows: Pick<ClaimRow, 'chainId' | 'unclaimedStatus'>[]): UnclaimedScan {
+  const pending = new Set<ChainId>();
+  const incomplete = new Set<ChainId>();
+
+  for (const { chainId, unclaimedStatus } of rows) {
+    if (unclaimedStatus === 'pending') pending.add(chainId);
+    else if (unclaimedStatus !== 'complete') incomplete.add(chainId);
+  }
+
+  return { pending, incomplete };
+}

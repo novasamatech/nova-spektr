@@ -27,14 +27,29 @@ const URGENCY_CLASS: Record<ExpiryUrgency, string> = {
  */
 export const UnclaimedCell = ({ row }: Props) => {
   const { t } = useI18n();
-  const { total, expiryDays, urgency, pending } = useUnclaimedRewards(row.chain, row.accountId);
+  const { total, expiryDays, urgency, pending, complete } = useUnclaimedRewards(row.chain, row.accountId);
 
   if (pending) {
     return <Skeleton width="72px" height="16px" />;
   }
 
   if (new BN(total).isZero()) {
-    return <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>;
+    const noValue = (
+      <FootnoteText className="text-text-tertiary">{t('dashboard.staking.positions.noValue')}</FootnoteText>
+    );
+
+    // A dash over a scan that could not look everywhere is not "nothing to
+    // claim" — the tooltip says so.
+    return complete ? (
+      noValue
+    ) : (
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div>{noValue}</div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{t('dashboard.staking.positions.unclaimedUnknown')}</Tooltip.Content>
+      </Tooltip>
+    );
   }
 
   return (

@@ -81,7 +81,7 @@ export { eraRewardsCacheKey } from './era-rewards/resource';
 export { eraRewards } from './era-rewards/store';
 export { eraRewardsService } from './era-rewards/service';
 
-export type { PayoutSource, UnclaimedPayout, UnclaimedPayouts } from './payouts/types';
+export type { DataCompleteness, PayoutSource, UnclaimedPayout, UnclaimedPayouts } from './payouts/types';
 export type { PayoutsResourceParams } from './payouts/resource';
 export { payouts } from './payouts/store';
 export { payoutsCacheKey } from './payouts/resource';

@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -132,6 +132,13 @@ screen shows each column's own state rather than one global spinner:
   chain's payout scan is out. Printing `0 DOT` in either would state a fact nobody has established.
 - The footer says _"Checking what is still unclaimed…"_ instead of _"Nothing outstanding"_ until the scan answers. The
   second sentence is a claim about the user's money and must never be guessed.
+- A scan can answer without having looked everywhere — an indexer failed, lags behind the claim window, a chain read
+  failed, or only the bounded on-chain scan could run. Such an answer is `partial` (what it found is real, the total is
+  a lower bound) or `unavailable` (nothing was checked). _"Nothing outstanding"_ is shown **only** when every scan is
+  `complete`. Otherwise the footer says which networks could not be fully checked — alone when nothing was found, or
+  next to the outstanding amount when something was — and offers **Retry**, which re-runs just the incomplete scans. An
+  Unclaimed cell with nothing found on such a network reads _"Couldn't check"_, never `0 DOT`.
+- An incomplete answer is cached for 30 seconds instead of five minutes, so the next visit asks again.
 - Once an answer arrives and it is empty, the shimmer stops and a sentence takes over. Shimmering at a user who
   genuinely earned nothing tells them the app is still thinking, forever.
 

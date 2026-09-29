@@ -25,9 +25,15 @@ export function payoutsCacheKey(chainId: ChainId, stash: AccountId, activeEra: E
 
 const $payoutsCache = createStore<Record<string, UnclaimedPayouts>>({});
 
+/** How long a complete answer is reused — a landed payout still disappears soon. */
+export const PAYOUTS_STALE_AFTER = 5 * 60 * 1000;
+/** A partial or unavailable answer is retried on the next request after this. */
+export const PAYOUTS_INCOMPLETE_STALE_AFTER = 30 * 1000;
+
 /**
  * Not cached forever — a landed payout has to disappear from the list without
- * waiting for the next era.
+ * waiting for the next era. An answer that is not complete is kept only
+ * briefly, so the next mount asks again instead of repeating a failed read.
  */
 export const payoutsResource = createQueryResource<PayoutsResourceParams>({
   key: ({ chainId, stash, activeEra }) => [chainId, stash, activeEra],
@@ -49,6 +55,6 @@ export const payoutsResource = createQueryResource<PayoutsResourceParams>({
       ...state,
       [payoutsCacheKey(chainId, stash, activeEra)]: payouts,
     }),
-    staleAfter: 5 * 60 * 1000,
+    staleAfter: payouts => (payouts.completeness === 'complete' ? PAYOUTS_STALE_AFTER : PAYOUTS_INCOMPLETE_STALE_AFTER),
   })
   .build();
