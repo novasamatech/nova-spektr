@@ -1,5 +1,4 @@
 import { useGate, useUnit } from 'effector-react';
-import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -7,20 +6,11 @@ import { ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { WalletIcon } from '@/shared/ui-entities';
-import { transactionService } from '@/entities/transaction';
+import { ValidationErrorLabels } from '../lib/constants';
+import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { type SignResponse, polkadotExtensionSign } from '../model/polkadotExtensionSign';
-
-const ValidationErrorLabels: Record<ValidationErrors, string> = {
-  [ValidationErrors.EXPIRED]: t('transfer.expired'),
-  [ValidationErrors.INVALID_ADDRESS]: t('transfer.invalidAddress'),
-  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
-  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
-  [ValidationErrors.ADDRESS_REQUIRED]: t('transfer.noSignatoryError'),
-  [ValidationErrors.AMOUNT_REQUIRED]: t('transfer.noAmount'),
-};
 
 export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const payload = signingPayloads[0];
@@ -35,7 +25,6 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
   const signingCurrent = useUnit(polkadotExtensionSign.$signingCurrent);
   const signingTotal = useUnit(polkadotExtensionSign.$signingTotal);
 
-  // TODO show validation error
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   useGate(operationSignModel.SignerGate, signatory);
@@ -48,22 +37,30 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
 
   // TODO move validation to effector model
   const handleSignature = async (response: SignResponse[]) => {
-    let isVerified;
-    let balanceValidationError;
+    const signatures = response.map((x) => x.signature);
+    const payloads = response.map((x) => x.txPayload.payload);
 
-    for (const { signature, txPayload } of response) {
-      isVerified = transactionService.verifySignature(txPayload.payload, signature, signatory!.accountId);
-      balanceValidationError = validateBalance && (await validateBalance());
+    const isVerified = operationSignUtils.verifySignatures({
+      payloads,
+      signatures,
+      accountIds: signingPayloads.map((p) => p.signatory.accountId),
+    });
+
+    if (!isVerified) {
+      setValidationError(ValidationErrors.INVALID_SIGNATURE);
+
+      return;
     }
 
-    if (isVerified && balanceValidationError) {
-      setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
+    const balanceValidationError = validateBalance && (await validateBalance());
+
+    if (balanceValidationError) {
+      setValidationError(balanceValidationError);
+
+      return;
     }
 
-    onResult(
-      response.map((x) => x.signature),
-      response.map((x) => x.txPayload.payload),
-    );
+    onResult(signatures, payloads);
   };
 
   const getStatusProps = () => {
