@@ -5,11 +5,10 @@ import { isHex } from '@/shared/lib/utils';
 import { type PathNode } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { findCoreTransaction } from '@/entities/transaction';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { graphModel, pathModel } from '@/features/signing-path';
 import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
-import { getDestinationAccountId } from '../lib/get-destination-account-id';
+import { getRecipientAccountIds, getRecipientCheck } from '../lib/get-destination-account-id';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
@@ -108,14 +107,14 @@ const $decodedTransaction = combine(
     decodeDraftTransaction({ callData, originAccountId: getPathOriginAccountId(path), api, chain }),
 );
 
-const $destinationAccountId = $decodedTransaction.map((transaction) =>
-  getDestinationAccountId(findCoreTransaction(transaction)),
-);
+const $recipientCheck = $decodedTransaction.map(getRecipientCheck);
+
+const $destinationAccountIds = $recipientCheck.map(getRecipientAccountIds);
 
 const $recipientWarning = combine(
-  recipientVerificationModel.$resolveWarning,
-  $destinationAccountId,
-  (resolveWarning, destinationAccountId) => resolveWarning(destinationAccountId),
+  recipientVerificationModel.$resolveCheckWarning,
+  $recipientCheck,
+  (resolveWarning, recipientCheck) => resolveWarning(recipientCheck),
 );
 
 // "Can't check" is not "nothing to check": with call data on hand but no chain
@@ -238,7 +237,7 @@ export const createDraftModel = {
   $description,
   $isRiskAcknowledged,
   $decodedTransaction,
-  $destinationAccountId,
+  $destinationAccountIds,
   $recipientWarning,
   $isRecipientCheckable,
   $recipientRiskAccepted,

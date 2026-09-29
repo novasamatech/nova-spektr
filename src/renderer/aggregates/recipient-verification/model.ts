@@ -1,8 +1,10 @@
 import { combine } from 'effector';
 
 import {
+  type RecipientCheck,
   type RecipientVerificationMode,
   type RecipientWarning,
+  resolveRecipientCheckWarning,
   resolveRecipientWarning,
 } from '@/shared/lib/recipient-verification';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -43,7 +45,12 @@ const $resolveWarning = combine($mode, $knownAccountIds, (mode, knownAccountIds)
   return (accountId: AccountId | null): RecipientWarning => resolveRecipientWarning(mode, knownAccountIds, accountId);
 });
 
+const $resolveCheckWarning = combine($mode, $knownAccountIds, (mode, knownAccountIds) => {
+  return (check: RecipientCheck): RecipientWarning => resolveRecipientCheckWarning(mode, knownAccountIds, check);
+});
+
 export const recipientVerificationModel = {
   $mode,
   $resolveWarning,
+  $resolveCheckWarning,
 };

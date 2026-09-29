@@ -1,6 +1,6 @@
 # Recipient Verification
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-20
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -9,9 +9,11 @@ multisig-operation recipient is **not a known address** — not in the address b
 — so an unknown destination is never mistaken for a familiar one.
 
 The feature has no UI of its own and exists only in the context of the **external address book** (the backend contacts
-connection): a user who has never connected it sees no change in behaviour at all. It exposes a mode and a resolver;
-consuming features render the warning through shared components (`UnknownRecipientBadge`, `UnknownRecipientAlert`,
-`UnknownRecipientAckBox` in `shared/ui-entities`).
+connection): a user who has never connected it sees no change in behaviour at all. It exposes a mode and two resolvers —
+one for a single recipient, one for a call that may pay several recipients or whose recipient may be unreadable (an
+unreadable recipient warns like an unknown one; a list warns when any recipient does); consuming features render the
+warning through shared components (`UnknownRecipientBadge`, `UnknownRecipientAlert`, `UnknownRecipientAckBox` in
+`shared/ui-entities`).
 
 ## Modes
 

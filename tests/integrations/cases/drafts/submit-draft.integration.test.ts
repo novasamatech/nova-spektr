@@ -30,7 +30,7 @@ import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { findRouteMultisigAccountId } from '@/aggregates/multisig-operation-description/lib/findRouteMultisigAccountId';
 import type * as DestinationHelper from '@/features/drafts/lib/get-destination-account-id';
-import { getDraftDestinationAccountId } from '@/features/drafts/lib/get-destination-account-id';
+import { getDraftRecipientCheck } from '@/features/drafts/lib/get-destination-account-id';
 import { getDraftSubmitGate } from '@/features/drafts/lib/submit-draft-availability';
 import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { signModel } from '@/features/operations/OperationSign';
@@ -45,10 +45,10 @@ import {
 } from '../../utils/index';
 
 // The api double can't decode real call data, so the recipient resolution is
-// stubbed: `null` by default (no recipient), overridden per test.
+// stubbed: no recipient by default, overridden per test.
 vi.mock('@/features/drafts/lib/get-destination-account-id', async (importOriginal) => ({
   ...(await importOriginal<typeof DestinationHelper>()),
-  getDraftDestinationAccountId: vi.fn(() => null),
+  getDraftRecipientCheck: vi.fn(() => ({ kind: 'no-recipient' })),
 }));
 
 const BASE_URL = 'https://backend.test';
@@ -760,7 +760,7 @@ describe('Submit Draft — submit & edit flows', () => {
         story: 'Unknown recipient gate',
       });
       // Factory mocks survive `vi.restoreAllMocks`; pin the default so tests don't depend on order.
-      vi.mocked(getDraftDestinationAccountId).mockReturnValue(null);
+      vi.mocked(getDraftRecipientCheck).mockReturnValue({ kind: 'no-recipient' });
     });
 
     const directPath: PathNode[] = [
@@ -793,10 +793,10 @@ describe('Submit Draft — submit & edit flows', () => {
       expect(env.getState(submitDraftModel.$isRiskAcknowledged)).toBe(false);
     });
 
-    it('carries no warning while the call data yields no destination', async () => {
+    it('carries no warning for a draft that pays no one', async () => {
       seamSpies();
-      // The api double has no `tx`, so decoding throws → destination null → nothing
-      // to warn about, even with the address book connected and healthy.
+      // A draft that pays no one has nothing to warn about, even with the
+      // address book connected and healthy.
       env = await buildEnv([multisigDirect, signerAccount], (b) =>
         b
           .withApi(polkadotChainId, fakeApi)
@@ -807,13 +807,13 @@ describe('Submit Draft — submit & edit flows', () => {
 
       await startFlow(draft);
 
-      expect(env.getState(submitDraftModel.$destinationAccountId)).toBeNull();
+      expect(env.getState(submitDraftModel.$destinationAccountIds)).toEqual([]);
       expect(env.getState(submitDraftModel.$recipientWarning)).toBe('none');
     });
 
     it('warns about a recipient that is neither a contact nor an own account while the book is healthy', async () => {
       seamSpies();
-      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      vi.mocked(getDraftRecipientCheck).mockReturnValue({ kind: 'recipients', accountIds: [STRANGER_ID] });
       env = await buildEnv([multisigDirect, signerAccount], (b) =>
         b
           .withApi(polkadotChainId, fakeApi)
@@ -824,13 +824,13 @@ describe('Submit Draft — submit & edit flows', () => {
 
       await startFlow(draft);
 
-      expect(env.getState(submitDraftModel.$destinationAccountId)).toBe(STRANGER_ID);
+      expect(env.getState(submitDraftModel.$destinationAccountIds)).toEqual([STRANGER_ID]);
       expect(env.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
     });
 
     it('stays quiet for a recipient that is an address-book contact', async () => {
       seamSpies();
-      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      vi.mocked(getDraftRecipientCheck).mockReturnValue({ kind: 'recipients', accountIds: [STRANGER_ID] });
       env = await buildEnv([multisigDirect, signerAccount], (b) =>
         b
           .withApi(polkadotChainId, fakeApi)
@@ -847,7 +847,7 @@ describe('Submit Draft — submit & edit flows', () => {
 
     it('warns about every recipient while the book was connected before but is unhealthy now', async () => {
       seamSpies();
-      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      vi.mocked(getDraftRecipientCheck).mockReturnValue({ kind: 'recipients', accountIds: [STRANGER_ID] });
       env = await buildEnv([multisigDirect, signerAccount], (b) =>
         b
           .withApi(polkadotChainId, fakeApi)
@@ -864,7 +864,7 @@ describe('Submit Draft — submit & edit flows', () => {
 
     it('refuses to start signing until an unknown recipient is acknowledged', async () => {
       seamSpies();
-      vi.mocked(getDraftDestinationAccountId).mockReturnValue(STRANGER_ID);
+      vi.mocked(getDraftRecipientCheck).mockReturnValue({ kind: 'recipients', accountIds: [STRANGER_ID] });
       env = await buildEnv([multisigDirect, signerAccount], (b) =>
         b
           .withApi(polkadotChainId, fakeApi)
