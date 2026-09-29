@@ -1,5 +1,7 @@
 import { type Transaction, TransactionType } from '@/shared/core';
 import {
+  findCoreBatchAll,
+  getTransactionAmount,
   isAddProxyTransaction,
   isEditFlexibleTransaction,
   isManageProxyTransaction,
@@ -289,6 +291,47 @@ describe('entities/transaction/lib/onChainUtils', () => {
       } as unknown as Transaction;
 
       expect(isEditFlexibleTransaction(batchWithoutArgs)).toEqual(false);
+    });
+  });
+
+  describe('findCoreBatchAll', () => {
+    const createTransaction = (type: TransactionType, args: Record<string, unknown> = {}) =>
+      ({ type, args }) as unknown as Transaction;
+    const createBatch = (transactions: Transaction[]) => createTransaction(TransactionType.BATCH_ALL, { transactions });
+
+    const unlock = createTransaction(TransactionType.UNLOCK, { value: '1' });
+
+    test('should prefer unlock among direct children', () => {
+      const removeVote = createTransaction(TransactionType.REMOVE_VOTE);
+
+      expect(findCoreBatchAll(createBatch([removeVote, unlock]))).toBe(unlock);
+    });
+
+    test('should pick a supported transaction over the first one', () => {
+      const chill = createTransaction(TransactionType.CHILL);
+      const unstake = createTransaction(TransactionType.UNSTAKE);
+
+      expect(findCoreBatchAll(createBatch([chill, unstake]))).toBe(unstake);
+    });
+
+    test('should return null for an empty batch', () => {
+      expect(findCoreBatchAll(createBatch([]))).toBeNull();
+    });
+
+    test('should never return a batch', () => {
+      const nested = createBatch([createBatch([unlock])]);
+
+      expect(findCoreBatchAll(nested)).toBeNull();
+    });
+
+    test('should not recurse endlessly on nested batches', () => {
+      const nested = createBatch([createBatch([createBatch([unlock])])]);
+
+      expect(getTransactionAmount(nested)).toBeNull();
+    });
+
+    test('should return the amount of the core transaction', () => {
+      expect(getTransactionAmount(createBatch([createTransaction(TransactionType.REMOVE_VOTE), unlock]))).toBe('1');
     });
   });
 });
