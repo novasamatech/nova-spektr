@@ -5,7 +5,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type UnclaimedPayout } from '@/domains/staking';
 import { type ChainEraReward } from '../../hooks/useValidatorRewards';
 import { type ClaimRow } from '../types';
-import { buildValidatorRewardRows, isRowClaimable, toClaimRequests } from '../validator-rewards';
+import { buildValidatorRewardRows, getUnclaimedScan, isRowClaimable, toClaimRequests } from '../validator-rewards';
 
 const POLKADOT = '0xpolkadot' as ChainId;
 const SIGNABLE = new Set([POLKADOT]);
@@ -229,5 +229,31 @@ describe('toClaimRequests', () => {
     });
 
     expect(toClaimRequests(rows, NONE)).toEqual([]);
+  });
+});
+
+describe('getUnclaimedScan', () => {
+  const KUSAMA = '0xkusama' as ChainId;
+  const WESTEND = '0xwestend' as ChainId;
+
+  it('never counts a scan that answered only in part as done', () => {
+    const scan = getUnclaimedScan([
+      { chainId: POLKADOT, unclaimedStatus: 'complete' },
+      { chainId: KUSAMA, unclaimedStatus: 'unavailable' },
+      { chainId: WESTEND, unclaimedStatus: 'partial' },
+    ]);
+
+    expect([...scan.pending]).toEqual([]);
+    expect([...scan.incomplete]).toEqual([KUSAMA, WESTEND]);
+  });
+
+  it('keeps a scan that has not answered yet apart from an incomplete one', () => {
+    const scan = getUnclaimedScan([
+      { chainId: POLKADOT, unclaimedStatus: 'pending' },
+      { chainId: POLKADOT, unclaimedStatus: 'complete' },
+    ]);
+
+    expect([...scan.pending]).toEqual([POLKADOT]);
+    expect(scan.incomplete.size).toBe(0);
   });
 });

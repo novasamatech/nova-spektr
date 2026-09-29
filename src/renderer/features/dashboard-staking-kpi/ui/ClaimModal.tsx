@@ -34,6 +34,7 @@ import { type ClaimRow } from '../lib/types';
 import {
   type ValidatorRewardRow,
   buildValidatorRewardRows,
+  getUnclaimedScan,
   isRowClaimable,
   toClaimRequests,
 } from '../lib/validator-rewards';
@@ -58,6 +59,8 @@ type Props = {
   /** Runtime `HistoryDepth` per chain — how far back a payout stays claimable. */
   historyDepths: Record<string, number | null>;
   walletByAccount: Record<string, Wallet | null>;
+  /** Re-runs the payout scans that did not answer completely. */
+  onRetryUnclaimed: () => Promise<void>;
   onClose: () => void;
 };
 
@@ -93,7 +96,17 @@ const FilterChip = ({ label, active, onClick }: { label: string; active: boolean
  * and hiding part of it behind a date filter hides money.
  */
 export const ClaimModal = memo(
-  ({ rows, positions, currency, eras, eraDurations, historyDepths, walletByAccount, onClose }: Props) => {
+  ({
+    rows,
+    positions,
+    currency,
+    eras,
+    eraDurations,
+    historyDepths,
+    walletByAccount,
+    onRetryUnclaimed,
+    onClose,
+  }: Props) => {
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
     const accountNameCache = useUnit($accountNameCache);
@@ -123,19 +136,28 @@ export const ClaimModal = memo(
     const pendingChainSet = useMemo(() => new Set(pendingChains), [pendingChains]);
 
     /**
-     * Chains whose payout scan has not answered yet.
+     * Chains whose payout scan has not answered yet, and chains whose scan
+     * answered only in part.
      *
-     * Until it does, "unclaimed" is unknown rather than zero — and the footer
+     * In either case "unclaimed" is unknown rather than zero — and the footer
      * must not announce "nothing outstanding" for money it has not looked for.
      */
-    const unclaimedPending = useMemo(() => {
-      const chainIds = new Set<ChainId>();
-      for (const row of rows) {
-        if (!row.unclaimedKnown) chainIds.add(row.chainId);
-      }
+    const { pending: unclaimedPending, incomplete: unclaimedIncomplete } = useMemo(
+      () => getUnclaimedScan(rows),
+      [rows],
+    );
+    const [retrying, setRetrying] = useState(false);
 
-      return chainIds;
-    }, [rows]);
+    const handleRetryUnclaimed = useCallback(() => {
+      setRetrying(true);
+      onRetryUnclaimed().finally(() => setRetrying(false));
+    }, [onRetryUnclaimed]);
+
+    const incompleteNetworks = useMemo(
+      () =>
+        [...new Set(rows.filter((row) => unclaimedIncomplete.has(row.chainId)).map((row) => row.chainName))].join(', '),
+      [rows, unclaimedIncomplete],
+    );
 
     /** Networks the selection actually stakes on — never a hard-coded list. */
     const networks = useMemo(() => {
@@ -545,6 +567,12 @@ export const ClaimModal = memo(
           render: (_, item) =>
             unclaimedPending.has(item.chainId) ? (
               <Skeleton width="64px" height="14px" />
+            ) : unclaimedIncomplete.has(item.chainId) && !(Number(item.unclaimed) > 0) ? (
+              // The scan could not look everywhere: a `0 DOT` here would be a
+              // guess presented as a fact.
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.staking.kpi.rewards.unclaimedUnknown')}
+              </FootnoteText>
             ) : (
               <div>
                 <FootnoteText className={cnTw('tabular-nums', Number(item.unclaimed) > 0 && 'text-text-positive')}>
@@ -598,6 +626,7 @@ export const ClaimModal = memo(
         claimEnabled,
         pendingChainSet,
         unclaimedPending,
+        unclaimedIncomplete,
         signableChains,
         handleClaimRow,
         handleRowEnter,
@@ -783,12 +812,19 @@ export const ClaimModal = memo(
                 : unclaimedPending.size > 0
                   ? t('dashboard.staking.kpi.rewards.scanningPayouts')
                   : payoutCount === 0
-                    ? t('dashboard.staking.kpi.rewards.nothingToClaim', { eras: claimWindowEras })
+                    ? unclaimedIncomplete.size > 0
+                      ? t('dashboard.staking.kpi.rewards.scanIncomplete', { networks: incompleteNetworks })
+                      : t('dashboard.staking.kpi.rewards.nothingToClaim', { eras: claimWindowEras })
                     : [
                         t('dashboard.staking.kpi.rewards.outstanding', {
                           fiat: formatFiat(unclaimedTotalFiat, currency),
                           count: claimable.length,
                         }),
+                        // What was found is claimable; what was not looked at
+                        // may add to it.
+                        unclaimedIncomplete.size > 0
+                          ? t('dashboard.staking.kpi.rewards.scanIncompleteShort', { networks: incompleteNetworks })
+                          : null,
                         // The expiry warning sits next to the button that acts on
                         // it, not under a chart on the other side of the screen.
                         soonestExpiry === null
@@ -799,6 +835,17 @@ export const ClaimModal = memo(
                         .join(' · ')}
             </FootnoteText>
             <div className="flex items-center gap-2">
+              {unclaimedPending.size === 0 && unclaimedIncomplete.size > 0 ? (
+                <Button
+                  variant="text"
+                  size="sm"
+                  isLoading={retrying}
+                  disabled={retrying}
+                  onClick={handleRetryUnclaimed}
+                >
+                  {t('dashboard.staking.kpi.rewards.retryScan')}
+                </Button>
+              ) : null}
               <Button variant="text" size="sm" disabled={windowPending} onClick={handleExport}>
                 {t('dashboard.staking.kpi.exportCsv')}
               </Button>

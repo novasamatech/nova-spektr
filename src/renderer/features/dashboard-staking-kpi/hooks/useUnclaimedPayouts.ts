@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
@@ -31,8 +31,12 @@ export function unclaimedKey(chainId: ChainId, accountId: AccountId): string {
  * Unclaimed payouts of every position. One request per (chain, stash) — the
  * payout scan is per-stash on chain, so there is no batched form of it, and the
  * pool makes sure a stash queried twice only fetches once.
+ *
+ * `retry` re-runs every scan whose answer is not complete.
  */
-export const useUnclaimedPayoutsByPosition = (positions: StakingPosition[]): UnclaimedByPosition => {
+export const useUnclaimedPayoutsByPosition = (
+  positions: StakingPosition[],
+): { byPosition: UnclaimedByPosition; retry: () => Promise<void> } => {
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
   const eras = useChainEras();
@@ -71,8 +75,24 @@ export const useUnclaimedPayoutsByPosition = (positions: StakingPosition[]): Unc
   useResourcePool(payoutsResource, requests);
 
   const cache = useUnit(payoutsResource.$cache);
+  const { invalidate, fetch } = useUnit({ invalidate: payoutsResource.invalidate, fetch: payoutsResource.fetch });
 
-  return useMemo(() => {
+  const retry = useCallback(async () => {
+    const incomplete = requests.filter(
+      ({ chainId, stash, activeEra }) => cache[payoutsCacheKey(chainId, stash, activeEra)]?.completeness !== 'complete',
+    );
+
+    await Promise.all(
+      incomplete.map(async (request) => {
+        // Dropped first: a refetch inside the cache window would be answered
+        // with the very result being retried.
+        await invalidate(request);
+        await fetch(request).catch(() => null);
+      }),
+    );
+  }, [requests, cache, invalidate, fetch]);
+
+  const byPosition = useMemo(() => {
     const result: UnclaimedByPosition = {};
 
     for (const { chainId, stash, activeEra } of requests) {
@@ -84,4 +104,6 @@ export const useUnclaimedPayoutsByPosition = (positions: StakingPosition[]): Unc
 
     return result;
   }, [requests, cache]);
+
+  return { byPosition, retry };
 };

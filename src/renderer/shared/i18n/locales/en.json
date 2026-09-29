@@ -985,6 +985,10 @@
           "nothingInPeriod": "No rewards attributed in this window.",
           "scanningPayouts": "Checking what is still unclaimed…",
           "nothingToClaim": "Nothing outstanding — every payout of the last {eras} eras is claimed.",
+          "scanIncomplete": "Couldn't check every payout on {networks} — unclaimed rewards may be missing.",
+          "scanIncompleteShort": "some payouts on {networks} couldn't be checked",
+          "unclaimedUnknown": "Couldn't check",
+          "retryScan": "Retry",
           "period": {
             "7d": "7d",
             "30d": "30d",
@@ -1085,6 +1089,7 @@
         "title": "Positions",
         "newPosition": "New position",
         "noValue": "—",
+        "unclaimedUnknown": "Unclaimed rewards couldn't be fully checked on this network.",
         "viewOnly": "view only",
         "localWallet": "Local wallet",
         "addressBook": "Address book",

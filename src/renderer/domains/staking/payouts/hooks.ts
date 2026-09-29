@@ -5,7 +5,7 @@ import { useResource } from '@/shared/query';
 import { type PayoutsResourceParams, payoutsCacheKey, payoutsResource } from './resource';
 import { type UnclaimedPayouts } from './types';
 
-const EMPTY_PAYOUTS: UnclaimedPayouts = { total: '0', payouts: [], source: 'unavailable' };
+const EMPTY_PAYOUTS: UnclaimedPayouts = { total: '0', payouts: [], source: 'unavailable', completeness: 'unavailable' };
 
 export const useUnclaimedPayouts = (params: NullableMap<PayoutsResourceParams>) => {
   return useResource(payoutsResource, {

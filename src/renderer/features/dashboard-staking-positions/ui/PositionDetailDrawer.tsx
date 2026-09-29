@@ -134,11 +134,12 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
 
   // "No signer" wins over "nothing to claim": a chain nobody here can sign on
   // stays blocked no matter what the scan finds. Below that, a scan still in
-  // flight leaves the chip enabled — it asserts nothing about payouts it has
-  // not checked yet; only a finished scan that found nothing disables it.
+  // flight — or one that could not look everywhere — leaves the chip enabled:
+  // it asserts nothing about payouts it has not checked; only a complete scan
+  // that found nothing disables it.
   const claimBlockedHint = !chainHasSigner
     ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row?.chain.name ?? '' })
-    : hasUnclaimed || unclaimedPending
+    : hasUnclaimed || unclaimedPending || !unclaimed.complete
       ? undefined
       : t('dashboard.staking.positions.detail.actions.nothingToClaim');
 

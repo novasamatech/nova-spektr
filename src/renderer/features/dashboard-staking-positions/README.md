@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -166,7 +166,9 @@ descending by default, and clearing the sort returns to that default rather than
   the column flips to its audience — `{n} nominators` — and shows `—` while it is not elected, because the count only
   exists inside the active era.
 - **Unclaimed** — the amount plus how long it has left. An unclaimed payout is not merely uncollected: it is destroyed
-  once its era leaves the runtime history. The chip is red under 14 days, amber to 30, green beyond.
+  once its era leaves the runtime history. The chip is red under 14 days, amber to 30, green beyond. When the payout
+  scan could not look everywhere (see the KPI spec) and found nothing, the dash carries a tooltip saying the rewards
+  could not be fully checked — the dash is not "nothing to claim".
 
 The header row is always sticky — below the row threshold the widget shell is what scrolls, and the column names must
 survive that scrolling too. Beyond 20 rows the table body additionally becomes its own scroll container — about eight
@@ -222,8 +224,9 @@ states, in order of precedence:
 
 - **No signer on the chain** — disabled, with "None of your wallets can sign on {network}". This wins over everything
   else: whatever the payout scan finds, nobody here could sign the claim.
-- **Nothing to claim**, scan finished — disabled, with "Nothing to claim on this position".
-- **Scan still running** — enabled; the chip does not assert "nothing to claim" about payouts nobody has checked yet.
+- **Nothing to claim**, scan finished and complete — disabled, with "Nothing to claim on this position".
+- **Scan still running, or finished incomplete** — enabled; the chip does not assert "nothing to claim" about payouts
+  nobody has checked.
 - Otherwise — enabled, leading with the unclaimed amount.
 
 (As with every chip, disabling still falls back to the "not connected yet" tooltip when the action is unwired — but a
