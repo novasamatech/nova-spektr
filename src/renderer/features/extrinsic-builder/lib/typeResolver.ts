@@ -8,9 +8,6 @@ import { type ParameterTypeDef, type PrimitiveType, MAX_TYPE_RESOLUTION_DEPTH } 
 const UNSIGNED_INT_TYPES = new Set(['u8', 'u16', 'u32', 'u64', 'u128', 'u256']);
 const SIGNED_INT_TYPES = new Set(['i8', 'i16', 'i32', 'i64', 'i128']);
 
-const BALANCE_TYPE_NAMES = new Set(['Balance', 'BalanceOf', 'Amount', 'CurrencyBalanceOf', 'ExtendedBalance']);
-const BALANCE_INNER_TYPES = new Set(['u128', 'u64']);
-
 const ACCOUNT_TYPE_NAMES = new Set([
   'AccountId',
   'AccountId20',
@@ -103,9 +100,8 @@ function mapSiType(api: ApiPromise, siType: any, name: string, depth: number): P
 
   if (isAccountType(name)) return { kind: 'accountId', typeName: name };
   if (isCallType(name)) return { kind: 'call', typeName: name };
-  if (isBalanceType(name)) return { kind: 'balance', typeName: name };
 
-  const result = mapSiTypeDef(api, siType, name, depth);
+  const result = withBalanceHint(mapSiTypeDef(api, siType, name, depth), name);
 
   // Replace numeric lookup ID with a derived readable name
   if (/^\d+$/.test(name) && result.typeName === name) {
@@ -124,13 +120,13 @@ function mapSiTypeDef(api: ApiPromise, siType: any, displayName: string, depth: 
     // Single unnamed field = newtype wrapper (e.g. Xcm<Call>(Vec<Instruction>))
     // Codec flattens these, so the type tree should be transparent too
     if (compositeFields.length === 1 && !compositeFields[0].name?.isSome) {
-      return resolveTypeDef(api, compositeFields[0].type.toString(), depth + 1);
+      return resolveFieldTypeDef(api, compositeFields[0], depth + 1);
     }
 
     const fields = compositeFields.map((field: any) => {
       const fieldName = field.name?.isSome ? field.name.unwrap().toString() : (field.typeName?.toString() ?? '0');
 
-      return { name: fieldName, typeDef: resolveTypeDef(api, field.type.toString(), depth + 1) };
+      return { name: fieldName, typeDef: resolveFieldTypeDef(api, field, depth + 1) };
     });
 
     return { kind: 'struct', typeName: displayName, fields };
@@ -141,7 +137,7 @@ function mapSiTypeDef(api: ApiPromise, siType: any, displayName: string, depth: 
       const variantFields = variant.fields.map((field: any, fi: number) => {
         const fieldName = field.name?.isSome ? field.name.unwrap().toString() : `${fi}`;
 
-        return { name: fieldName, typeDef: resolveTypeDef(api, field.type.toString(), depth + 1) };
+        return { name: fieldName, typeDef: resolveFieldTypeDef(api, field, depth + 1) };
       });
 
       return { name: variant.name.toString(), index: variant.index.toNumber(), fields: variantFields };
@@ -166,10 +162,6 @@ function mapSiTypeDef(api: ApiPromise, siType: any, displayName: string, depth: 
 
   if (def.isCompact) {
     const inner = resolveTypeDef(api, def.asCompact.type.toString(), depth + 1);
-
-    if (inner.kind === 'primitive' && inner.primitiveType && BALANCE_INNER_TYPES.has(inner.primitiveType)) {
-      return { kind: 'balance', typeName: displayName };
-    }
 
     return { kind: 'compact', typeName: displayName, inner };
   }
@@ -203,26 +195,31 @@ function mapSiTypeDef(api: ApiPromise, siType: any, displayName: string, depth: 
 
 // --- TypeDef mapping (getTypeDef fallback) ---
 
-function mapTypeDef(
-  api: ApiPromise,
-  td: { info: TypeDefInfo; type: string; sub?: any; name?: string; lookupName?: string; typeName?: string },
-  depth: number,
-): ParameterTypeDef {
+type LegacyTypeDef = {
+  info: TypeDefInfo;
+  type: string;
+  sub?: any;
+  name?: string;
+  lookupName?: string;
+  typeName?: string;
+};
+
+function mapTypeDef(api: ApiPromise, td: LegacyTypeDef, depth: number): ParameterTypeDef {
   const displayName = td.lookupName ?? td.typeName ?? td.type;
 
   if (isAccountType(displayName)) return { kind: 'accountId', typeName: displayName };
   if (isCallType(displayName)) return { kind: 'call', typeName: displayName };
-  if (isBalanceType(displayName)) return { kind: 'balance', typeName: displayName };
 
+  return withBalanceHint(mapTypeDefInfo(api, td, displayName, depth), displayName);
+}
+
+function mapTypeDefInfo(api: ApiPromise, td: LegacyTypeDef, displayName: string, depth: number): ParameterTypeDef {
   switch (td.info) {
     case TypeDefInfo.Plain:
       return resolvePlainType(api, td.type, displayName, depth);
 
     case TypeDefInfo.Compact: {
       const inner = td.sub ? mapTypeDef(api, td.sub, depth + 1) : { kind: 'unknown' as const, typeName: td.type };
-      if (inner.kind === 'primitive' && inner.primitiveType && BALANCE_INNER_TYPES.has(inner.primitiveType)) {
-        return { kind: 'balance', typeName: displayName };
-      }
 
       return { kind: 'compact', typeName: displayName, inner };
     }
@@ -426,8 +423,64 @@ function isCallType(typeName: string): boolean {
   return CALL_TYPE_NAMES.has(typeName) || typeName === 'Box<RuntimeCall>' || typeName.endsWith('::RuntimeCall');
 }
 
-function isBalanceType(typeName: string): boolean {
-  return BALANCE_TYPE_NAMES.has(typeName) || typeName.includes('Balance');
+/**
+ * Whether a metadata type name denotes a balance: the last path segment,
+ * without generic arguments, ends in `Balance` or `BalanceOf` (`T::Balance`,
+ * `BalanceOf<T>`, `<T as Config>::Balance`, `AssetBalanceOf<T, I>`). Wrappers
+ * such as `Option<BalanceOf<T>>` and names like `BalanceStatus` don't match.
+ */
+export function isBalanceTypeName(typeName: string): boolean {
+  let head = typeName.replace(/\s+/g, '');
+  if (head.startsWith('<')) {
+    const qualifiedEnd = head.lastIndexOf('>::');
+    if (qualifiedEnd === -1) return false;
+    head = head.slice(qualifiedEnd + 3);
+  }
+
+  const segment = head.split('<')[0]?.split('::').pop() ?? '';
+
+  return /Balance(?:Of)?$/.test(segment);
+}
+
+/**
+ * Mark an integer as a balance when its metadata type name says so. The shape
+ * alone (`Compact<u128>`, `u64`) is never enough: weights, timestamps and
+ * indices share it.
+ */
+export function withBalanceHint(typeDef: ParameterTypeDef, typeName: string | null): ParameterTypeDef {
+  if (!typeName) return typeDef;
+
+  const optionMatch = typeName.match(/^Option<(.+)>$/);
+  if (typeDef.kind === 'option' && typeDef.inner && optionMatch?.[1]) {
+    return { ...typeDef, inner: withBalanceHint(typeDef.inner, optionMatch[1]) };
+  }
+
+  if (isBalanceTypeName(typeName) && isIntegerLike(typeDef)) {
+    return { kind: 'balance', typeName: typeDef.typeName };
+  }
+
+  return typeDef;
+}
+
+function isIntegerLike(typeDef: ParameterTypeDef): boolean {
+  switch (typeDef.kind) {
+    case 'primitive':
+      return typeDef.primitiveType !== undefined && UNSIGNED_INT_TYPES.has(typeDef.primitiveType);
+    case 'compact':
+      return typeDef.inner !== undefined && isIntegerLike(typeDef.inner);
+    // Unresolved type carrying a balance name — still an amount
+    case 'unknown':
+    case 'balance':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function resolveFieldTypeDef(api: ApiPromise, field: any, depth: number): ParameterTypeDef {
+  const fieldTypeName = field.typeName?.isSome ? field.typeName.unwrap().toString() : null;
+
+  return withBalanceHint(resolveTypeDef(api, field.type.toString(), depth), fieldTypeName);
 }
 
 function getSiTypeName(siType: any, fallback: string): string {
@@ -448,20 +501,4 @@ function isU8Type(api: ApiPromise, typeIdStr: string): boolean {
   } catch {
     return false;
   }
-}
-
-/**
- * Heuristic: detect if a parameter is balance-like based on resolved typeDef
- * and metadata typeName.
- */
-export function isBalanceLikeParam(typeDef: ParameterTypeDef, metaTypeName: string | null): boolean {
-  if (metaTypeName && (metaTypeName.includes('Balance') || metaTypeName.includes('Amount'))) return true;
-
-  if (typeDef.kind === 'compact' && typeDef.typeName && /Compact<u(?:128|64)>/.test(typeDef.typeName)) return true;
-
-  if (typeDef.kind === 'primitive' && (typeDef.primitiveType === 'u128' || typeDef.primitiveType === 'u64')) {
-    if (metaTypeName && /[Bb]alance|[Aa]mount|[Vv]alue/.test(metaTypeName)) return true;
-  }
-
-  return false;
 }

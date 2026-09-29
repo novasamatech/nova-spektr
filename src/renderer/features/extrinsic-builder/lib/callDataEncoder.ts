@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { formatAmountStrict } from '@/shared/lib/utils';
-
+import { type AmountUnit, toBaseUnits } from './amountUnit';
 import { type CallArgDef, type ParameterTypeDef } from './types';
 
 /**
- * Encode a call to hex call data. Balance-typed params are converted from
- * human-readable to planck. Returns null if encoding fails.
+ * Encode a call to hex call data. Balance-typed params, nested ones included,
+ * are converted to base units with `unit` (see `resolveAmountUnit`); with no
+ * unit they must already be whole base units. Returns null if encoding fails.
  */
 export function encodeCallData(
   api: ApiPromise,
@@ -14,6 +14,7 @@ export function encodeCallData(
   method: string,
   args: unknown[],
   argDefs?: CallArgDef[],
+  unit: AmountUnit | null = null,
 ): string | null {
   try {
     const section = api.tx[pallet];
@@ -22,11 +23,10 @@ export function encodeCallData(
     const callFn = section[method];
     if (!callFn) return null;
 
-    const precision = api.registry.chainDecimals[0] ?? 10;
     const convertedArgs = args.map((arg, i) => {
       const def = argDefs?.[i]?.typeDef;
 
-      return convertArgForEncoding(arg, def, precision);
+      return convertArgForEncoding(arg, def, unit);
     });
 
     return callFn(...convertedArgs).method.toHex();
@@ -41,18 +41,19 @@ export function encodeCallData(
  *
  * - Enum { variant, values } → { VariantName: innerValue } or just "VariantName"
  * - Option { enabled, inner } → inner value or null
- * - Balance string → planck string (throws on malformed input, so encoding fails)
+ * - Balance string → base-unit string (throws on malformed input, so encoding
+ *   fails)
  * - Struct/Tuple objects → recursively convert fields
  * - Vec arrays → recursively convert items
  */
-function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, precision: number): unknown {
+function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, unit: AmountUnit | null): unknown {
   if (arg === undefined || arg === null) return arg;
   if (!def) return arg;
 
   switch (def.kind) {
     case 'balance': {
       if (typeof arg === 'string' && arg !== '') {
-        return formatAmountStrict(arg, precision);
+        return toBaseUnits(arg, unit);
       }
 
       return arg;
@@ -69,14 +70,14 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
 
         if (variant.fields.length === 1 && variant.fields[0]) {
           const field = variant.fields[0];
-          const innerValue = convertArgForEncoding(enumVal.values[field.name], field.typeDef, precision);
+          const innerValue = convertArgForEncoding(enumVal.values[field.name], field.typeDef, unit);
 
           return { [enumVal.variant]: innerValue };
         }
 
         const converted: Record<string, unknown> = {};
         for (const field of variant.fields) {
-          converted[field.name] = convertArgForEncoding(enumVal.values[field.name], field.typeDef, precision);
+          converted[field.name] = convertArgForEncoding(enumVal.values[field.name], field.typeDef, unit);
         }
 
         return { [enumVal.variant]: converted };
@@ -90,7 +91,7 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
         const optVal = arg as { enabled: boolean; inner: unknown };
         if (!optVal.enabled) return null;
 
-        return convertArgForEncoding(optVal.inner, def.inner, precision);
+        return convertArgForEncoding(optVal.inner, def.inner, unit);
       }
 
       return arg;
@@ -103,7 +104,7 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
           converted[field.name] = convertArgForEncoding(
             (arg as Record<string, unknown>)[field.name],
             field.typeDef,
-            precision,
+            unit,
           );
         }
 
@@ -116,7 +117,7 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
     case 'tuple': {
       if (typeof arg === 'object' && arg !== null && !Array.isArray(arg) && def.fields) {
         return def.fields.map((field) =>
-          convertArgForEncoding((arg as Record<string, unknown>)[field.name], field.typeDef, precision),
+          convertArgForEncoding((arg as Record<string, unknown>)[field.name], field.typeDef, unit),
         );
       }
 
@@ -125,19 +126,19 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
 
     case 'vec': {
       if (Array.isArray(arg) && def.inner) {
-        return arg.map((item) => convertArgForEncoding(item, def.inner, precision));
+        return arg.map((item) => convertArgForEncoding(item, def.inner, unit));
       }
 
       return arg;
     }
 
     case 'compact': {
-      return def.inner ? convertArgForEncoding(arg, def.inner, precision) : arg;
+      return def.inner ? convertArgForEncoding(arg, def.inner, unit) : arg;
     }
 
     default:
       // For 'unknown' and other unhandled kinds — try heuristic conversion by value shape
-      return convertUnknownArg(arg, precision);
+      return convertUnknownArg(arg);
   }
 }
 
@@ -146,14 +147,14 @@ function convertArgForEncoding(arg: unknown, def: ParameterTypeDef | undefined, 
  * exceeded). Converts UI-format objects to API-compatible format based on value
  * shape.
  */
-function convertUnknownArg(arg: unknown, precision: number): unknown {
+function convertUnknownArg(arg: unknown): unknown {
   if (arg === undefined || arg === null) return arg;
   if (typeof arg !== 'object') return arg;
 
   // Enum-like: { variant: "Name", values: {...} }
   if ('variant' in arg && 'values' in arg) {
     const enumVal = arg as { variant: string; values: Record<string, unknown> };
-    const convertedValues = Object.entries(enumVal.values).map(([, v]) => convertUnknownArg(v, precision));
+    const convertedValues = Object.entries(enumVal.values).map(([, v]) => convertUnknownArg(v));
 
     if (convertedValues.length === 0) {
       return enumVal.variant;
@@ -165,7 +166,7 @@ function convertUnknownArg(arg: unknown, precision: number): unknown {
 
     const namedValues: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(enumVal.values)) {
-      namedValues[k] = convertUnknownArg(v, precision);
+      namedValues[k] = convertUnknownArg(v);
     }
 
     return { [enumVal.variant]: namedValues };
@@ -175,18 +176,18 @@ function convertUnknownArg(arg: unknown, precision: number): unknown {
   if ('enabled' in arg && 'inner' in arg) {
     const optVal = arg as { enabled: boolean; inner: unknown };
 
-    return optVal.enabled ? convertUnknownArg(optVal.inner, precision) : null;
+    return optVal.enabled ? convertUnknownArg(optVal.inner) : null;
   }
 
   // Array → convert each item
   if (Array.isArray(arg)) {
-    return arg.map((item) => convertUnknownArg(item, precision));
+    return arg.map((item) => convertUnknownArg(item));
   }
 
   // Plain object → convert each value recursively
   const result: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(arg as Record<string, unknown>)) {
-    result[k] = convertUnknownArg(v, precision);
+    result[k] = convertUnknownArg(v);
   }
 
   return result;

@@ -1,18 +1,27 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useDebouncedCallback } from '@/shared/lib/hooks';
-import { encodeCallData, getCallMeta, getCallNames, getPalletNames, parseCallData } from '../lib/extrinsicBuilder';
+import {
+  encodeCallData,
+  getCallMeta,
+  getCallNames,
+  getPalletNames,
+  parseCallData,
+  resolveAmountUnit,
+} from '../lib/extrinsicBuilder';
 import { type CallMeta } from '../lib/types';
 
 type UseExtrinsicBuilderParams = {
   api: ApiPromise | null;
+  chain: Chain | null;
   onCallDataChange?: (callData: string | null) => void;
   /** CallData hex to sync from (single source of truth: form.fields.callData) */
   initialCallData?: string;
 };
 
-export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: UseExtrinsicBuilderParams) {
+export function useExtrinsicBuilder({ api, chain, onCallDataChange, initialCallData }: UseExtrinsicBuilderParams) {
   const [pallet, setPallet] = useState<string | null>(null);
   const [call, setCall] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
@@ -34,13 +43,13 @@ export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: 
     // Mark as processed IMMEDIATELY — prevents re-parse loop when encode fails
     lastOutputRef.current = initialCallData;
 
-    const parsed = parseCallData(api, initialCallData);
+    const parsed = parseCallData(api, initialCallData, chain);
     if (parsed) {
       setPallet(parsed.pallet);
       setCall(parsed.call);
       setParamValues(parsed.args);
     }
-  }, [api, initialCallData]);
+  }, [api, chain, initialCallData]);
 
   // Derived
 
@@ -58,6 +67,12 @@ export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: 
     return getCallMeta(api, pallet, call);
   }, [api, pallet, call]);
 
+  // Recomputed on every value change: an asset amount's unit follows the asset id argument
+  const amountUnit = useMemo(
+    () => resolveAmountUnit({ chain, pallet, method: call, args: paramValues }),
+    [chain, pallet, call, paramValues],
+  );
+
   const callArgDefs = callMeta?.args ?? [];
   const callDocs = callMeta?.docs ?? [];
 
@@ -69,8 +84,10 @@ export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: 
     if (!api || !pallet || !call || !callMeta) return;
 
     try {
-      const args = callMeta.args.map((def) => paramValuesRef.current[def.name]);
-      const encoded = encodeCallData(api, pallet, call, args, callMeta.args);
+      const values = paramValuesRef.current;
+      const args = callMeta.args.map((def) => values[def.name]);
+      const unit = resolveAmountUnit({ chain, pallet, method: call, args: values });
+      const encoded = encodeCallData(api, pallet, call, args, callMeta.args, unit);
       lastOutputRef.current = encoded;
       setEncodingError(encoded ? null : 'Failed to encode');
       if (encoded) {
@@ -84,7 +101,7 @@ export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: 
 
   useEffect(() => {
     debouncedEncode();
-  }, [api, pallet, call, callMeta, paramValues]);
+  }, [api, chain, pallet, call, callMeta, paramValues]);
 
   // Actions
 
@@ -120,6 +137,7 @@ export function useExtrinsicBuilder({ api, onCallDataChange, initialCallData }: 
     call,
     paramValues,
     encodingError,
+    amountUnit,
     palletOptions,
     callOptions,
     callArgDefs,

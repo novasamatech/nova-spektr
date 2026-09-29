@@ -6,6 +6,7 @@ import { FootnoteText } from '@/shared/ui';
 import { Field, TextArea } from '@/shared/ui-kit';
 import { type ParameterTypeDef, SIGNED_INT_TYPES } from '../lib/types';
 
+import { useBuilderContext } from './builderContext';
 import { AccountParamInput } from './parameterInputs/AccountParamInput';
 import { BalanceParamInput } from './parameterInputs/BalanceParamInput';
 import { BoolParamInput } from './parameterInputs/BoolParamInput';
@@ -70,6 +71,8 @@ type InputProps = {
 };
 
 const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProps) => {
+  const { unit } = useBuilderContext();
+
   switch (typeDef.kind) {
     case 'primitive': {
       if (typeDef.primitiveType === 'bool') {
@@ -91,7 +94,7 @@ const ParameterInput = memo(({ typeDef, value, onChange, depth, api }: InputProp
       return <AccountParamInput value={String(value ?? '')} api={api} onChange={onChange} />;
 
     case 'balance':
-      return <BalanceParamInput value={String(value ?? '')} api={api} onChange={onChange} />;
+      return <BalanceParamInput value={String(value ?? '')} unit={unit} onChange={onChange} />;
 
     case 'compact':
       if (typeDef.inner) {
