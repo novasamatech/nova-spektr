@@ -11,6 +11,7 @@ import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
+  createBatchCapacityCheck,
   createComplexTxStore,
   createInitiatorsStore,
   createSignatoriesStore,
@@ -506,6 +507,17 @@ const $draftCoreTx = combine(
 
 const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
 
+// The whole file is signed as one batch: a multisig call is never split, and a
+// vesting run must not be broken into independent transactions. A file heavier
+// than a single extrinsic is therefore rejected with the number of rows that fit.
+const $weightCheckTx = combine(
+  { isDraftMode: draftMode.$isDraftMode, tx: $tx, draftTx: $draftCoreTx },
+  ({ isDraftMode, tx, draftTx }) => (isDraftMode ? draftTx : tx),
+);
+const $rowCount = form.fields.vestingSchedule.$value.map((schedule) => (schedule.length > 0 ? schedule.length : null));
+
+const batchCapacity = createBatchCapacityCheck({ api: $api, transaction: $weightCheckTx, rows: $rowCount });
+
 const $draftNetworkStore = form.fields.chain.$value.map((chain) =>
   chain ? { chain, asset: getNativeAsset(chain.assets) } : null,
 );
@@ -518,11 +530,13 @@ const $canSubmit = combine(
     fee: $fee,
     csvIssues: $csvIssues,
     csvError: $csvError,
+    isTooHeavy: batchCapacity.$blocksSubmit,
   },
-  ({ isDraftMode, isFormValid, isTxValid, fee, csvIssues, csvError }) => {
+  ({ isDraftMode, isFormValid, isTxValid, fee, csvIssues, csvError, isTooHeavy }) => {
     if (isDraftMode) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
-    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors;
+
+    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors && !isTooHeavy;
   },
 );
 
@@ -535,10 +549,12 @@ const $canSaveAsDraft = combine(
     vestingSchedule: form.fields.vestingSchedule.$value,
     csvIssues: $csvIssues,
     csvError: $csvError,
+    isTooHeavy: batchCapacity.$blocksSubmit,
   },
-  ({ isDraftMode, isPathComplete, callData, networkStore, vestingSchedule, csvIssues, csvError }) => {
+  ({ isDraftMode, isPathComplete, callData, networkStore, vestingSchedule, csvIssues, csvError, isTooHeavy }) => {
     if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
     if (vestingSchedule.length === 0) return false;
+    if (isTooHeavy) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
     return !hasCsvErrors;
   },
@@ -668,6 +684,7 @@ export const formModel = {
   $parsedCsv,
   $csvError,
   $csvIssues,
+  $maxRowsPerTransaction: batchCapacity.$maxRows,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $signingPath,
