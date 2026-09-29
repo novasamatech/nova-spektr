@@ -102,7 +102,9 @@ export const getModalTransactionTitle = (
   if (transaction.type === TransactionType.BATCH_ALL) {
     const txMatch = findCoreBatchAll(transaction);
 
-    return getModalTransactionTitle(crossChain, t, txMatch);
+    return txMatch
+      ? getModalTransactionTitle(crossChain, t, txMatch)
+      : TransactionTitlesModal[TransactionType.BATCH_ALL](crossChain);
   }
 
   if (transaction.type === TransactionType.PROXY) {
