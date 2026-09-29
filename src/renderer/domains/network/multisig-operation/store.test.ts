@@ -291,6 +291,12 @@ describe('multisigOperation store', () => {
       ]);
     });
 
+    it('drops a persisted section/method that has no call data behind it', async () => {
+      const namedOp = { ...emptyOp, id: 'n1', section: 'balances', method: 'transfer' } as MultisigOperation;
+
+      expect(await hydrate([validOp, namedOp])).toEqual([validOp, { ...namedOp, section: null, method: null }]);
+    });
+
     it('keeps the same array reference when every cached row is consistent', async () => {
       const original = [validOp, emptyOp];
 
