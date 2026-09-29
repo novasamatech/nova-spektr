@@ -12,7 +12,11 @@ const getCoreTx = (tx: BasketTransaction): Transaction => {
     return tx.coreTx;
   }
 
-  return tx.coreTx.type === TransactionType.BATCH_ALL ? findCoreBatchAll(tx.coreTx) : tx.coreTx;
+  if (tx.coreTx.type === TransactionType.BATCH_ALL) {
+    return findCoreBatchAll(tx.coreTx) ?? tx.coreTx;
+  }
+
+  return tx.coreTx;
 };
 
 async function getTransactionData(
