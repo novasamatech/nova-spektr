@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
+import { type Chain } from '@/shared/core';
 import { encodeCallData, getCallMeta, getCallNames, getPalletNames, parseCallData } from '../extrinsicBuilder';
 
 // Helper to create a mock API with tx pallets
@@ -51,6 +52,14 @@ function createMockApi(pallets: Record<string, Record<string, any>>): ApiPromise
       callIndex: new Uint8Array([0, 0]),
     }),
   } as unknown as ApiPromise;
+}
+
+const DOT = { precision: 10, symbol: 'DOT' };
+
+function createNativeChain(precision: number): Chain {
+  return {
+    assets: [{ assetId: 0, symbol: 'KSM', precision, type: 'native' }],
+  } as unknown as Chain;
 }
 
 describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
@@ -215,7 +224,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         { name: 'value', typeDef: { kind: 'balance' as const, typeName: 'Compact<u128>' } },
       ];
 
-      encodeCallData(api, 'balances', 'transfer', ['address', '1.5'], argDefs);
+      encodeCallData(api, 'balances', 'transfer', ['address', '1.5'], argDefs, DOT);
 
       // "1.5" with precision 10 should become "15000000000"
       expect(capturedArgs[0]).toBe('address');
@@ -239,7 +248,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         { name: 'value', typeDef: { kind: 'balance' as const, typeName: 'Compact<u128>' } },
       ];
 
-      expect(encodeCallData(api, 'balances', 'transfer', ['address', amount], argDefs)).toBeNull();
+      expect(encodeCallData(api, 'balances', 'transfer', ['address', amount], argDefs, DOT)).toBeNull();
       expect(called).toBe(false);
     });
   });
@@ -426,7 +435,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         { name: 'value', typeDef: { kind: 'balance' as const, typeName: 'Compact<u128>' } },
       ];
 
-      encodeCallData(api, 'balances', 'transferKeepAlive', ['someAddress', '0.5'], argDefs);
+      encodeCallData(api, 'balances', 'transferKeepAlive', ['someAddress', '0.5'], argDefs, DOT);
 
       // "0.5" with precision 10 → "5000000000"
       expect(capturedArgs[0]).toBe('someAddress');
@@ -504,7 +513,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'democracy', 'propose', [{ amount: '2.0', target: 'addr' }], argDefs);
+      encodeCallData(api, 'democracy', 'propose', [{ amount: '2.0', target: 'addr' }], argDefs, DOT);
 
       // balance "2.0" with precision 10 → "20000000000"
       expect(capturedArgs[0]).toEqual({ amount: '20000000000', target: 'addr' });
@@ -537,7 +546,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'test', 'call', [{ '0': '42', '1': '3.0' }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ '0': '42', '1': '3.0' }], argDefs, DOT);
 
       // tuple → array; balance "3.0" → "30000000000"
       expect(capturedArgs[0]).toEqual(['42', '30000000000']);
@@ -892,7 +901,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // 1200000000123 planks with 12 decimals = 1.200000000123 KSM
       const api = createBalanceParseApi(1200000000123n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('1.200000000123');
@@ -902,7 +911,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // 10000000000001 planks with 12 decimals = 10.000000000001
       const api = createBalanceParseApi(10000000000001n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('10.000000000001');
@@ -912,7 +921,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // 1200000000000 planks with 12 decimals = 1.2 KSM (no precision loss possible)
       const api = createBalanceParseApi(1200000000000n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('1.2');
@@ -922,7 +931,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // 123 planks with 12 decimals = 0.000000000123
       const api = createBalanceParseApi(123n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('0.000000000123');
@@ -932,7 +941,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // 99999999999999999999 planks (> 2^53) with 12 decimals = 99999999.999999999999
       const api = createBalanceParseApi(99999999999999999999n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('99999999.999999999999');
@@ -941,7 +950,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
     it('should handle zero balance', () => {
       const api = createBalanceParseApi(0n, 12);
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', createNativeChain(12));
 
       expect(result).not.toBeNull();
       expect(result!.args.value).toBe('0');

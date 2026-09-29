@@ -1308,6 +1308,8 @@
     "accounts": "Accounts",
     "accountHint": "Account",
     "balanceHint": "Balance",
+    "baseUnits": "base units",
+    "baseUnitsPreview": "= {amount} base units",
     "contacts": "Contacts",
     "encodingError": "Failed to encode call data. Check parameters.",
     "depthLimitReached": "Nested call builder is limited to 3 levels. Enter call data as hex."

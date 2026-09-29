@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { resolveTypeDef } from '../extrinsicBuilder';
+import { isBalanceTypeName, withBalanceHint } from '../typeResolver';
 
 // Helper to build mock SiType definitions
 function makeSiType(def: Record<string, any>, path: string[] = []) {
@@ -166,7 +167,7 @@ describe('resolveTypeDef', () => {
     expect(result.kind).toBe('vec');
   });
 
-  it('should resolve compact<u128> as balance', () => {
+  it('should resolve compact<u128> without a balance name as a plain compact integer', () => {
     const api = createMockApiWithSiTypes({
       40: makeSiType({
         isCompact: true,
@@ -177,7 +178,8 @@ describe('resolveTypeDef', () => {
 
     const result = resolveTypeDef(api, '40');
 
-    expect(result.kind).toBe('balance');
+    expect(result.kind).toBe('compact');
+    expect(result.inner?.primitiveType).toBe('u128');
   });
 
   it('should resolve compact<u32> as compact (not balance)', () => {
@@ -302,5 +304,119 @@ describe('resolveTypeDef', () => {
     expect(resolveTypeDef(api, 'bool').kind).toBe('primitive');
     expect(resolveTypeDef(api, 'u128').kind).toBe('primitive');
     expect(resolveTypeDef(api, 'AccountId').kind).toBe('accountId');
+  });
+
+  describe('balance classification by metadata type name', () => {
+    const field = (name: string, type: string, typeName: string) => ({
+      name: { isSome: true, unwrap: () => ({ toString: () => name }) },
+      type: { toString: () => type },
+      typeName: { isSome: true, unwrap: () => ({ toString: () => typeName }) },
+    });
+
+    const compactTypes = {
+      1: makeSiType({ isPrimitive: true, asPrimitive: { toString: () => 'U64' } }),
+      2: makeSiType({ isCompact: true, asCompact: { type: { toString: () => '1' } } }),
+      3: makeSiType({ isPrimitive: true, asPrimitive: { toString: () => 'U128' } }),
+      4: makeSiType({ isCompact: true, asCompact: { type: { toString: () => '3' } } }),
+    };
+
+    it('keeps Weight.ref_time / proof_size as plain integers', () => {
+      const api = createMockApiWithSiTypes({
+        ...compactTypes,
+        10: {
+          ...makeSiType({
+            isComposite: true,
+            asComposite: { fields: [field('ref_time', '2', 'u64'), field('proof_size', '2', 'u64')] },
+          }),
+          _name: 'SpWeightsWeightV2Weight',
+        },
+      });
+
+      const result = resolveTypeDef(api, '10');
+
+      expect(result.kind).toBe('struct');
+      expect(result.fields?.map((f) => f.typeDef.kind)).toEqual(['compact', 'compact']);
+    });
+
+    it('marks a variant field typed BalanceOf<T> as a balance', () => {
+      const api = createMockApiWithSiTypes({
+        ...compactTypes,
+        20: {
+          ...makeSiType({
+            isVariant: true,
+            asVariant: {
+              variants: [
+                {
+                  name: { toString: () => 'FreeBalance' },
+                  index: { toNumber: () => 0 },
+                  fields: [{ ...field('0', '4', 'BalanceOf<T>'), name: { isSome: false } }],
+                },
+              ],
+            },
+          }),
+          _name: 'PalletNominationPoolsBondExtra',
+        },
+      });
+
+      const result = resolveTypeDef(api, '20');
+
+      expect(result.variants?.[0]?.fields[0]?.typeDef.kind).toBe('balance');
+    });
+
+    it('keeps an enum whose name contains "Balance" an enum', () => {
+      const api = createMockApiWithSiTypes({
+        30: {
+          ...makeSiType({
+            isVariant: true,
+            asVariant: {
+              variants: [
+                { name: { toString: () => 'Free' }, index: { toNumber: () => 0 }, fields: [] },
+                { name: { toString: () => 'Reserved' }, index: { toNumber: () => 1 }, fields: [] },
+              ],
+            },
+          }),
+          _name: 'FrameSupportTokensMiscBalanceStatus',
+        },
+      });
+
+      expect(resolveTypeDef(api, '30').kind).toBe('enum');
+    });
+
+    it.each([
+      'Balance',
+      'T::Balance',
+      'BalanceOf<T>',
+      '<T as Config>::Balance',
+      'AssetBalanceOf<T, I>',
+      'ExtendedBalance',
+    ])('recognises %s as a balance name', (name) => {
+      expect(isBalanceTypeName(name)).toBe(true);
+    });
+
+    it.each(['u64', 'u128', 'Compact<u128>', 'BalanceStatus', 'Option<BalanceOf<T>>', 'Vec<Balance>', 'T::Amount'])(
+      'does not treat %s as a balance name',
+      (name) => {
+        expect(isBalanceTypeName(name)).toBe(false);
+      },
+    );
+
+    it('applies an Option<Balance> name to the inner value only', () => {
+      const option = {
+        kind: 'option' as const,
+        typeName: 'Option<Compact<u128>>',
+        inner: { kind: 'primitive' as const, typeName: 'u128', primitiveType: 'u128' as const },
+      };
+
+      const result = withBalanceHint(option, 'Option<BalanceOf<T>>');
+
+      expect(result.kind).toBe('option');
+      expect(result.inner?.kind).toBe('balance');
+    });
+
+    it('never turns a non-integer into a balance', () => {
+      const struct = { kind: 'struct' as const, typeName: 'Foo', fields: [] };
+
+      expect(withBalanceHint(struct, 'T::Balance').kind).toBe('struct');
+    });
   });
 });

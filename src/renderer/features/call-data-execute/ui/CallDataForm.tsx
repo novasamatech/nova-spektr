@@ -83,6 +83,7 @@ export const CallDataForm = () => {
                     <Tabs.Content value={InputMode.BUILD}>
                       <ExtrinsicBuilder
                         api={api}
+                        chain={chain}
                         initialCallData={builderInitialCallData}
                         onCallDataChange={builderCallDataChanged}
                       />

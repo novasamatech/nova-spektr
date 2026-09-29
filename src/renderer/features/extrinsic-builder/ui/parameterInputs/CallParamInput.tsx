@@ -5,9 +5,17 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Combobox, Input } from '@/shared/ui-kit';
 import { useComboboxFilter } from '../../hooks/useComboboxFilter';
-import { encodeCallData, getCallMeta, getCallNames, getPalletNames, parseCallData } from '../../lib/extrinsicBuilder';
+import {
+  encodeCallData,
+  getCallMeta,
+  getCallNames,
+  getPalletNames,
+  parseCallData,
+  resolveAmountUnit,
+} from '../../lib/extrinsicBuilder';
 import { type CallMeta, MAX_BUILDER_DEPTH } from '../../lib/types';
 import { ParameterField } from '../ParameterField';
+import { BuilderContext, useBuilderContext } from '../builderContext';
 
 type Props = {
   api: ApiPromise | null;
@@ -43,6 +51,7 @@ type NestedBuilderProps = {
 };
 
 const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBuilderProps) => {
+  const { chain } = useBuilderContext();
   const [pallet, setPallet] = useState<string | null>(null);
   const [call, setCall] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
@@ -55,13 +64,13 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
     if (restored || !api) return;
     setRestored(true);
     if (!hexValue || !hexValue.startsWith('0x')) return;
-    const parsed = parseCallData(api, hexValue);
+    const parsed = parseCallData(api, hexValue, chain);
     if (parsed) {
       setPallet(parsed.pallet);
       setCall(parsed.call);
       setParamValues(parsed.args);
     }
-  }, [api, hexValue, restored]);
+  }, [api, chain, hexValue, restored]);
 
   const palletOptions = useMemo(() => (api ? getPalletNames(api) : []), [api]);
   const callOptions = useMemo(() => (api && pallet ? getCallNames(api, pallet) : []), [api, pallet]);
@@ -69,6 +78,13 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
     () => (api && pallet && call ? getCallMeta(api, pallet, call) : null),
     [api, pallet, call],
   );
+
+  // The nested call has its own pallet, so its amounts get their own unit
+  const unit = useMemo(
+    () => resolveAmountUnit({ chain, pallet, method: call, args: paramValues }),
+    [chain, pallet, call, paramValues],
+  );
+  const context = useMemo(() => ({ chain, unit }), [chain, unit]);
 
   const handlePalletChange = useCallback((newPallet: string) => {
     setPallet(newPallet);
@@ -88,13 +104,14 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
 
         if (api && pallet && call && callMeta) {
           const args = callMeta.args.map((def) => updated[def.name]);
-          onChange(encodeCallData(api, pallet, call, args, callMeta.args));
+          const updatedUnit = resolveAmountUnit({ chain, pallet, method: call, args: updated });
+          onChange(encodeCallData(api, pallet, call, args, callMeta.args, updatedUnit));
         }
 
         return updated;
       });
     },
-    [api, pallet, call, callMeta, onChange],
+    [api, chain, pallet, call, callMeta, onChange],
   );
 
   return (
@@ -113,17 +130,19 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
         onChange={handleCallChange}
       />
 
-      {callMeta?.args.map((arg) => (
-        <ParameterField
-          key={arg.name}
-          name={arg.name}
-          typeDef={arg.typeDef}
-          value={paramValues[arg.name]}
-          depth={depth + 1}
-          api={api}
-          onChange={(val) => handleParamChange(arg.name, val)}
-        />
-      ))}
+      <BuilderContext.Provider value={context}>
+        {callMeta?.args.map((arg) => (
+          <ParameterField
+            key={arg.name}
+            name={arg.name}
+            typeDef={arg.typeDef}
+            value={paramValues[arg.name]}
+            depth={depth + 1}
+            api={api}
+            onChange={(val) => handleParamChange(arg.name, val)}
+          />
+        ))}
+      </BuilderContext.Provider>
     </div>
   );
 });
