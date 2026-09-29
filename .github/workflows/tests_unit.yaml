@@ -8,8 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  pull-requests: write
-  checks: write
+  contents: read
 
 env:
   # GitHub-hosted ubuntu-latest runners expose 4 vCPUs. Match the forks pool to it.
@@ -27,7 +26,7 @@ jobs:
 
     steps:
       - name: ⚙️Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
@@ -37,7 +36,7 @@ jobs:
 
       - name: ⬆️ Upload shard report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: junit-${{ matrix.shard }}
           path: ./junit-${{ matrix.shard }}.xml
@@ -47,17 +46,21 @@ jobs:
     needs: unit-tests
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
 
     steps:
       - name: ⬇️ Download shard reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: junit-*
           path: ./reports
           merge-multiple: true
 
       - name: 📄 Post results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: ./reports/junit-*.xml
           check_name: 'Unit Test Results'
