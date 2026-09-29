@@ -56,7 +56,7 @@ notes.
 
 ## Proxy
 
-- `proxies`
+- [`proxies`](./proxies/README.md)
 - `proxy-add`
 - `proxy-basket`
 - [`proxy-operation-details`](./proxy-operation-details/README.md)
@@ -202,7 +202,7 @@ notes.
 
 ## Contacts & Notifications
 
-- `contacts`
+- [`contacts`](./contacts/README.md)
 - `contacts-navigation` (no spec planned)
 - `notifications`
 - `notifications-navigation` (no spec planned)
