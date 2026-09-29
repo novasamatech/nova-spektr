@@ -24,7 +24,21 @@ describe('getModalTransactionTitle', () => {
     const nested = createBatch([createBatch([createTransaction(TransactionType.UNLOCK)])]);
     const proxied = createTransaction(TransactionType.PROXY, { transaction: nested });
 
-    expect(getModalTransactionTitle(false, t, nested)).toEqual('operations.titles.unknown');
-    expect(getModalTransactionTitle(false, t, proxied)).toEqual('operations.titles.unknown');
+    expect(getModalTransactionTitle(false, t, nested)).toEqual('operations.modalTitles.unknownOn');
+    expect(getModalTransactionTitle(false, t, proxied)).toEqual('operations.modalTitles.unknownOn');
+  });
+
+  test('should keep the title of a batch built by the app', () => {
+    const batch = createBatch([createTransaction(TransactionType.BOND), createTransaction(TransactionType.NOMINATE)]);
+
+    expect(getModalTransactionTitle(false, t, batch)).toEqual('operations.modalTitles.startStakingOn');
+  });
+
+  test('should fall back to unknown for batches the app does not build', () => {
+    const batch = createBatch([createTransaction(TransactionType.ADD_PROXY), createTransaction(TransactionType.BOND)]);
+    const proxied = createTransaction(TransactionType.PROXY, { transaction: batch });
+
+    expect(getModalTransactionTitle(false, t, batch)).toEqual('operations.modalTitles.unknownOn');
+    expect(getModalTransactionTitle(false, t, proxied)).toEqual('operations.modalTitles.unknownOn');
   });
 });

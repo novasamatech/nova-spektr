@@ -2951,6 +2951,7 @@
       "accessType": "Access type",
       "account": "Account",
       "amount": "Amount",
+      "batchCalls": "Calls in batch",
       "callData": "Call Data",
       "coreCallData": "Core Call Data",
       "coreCallHash": "Core Call Hash",
