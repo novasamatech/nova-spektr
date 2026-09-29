@@ -1,12 +1,13 @@
 # Multi-transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
 Sends the **native token to many recipients at once** from a single CSV file. An ops or treasury user uploads a table of
 address/amount pairs — payouts, reimbursements, airdrops — and Spektr validates every row, previews the result, and
-submits it as one transaction (a `utility.batchAll` once more than one transfer is produced).
+submits it as one transaction (a `utility.batchAll` once more than one transfer is produced). The payout run is atomic:
+it is never split into several transactions, so a file too heavy for one extrinsic is rejected before signing.
 
 CSV is the **only** input channel: there is no manual row-by-row entry. The feature exists because these payouts arrive
 as spreadsheets and a mistake in one row of a hundred is expensive, so the emphasis is on catching bad rows before
@@ -37,9 +38,13 @@ Row issues carry a severity: **errors block submit**, **warnings do not**. Recip
 recipients' current balances, so the feature subscribes to them after parsing and re-validates once they arrive — an ED
 warning can therefore appear a moment after upload.
 
-Beyond the per-row rules, one whole-file rule applies: the initiator must be able to send the **sum of all amounts**
-while staying above its own existential deposit (a keep-alive withdrawal). The fee is computed from the real transaction
-once a file is loaded; before that a two-transfer dummy gives a plausible early estimate.
+Beyond the per-row rules, two whole-file rules apply. The built transaction (including its multisig/proxy wrapping, or
+the draft call in draft mode) must fit into **one extrinsic's weight limit** — the chain's static per-extrinsic maximum,
+not the current block's free space, so the verdict doesn't change between upload and signing. A heavier file is rejected
+with the estimated number of rows that fit, and the user splits the file themselves. And the initiator must be able to
+send the **sum of all amounts** while staying above its own existential deposit (a keep-alive withdrawal). The fee is
+computed from the real transaction once a file is loaded; before that a two-transfer dummy gives a plausible early
+estimate.
 
 ## States / scenarios
 
@@ -51,6 +56,7 @@ The flow is **form → confirm → sign → submit**.
 | Empty / malformed  | File parses to no rows, or bad headers   | Inline error; submit disabled                                                       |
 | Rows with errors   | ≥1 row fails a rule                      | Alert listing the failing rows; blocks submit                                       |
 | Rows with warnings | ≥1 row raises a warning (e.g. duplicate) | Amber alert; does **not** block submit                                              |
+| Too heavy          | File doesn't fit into one extrinsic      | Inline error naming how many rows fit; blocks submit and saving a draft             |
 | Confirm            | "Continue" pressed                       | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data   |
 | Sign / Submit      | Confirmed                                | Standard sign and submit screens                                                    |
 

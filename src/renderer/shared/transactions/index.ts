@@ -1,4 +1,5 @@
 export { activeOperationRoute } from './activeOperationRoute';
+export { createBatchCapacityCheck } from './createBatchCapacityCheck';
 export { createFeeCalculator } from './createFeeCalculator';
 export { createMultisigDeposit } from './createMultisigDeposit';
 export { createTxStore } from './createTxStore';
