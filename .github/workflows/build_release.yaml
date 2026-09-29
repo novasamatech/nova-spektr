@@ -30,6 +30,8 @@ jobs:
 
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
+        with:
+          cache: 'false'
 
       - name: Get tag name
         uses: olegtarasov/get-tag@53af8e1e538a0ffab949cdde3e332d8e58e8630f # v2.1 # Put version in GIT_TAG_NAME environment variable

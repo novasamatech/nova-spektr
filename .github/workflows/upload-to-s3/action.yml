@@ -32,6 +32,9 @@ runs:
       shell: bash
 
     - name: Interact with object storage
-      run: s3cmd sync "${{ inputs.source }}/" "${{ inputs.s3_bucket }}/" --acl-public --guess-mime-type
+      env:
+        SOURCE: ${{ inputs.source }}
+        S3_BUCKET: ${{ inputs.s3_bucket }}
+      run: s3cmd sync "$SOURCE/" "$S3_BUCKET/" --acl-public --guess-mime-type
       shell: bash
 

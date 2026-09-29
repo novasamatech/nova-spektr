@@ -17,9 +17,11 @@ runs:
   steps:
     - id: playwright_tests
       shell: bash
+      env:
+        TEST_GREP: ${{ inputs.test_grep }}
       run: |
         set +e
-        timeout 43m allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
+        timeout 43m allurectl watch -- npx playwright test --grep "$TEST_GREP"
         EXIT_CODE=$?
         set -e
         if [ $EXIT_CODE -eq 124 ]; then
@@ -53,7 +55,7 @@ runs:
 
     - name: Notify Telegram channel
       if: always()
-      uses: appleboy/telegram-action@master
+      uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
       with:
         to: ${{ inputs.telegram_to }}
         token: ${{ inputs.telegram_token }}
