@@ -1,13 +1,16 @@
 # Vested transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
 Bulk creation of on-chain vesting schedules (`vesting.vestedTransfer`) from a **CSV file**. A treasury or ops user
 uploads a table of recipients and lock parameters — team allocations, airdrops, crowdloan rewards — and Spektr validates
 every row against the chain's own vesting rules, previews the result, and submits it as a single transaction (a
-`utility.batchAll` once more than one call is produced).
+`utility.batchAll` once more than one call is produced). The run is atomic: it is never split into several transactions,
+so a file too heavy for one extrinsic is rejected before signing — an inline error names how many rows fit (estimated
+against the chain's static per-extrinsic weight limit, wrapping included), and submit and draft saving stay blocked
+until a smaller file is uploaded.
 
 CSV is the **only** input channel: there is no manual row-by-row entry. The feature exists because these payouts arrive
 as spreadsheets, and a mistake in one row of a hundred is expensive and irreversible — so the emphasis is on catching
@@ -64,6 +67,7 @@ The flow is **form → confirm → sign → submit**.
 | Malformed CSV      | Unknown/missing headers, unparseable file | Inline hint; preview disabled                                                                                                           |
 | Rows with errors   | ≥1 row fails a rule                       | Red alert listing "Row N: …", with a download of the file annotated with an `errors` column. Blocks submit                              |
 | Rows with warnings | ≥1 row raises a warning                   | Amber alert, same annotated download. Does **not** block submit                                                                         |
+| Too heavy          | File doesn't fit into one extrinsic       | Inline error naming how many rows fit; blocks submit and saving a draft                                                                 |
 | Preview            | "Preview" clicked                         | The schedule table: recipient, locked, start block (with its resolved date), per block, and the cliff column only when some row has one |
 | Confirm            | "Continue" pressed                        | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
 | Sign / Submit      | Confirmed                                 | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |

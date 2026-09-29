@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import multi_transfer_template_url from '@/shared/assets/templates/multi-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile } from '@/shared/ui-kit';
 import { type ValidationIssue, MultiTransferCsvError } from '@/entities/multi-transfer';
@@ -23,8 +23,9 @@ export const UploadCSV = () => {
   const parsedCsvRaw = useUnit(formModel.$parsedCsvRaw);
   const csvIssues = useUnit(formModel.$csvIssues);
   const csvError = useUnit(formModel.$csvError);
+  const maxRowsPerTransaction = useUnit(formModel.$maxRowsPerTransaction);
 
-  const hasError = !nullable(csvError);
+  const hasError = !nullable(csvError) || nonNullable(maxRowsPerTransaction);
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
   const showPreview = (nullable(csvError) || csvError === MultiTransferCsvError.DATA) && hasParsedCsv;
   const showDisabledPreview = !showPreview;
@@ -102,6 +103,11 @@ export const UploadCSV = () => {
         {csvError === MultiTransferCsvError.TOO_MANY_ROWS && (
           <InputHint variant="error" active>
             {t('multiTransfer.errors.csv.tooManyRowsDescription', { maxRows: MAX_CSV_ROWS })}
+          </InputHint>
+        )}
+        {nonNullable(maxRowsPerTransaction) && (
+          <InputHint variant="error" active>
+            {t('multiTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
           </InputHint>
         )}
         {csvError === MultiTransferCsvError.DATA && nullable(csvIssues) && (
