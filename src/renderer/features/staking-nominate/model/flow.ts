@@ -122,7 +122,7 @@ const { $fee, $tx } = createComplexTxStore({
   routeOverride: formModel.$pathRoute,
 });
 
-const $nominateForm = createStore<FormSubmitEvent | null>(null);
+const $nominateForm = createStore<FormSubmitEvent | null>(null).reset(flowFinished);
 
 sample({
   clock: formModel.formSubmitted,
@@ -232,11 +232,12 @@ sample({
 sample({
   clock: confirmModel.startSigning,
   source: {
+    step: $step,
     nominateForm: $nominateForm,
     transaction: $tx,
   },
-  filter: ({ nominateForm, transaction }) => {
-    return nonNullable(nominateForm) && nonNullable(transaction);
+  filter: ({ step, nominateForm, transaction }) => {
+    return nominateUtils.isConfirmStep(step) && nonNullable(nominateForm) && nonNullable(transaction);
   },
   fn: ({ nominateForm, transaction }) => {
     return {
