@@ -1,5 +1,5 @@
 import { type Contact, type LocalContact, isLocalContact } from '@/shared/core';
-import { isGeneratedAccountName, toAccountId, toAddress } from '@/shared/lib/utils';
+import { isGeneratedAccountName, sanitizeDisplayName, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { type SignatoryInfo } from '../types';
 
@@ -29,20 +29,20 @@ export function getSignatoryContactChanges({ signatories, contacts, accounts, ad
 
   for (const { name, address, walletId } of signatories.slice(1)) {
     const accountId = toAccountId(address);
-    const trimmedName = name.trim();
+    const contactName = sanitizeDisplayName(name);
 
     if (walletId || ownAccountIds.has(accountId)) continue;
-    if (!trimmedName || isGeneratedAccountName(trimmedName, accountId, addressPrefix)) continue;
+    if (!contactName || isGeneratedAccountName(contactName, accountId, addressPrefix)) continue;
 
     const sameAccountContacts = contacts.filter(contact => contact.accountId === accountId);
     const localContact = sameAccountContacts.find(isLocalContact);
 
     if (localContact) {
-      if (localContact.name !== trimmedName) {
-        updated.push({ ...localContact, name: trimmedName });
+      if (localContact.name !== contactName) {
+        updated.push({ ...localContact, name: contactName });
       }
     } else if (sameAccountContacts.length === 0) {
-      created.push({ accountId, address: toAddress(address), name: trimmedName, source: 'local' });
+      created.push({ accountId, address: toAddress(address), name: contactName, source: 'local' });
     }
   }
 

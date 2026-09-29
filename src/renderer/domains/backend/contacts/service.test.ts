@@ -310,3 +310,48 @@ describe('backendContactsService.fetchAllContacts', () => {
     });
   });
 });
+
+describe('backendContactsService.fetchAllContacts display names', () => {
+  beforeEach(() => {
+    authFetchMock.mockReset();
+  });
+
+  it('removes invisible and control characters from names, chain names and field values', async () => {
+    authFetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        data: [
+          rawContact({
+            name: '\u202EAlice\u200B\n',
+            chain: { chainId: '0x01', name: 'Polkadot\u2066' },
+            contactFieldOptions: [
+              {
+                fieldOption: {
+                  id: 'o-1',
+                  value: 'Team\u2028A',
+                  field: { id: 'f-1', name: '\uFEFFDepartment', multiSelect: false },
+                },
+              },
+            ],
+          }),
+        ],
+        total: 1,
+      }),
+    );
+
+    const [contact] = await backendContactsService.fetchAllContacts('https://backend.test');
+
+    expect(contact).toMatchObject({
+      name: 'Alice',
+      chainName: 'Polkadot',
+      fields: [{ fieldId: 'f-1', fieldName: 'Department', values: [{ optionId: 'o-1', value: 'Team A' }] }],
+    });
+  });
+
+  it('normalizes names to NFC', async () => {
+    authFetchMock.mockResolvedValueOnce(jsonResponse({ data: [rawContact({ name: 'José' })], total: 1 }));
+
+    const [contact] = await backendContactsService.fetchAllContacts('https://backend.test');
+
+    expect(contact!.name).toBe('José');
+  });
+});

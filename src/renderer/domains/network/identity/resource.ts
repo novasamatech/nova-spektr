@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
-import { assert, entries, groupBy, nullable } from '@/shared/lib/utils';
+import { assert, entries, groupBy, nullable, sanitizeDisplayName } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
@@ -46,12 +46,14 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
   for (const { sub, parent } of identities) {
     if (nullable(parent?.identity)) continue;
     const parentIdentity = Array.isArray(parent.identity) ? parent.identity[0] : parent.identity;
+    const name = sanitizeDisplayName(parentIdentity.info.display);
+    const subName = sanitizeDisplayName(sub.identity?.[1] ?? '') || undefined;
 
     result[sub.account] = {
       chainId,
       accountId: sub.account,
-      subName: sub.identity?.[1],
-      name: parentIdentity.info.display,
+      subName,
+      name,
       email: parentIdentity.info.email,
       image: parentIdentity.info.image,
       website: parentIdentity.info.web,
@@ -63,8 +65,8 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
       result[parent.account] = {
         chainId,
         accountId: parent.account,
-        subName: sub.identity?.[1],
-        name: parentIdentity.info.display,
+        subName,
+        name,
         email: parentIdentity.info.email,
         image: parentIdentity.info.image,
         website: parentIdentity.info.web,
