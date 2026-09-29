@@ -1,6 +1,6 @@
 # Nominate
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-04
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -40,6 +40,10 @@ flowchart TD
 | Submitting   | Signed                                                | Submission progress, then the result                     |
 | Basket       | The operation was added to the basket instead of sent | A short success toast; nothing goes on chain             |
 | Draft saved  | Draft mode was on at confirmation                     | The call is stored for someone else to sign              |
+
+The confirmation component is shared with the basket, which shows the same screen for a queued "Change Validators". **A
+sign request only moves the flow forward from its own Confirmation step**; one raised anywhere else — a basket entry
+being opened, a flow that is not running — leaves the flow where it is.
 
 **The picker opens on what the stash holds today**, so the user edits a set rather than rebuilding it from nothing — the
 common change is dropping one operator, not replacing sixteen. Those targets come from the same live nominations
