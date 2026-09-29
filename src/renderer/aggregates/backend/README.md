@@ -1,6 +1,6 @@
 # Address book backend connection & authentication
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-28
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -46,6 +46,16 @@ order as everywhere in the app: Polkadot group, Kusama group, others, testnets).
   different network.
 - If the remembered network is no longer available in the app (removed from the chains config), the selector falls back
   to the Polkadot relay chain.
+
+## Sign-in message
+
+The account signs a text message built from the backend's challenge:
+
+- When the backend advertises message version 2, the message names the origin of the backend URL configured in the app
+  (`ADDRESS_BOOK_AUTH v2` / `origin: …` / `nonce: …`), so the signature is only accepted by that backend. Otherwise the
+  previous format (`ADDRESS_BOOK_AUTH:<nonce>`) is signed.
+- A challenge whose nonce is not `0x` followed by 64 lower-case hex characters is refused before anything is signed; the
+  modal shows the error state.
 
 ## Desktop request policy
 
