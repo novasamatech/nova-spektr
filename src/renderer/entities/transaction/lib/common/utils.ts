@@ -179,22 +179,42 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
 };
 
 /**
- * Picks the transaction that represents a batch. Looks at direct children only
- * and never returns a batch, so recursive callers always descend.
+ * Batch shapes built by the app. A batch is represented by one of its calls
+ * only when every call belongs to the same shape.
+ */
+const BATCH_SHAPES: Set<TransactionType>[] = [
+  new Set([TransactionType.BOND, TransactionType.NOMINATE]),
+  new Set([TransactionType.CHILL, TransactionType.UNSTAKE]),
+  new Set([TransactionType.PAYOUT_STAKERS_BY_PAGE]),
+  new Set([TransactionType.REMOVE_VOTE, TransactionType.UNDELEGATE, TransactionType.UNLOCK]),
+  new Set([TransactionType.UNDELEGATE, TransactionType.DELEGATE]),
+  new Set([TransactionType.VESTED_TRANSFER]),
+  new Set([TransactionType.TRANSFER]),
+  new Set([TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY]),
+  new Set([TransactionType.ADD_PROXY, TransactionType.REMARK]),
+];
+
+const isKnownBatchShape = (transactions: Transaction[]): boolean => {
+  return BATCH_SHAPES.some((shape) => transactions.every((tx) => shape.has(tx.type)));
+};
+
+/**
+ * Picks the transaction that represents a batch. Looks at direct children only,
+ * never returns a batch and returns `null` for batches the app does not build.
  */
 export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
   const transactions: Transaction[] = batch.args?.transactions ?? [];
 
-  const coreTransaction =
-    transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
-    transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
-    transactions.at(0);
-
-  if (!coreTransaction || coreTransaction.type === TransactionType.BATCH_ALL) {
+  if (transactions.length === 0 || !isKnownBatchShape(transactions)) {
     return null;
   }
 
-  return coreTransaction;
+  return (
+    transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
+    transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
+    transactions.at(0) ??
+    null
+  );
 };
 
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {

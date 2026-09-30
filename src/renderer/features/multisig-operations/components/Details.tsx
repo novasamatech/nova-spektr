@@ -40,6 +40,8 @@ import { walletModel } from '@/entities/wallet';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { NamedAccount, WalletName } from '@/widgets/NameResolver';
 
+import { BatchCalls } from './BatchCalls';
+
 type Props = {
   operation: MultisigOperation;
   account?: AnyAccount;
@@ -398,6 +400,8 @@ export const Details = ({ api, operation, account, multisigAccount, chain, signa
           <TracksDetails tracks={delegationTracks.map(Number)} />
         </DetailRow>
       )}
+
+      <BatchCalls transaction={transaction} chain={chain} />
 
       <hr className="border-filter-border" />
     </dl>

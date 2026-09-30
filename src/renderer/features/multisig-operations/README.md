@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-22
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -96,8 +96,12 @@ panel. Unrecognised or still-undecoded calls fall back to a generic presentation
 **Batches** are given a recognised title only when the whole batch maps to a known shape — a batch of transfers becomes
 **"Multi Transfer"**, a vested-transfer batch becomes **"Vested transfer"**. Other batches (for example a bond+nominate
 or an unlock+remove-vote) are **not** relabelled to their inner operation in the list: the row shows the generic call
-label (**"Utility: Batch all"**) with the generic icon, even though the displayed **amount** is still taken from the
-meaningful inner call.
+label (**"Utility: Batch all"**) with the generic icon. A batch is represented by one of its inner calls (for the
+amount, the type filter and the approve/reject dialog title) only when **every** call in it belongs to one of the shapes
+the app itself builds: bond + nominate, chill + unbond, payouts, remove vote + undelegate + unlock, delegate /
+undelegate, vested transfers, transfers, add + remove proxy, add proxy + remark. Any other batch — including one mixed
+with a call outside its shape, or one that nests another batch — has no amount, filters as unknown and is titled
+**"Unknown Operation"** in the dialog.
 
 ### Two special shapes
 
@@ -255,11 +259,13 @@ approved, is available on the operation's chain, and is not watch-only. Two case
 
 Approving runs a short wizard: **choose the signing account and path** (with the multisig deposit shown only on the
 first approval, plus the network fee) → **confirm** (a recap including the underlying core transaction on the final
-sign) → **sign**. Signing adapts to the account's wallet type — Polkadot Vault (QR scan), browser Extension, or
-WalletConnect (watch-only accounts cannot sign and are excluded upstream). The signed extrinsic is then submitted, with
-a status modal showing **in progress → success** (auto-closing) **or error** (dispatch or submission failures such as
-insufficient balance or a network problem). On the final approval of an add/remove-proxy operation the wallet's accounts
-are re-synced; an optional operation description is posted to the address book at this point.
+sign; for a batch, the recap lists **every call** in it in order — `Pallet: Call`, the amount and the recipient /
+delegate where the call has one, with proxy-management calls highlighted) → **sign**. Signing adapts to the account's
+wallet type — Polkadot Vault (QR scan), browser Extension, or WalletConnect (watch-only accounts cannot sign and are
+excluded upstream). The signed extrinsic is then submitted, with a status modal showing **in progress → success**
+(auto-closing) **or error** (dispatch or submission failures such as insufficient balance or a network problem). On the
+final approval of an add/remove-proxy operation the wallet's accounts are re-synced; an optional operation description
+is posted to the address book at this point.
 
 ### Adding call data
 

@@ -298,6 +298,7 @@ describe('entities/transaction/lib/onChainUtils', () => {
     const createTransaction = (type: TransactionType, args: Record<string, unknown> = {}) =>
       ({ type, args }) as unknown as Transaction;
     const createBatch = (transactions: Transaction[]) => createTransaction(TransactionType.BATCH_ALL, { transactions });
+    const createBatchOf = (types: TransactionType[]) => createBatch(types.map((type) => createTransaction(type)));
 
     const unlock = createTransaction(TransactionType.UNLOCK, { value: '1' });
 
@@ -314,8 +315,45 @@ describe('entities/transaction/lib/onChainUtils', () => {
       expect(findCoreBatchAll(createBatch([chill, unstake]))).toBe(unstake);
     });
 
+    test.each([
+      [[TransactionType.BOND, TransactionType.NOMINATE], TransactionType.BOND],
+      [[TransactionType.CHILL, TransactionType.UNSTAKE], TransactionType.UNSTAKE],
+      [
+        [TransactionType.PAYOUT_STAKERS_BY_PAGE, TransactionType.PAYOUT_STAKERS_BY_PAGE],
+        TransactionType.PAYOUT_STAKERS_BY_PAGE,
+      ],
+      [[TransactionType.REMOVE_VOTE, TransactionType.UNDELEGATE, TransactionType.UNLOCK], TransactionType.UNLOCK],
+      [[TransactionType.REMOVE_VOTE, TransactionType.REMOVE_VOTE], TransactionType.REMOVE_VOTE],
+      [[TransactionType.DELEGATE, TransactionType.DELEGATE], TransactionType.DELEGATE],
+      [[TransactionType.UNDELEGATE, TransactionType.UNDELEGATE], TransactionType.UNDELEGATE],
+      [[TransactionType.UNDELEGATE, TransactionType.DELEGATE], TransactionType.UNDELEGATE],
+      [[TransactionType.VESTED_TRANSFER, TransactionType.VESTED_TRANSFER], TransactionType.VESTED_TRANSFER],
+      [[TransactionType.TRANSFER, TransactionType.TRANSFER], TransactionType.TRANSFER],
+      [[TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY], TransactionType.ADD_PROXY],
+      [[TransactionType.ADD_PROXY, TransactionType.REMARK], TransactionType.ADD_PROXY],
+    ])('should resolve batch built by the app: %j', (types, expected) => {
+      expect(findCoreBatchAll(createBatchOf(types))?.type).toBe(expected);
+    });
+
+    test.each([
+      [[TransactionType.ADD_PROXY, TransactionType.BOND]],
+      [[TransactionType.BOND, TransactionType.NOMINATE, TransactionType.ADD_PROXY]],
+      [[TransactionType.TRANSFER, TransactionType.ADD_PROXY]],
+      [[TransactionType.VESTED_TRANSFER, TransactionType.ADD_PROXY]],
+      [[TransactionType.REMOVE_VOTE, TransactionType.UNLOCK, TransactionType.TRANSFER]],
+      [[TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER]],
+    ])('should return null for unknown batch shape: %j', (types) => {
+      expect(findCoreBatchAll(createBatchOf(types))).toBeNull();
+    });
+
     test('should return null for an empty batch', () => {
       expect(findCoreBatchAll(createBatch([]))).toBeNull();
+    });
+
+    test('should return null for a call without a known type', () => {
+      expect(
+        findCoreBatchAll(createBatch([createTransaction(TransactionType.BOND), { args: {} } as Transaction])),
+      ).toBeNull();
     });
 
     test('should never return a batch', () => {
@@ -332,6 +370,12 @@ describe('entities/transaction/lib/onChainUtils', () => {
 
     test('should return the amount of the core transaction', () => {
       expect(getTransactionAmount(createBatch([createTransaction(TransactionType.REMOVE_VOTE), unlock]))).toBe('1');
+    });
+
+    test('should not return an amount for unknown batch shape', () => {
+      const transfer = createTransaction(TransactionType.TRANSFER, { value: '5' });
+
+      expect(getTransactionAmount(createBatch([transfer, createTransaction(TransactionType.ADD_PROXY)]))).toBeNull();
     });
   });
 });
