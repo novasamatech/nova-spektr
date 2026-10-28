@@ -97,6 +97,24 @@ describe('BatchCalls', () => {
     expect(items[3]).not.toHaveTextContent('batchCallProxyType');
   });
 
+  it('stops expanding nested batches past the depth cap', () => {
+    const transfer = createCall(TransactionType.TRANSFER, 'balances', 'transferKeepAlive', { dest: BOB, value: '7' });
+    let batch = createBatch([transfer]);
+    // 10 nested levels under the top batch; only 8 levels of lists are rendered.
+    for (let level = 0; level < 10; level++) {
+      batch = createBatch([batch]);
+    }
+
+    render(<BatchCalls transaction={batch} chain={chain} />);
+
+    const list = screen.getByTestId('batch-calls');
+
+    expect(list).toHaveTextContent('1.1.1.1.1.1.1.1. Utility: Batch all');
+    expect(list).not.toHaveTextContent('1.1.1.1.1.1.1.1.1.');
+    expect(screen.getAllByText('operation.details.batchCallsHidden:{"count":1}')).toHaveLength(1);
+    expect(list).not.toHaveTextContent('amount:7');
+  });
+
   it('lists the calls of a nested batch under their parent', () => {
     const batch = createBatch([
       createCall(TransactionType.UNDELEGATE, 'convictionVoting', 'undelegate', { class: 0 }),

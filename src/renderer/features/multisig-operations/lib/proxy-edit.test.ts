@@ -14,6 +14,7 @@ import { parseProxyEditOperation } from './proxy-edit';
 const oldController = '0x0101010101010101010101010101010101010101010101010101010101010101' as AccountId;
 const newController = '0x0202020202020202020202020202020202020202020202020202020202020202' as AccountId;
 const multisigAccountId = '0x0303030303030303030303030303030303030303030303030303030303030303' as AccountId;
+const pureProxy = '0x0404040404040404040404040404040404040404040404040404040404040404' as AccountId;
 const chainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as never;
 
 const tx = (input: Partial<DecodedTransaction>): DecodedTransaction =>
@@ -78,6 +79,13 @@ const operation = (transaction: DecodedTransaction | null): MultisigOperation =>
     events: [],
     timestamp: 0,
   }) as unknown as MultisigOperation;
+
+// A live operation: `getCoreCallData` strips the `proxy.proxy` wrapper on decode
+// and keeps the proxied account on the operation instead.
+const proxiedOperation = (transaction: DecodedTransaction | null): MultisigOperation => ({
+  ...operation(transaction),
+  proxiedAccountId: pureProxy,
+});
 
 const markerPayload = JSON.stringify({
   kind: EDIT_FLEXIBLE_CONTROLLER_REMARK_KIND,
@@ -209,12 +217,39 @@ describe('parseProxyEditOperation', () => {
     });
   });
 
-  test('returns null for a bare batch without the proxy wrapper', () => {
+  test('recognizes the bare pair of a live operation whose proxy wrapper was unwrapped on decode', () => {
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([addProxy(), removeProxy()])))).toEqual({
+      newControllerAccountId: newController,
+      oldControllerAccountId: oldController,
+      proxyType: 'Any',
+      isTrustedFlow: true,
+    });
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([addProxy(), remark(markerPayload)])))).toEqual({
+      newControllerAccountId: newController,
+      oldControllerAccountId: oldController,
+      proxyType: 'Any',
+      isTrustedFlow: false,
+    });
+  });
+
+  test('returns null for a bare pair on a plain multisig (no proxied account)', () => {
     expect(parseProxyEditOperation(operation(batchAll([addProxy(), removeProxy()])))).toBeNull();
     expect(parseProxyEditOperation(operation(batchAll([addProxy(), remark(markerPayload)])))).toBeNull();
     expect(
       parseProxyEditOperation(operation(batchAll([remarkWithEvent(newCtrlMetadata), addProxy(), removeProxy()]))),
     ).toBeNull();
+  });
+
+  test('keeps the bare pair strict for a proxied operation', () => {
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([removeProxy(), addProxy()])))).toBeNull();
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([addProxy(), removeProxy(), transfer()])))).toBeNull();
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([addProxy(), batchAll([removeProxy()])])))).toBeNull();
+    expect(
+      parseProxyEditOperation(
+        proxiedOperation(batchAll([remarkWithEvent(newCtrlMetadata), addProxy(), removeProxy()])),
+      ),
+    ).toBeNull();
+    expect(parseProxyEditOperation(proxiedOperation(addProxy()))).toBeNull();
   });
 
   test('returns null for a reversed pair', () => {

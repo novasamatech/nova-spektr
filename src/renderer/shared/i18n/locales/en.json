@@ -2962,6 +2962,7 @@
       "amount": "Amount",
       "batchCallProxyType": "{proxyType} access",
       "batchCalls": "Calls in batch",
+      "batchCallsHidden": "{count} more nested calls not shown",
       "callData": "Call Data",
       "coreCallData": "Core Call Data",
       "coreCallHash": "Core Call Hash",

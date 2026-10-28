@@ -21,6 +21,9 @@ const PROXY_MANAGEMENT_TYPES = new Set<TransactionType | undefined>([
   TransactionType.PROXY,
 ]);
 
+/** Nesting levels rendered, matching how deep the call lookup unwraps. */
+const MAX_BATCH_DEPTH = 8;
+
 const PROXY_TYPE_CALLS = new Set<TransactionType | undefined>([
   TransactionType.ADD_PROXY,
   TransactionType.REMOVE_PROXY,
@@ -63,9 +66,10 @@ type CallListProps = {
   calls: DecodedTransaction[];
   chain: Chain;
   prefix?: string;
+  depth?: number;
 };
 
-const CallList = ({ calls, chain, prefix = '' }: CallListProps) => {
+const CallList = ({ calls, chain, prefix = '', depth = 1 }: CallListProps) => {
   const { t } = useI18n();
 
   return (
@@ -106,7 +110,14 @@ const CallList = ({ calls, chain, prefix = '' }: CallListProps) => {
               </div>
             </DetailRow>
 
-            {nestedCalls.length > 0 && <CallList calls={nestedCalls} chain={chain} prefix={number} />}
+            {nestedCalls.length > 0 && depth < MAX_BATCH_DEPTH && (
+              <CallList calls={nestedCalls} chain={chain} prefix={number} depth={depth + 1} />
+            )}
+            {nestedCalls.length > 0 && depth >= MAX_BATCH_DEPTH && (
+              <FootnoteText className="mt-2 block pl-4 text-text-tertiary">
+                {t('operation.details.batchCallsHidden', { count: nestedCalls.length })}
+              </FootnoteText>
+            )}
           </li>
         );
       })}

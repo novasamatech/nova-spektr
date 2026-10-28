@@ -1,5 +1,5 @@
 import { type DecodedTransaction, type ProxyType, ProxyTypes } from '@/shared/core';
-import { nullable, toAccountId } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type EditControllerMarkerPayload, parseEditControllerMarker } from '@/shared/transactions';
 import { type MultisigOperation } from '@/domains/network';
@@ -51,12 +51,18 @@ const isEditFlexiblePair = (calls: DecodedTransaction[]): calls is [DecodedTrans
 // Locate the inner batch that defines an edit-flexible op.
 //
 // The edit batch always runs through the flexible multisig's proxy:
-// `proxy.proxy(real, call=batchAll([addProxy, removeProxy | marker]))`. When the
-// new-controller multisig isn't known locally, the producer wraps that proxy.proxy
+// `proxy.proxy(real, call=batchAll([addProxy, removeProxy | marker]))`. Live
+// operations are stored with that wrapper already unwrapped — `getCoreCallData`
+// strips `proxy.proxy` and keeps `real` as `operation.proxiedAccountId` — so the
+// bare pair counts only when the operation carries a proxied account. When the
+// new-controller multisig isn't known locally, the producer wraps the proxy.proxy
 // in an outer batchAll with a `system.remarkWithEvent` carrying new-ctrl metadata
-// in front of it (see `change-signatories-model.ts > $coreTx`). Only these two
-// shapes are accepted; a bare batch without the proxy wrapper never is.
-const findEditFlexibleBatch = (tx: DecodedTransaction | null): [DecodedTransaction, DecodedTransaction] | null => {
+// in front of it (see `change-signatories-model.ts > $coreTx`). Nothing else is
+// accepted: a bare pair on a plain multisig is an ordinary batch.
+const findEditFlexibleBatch = (
+  tx: DecodedTransaction | null,
+  isProxied: boolean,
+): [DecodedTransaction, DecodedTransaction] | null => {
   if (nullable(tx)) return null;
 
   if (isProxyCall(tx)) {
@@ -71,12 +77,14 @@ const findEditFlexibleBatch = (tx: DecodedTransaction | null): [DecodedTransacti
   const calls = getBatchCalls(tx);
   if (!calls) return null;
 
+  if (isProxied && isEditFlexiblePair(calls)) return calls;
+
   const [metadata, proxied] = calls;
   if (calls.length !== 2 || !metadata || !proxied || !isRemarkWithEvent(metadata) || !isProxyCall(proxied)) {
     return null;
   }
 
-  return findEditFlexibleBatch(proxied);
+  return findEditFlexibleBatch(proxied, isProxied);
 };
 
 type ProxyArgs = { delegate: AccountId; proxyType: ProxyType };
@@ -101,9 +109,10 @@ const extractMarker = (tx: DecodedTransaction): EditControllerMarkerPayload | nu
 
 export const parseProxyEditOperation = (operation: MultisigOperation): ProxyEditInfo | null => {
   // Bare `add_proxy` (no batch) is a plain proxy addition — not our edit-flexible flow,
-  // so we deliberately require the proxy.proxy → batchAll structure (handled by
+  // so we deliberately require the proxy.proxy → batchAll structure, or the bare batch
+  // of an operation whose proxy wrapper was unwrapped on decode (handled by
   // findEditFlexibleBatch).
-  const batched = findEditFlexibleBatch(operation.transaction);
+  const batched = findEditFlexibleBatch(operation.transaction, nonNullable(operation.proxiedAccountId));
   if (!batched) return null;
 
   const [addTx, secondTx] = batched;

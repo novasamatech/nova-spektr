@@ -114,9 +114,11 @@ exclusive — an operation is at most one of them.
 - **Edit flexible multisig** — swapping which multisig controls a flexible multisig. Recognised only in the exact shape
   the app builds: a `proxy.proxy` call through the flexible multisig whose inner batch is precisely
   `[addProxy, removeProxy]` or `[addProxy, marker remark]` (optionally preceded, in an outer two-call batch, by the
-  new-controller metadata `remarkWithEvent`). A bare add + remove proxy batch on a plain multisig, a reordered pair, or
-  a pair with any extra or nested call is a normal row with the shape-based title above. The card shows the old and new
-  controllers (identicons, old → new) and a coloured tag for the mode:
+  new-controller metadata `remarkWithEvent`). Live operations are stored with that proxy wrapper already unwrapped and
+  the proxied account kept on the operation, so the bare pair also counts when the operation carries a proxied account.
+  A bare add + remove proxy batch on a plain multisig (no proxied account), a reordered pair, or a pair with any extra
+  or nested call is a normal row with the shape-based title above. The card shows the old and new controllers
+  (identicons, old → new) and a coloured tag for the mode:
   - **Atomic swap** — the old controller is removed in the same transaction (both add and remove happen together).
   - **Verified swap** — the new controller is added now; the old one is removed later, after verification. The old
     controller is recovered from a marker embedded in the transaction.
@@ -273,11 +275,12 @@ first approval, plus the network fee) → **confirm** (a recap including the und
 sign; for a batch, the recap lists **every call** in it in order — `Pallet: Call`, the amount and the recipient /
 delegate where the call has one, with proxy-management calls highlighted and their access type shown, e.g. "Any access";
 a nested batch is expanded in place as an indented sub-list numbered `3.1.`, `3.2.`, … so no call stays hidden behind
-"Utility: Batch all") → **sign**. Signing adapts to the account's wallet type — Polkadot Vault (QR scan), browser
-Extension, or WalletConnect (watch-only accounts cannot sign and are excluded upstream). The signed extrinsic is then
-submitted, with a status modal showing **in progress → success** (auto-closing) **or error** (dispatch or submission
-failures such as insufficient balance or a network problem). On the final approval of an add/remove-proxy operation the
-wallet's accounts are re-synced; an optional operation description is posted to the address book at this point.
+"Utility: Batch all"; past eight nesting levels a single "N more nested calls not shown" line stands in for the rest) →
+**sign**. Signing adapts to the account's wallet type — Polkadot Vault (QR scan), browser Extension, or WalletConnect
+(watch-only accounts cannot sign and are excluded upstream). The signed extrinsic is then submitted, with a status modal
+showing **in progress → success** (auto-closing) **or error** (dispatch or submission failures such as insufficient
+balance or a network problem). On the final approval of an add/remove-proxy operation the wallet's accounts are
+re-synced; an optional operation description is posted to the address book at this point.
 
 ### Adding call data
 
@@ -453,8 +456,9 @@ never toggles a sort.
   order does not exactly match the displayed titles).
 - **Value** — groups by what the row shows, then by amount. Operations whose Value column displays an amount sort
   numerically (an approximation: amounts are compared across different assets without fiat conversion); after them come
-  operations that carry a value the column does not render (batch contents, staking/governance amounts, transfer-all);
-  last, operations with no value at all. Ascending flips the whole order (no-value first, largest amount last).
+  operations that carry a value the column does not render (the core amount of a known-shape batch, staking/governance
+  amounts, transfer-all); last, operations with no value at all — a batch of unknown shape counts as having none, even
+  when a call inside it moves funds. Ascending flips the whole order (no-value first, largest amount last).
 - **Submitter** — alphabetically by the name the Submitter column renders: the resolved wallet name for wallet-backed
   accounts, the contact name for contact-backed multisigs, with a short-address fallback.
 

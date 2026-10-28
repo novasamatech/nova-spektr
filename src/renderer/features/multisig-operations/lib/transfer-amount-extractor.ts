@@ -5,9 +5,11 @@ import { type MultisigOperation } from '@/domains/network';
 import {
   TransferTypes,
   XcmTypes,
+  findCoreBatchAll,
   findCoreTransaction,
   getTransactionAmount,
   getXcmTransactionBeneficiary,
+  isEditDelegationTransaction,
   isProxyTransaction,
 } from '@/entities/transaction';
 
@@ -76,10 +78,12 @@ export const hasTransferAmount = (operation: MultisigOperation): boolean => {
     return true;
   }
 
-  // Check batch transactions
+  // A batch carries an amount only when it is one the app builds: the edit
+  // delegation pair, or a known shape whose core call moves value.
   if (coreTx.type === TransactionType.BATCH_ALL) {
-    const transactions = coreTx.args?.transactions as DecodedTransaction[] | undefined;
-    return transactions?.some(tx => isValueTransferType(tx.type as TransactionType)) ?? false;
+    if (isEditDelegationTransaction(coreTx)) return true;
+
+    return isValueTransferType(findCoreBatchAll(coreTx)?.type);
   }
 
   return false;
