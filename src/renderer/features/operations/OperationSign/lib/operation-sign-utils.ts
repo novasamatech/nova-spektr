@@ -1,9 +1,10 @@
-import { compactFromU8a, hexToU8a, u8aToHex } from '@polkadot/util';
+import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { type SessionTypes } from '@walletconnect/types';
 
 import { type HexString } from '@/shared/core';
+import { ValidationErrors } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { transactionService } from '@/entities/transaction';
+import { transactionService } from '@/domains/network';
 
 import { ReconnectStep } from './types';
 
@@ -15,8 +16,8 @@ export const operationSignUtils = {
   isReadyToReconnectStep,
   isTopicExist,
   transformEcdsaSignature,
-  getSignedBytes,
   verifySignatures,
+  validateSignedResponse,
 };
 
 function isReconnectingStep(step: ReconnectStep): boolean {
@@ -51,17 +52,6 @@ function transformEcdsaSignature(signature: HexString): HexString {
   return u8aToHex(u8aSignature.length === ECDSA_SIGNATURE_LENGTH ? u8aSignature.subarray(1) : u8aSignature);
 }
 
-/**
- * Bytes a signer actually signs for an encoded `ExtrinsicPayload`: the same
- * payload with `method` inlined, i.e. without its compact length prefix
- * (`ExtrinsicPayload.toU8a({ method: true })`).
- */
-function getSignedBytes(payload: Uint8Array): Uint8Array {
-  const [prefixLength] = compactFromU8a(payload);
-
-  return payload.subarray(prefixLength);
-}
-
 type VerifySignaturesParams = {
   /** Encoded `ExtrinsicPayload`s, as passed on to `onResult`. */
   payloads: Uint8Array[];
@@ -85,6 +75,28 @@ function verifySignatures({ payloads, signatures, accountIds }: VerifySignatures
 
     if (!payload || !accountId) return false;
 
-    return transactionService.verifySignature(getSignedBytes(payload), signature, accountId);
+    return transactionService.verifyPayloadSignature(payload, signature, accountId);
   });
+}
+
+type ValidateSignedResponseParams = VerifySignaturesParams & {
+  validateBalance?: () => Promise<ValidationErrors | undefined>;
+};
+
+/**
+ * Shared post-signing validation of every signing UI: signatures first, then
+ * the balance (a network call that is skipped when the signatures are wrong).
+ * Returns the error to show, or `null` when the response can be submitted.
+ */
+async function validateSignedResponse({
+  validateBalance,
+  ...signed
+}: ValidateSignedResponseParams): Promise<ValidationErrors | null> {
+  if (!verifySignatures(signed)) {
+    return ValidationErrors.INVALID_SIGNATURE;
+  }
+
+  const balanceValidationError = validateBalance && (await validateBalance());
+
+  return balanceValidationError ?? null;
 }

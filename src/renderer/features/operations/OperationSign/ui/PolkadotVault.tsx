@@ -42,16 +42,15 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
       ? scanResult.map(operationSignUtils.transformEcdsaSignature)
       : [scanResult].map(operationSignUtils.transformEcdsaSignature);
 
-    const isVerified = operationSignUtils.verifySignatures({
+    const error = await operationSignUtils.validateSignedResponse({
       payloads: txPayloads,
       signatures,
       accountIds: signingPayloads.map((p) => p.signatory.accountId),
+      validateBalance,
     });
 
-    const balanceValidationError = validateBalance && (await validateBalance());
-
-    if (!isVerified || balanceValidationError) {
-      setValidationError(balanceValidationError || ValidationErrors.INVALID_SIGNATURE);
+    if (error) {
+      setValidationError(error);
 
       return;
     }

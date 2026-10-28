@@ -2,11 +2,10 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { ValidationErrors } from '@/shared/lib/utils';
+import { type ValidationErrors, ValidationErrorLabels } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { WalletIcon } from '@/shared/ui-entities';
-import { ValidationErrorLabels } from '../lib/constants';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -35,27 +34,19 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
     }
   }, [signed]);
 
-  // TODO move validation to effector model
   const handleSignature = async (response: SignResponse[]) => {
     const signatures = response.map((x) => x.signature);
     const payloads = response.map((x) => x.txPayload.payload);
 
-    const isVerified = operationSignUtils.verifySignatures({
+    const error = await operationSignUtils.validateSignedResponse({
       payloads,
       signatures,
       accountIds: signingPayloads.map((p) => p.signatory.accountId),
+      validateBalance,
     });
 
-    if (!isVerified) {
-      setValidationError(ValidationErrors.INVALID_SIGNATURE);
-
-      return;
-    }
-
-    const balanceValidationError = validateBalance && (await validateBalance());
-
-    if (balanceValidationError) {
-      setValidationError(balanceValidationError);
+    if (error) {
+      setValidationError(error);
 
       return;
     }

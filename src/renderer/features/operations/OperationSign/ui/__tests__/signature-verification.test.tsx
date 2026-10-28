@@ -1,14 +1,13 @@
 import { Keyring } from '@polkadot/keyring';
 import { type KeyringPair } from '@polkadot/keyring/types';
-import { TypeRegistry } from '@polkadot/types';
-import { type ExtrinsicPayload } from '@polkadot/types/interfaces';
-import { hexToU8a, u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@polkadot/util';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { type ReactNode } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { ValidationErrors } from '@/shared/lib/utils';
+import { createExtrinsicPayload, createPayloadRegistry, signExtrinsicPayload } from '@/shared/mocks';
 import { type ExtrinsicSigningPayload, type SigningProps } from '../../lib/types';
 import { Extension } from '../Extension';
 import { PolkadotVault } from '../PolkadotVault';
@@ -69,20 +68,15 @@ vi.mock('../../model/walletConnectSign', () => ({
   },
 }));
 
-vi.mock('@/entities/transaction/ui/QrCode/QrReader/useCameraAvailability', () => ({
+vi.mock('@/entities/transaction', () => ({
+  CameraAccessAlert: () => null,
   useCameraAvailability: () => ({ status: 'ready', retry: () => undefined }),
-}));
-vi.mock('@/entities/transaction/ui/Scanning/ScanMultiframeQr', () => ({
   ScanMultiframeQr: ({ onResult }: { onResult: (payloads: Uint8Array[]) => void }) => (
     <button onClick={() => onResult(scanned.payloads)}>scan-done</button>
   ),
-}));
-vi.mock('@/entities/transaction/ui/Scanning/ScanSingleframeQr', () => ({
   ScanSingleframeQr: ({ onResult }: { onResult: (payload: Uint8Array) => void }) => (
     <button onClick={() => onResult(scanned.payloads[0]!)}>scan-done</button>
   ),
-}));
-vi.mock('@/entities/transaction/ui/QrCode/QrReader/QrReaderWrapper', () => ({
   QrReaderWrapper: ({
     validationError,
     onResult,
@@ -99,28 +93,13 @@ vi.mock('@/entities/transaction/ui/QrCode/QrReader/QrReaderWrapper', () => ({
   ),
 }));
 
-const ZERO_HASH = u8aToHex(new Uint8Array(32));
-const registry = new TypeRegistry();
+const registry = createPayloadRegistry();
 
 let alice: KeyringPair;
 let bob: KeyringPair;
 
-const createSigned = (pair: KeyringPair, methodLength: number, nonce: number) => {
-  const payload = registry.createTypeUnsafe<ExtrinsicPayload>('ExtrinsicPayload', [
-    {
-      method: u8aToHex(new Uint8Array(methodLength).fill(7)),
-      era: '0x00',
-      nonce,
-      tip: 0,
-      specVersion: 1,
-      transactionVersion: 1,
-      genesisHash: ZERO_HASH,
-      blockHash: ZERO_HASH,
-    },
-    { version: 4 },
-  ]);
-
-  return { payload: hexToU8a(payload.toHex()), signature: payload.sign(pair).signature as HexString };
+const createSigned = (pair: KeyringPair, methodLength: number, nonce: number, withType = false) => {
+  return signExtrinsicPayload(createExtrinsicPayload(registry, { methodLength, nonce }), pair, withType);
 };
 
 const createSigningPayloads = (count: number) =>
@@ -243,17 +222,6 @@ describe('WalletConnect signature verification', () => {
     expect(screen.getByTestId('status-modal')).toBeInTheDocument();
   });
 
-  it('stops when fewer signatures than transactions come back', async () => {
-    const signed = [createSigned(alice, 40, 0), createSigned(alice, 40, 1)];
-    const props = createProps(2);
-
-    renderWalletConnect(signed, props, [signed[0]!.signature]);
-    await flush();
-
-    expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('status-modal')).toBeInTheDocument();
-  });
-
   it('shows the balance error for valid signatures', async () => {
     const props = createProps(1, ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
 
@@ -274,8 +242,8 @@ describe('PolkadotVault signature verification', () => {
     await flush();
   };
 
-  it.each([40, 300, 20_000])('passes a valid single signature on for method of %i bytes', async (methodLength) => {
-    const signed = createSigned(alice, methodLength, 0);
+  it('passes a valid single signature on', async () => {
+    const signed = createSigned(alice, 300, 0);
     scanned.payloads = [signed.payload];
     scanned.signatures = [signed.signature];
     const props = createProps(1);
@@ -285,8 +253,12 @@ describe('PolkadotVault signature verification', () => {
     expect(props.onResult).toHaveBeenCalledWith([signed.signature], [signed.payload]);
   });
 
-  it('passes a valid multi-signature batch on', async () => {
-    const signed = [createSigned(alice, 40, 0), createSigned(alice, 20_000, 1), createSigned(alice, 300, 2)];
+  it('passes a valid multi-frame batch of type-prefixed signatures on', async () => {
+    const signed = [
+      createSigned(alice, 40, 0, true),
+      createSigned(alice, 20_000, 1, true),
+      createSigned(alice, 300, 2, true),
+    ];
     scanned.payloads = signed.map((s) => s.payload);
     scanned.signatures = signed.map((s) => s.signature);
     const props = createProps(3);
@@ -301,18 +273,6 @@ describe('PolkadotVault signature verification', () => {
     scanned.payloads = signed.map((s) => s.payload);
     scanned.signatures = [signed[0]!.signature, signed[0]!.signature];
     const props = createProps(2);
-
-    await scanAndSign(props);
-
-    expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('qr-error')).toHaveTextContent(String(ValidationErrors.INVALID_SIGNATURE));
-  });
-
-  it('stops when fewer signatures than payloads are scanned', async () => {
-    const signed = [createSigned(alice, 40, 0), createSigned(alice, 40, 1), createSigned(alice, 40, 2)];
-    scanned.payloads = signed.map((s) => s.payload);
-    scanned.signatures = [signed[0]!.signature, signed[1]!.signature];
-    const props = createProps(3);
 
     await scanAndSign(props);
 

@@ -371,3 +371,5 @@ export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): Pro
   type: WalletType.PROXIED,
   name: `Proxied wallet ${id}`,
 });
+
+export { createExtrinsicPayload, createPayloadRegistry, signExtrinsicPayload } from './signed-payload';

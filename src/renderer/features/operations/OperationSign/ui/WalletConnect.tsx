@@ -5,13 +5,12 @@ import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ValidationErrors } from '@/shared/lib/utils';
+import { ValidationErrorLabels, ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Modal } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
 import { WalletConnectQrCode } from '@/features/wallet-connect-wallet-pairing';
-import { ValidationErrorLabels } from '../lib/constants';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -46,26 +45,18 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
     }
   }, [signed]);
 
-  // TODO move validation to effector model
   const handleSignature = async (signatures: HexString[]) => {
     const payloads = transactions.map((x) => x.payload);
 
-    const isVerified = operationSignUtils.verifySignatures({
+    const error = await operationSignUtils.validateSignedResponse({
       payloads,
       signatures,
       accountIds: signingPayloads.map((p) => p.signatory.accountId),
+      validateBalance,
     });
 
-    if (!isVerified) {
-      setValidationError(ValidationErrors.INVALID_SIGNATURE);
-
-      return;
-    }
-
-    const balanceValidationError = validateBalance && (await validateBalance());
-
-    if (balanceValidationError) {
-      setValidationError(balanceValidationError);
+    if (error) {
+      setValidationError(error);
 
       return;
     }

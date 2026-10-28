@@ -3,12 +3,12 @@ import { Keyring } from '@polkadot/keyring';
 import { type KeyringPair } from '@polkadot/keyring/types';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
-import { type ExtrinsicPayload } from '@polkadot/types/interfaces';
-import { hexToU8a, u8aToHex } from '@polkadot/util';
+import { u8aToHex } from '@polkadot/util';
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { allSettled, createWatch, fork } from 'effector';
+import { type Scope, allSettled, createWatch, fork } from 'effector';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { createExtrinsicPayload, signExtrinsicPayload } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 // eslint-disable-next-line boundaries/entry-point -- reusing a real metadata blob fixture in tests only
@@ -16,6 +16,11 @@ import { metadata } from '@/domains/network/transaction/service.mocks';
 import { networkModel } from '@/entities/network';
 import { SubmitStep } from '../../lib/types';
 import { type SubmitInputDeprecated, submitModel } from '../submit-model';
+
+vi.mock('i18next', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  t: (key: string) => key,
+}));
 
 const createMockApi = async () => {
   const registry = new TypeRegistry();
@@ -53,27 +58,24 @@ describe('submitModel deprecated flow', () => {
    * signature made over it.
    */
   const createSigned = (pair: KeyringPair, method: HexString, nonce: number) => {
-    const payload = api.registry.createTypeUnsafe<ExtrinsicPayload>('ExtrinsicPayload', [
-      {
-        method,
-        era: '0x00',
-        nonce,
-        tip: 0,
-        specVersion: 1,
-        transactionVersion: 1,
-        genesisHash: api.genesisHash.toHex(),
-        blockHash: api.genesisHash.toHex(),
-      },
-      { version: api.extrinsicVersion },
-    ]);
+    const payload = createExtrinsicPayload(api.registry, {
+      method,
+      nonce,
+      genesisHash: api.genesisHash.toHex(),
+      version: api.extrinsicVersion,
+    });
 
-    return { payload: hexToU8a(payload.toHex()), signature: payload.sign(pair).signature as HexString };
+    return signExtrinsicPayload(payload, pair);
   };
 
   const createMethod = (amount: number) => api.tx.balances.transferKeepAlive(alice.address, amount).method.toHex();
 
-  const submit = async (input: Omit<SubmitInputDeprecated, 'chain' | 'account' | 'coreTxs'>) => {
-    const scope = fork({ values: new Map().set(networkModel.$apis, { [chain.chainId]: api }) });
+  const createScope = () => fork({ values: new Map().set(networkModel.$apis, { [chain.chainId]: api }) });
+
+  const submit = async (
+    input: Omit<SubmitInputDeprecated, 'chain' | 'account' | 'coreTxs'>,
+    scope: Scope = createScope(),
+  ) => {
     const done = vi.fn();
     createWatch({ unit: submitModel.done, scope, fn: done });
 
@@ -149,7 +151,7 @@ describe('submitModel deprecated flow', () => {
       signatures: [signed[0]!.signature],
     });
 
-    expectNotSubmitted(result, 'Signed payloads (2) and signatures (1) do not match');
+    expectNotSubmitted(result, 'operation.submitErrors.signatureCountMismatch');
   });
 
   it('does not submit a signature made by someone outside the operation', async () => {
@@ -161,6 +163,46 @@ describe('submitModel deprecated flow', () => {
       signatures: signed.map((s) => s.signature),
     });
 
-    expectNotSubmitted(result, 'Signature 2 of 2 was not made by a signatory of the operation');
+    expectNotSubmitted(result, 'operation.submitErrors.unknownSignatory');
+  });
+
+  it('does not submit when nothing was signed', async () => {
+    const result = await submit({
+      wrappedTxs: [createTransaction(toAccountId(alice))],
+      txPayloads: [],
+      signatures: [],
+    });
+
+    expectNotSubmitted(result, 'operation.submitErrors.nothingSigned');
+  });
+
+  it('clears a previous build error when the next deprecated submission starts', async () => {
+    const scope = createScope();
+    const signed = createSigned(alice, createMethod(1), 0);
+
+    await submit({ wrappedTxs: [createTransaction(toAccountId(alice))], txPayloads: [], signatures: [] }, scope);
+    const { step, store } = await submit(
+      {
+        wrappedTxs: [createTransaction(toAccountId(alice))],
+        txPayloads: [signed.payload],
+        signatures: [signed.signature],
+      },
+      scope,
+    );
+
+    expect(step.step).toBe(SubmitStep.LOADING);
+    expect(store).toHaveLength(1);
+  });
+
+  it('still finishes the flow when init gets nothing to submit', async () => {
+    const scope = createScope();
+    const done = vi.fn();
+    createWatch({ unit: submitModel.done, scope, fn: done });
+
+    await allSettled(submitModel.init, { scope, params: [] });
+    await allSettled(submitModel.submitToNetwork, { scope });
+
+    expect(scope.getState(submitModel.$submitStep).step).toBe(SubmitStep.SUCCESS);
+    expect(done).toHaveBeenCalledWith([]);
   });
 });

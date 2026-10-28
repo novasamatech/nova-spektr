@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { t } from 'i18next';
 import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
@@ -7,10 +8,9 @@ import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type ExtrinsicResultParams, transactionService as entityTransactionService } from '@/entities/transaction';
-import { operationSignUtils } from '@/features/operations/OperationSign/lib/operation-sign-utils';
+import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type SignatureResult } from '@/features/operations/OperationSign/model/sign-model';
-import { ExtrinsicResult, SubmitStep } from '../lib/types';
+import { BuildSignedExtrinsicsError, BuildSignedExtrinsicsFailure, ExtrinsicResult, SubmitStep } from '../lib/types';
 
 export type SubmitInputDeprecated = {
   chain: Chain;
@@ -75,6 +75,11 @@ const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: S
 const $submittingTxs = createStore<number[]>([]);
 const $results = createStore<Result[]>([]).reset([formInitiated, init]);
 
+reset({
+  clock: formInitiated,
+  target: $submitStep,
+});
+
 // effects
 
 const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
@@ -110,21 +115,36 @@ type BuildSignedExtrinsicsParams = {
   signatures: HexString[];
 };
 
-const buildSignedExtrinsicsFx = createEffect(
-  ({ api, wrappedTxs, txPayloads, signatures }: BuildSignedExtrinsicsParams): SubmitInput => {
-    if (txPayloads.length === 0 || txPayloads.length !== signatures.length) {
-      throw new Error(`Signed payloads (${txPayloads.length}) and signatures (${signatures.length}) do not match`);
+const buildSignedExtrinsicsFx = createEffect<BuildSignedExtrinsicsParams, SubmitInput, Error>(
+  ({ api, wrappedTxs, txPayloads, signatures }) => {
+    if (txPayloads.length === 0) {
+      throw new BuildSignedExtrinsicsError(BuildSignedExtrinsicsFailure.EMPTY, 'Nothing was signed');
     }
 
+    if (txPayloads.length !== signatures.length) {
+      throw new BuildSignedExtrinsicsError(
+        BuildSignedExtrinsicsFailure.COUNT_MISMATCH,
+        `Signed payloads (${txPayloads.length}) and signatures (${signatures.length}) do not match`,
+      );
+    }
+
+    // The deprecated `formSubmitted` contract carries signatures without their signatory (sign-model drops it when
+    // converting `SignatureResult`), and ~15 flows still go through it. Instead of widening that contract, the
+    // signatory is recovered by checking which of the operation's accounts made each signature.
     const signatories = [...new Set(wrappedTxs.map((tx) => tx.accountId))];
 
     return txPayloads.map((payload, index) => {
       const signature = signatures[index]!;
-      const signedBytes = operationSignUtils.getSignedBytes(payload);
       const signatory = signatories.find((accountId) => {
-        return entityTransactionService.verifySignature(signedBytes, signature, accountId);
+        return transactionService.verifyPayloadSignature(payload, signature, accountId);
       });
-      assert(signatory, `Signature ${index + 1} of ${signatures.length} was not made by a signatory of the operation`);
+
+      if (!signatory) {
+        throw new BuildSignedExtrinsicsError(
+          BuildSignedExtrinsicsFailure.UNKNOWN_SIGNATORY,
+          `Signature ${index + 1} of ${signatures.length} was not made by a signatory of the operation`,
+        );
+      }
 
       const extrinsicPayload = api.registry.createType('ExtrinsicPayload', payload, { version: api.extrinsicVersion });
       const extrinsic = transactionService.createExtrinsicFromCallData(extrinsicPayload.method.toHex(), api);
@@ -133,6 +153,12 @@ const buildSignedExtrinsicsFx = createEffect(
     });
   },
 );
+
+const BUILD_FAILURE_MESSAGES: Record<BuildSignedExtrinsicsFailure, string> = {
+  [BuildSignedExtrinsicsFailure.EMPTY]: 'operation.submitErrors.nothingSigned',
+  [BuildSignedExtrinsicsFailure.COUNT_MISMATCH]: 'operation.submitErrors.signatureCountMismatch',
+  [BuildSignedExtrinsicsFailure.UNKNOWN_SIGNATORY]: 'operation.submitErrors.unknownSignatory',
+};
 
 sample({
   clock: formInitiated,
@@ -161,7 +187,14 @@ sample({
 // nothing was submitted: show the error, but "done" is reserved for a finished submission
 sample({
   clock: buildSignedExtrinsicsFx.failData,
-  fn: (error) => ({ step: SubmitStep.ERROR, message: error.message }),
+  fn: (error) => {
+    const key =
+      error instanceof BuildSignedExtrinsicsError
+        ? BUILD_FAILURE_MESSAGES[error.reason]
+        : 'operation.submitErrors.buildFailed';
+
+    return { step: SubmitStep.ERROR, message: t(key) };
+  },
   target: $submitStep,
 });
 
@@ -255,10 +288,12 @@ sample({
   target: $submitStep,
 });
 
+// a failed rebuild in the deprecated flow never reaches $submitStore, so it does not finish the flow
 sample({
   clock: $submitStep,
-  source: $results,
-  filter: (results, { step }) => step !== SubmitStep.LOADING && results.length > 0,
+  source: { results: $results, store: $submitStore },
+  filter: ({ store }, { step }) => step !== SubmitStep.LOADING && store !== null,
+  fn: ({ results }) => results,
   target: formSubmitted,
 });
 

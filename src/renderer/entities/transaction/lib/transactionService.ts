@@ -5,7 +5,6 @@ import { Compact, Enum, GenericCall, GenericMultiAddress, GenericSignerPayload }
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { type CallBase, type Codec } from '@polkadot/types/types';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
-import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
 import { metadataV15Service } from '@/shared/api/network';
@@ -54,7 +53,6 @@ export const transactionService = {
 
   getExtrinsicWeight,
   getTxWeight,
-  verifySignature,
 
   createCallFromCallData,
   formatCall,
@@ -374,16 +372,6 @@ async function getTxWeight(
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
   return getExtrinsicWeight(extrinsic, options);
-}
-
-function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
-  // For big transaction we get hash from payload
-  const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
-  try {
-    return signatureVerify(payloadToVerify, signature, accountId).isValid;
-  } catch {
-    return false;
-  }
 }
 
 function formatArg(arg: Codec, chain: Chain): unknown {
