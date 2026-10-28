@@ -1,13 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { once, reset } from 'patronum';
+import { once, reset, spread } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
 import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type Extrinsic, transactionService } from '@/domains/network';
+import { type AnyAccount, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type ExtrinsicResultParams, getExtrinsic } from '@/entities/transaction';
+import { type ExtrinsicResultParams, transactionService as entityTransactionService } from '@/entities/transaction';
+import { operationSignUtils } from '@/features/operations/OperationSign/lib/operation-sign-utils';
 import { type SignatureResult } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
@@ -98,32 +99,38 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   );
 });
 
-// deprecated flow with Transaction struct. Split impl located in sign-model.
+// deprecated flow with Transaction struct.
+// The batch was split and signed in sign-model; every extrinsic is rebuilt here from the payload that was actually
+// signed instead of splitting the transactions again, so each signature lands on the extrinsic it covers.
 
-type SplitTransactionsParams = {
+type BuildSignedExtrinsicsParams = {
   api: ApiPromise;
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
 };
-const splitTransactionsFx = createEffect(
-  async ({ api, wrappedTxs, txPayloads, signatures }: SplitTransactionsParams): Promise<SubmitInput> => {
-    let splittedBatch: { extrinsic: Extrinsic; signatory: AccountId }[] = [];
 
-    for (const tx of wrappedTxs) {
-      const extrinsic = getExtrinsic[tx.type](tx.args, api);
-      const splitted = await transactionService.splitExtrinsic(extrinsic, api);
-
-      splittedBatch = splittedBatch.concat(splitted.map((extrinsic) => ({ extrinsic, signatory: tx.accountId })));
+const buildSignedExtrinsicsFx = createEffect(
+  ({ api, wrappedTxs, txPayloads, signatures }: BuildSignedExtrinsicsParams): SubmitInput => {
+    if (txPayloads.length === 0 || txPayloads.length !== signatures.length) {
+      throw new Error(`Signed payloads (${txPayloads.length}) and signatures (${signatures.length}) do not match`);
     }
 
-    return splittedBatch.map(({ extrinsic, signatory }, index) => ({
-      api,
-      extrinsic,
-      payload: txPayloads[index]!,
-      signature: signatures[index]!,
-      signatory,
-    }));
+    const signatories = [...new Set(wrappedTxs.map((tx) => tx.accountId))];
+
+    return txPayloads.map((payload, index) => {
+      const signature = signatures[index]!;
+      const signedBytes = operationSignUtils.getSignedBytes(payload);
+      const signatory = signatories.find((accountId) => {
+        return entityTransactionService.verifySignature(signedBytes, signature, accountId);
+      });
+      assert(signatory, `Signature ${index + 1} of ${signatures.length} was not made by a signatory of the operation`);
+
+      const extrinsicPayload = api.registry.createType('ExtrinsicPayload', payload, { version: api.extrinsicVersion });
+      const extrinsic = transactionService.createExtrinsicFromCallData(extrinsicPayload.method.toHex(), api);
+
+      return { api, extrinsic, payload, signature, signatory };
+    });
   },
 );
 
@@ -132,7 +139,7 @@ sample({
   source: {
     apis: networkModel.$apis,
   },
-  fn({ apis }, { chain, wrappedTxs, txPayloads, signatures }): SplitTransactionsParams {
+  fn({ apis }, { chain, wrappedTxs, txPayloads, signatures }): BuildSignedExtrinsicsParams {
     const api = apis[chain.chainId];
     assert(api, `Api for chain ${chain.chainId} not found`);
 
@@ -143,12 +150,29 @@ sample({
       signatures,
     };
   },
-  target: splitTransactionsFx,
+  target: buildSignedExtrinsicsFx,
 });
 
 sample({
-  clock: splitTransactionsFx.doneData,
+  clock: buildSignedExtrinsicsFx.doneData,
   target: init,
+});
+
+// nothing was submitted, reported the same way as a failed extrinsic
+sample({
+  clock: buildSignedExtrinsicsFx.failData,
+  fn: (error) => {
+    const failedResult: ErrorResult = { id: 0, result: ExtrinsicResult.ERROR, params: error.message };
+
+    return {
+      results: [failedResult],
+      step: { step: SubmitStep.ERROR, message: error.message },
+    };
+  },
+  target: spread({
+    results: $results,
+    step: $submitStep,
+  }),
 });
 
 // actual flow
