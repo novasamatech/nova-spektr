@@ -30,6 +30,7 @@ import { deepLinkModel } from '../model/deep-link';
 import { useChainSyncToast } from './ChainSyncToast';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
+import { OperationRowBoundary } from './OperationRowBoundary';
 import { OperationsTableHeader } from './OperationsTableHeader';
 import { SectionHeading } from './SectionHeading';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
@@ -251,24 +252,28 @@ export const Operations = () => {
                           </div>
                         ) : (
                           <div className="pb-1.5">
-                            <AsyncItem
-                              fallback={
-                                <div className="rounded bg-block-background-default" style={{ height: ROW_HEIGHT }} />
-                              }
-                            >
-                              <Operation
-                                key={
-                                  item.item.operation.id === focusedOperationId
-                                    ? `focused-${item.item.operation.id}`
-                                    : item.item.operation.id
+                            {/* The boundary sits inside the measured element so a fallback row is
+                                measured like any other; one malformed operation only loses its own row. */}
+                            <OperationRowBoundary operation={item.item.operation}>
+                              <AsyncItem
+                                fallback={
+                                  <div className="rounded bg-block-background-default" style={{ height: ROW_HEIGHT }} />
                                 }
-                                operation={item.item.operation}
-                                multisigAccount={item.item.account}
-                                isDefaultOpen={item.item.operation.id === focusedOperationId}
-                                chains={chains}
-                                wallets={wallets}
-                              />
-                            </AsyncItem>
+                              >
+                                <Operation
+                                  key={
+                                    item.item.operation.id === focusedOperationId
+                                      ? `focused-${item.item.operation.id}`
+                                      : item.item.operation.id
+                                  }
+                                  operation={item.item.operation}
+                                  multisigAccount={item.item.account}
+                                  isDefaultOpen={item.item.operation.id === focusedOperationId}
+                                  chains={chains}
+                                  wallets={wallets}
+                                />
+                              </AsyncItem>
+                            </OperationRowBoundary>
                           </div>
                         )}
                       </div>

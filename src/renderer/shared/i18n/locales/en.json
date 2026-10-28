@@ -3350,6 +3350,7 @@
     "operationCreated": "Operation created",
     "pendingEmptyDescription": "Once you or a multisig signer create an operation, it will appear here.",
     "pendingEmptyTitle": "Pending operations list is empty",
+    "rowUnavailable": "This operation can't be displayed",
     "searchPlaceholder": "Search",
     "sections": {
       "completed": "Completed",

@@ -131,6 +131,10 @@ the final approval.
 
 ## The operation row and its panels
 
+Each row renders behind its own error boundary: an operation the row cannot draw (malformed call data, a shape the
+parsers do not expect) is replaced by a muted row-height placeholder reading _This operation can't be displayed_, and
+the rest of the list stays usable; the row retries once that operation is refreshed.
+
 A collapsed row is a fixed-height card whose cells line up with the sticky table header:
 
 - **Operation** — the recognised title with its icon, and the network name underneath (two chain chips for XCM). Special

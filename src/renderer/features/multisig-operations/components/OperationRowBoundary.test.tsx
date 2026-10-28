@@ -1,0 +1,78 @@
+import { render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { type MultisigOperation } from '@/domains/network';
+
+import { OperationRowBoundary } from './OperationRowBoundary';
+
+vi.mock('@/shared/i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}));
+
+const FALLBACK_KEY = 'operations.rowUnavailable';
+
+// Only the identity matters here: the boundary keys its reset on the object itself.
+const createOperation = (id: string) => ({ id }) as unknown as MultisigOperation;
+
+const BROKEN_ID = 'broken';
+
+const Row = ({ operation }: { operation: MultisigOperation }) => {
+  if (operation.id === BROKEN_ID) {
+    throw new Error('Cannot render operation');
+  }
+
+  return <div>row {operation.id}</div>;
+};
+
+describe('OperationRowBoundary', () => {
+  const consoleError = vi.spyOn(console, 'error');
+
+  beforeEach(() => {
+    // React reports the caught error through console.error; keep the test output clean.
+    consoleError.mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleError.mockReset();
+  });
+
+  it('replaces only the throwing row with the fallback', () => {
+    const operations = [createOperation('first'), createOperation(BROKEN_ID), createOperation('third')];
+
+    render(
+      <>
+        {operations.map(operation => (
+          <OperationRowBoundary key={operation.id} operation={operation}>
+            <Row operation={operation} />
+          </OperationRowBoundary>
+        ))}
+      </>,
+    );
+
+    expect(screen.getByText('row first')).toBeInTheDocument();
+    expect(screen.getByText('row third')).toBeInTheDocument();
+    expect(screen.queryByText(`row ${BROKEN_ID}`)).not.toBeInTheDocument();
+    expect(screen.getAllByText(FALLBACK_KEY)).toHaveLength(1);
+  });
+
+  it('retries rendering when the operation object changes', () => {
+    const broken = createOperation(BROKEN_ID);
+    const { rerender } = render(
+      <OperationRowBoundary operation={broken}>
+        <Row operation={broken} />
+      </OperationRowBoundary>,
+    );
+
+    expect(screen.getByText(FALLBACK_KEY)).toBeInTheDocument();
+
+    const fixed = createOperation('fixed');
+    rerender(
+      <OperationRowBoundary operation={fixed}>
+        <Row operation={fixed} />
+      </OperationRowBoundary>,
+    );
+
+    expect(screen.getByText('row fixed')).toBeInTheDocument();
+    expect(screen.queryByText(FALLBACK_KEY)).not.toBeInTheDocument();
+  });
+});
