@@ -324,6 +324,12 @@ describe('entities/transaction/lib/onChainUtils', () => {
       expect(findCoreBatchAll(nested)).toBeNull();
     });
 
+    test('should skip a nested batch in favour of a plain sibling', () => {
+      const transfer = createTransaction(TransactionType.TRANSFER);
+
+      expect(findCoreBatchAll(createBatch([createBatch([unlock]), transfer]))).toBe(transfer);
+    });
+
     test('should not recurse endlessly on nested batches', () => {
       const nested = createBatch([createBatch([createBatch([unlock])])]);
 

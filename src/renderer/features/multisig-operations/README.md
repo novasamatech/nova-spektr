@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 

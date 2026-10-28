@@ -180,7 +180,8 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
 
 /**
  * Picks the transaction that represents a batch. Looks at direct children only
- * and never returns a batch, so recursive callers always descend.
+ * and never returns a batch, so recursive callers cannot loop on a nested
+ * batch.
  */
 export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
   const transactions: Transaction[] = batch.args?.transactions ?? [];
@@ -188,13 +189,9 @@ export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Trans
   const coreTransaction =
     transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
     transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
-    transactions.at(0);
+    transactions.find((tx) => tx.type !== TransactionType.BATCH_ALL);
 
-  if (!coreTransaction || coreTransaction.type === TransactionType.BATCH_ALL) {
-    return null;
-  }
-
-  return coreTransaction;
+  return coreTransaction ?? null;
 };
 
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {

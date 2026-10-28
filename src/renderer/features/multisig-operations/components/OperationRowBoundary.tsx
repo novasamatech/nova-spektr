@@ -22,7 +22,17 @@ type Props = PropsWithChildren<{
  */
 export const OperationRowBoundary = ({ operation, children }: Props) => {
   return (
-    <ErrorBoundary resetKeys={[operation]} fallback={<OperationRowFallback />}>
+    <ErrorBoundary
+      resetKeys={[operation]}
+      fallback={<OperationRowFallback />}
+      onError={error => {
+        console.error(
+          '[multisig-operations] operation row failed to render',
+          { id: operation.id, chainId: operation.chainId, callHash: operation.callHash },
+          error,
+        );
+      }}
+    >
       {children}
     </ErrorBoundary>
   );

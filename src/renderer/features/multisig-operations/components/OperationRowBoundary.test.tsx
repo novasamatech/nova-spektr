@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MultisigOperation } from '@/domains/network';
 
@@ -25,15 +25,15 @@ const Row = ({ operation }: { operation: MultisigOperation }) => {
 };
 
 describe('OperationRowBoundary', () => {
-  const consoleError = vi.spyOn(console, 'error');
+  let consoleError: MockInstance<typeof console.error>;
 
   beforeEach(() => {
-    // React reports the caught error through console.error; keep the test output clean.
-    consoleError.mockImplementation(() => {});
+    // React and the boundary itself report the caught error through console.error; keep the test output clean.
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    consoleError.mockReset();
+    consoleError.mockRestore();
   });
 
   it('replaces only the throwing row with the fallback', () => {
@@ -53,6 +53,11 @@ describe('OperationRowBoundary', () => {
     expect(screen.getByText('row third')).toBeInTheDocument();
     expect(screen.queryByText(`row ${BROKEN_ID}`)).not.toBeInTheDocument();
     expect(screen.getAllByText(FALLBACK_KEY)).toHaveLength(1);
+    expect(consoleError).toHaveBeenCalledWith(
+      '[multisig-operations] operation row failed to render',
+      expect.objectContaining({ id: BROKEN_ID }),
+      expect.any(Error),
+    );
   });
 
   it('retries rendering when the operation object changes', () => {

@@ -33,9 +33,9 @@ multisig or proxy chain of accounts), so it can be signed later exactly as it wa
 3. After submission, only entries with a successful result are removed; entries can also be removed manually.
 
 For display and fee purposes each entry is reduced to its **core transaction**: a `batchAll` wrapper shows the
-meaningful inner call (unlock first, then known batch-wrapped operations, else the first call). If no core call can be
-identified (for example a nested batch), the entry falls back to the original transaction rather than breaking the row.
-Edit-delegation batches are always shown as a whole.
+meaningful inner call (unlock first, then known batch-wrapped operations, else the first call that is not itself a
+batch). If no core call can be identified (for example a batch that only nests other batches), the entry falls back to
+the original transaction rather than breaking the row. Edit-delegation batches are always shown as a whole.
 
 ## Related
 
