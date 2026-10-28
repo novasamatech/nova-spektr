@@ -1,13 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Scope, allSettled, fork } from 'effector';
+import { type Scope, allSettled, createWatch, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type PathNode } from '@/domains/backend';
+import type * as Backend from '@/domains/backend';
+import { type Draft, type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { authModel, connectionHistoryModel } from '@/aggregates/backend';
+import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { pathModel } from '@/features/signing-path';
 import type * as DecodeDraft from '../lib/decode-draft-transaction';
 import { decodeDraftTransaction } from '../lib/decode-draft-transaction';
@@ -18,6 +19,14 @@ vi.mock('../lib/decode-draft-transaction', async (importOriginal) => ({
   ...(await importOriginal<typeof DecodeDraft>()),
   decodeDraftTransaction: vi.fn(() => null),
 }));
+
+// The backend call is the one thing the create action does that this model
+// cannot observe; it is recorded so the gate in front of it can be asserted.
+vi.mock('@/domains/backend', async (importOriginal) => {
+  const actual = await importOriginal<typeof Backend>();
+
+  return { ...actual, draftsService: { ...actual.draftsService, createDraft: vi.fn() } };
+});
 
 const acc = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
 const signer = (accountId: AccountId): PathNode => ({ kind: 'signer', accountId });
@@ -433,5 +442,107 @@ describe('createDraftModel · unknown recipient gate', () => {
 
     expect(scope.getState(createDraftModel.$isRecipientCheckable)).toBe(true);
     expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
+  });
+
+  it('never creates a draft past an unticked box, even from the confirm', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue(transferToStranger);
+    const scope = forkConnected(true);
+    await open(scope, seed);
+    await allSettled(createDraftModel.descriptionChanged, { scope, params: 'Pay a stranger' });
+
+    expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
+    expect(scope.getState(createDraftModel.$canContinue)).toBe(false);
+
+    await allSettled(createDraftModel.createDraftFx, { scope });
+    expect(draftsService.createDraft).not.toHaveBeenCalled();
+
+    await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    expect(scope.getState(createDraftModel.$canContinue)).toBe(true);
+  });
+});
+
+describe('createDraftModel · create', () => {
+  const BACKEND_URL = 'https://address-book.test';
+  const seed: DraftSeed = { chainId: CHAIN_A, callData: VALID_CALL_DATA, path: COMPLETE_PATH };
+  const created = { id: 'draft-1' } as unknown as Draft;
+
+  const forkWithBackend = () =>
+    fork({
+      values: new Map()
+        .set(networkModel.$chains, { [CHAIN_A]: chainA })
+        .set(backendConfigurationModel.$backendUrl, BACKEND_URL),
+    });
+
+  beforeEach(() => {
+    vi.mocked(draftsService.createDraft).mockReset();
+    vi.mocked(draftsService.createDraft).mockResolvedValue(created);
+  });
+
+  it('creates the draft from a ready confirm and announces it', async () => {
+    const scope = forkWithBackend();
+    const announced: unknown[] = [];
+    const stored: unknown[] = [];
+    const unsubscribe = [
+      createWatch({ unit: createDraftModel.draftCreated, scope, fn: () => announced.push(true) }),
+      createWatch({ unit: draftsResource.draftCreated, scope, fn: (draft) => stored.push(draft) }),
+    ];
+
+    try {
+      await open(scope, seed);
+      await allSettled(createDraftModel.descriptionChanged, { scope, params: 'Pay the team' });
+
+      expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
+      expect(scope.getState(createDraftModel.$canContinue)).toBe(true);
+
+      await allSettled(createDraftModel.createDraftFx, { scope });
+
+      expect(draftsService.createDraft).toHaveBeenCalledTimes(1);
+      expect(draftsService.createDraft).toHaveBeenCalledWith(
+        BACKEND_URL,
+        expect.objectContaining({
+          chainId: CHAIN_A,
+          callData: VALID_CALL_DATA,
+          description: 'Pay the team',
+          signingPath: COMPLETE_PATH,
+        }),
+      );
+      expect(stored).toEqual([created]);
+      expect(announced).toHaveLength(1);
+    } finally {
+      for (const stop of unsubscribe) stop();
+    }
+  });
+
+  it('creates nothing while the confirm is not ready', async () => {
+    // No description: the button is disabled, and a direct call must not get
+    // past the gate either.
+    const scope = forkWithBackend();
+    const announced: unknown[] = [];
+    const unsubscribe = createWatch({ unit: createDraftModel.draftCreated, scope, fn: () => announced.push(true) });
+
+    try {
+      await open(scope, seed);
+      expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
+      expect(scope.getState(createDraftModel.$canContinue)).toBe(false);
+
+      await allSettled(createDraftModel.createDraftFx, { scope });
+
+      expect(draftsService.createDraft).not.toHaveBeenCalled();
+      expect(announced).toEqual([]);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('creates nothing without an address book to send it to', async () => {
+    const scope = forkWithChains([chainA]);
+
+    await open(scope, seed);
+    await allSettled(createDraftModel.descriptionChanged, { scope, params: 'Pay the team' });
+    expect(scope.getState(createDraftModel.$canContinue)).toBe(true);
+
+    await allSettled(createDraftModel.createDraftFx, { scope });
+
+    expect(draftsService.createDraft).not.toHaveBeenCalled();
   });
 });

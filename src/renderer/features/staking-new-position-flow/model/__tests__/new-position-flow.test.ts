@@ -160,6 +160,7 @@ const { walletSelect } = await import('@/aggregates/wallet-select');
 const { basketOperations } = await import('@/aggregates/basket-operations');
 const { validatorSelectionModel } = await import('@/features/validator-selection');
 const { createDraftModel } = await import('@/features/drafts');
+const { signModel } = await import('@/features/operations/OperationSign');
 
 /**
  * The real module types `formSubmitted` as a derived `Event`, which
@@ -526,6 +527,43 @@ describe('staking-new-position-flow · sign gate', () => {
     await fillForm(scope);
 
     expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
+  });
+
+  it('moves to the sign step while the confirm is ready', async () => {
+    const scope = fork({ values: seeded() });
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(true);
+
+    await allSettled(newPositionFlowModel.startSigning, { scope });
+    expect(scope.getState(newPositionFlowModel.$step)).toBe(Step.SIGN);
+  });
+
+  it('refuses to sign past a closed gate, even from the confirm', async () => {
+    // The validator rejects the call: the button is disabled, and a stale
+    // click must not walk on either.
+    const scope = fork({ values: seeded().set($txErrors(), [OVER_BALANCE_ERROR]) });
+    const signSpy = vi.fn();
+
+    await fillForm(scope);
+    await allSettled(newPositionFlowModel.continueRequested, { scope });
+    await allSettled(picker.output.formSubmitted, { scope, params: [validator(7)] });
+
+    expect(scope.getState(newPositionFlowModel.$canSign)).toBe(false);
+    const step = scope.getState(newPositionFlowModel.$step);
+
+    const unsubscribe = createWatch({ unit: signModel.events.formInitiated, fn: signSpy, scope });
+    try {
+      await allSettled(newPositionFlowModel.startSigning, { scope });
+
+      expect(scope.getState(newPositionFlowModel.$step)).toBe(step);
+      expect(scope.getState(newPositionFlowModel.$step)).not.toBe(Step.SIGN);
+      expect(signSpy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 });
 

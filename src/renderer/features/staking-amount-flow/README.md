@@ -1,6 +1,6 @@
 # Staking amount flow (unbond / add stake)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -117,7 +117,9 @@ flowchart TD
 
 The confirm opens on the amount, not on the node: the wrapped transaction, the fee and the validation each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
-re-runs all three in place.
+re-runs all three in place. The gate the button reads is the model's own: `Sign` pressed while the confirm is not ready
+— the amount turned invalid, the transaction dropped, a verdict still in flight — moves the flow nowhere and hands
+nothing to the signer, so the disabled button is not the only thing standing in the way.
 
 The balances the validation reads are asked for by the flow itself: once the signing route resolves, every account on it
 — the position's account, a multisig or proxy hop, the signatory — is re-requested from `assets-balances`. A position

@@ -871,16 +871,21 @@ export const createNewPositionFlowModel = () => {
     target: confirmModel.init,
   });
 
+  // The button is disabled while `$canSign` is false, and the model refuses
+  // too: a gate that closed after the click must not be bypassable.
   sample({
     clock: confirmModel.startSigning,
+    source: $canSign,
+    filter: (canSign) => canSign,
     fn: () => Step.SIGN,
     target: stepChanged,
   });
 
   const sign = sample({
     clock: confirmModel.startSigning,
-    source: confirmModel.$confirms,
-    fn: (confirms) => ({
+    source: { confirms: confirmModel.$confirms, canSign: $canSign },
+    filter: ({ canSign }) => canSign,
+    fn: ({ confirms }) => ({
       signingPayloads: confirms.map((confirm) => ({
         chain: confirm.meta.chain,
         account: confirm.meta.initiator,

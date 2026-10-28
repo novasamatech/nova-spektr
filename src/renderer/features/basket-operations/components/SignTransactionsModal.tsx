@@ -23,7 +23,7 @@ export const SignTransactionsModal = () => {
   const transactions = useUnit(signOperations.$transactions);
   const step = useUnit(signOperations.$step);
   const isModalOpen = useUnit(signOperations.$isModalOpen);
-  const validationResults = useUnit(validation.$validatingResults);
+  const canSign = useUnit(signOperations.$canSign);
   const validationPending = useUnit(validation.$pending);
 
   if (signOperationsUtils.isSubmitStep(step)) {
@@ -32,11 +32,6 @@ export const SignTransactionsModal = () => {
 
   const pending = transactions.some(transaction => {
     return validationPending[transaction.id] ?? true;
-  });
-
-  const canSign = transactions.every(transaction => {
-    const v = validationResults[transaction.id];
-    return v && v.length === 0;
   });
 
   return (
@@ -54,7 +49,7 @@ export const SignTransactionsModal = () => {
                 <SignButton
                   isDefault
                   type={WalletType.POLKADOT_VAULT}
-                  disabled={!canSign || pending}
+                  disabled={!canSign}
                   onClick={signOperations.confirm}
                 />
               </Box>

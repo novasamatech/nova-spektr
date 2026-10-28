@@ -9,7 +9,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
-import { draftsResource, draftsService } from '@/domains/backend';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
@@ -19,7 +18,6 @@ import {
   type PathNextOption,
   type PathSource,
   StepPath,
-  deriveInitiatorAccountId,
   deriveMultisigAccountId,
   graphModel,
   isUsablePath,
@@ -184,23 +182,12 @@ export const CreateDraftModal = () => {
       return;
     }
 
-    const multisigAccountId = deriveMultisigAccountId(path) ?? undefined;
-    const initiatorAccountId = deriveInitiatorAccountId(path) ?? undefined;
-    const proxyAccountId = path[0]?.kind === 'proxied' ? path[0].accountId : undefined;
-
     setIsSubmitting(true);
     try {
-      const response = await draftsService.createDraft(backendUrl, {
-        chainId: selectedChain.chainId,
-        multisigAccountId,
-        proxyAccountId,
-        signingPath: path,
-        initiatorAccountId,
-        callData: callData || undefined,
-        description: description || undefined,
-      });
-      draftsResource.draftCreated(response);
-      createDraftModel.draftCreated();
+      // The model holds the gate: a confirm that is not ready creates nothing.
+      const response = await createDraftModel.createDraftFx();
+      if (!response) return;
+
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
@@ -312,7 +299,7 @@ export const CreateDraftModal = () => {
               </Tooltip>
             )}
             <Button
-              disabled={!canAdvanceCallData || (activeStep === 'confirm' && !isRecipientRiskAccepted)}
+              disabled={!canAdvanceCallData}
               isLoading={isSubmitting}
               onClick={activeStep === 'confirm' ? handleCreateDraft : () => createDraftModel.stepAdvanced()}
             >

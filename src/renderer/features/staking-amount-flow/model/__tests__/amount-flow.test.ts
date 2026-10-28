@@ -263,6 +263,46 @@ describe('staking-amount-flow · continue', () => {
   });
 });
 
+describe('staking-amount-flow · sign gate', () => {
+  it('moves to the sign step while the confirm is ready', async () => {
+    const scope = fork({ values: connected() });
+    await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
+    await allSettled(amountFlowModel.amountChanged, { scope, params: '100' });
+    await allSettled(amountFlowModel.continueRequested, { scope });
+
+    expect(scope.getState(amountFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(scope.getState(amountFlowModel.$canSign)).toBe(true);
+
+    await allSettled(amountFlowModel.startSigning, { scope });
+    expect(scope.getState(amountFlowModel.$step)).toBe(Step.SIGN);
+  });
+
+  it('refuses to sign past a gate that closed under the open confirm', async () => {
+    const scope = fork({ values: connected() });
+    const signSpy = vi.fn();
+
+    await allSettled(amountFlowModel.unbondRequested, { scope, params: target() });
+    await allSettled(amountFlowModel.amountChanged, { scope, params: '100' });
+    await allSettled(amountFlowModel.continueRequested, { scope });
+    // The amount turned invalid while the confirm is open: the button is
+    // disabled, and a stale click must not walk on either.
+    await allSettled(amountFlowModel.amountChanged, { scope, params: '2000' });
+
+    expect(scope.getState(amountFlowModel.$step)).toBe(Step.CONFIRM);
+    expect(scope.getState(amountFlowModel.$canSign)).toBe(false);
+
+    const unsubscribe = createWatch({ unit: signModel.events.formInitiated, fn: signSpy, scope });
+    try {
+      await allSettled(amountFlowModel.startSigning, { scope });
+
+      expect(scope.getState(amountFlowModel.$step)).toBe(Step.CONFIRM);
+      expect(signSpy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
+  });
+});
+
 describe('staking-amount-flow · built call', () => {
   it('a partial unbond is a bare unbond, from the position account', async () => {
     const scope = fork({ values: withMinBond(dot(250)) });

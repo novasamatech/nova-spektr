@@ -1,12 +1,21 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { isHex } from '@/shared/lib/utils';
-import { type PathNode } from '@/domains/backend';
+import { isHex, nonNullable } from '@/shared/lib/utils';
+import { type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { findCoreTransaction } from '@/entities/transaction';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
-import { graphModel, pathModel } from '@/features/signing-path';
+import {
+  deriveInitiatorAccountId,
+  deriveMultisigAccountId,
+  graphModel,
+  isUsablePath,
+  isValidPath,
+  pathModel,
+} from '@/features/signing-path';
 import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
 import { getRecipientAccountIds, getRecipientCheck } from '../lib/recipient-check';
 
@@ -206,16 +215,77 @@ const $canContinue = combine(
     errorKey: $callDataErrorKey,
     pathComplete: pathModel.$isComplete,
     description: $description,
+    riskAccepted: $recipientRiskAccepted,
   },
-  ({ step, chain, callData, errorKey, pathComplete, description }) => {
+  ({ step, chain, callData, errorKey, pathComplete, description, riskAccepted }) => {
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
     if (step === 'select-path') return pathComplete;
 
-    return step === 'confirm' && description.trim().length > 0 && description.length <= DESCRIPTION_MAX_LENGTH;
+    return (
+      step === 'confirm' &&
+      description.trim().length > 0 &&
+      description.length <= DESCRIPTION_MAX_LENGTH &&
+      // The unknown-recipient acknowledgement is part of the confirm gate, not
+      // only of the button: a draft is never created past an unticked box.
+      riskAccepted
+    );
   },
 );
 
 const $canSkip = combine($activeStep, $selectedChain, (step, chain) => step === 'call-data' && !!chain);
+
+/**
+ * Everything the create call needs, or `null` while any of it is missing — the
+ * confirm gate included, so the backend is never asked for a draft the modal
+ * would not let the user create.
+ */
+const $createParams = combine(
+  {
+    canContinue: $canContinue,
+    backendUrl: backendConfigurationModel.$backendUrl,
+    chain: $selectedChain,
+    path: pathModel.$path,
+    callData: $callData,
+    description: $description,
+  },
+  ({ canContinue, backendUrl, chain, path, callData, description }) => {
+    if (!canContinue || !backendUrl || !chain) return null;
+    // A lone `signer` is grammatically valid, but a draft along it could never
+    // be submitted — the signing path needs at least one delegation hop.
+    if (!isValidPath(path).ok || !isUsablePath(path)) return null;
+
+    return {
+      backendUrl,
+      params: {
+        chainId: chain.chainId,
+        multisigAccountId: deriveMultisigAccountId(path) ?? undefined,
+        proxyAccountId: path[0]?.kind === 'proxied' ? path[0].accountId : undefined,
+        signingPath: path,
+        initiatorAccountId: deriveInitiatorAccountId(path) ?? undefined,
+        callData: callData || undefined,
+        description: description || undefined,
+      },
+    };
+  },
+);
+
+/**
+ * The create action. An effect so the modal can await it for its toasts; the
+ * gate lives inside, so a call while the confirm is not ready resolves to
+ * `null` and creates nothing — the button's `disabled` is not the only thing
+ * standing in the way.
+ */
+const createDraftFx = attach({
+  source: $createParams,
+  effect: (createParams) =>
+    createParams ? draftsService.createDraft(createParams.backendUrl, createParams.params) : Promise.resolve(null),
+});
+
+sample({
+  clock: createDraftFx.doneData,
+  filter: nonNullable,
+  target: [draftsResource.draftCreated, draftCreated],
+});
 
 export const createDraftModel = {
   createDraftRequested,
@@ -246,4 +316,5 @@ export const createDraftModel = {
   $isDirty,
   $canContinue,
   $canSkip,
+  createDraftFx,
 };

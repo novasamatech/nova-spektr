@@ -445,13 +445,35 @@ describe('staking-confirm-flow · sign gate', () => {
     expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
   });
 
-  it('moves to the sign step when Sign is pressed outside draft mode', async () => {
-    const scope = fork();
+  it('moves to the sign step when Sign is pressed while the confirm is ready', async () => {
+    const scope = fork({ values: withLiveRedeem(connected()) });
 
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
+
     await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(confirmFlowModel.$step)).toBe(Step.SIGN);
+  });
+
+  it('refuses to sign past a closed gate, even from the confirm', async () => {
+    // The ledger emptied under the open confirm: the button is disabled, and a
+    // stale click must not walk on either.
+    const scope = fork({ values: withLiveRedeem(connected(), '0') });
+    const signSpy = vi.fn();
+
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+
+    const unsubscribe = createWatch({ unit: signModel.events.formInitiated, fn: signSpy, scope });
+    try {
+      await allSettled(confirmModel.startSigning, { scope });
+
+      expect(scope.getState(confirmFlowModel.$step)).toBe(Step.CONFIRM);
+      expect(signSpy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 });
 

@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -66,7 +66,9 @@ feature is its sibling for the actions that need no amount.
 **The confirm opens on the click, not on the node.** Everything it leads with is in hand the moment the button is
 pressed. The wrapped transaction, the fee, the validation and — for a redeem — the slashing-span read each cost a round
 trip, so they stream in behind their own loaders with `Sign` disabled until they land. Changing the signing route
-re-runs them in place.
+re-runs them in place. That gate is the model's own, not only the button's: `Sign` pressed while anything is still in
+flight, the call is rejected or gone, nobody on the route can sign, the live ledger has nothing left or draft mode is on
+moves the flow nowhere and hands nothing to the signer.
 
 **The snapshot is for display; the redeem sign gate is live.** The figure the confirm leads with stays what it was on
 the click — a chunk unlocking mid-signature must not change it. But eras keep advancing under an open confirm, so the
