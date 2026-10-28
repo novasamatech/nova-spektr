@@ -14,7 +14,7 @@ import { type AnyAccount } from '@/domains/network';
 // eslint-disable-next-line boundaries/entry-point -- reusing a real metadata blob fixture in tests only
 import { metadata } from '@/domains/network/transaction/service.mocks';
 import { networkModel } from '@/entities/network';
-import { ExtrinsicResult, SubmitStep } from '../../lib/types';
+import { SubmitStep } from '../../lib/types';
 import { type SubmitInputDeprecated, submitModel } from '../submit-model';
 
 const createMockApi = async () => {
@@ -92,8 +92,7 @@ describe('submitModel deprecated flow', () => {
   const expectNotSubmitted = ({ store, step, done }: Awaited<ReturnType<typeof submit>>, message: string) => {
     expect(store).toBeNull();
     expect(step).toEqual({ step: SubmitStep.ERROR, message });
-    expect(done).toHaveBeenCalledTimes(1);
-    expect(done).toHaveBeenCalledWith([{ id: 0, result: ExtrinsicResult.ERROR, params: message }]);
+    expect(done).not.toHaveBeenCalled();
   };
 
   beforeAll(async () => {

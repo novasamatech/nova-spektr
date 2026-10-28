@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { once, reset, spread } from 'patronum';
+import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
 import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
@@ -73,7 +73,7 @@ const $submitStore = createStore<SubmitInput | null>(null);
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 
 const $submittingTxs = createStore<number[]>([]);
-const $results = createStore<Result[]>([]).reset(init);
+const $results = createStore<Result[]>([]).reset([formInitiated, init]);
 
 // effects
 
@@ -158,21 +158,11 @@ sample({
   target: init,
 });
 
-// nothing was submitted, reported the same way as a failed extrinsic
+// nothing was submitted: show the error, but "done" is reserved for a finished submission
 sample({
   clock: buildSignedExtrinsicsFx.failData,
-  fn: (error) => {
-    const failedResult: ErrorResult = { id: 0, result: ExtrinsicResult.ERROR, params: error.message };
-
-    return {
-      results: [failedResult],
-      step: { step: SubmitStep.ERROR, message: error.message },
-    };
-  },
-  target: spread({
-    results: $results,
-    step: $submitStep,
-  }),
+  fn: (error) => ({ step: SubmitStep.ERROR, message: error.message }),
+  target: $submitStep,
 });
 
 // actual flow
@@ -268,7 +258,7 @@ sample({
 sample({
   clock: $submitStep,
   source: $results,
-  filter: (_, { step }) => step !== SubmitStep.LOADING,
+  filter: (results, { step }) => step !== SubmitStep.LOADING && results.length > 0,
   target: formSubmitted,
 });
 
