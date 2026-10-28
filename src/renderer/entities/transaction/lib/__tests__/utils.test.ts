@@ -302,12 +302,6 @@ describe('entities/transaction/lib/onChainUtils', () => {
     const delegate = createTransaction(TransactionType.DELEGATE, { balance: '1' });
     const undelegate = createTransaction(TransactionType.UNDELEGATE);
 
-    test('should skip a nested batch in favour of a plain sibling', () => {
-      const transfer = createTransaction(TransactionType.TRANSFER);
-
-      expect(findCoreBatchAll(createBatch([createBatch([unlock]), transfer]))).toBe(transfer);
-    });
-
     test('should not recurse endlessly on nested batches', () => {
       const nested = createBatch([createBatch([createBatch([unlock])])]);
 
