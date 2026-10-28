@@ -10,7 +10,7 @@ import { decodeCallData } from '@/entities/transaction';
 // eslint-disable-next-line boundaries/entry-point
 import { metadata } from '@/entities/transaction/lib/__tests__/metadata';
 
-import { getRecipientCheck } from './get-destination-account-id';
+import { getRecipientCheck } from './recipient-check';
 
 const ORIGIN = toAccountId(TEST_ADDRESS);
 const STRANGER = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';

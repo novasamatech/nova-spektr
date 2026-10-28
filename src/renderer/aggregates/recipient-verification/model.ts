@@ -5,7 +5,7 @@ import {
   type RecipientVerificationMode,
   type RecipientWarning,
   resolveRecipientCheckWarning,
-  resolveRecipientWarning,
+  toRecipientCheck,
 } from '@/shared/lib/recipient-verification';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
@@ -41,12 +41,12 @@ const $knownAccountIds = combine(contactModel.$contacts, accounts.$list, (contac
   return known;
 });
 
-const $resolveWarning = combine($mode, $knownAccountIds, (mode, knownAccountIds) => {
-  return (accountId: AccountId | null): RecipientWarning => resolveRecipientWarning(mode, knownAccountIds, accountId);
-});
-
 const $resolveCheckWarning = combine($mode, $knownAccountIds, (mode, knownAccountIds) => {
   return (check: RecipientCheck): RecipientWarning => resolveRecipientCheckWarning(mode, knownAccountIds, check);
+});
+
+const $resolveWarning = $resolveCheckWarning.map(resolveCheckWarning => {
+  return (accountId: AccountId | null): RecipientWarning => resolveCheckWarning(toRecipientCheck(accountId));
 });
 
 export const recipientVerificationModel = {

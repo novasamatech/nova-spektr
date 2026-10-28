@@ -50,8 +50,8 @@ import { type SuccessResult, ExtrinsicResult, submitModel } from '@/features/ope
 import { MIN_PATH_LENGTH, createPathResolutionStore, isUsablePath } from '@/features/signing-path';
 import { createRoundTrippedCall, tryDecodeCallData } from '../lib/decode-call-data';
 import { findSubmittableInitiator } from '../lib/draft-initiator';
-import { getDraftRecipientCheck, getRecipientAccountIds } from '../lib/get-destination-account-id';
 import { preserveSigningPath } from '../lib/preserve-signing-path';
+import { getDraftRecipientCheck, getRecipientAccountIds } from '../lib/recipient-check';
 
 import './drafts-model'; // side-effect: orchestration wiring
 

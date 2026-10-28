@@ -29,8 +29,8 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
 import { multisigOperationDescription } from '@/aggregates/multisig-operation-description';
 import { findRouteMultisigAccountId } from '@/aggregates/multisig-operation-description/lib/findRouteMultisigAccountId';
-import type * as DestinationHelper from '@/features/drafts/lib/get-destination-account-id';
-import { getDraftRecipientCheck } from '@/features/drafts/lib/get-destination-account-id';
+import type * as RecipientCheckModule from '@/features/drafts/lib/recipient-check';
+import { getDraftRecipientCheck } from '@/features/drafts/lib/recipient-check';
 import { getDraftSubmitGate } from '@/features/drafts/lib/submit-draft-availability';
 import { submitDraftModel } from '@/features/drafts/model/submit-draft-model';
 import { signModel } from '@/features/operations/OperationSign';
@@ -46,8 +46,8 @@ import {
 
 // The api double can't decode real call data, so the recipient resolution is
 // stubbed: no recipient by default, overridden per test.
-vi.mock('@/features/drafts/lib/get-destination-account-id', async (importOriginal) => ({
-  ...(await importOriginal<typeof DestinationHelper>()),
+vi.mock('@/features/drafts/lib/recipient-check', async (importOriginal) => ({
+  ...(await importOriginal<typeof RecipientCheckModule>()),
   getDraftRecipientCheck: vi.fn(() => ({ kind: 'no-recipient' })),
 }));
 

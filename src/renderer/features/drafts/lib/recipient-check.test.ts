@@ -8,7 +8,7 @@ import { type Draft } from '@/domains/backend';
 
 import type * as DecodeDraft from './decode-draft-transaction';
 import { decodeDraftTransaction } from './decode-draft-transaction';
-import { getDraftRecipientCheck, getRecipientCheck } from './get-destination-account-id';
+import { getDraftRecipientCheck, getRecipientCheck } from './recipient-check';
 
 vi.mock('./decode-draft-transaction', async (importOriginal) => ({
   ...(await importOriginal<typeof DecodeDraft>()),
@@ -129,6 +129,7 @@ describe('getRecipientCheck', () => {
 
   it('is unresolved when a wrapper holds no decoded call', () => {
     expect(getRecipientCheck(proxyOf(undefined as unknown as DecodedTransaction))).toEqual({ kind: 'unresolved' });
+    expect(getRecipientCheck(callOf(TransactionType.BATCH_ALL, {}))).toEqual({ kind: 'unresolved' });
   });
 
   it('reads the beneficiary location of an XCM transfer', () => {

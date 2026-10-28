@@ -4,4 +4,5 @@ export {
   type RecipientWarning,
   resolveRecipientCheckWarning,
   resolveRecipientWarning,
+  toRecipientCheck,
 } from './resolveRecipientWarning';

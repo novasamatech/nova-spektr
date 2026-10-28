@@ -15,27 +15,12 @@ export type RecipientCheck =
   | { kind: 'unresolved' };
 
 /**
- * Decides whether a recipient deserves an "unknown address" warning. `off` —
- * external address book never connected (or explicitly disconnected): the whole
- * feature is invisible. `unverifiable` — connected before but currently
- * unhealthy: every recipient is warned until reconnect. `active` — healthy:
- * warn only when the accountId is not among known ones.
- */
-export function resolveRecipientWarning(
-  mode: RecipientVerificationMode,
-  knownAccountIds: Set<AccountId>,
-  accountId: AccountId | null,
-): RecipientWarning {
-  if (mode === 'off' || accountId === null) return 'none';
-  if (mode === 'unverifiable') return 'unverifiable';
-
-  return knownAccountIds.has(accountId) ? 'none' : 'unknown';
-}
-
-/**
- * Multi-recipient counterpart of `resolveRecipientWarning`. A recipient that
- * can't be read is never "nothing to check": it warns like an unknown one. A
- * list warns when any of its recipients does.
+ * Decides whether a call's recipients deserve an "unknown address" warning.
+ * `off` — external address book never connected (or explicitly disconnected):
+ * the whole feature is invisible. `unverifiable` — connected before but
+ * currently unhealthy: every recipient is warned until reconnect. `active` —
+ * healthy: warn when any recipient is not among known ones. A recipient that
+ * can't be read is never "nothing to check": it warns like an unknown one.
  */
 export function resolveRecipientCheckWarning(
   mode: RecipientVerificationMode,
@@ -47,4 +32,18 @@ export function resolveRecipientCheckWarning(
   if (check.kind === 'unresolved') return 'unknown';
 
   return check.accountIds.every((accountId) => knownAccountIds.has(accountId)) ? 'none' : 'unknown';
+}
+
+/** The check of a single, already read recipient; `null` — no recipient. */
+export function toRecipientCheck(accountId: AccountId | null): RecipientCheck {
+  return accountId === null ? { kind: 'no-recipient' } : { kind: 'recipients', accountIds: [accountId] };
+}
+
+/** Single-recipient form of `resolveRecipientCheckWarning`. */
+export function resolveRecipientWarning(
+  mode: RecipientVerificationMode,
+  knownAccountIds: Set<AccountId>,
+  accountId: AccountId | null,
+): RecipientWarning {
+  return resolveRecipientCheckWarning(mode, knownAccountIds, toRecipientCheck(accountId));
 }

@@ -8,7 +8,7 @@ import { networkModel } from '@/entities/network';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import { graphModel, pathModel } from '@/features/signing-path';
 import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
-import { getRecipientAccountIds, getRecipientCheck } from '../lib/get-destination-account-id';
+import { getRecipientAccountIds, getRecipientCheck } from '../lib/recipient-check';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 
