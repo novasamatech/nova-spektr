@@ -212,14 +212,18 @@ submit flow (see [States / scenarios](#states--scenarios)).
 ## Unknown recipient warnings
 
 Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md), which is itself gated on the
-external address book connection — a user who never connected it sees nothing here. Only drafts whose call data decodes
-to a transfer (or XCM transfer) have a recipient; every other draft is unaffected. Transfers wrapped in `proxy.proxy` or
+external address book connection — a user who never connected it sees nothing here. A draft has recipients when its call
+data decodes to a call that names an account it pays: a transfer, an XCM transfer (the beneficiary location, the xTokens
+`dest` account, or _every_ deposit of a `transferAssetsUsingTypeAndThen` program — appendix and forwarded programs
+included), a vested transfer, a reward destination set to an `Account`, a proxy delegate, a governance delegation target
+or a salary `payoutOther` beneficiary. Calls known to pay no one (remarks, votes, unbond / rebond / withdraw, chill,
+nominate, cancel-multisig, pure-proxy management and the like) are unaffected. Transfers wrapped in `proxy.proxy` or
 `utility.batch` / `batchAll` / `forceBatch` are found too — a batch has every recipient it pays, and warns when any of
 them is unknown. Proxy-only drafts (a proxied source with no multisig hop) are covered the same way as multisig ones.
 
-- **An unreadable recipient is an unknown one.** Call data that is present but can't be decoded, or a transfer whose
-  recipient can't be read, warns exactly like an unknown recipient (acknowledgement required) — never "nothing to
-  check".
+- **An unreadable recipient is an unknown one.** Call data that is present but can't be decoded, a recipient that can't
+  be read, or a call the check doesn't understand (an unrecognised pallet call, a nested `multisig.asMulti`, an XCM
+  `Transact`) warns exactly like an unknown recipient (acknowledgement required) — never "nothing to check".
 
 - **Create → Confirm.** When the decoded recipient is not known (`unknown`) or cannot be checked (`unverifiable`), an
   amber acknowledgement box appears below the transaction card, above the "This does not sign yet" note. **Create

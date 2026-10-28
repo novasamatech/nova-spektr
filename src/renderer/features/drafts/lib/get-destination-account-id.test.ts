@@ -66,6 +66,22 @@ const remark = {
   method: 'remark',
   args: {},
 } as unknown as DecodedTransaction;
+const callOf = (type: TransactionType | undefined, args: Record<string, unknown>) =>
+  ({ type, section: 'any', method: 'any', args }) as unknown as DecodedTransaction;
+
+// Decoded call data keeps XCM args as JSON strings of the versioned codecs.
+const location = (id: string) => ({ parents: 0, interior: { x1: [{ accountId32: { network: null, id } }] } });
+const xcmTransferTo = (id: string, type = TransactionType.POLKADOT_XCM_TRANSFER_ASSETS) =>
+  callOf(type, {
+    dest: JSON.stringify({ v4: { parents: 1, interior: { x1: [{ parachain: 1000 }] } } }),
+    beneficiary: JSON.stringify({ v4: location(id) }),
+  });
+const xcmProgramTo = (...ids: string[]) =>
+  callOf(TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN, {
+    customXcmOnDest: JSON.stringify({
+      v4: ids.map((id) => ({ depositAsset: { assets: { wild: { all: null } }, beneficiary: location(id) } })),
+    }),
+  });
 
 describe('getRecipientCheck', () => {
   it('reports no recipient for a missing or non-transfer transaction', () => {
@@ -109,6 +125,85 @@ describe('getRecipientCheck', () => {
     for (let i = 0; i < 20; i++) tx = proxyOf(tx);
 
     expect(getRecipientCheck(tx)).toEqual({ kind: 'unresolved' });
+  });
+
+  it('is unresolved when a wrapper holds no decoded call', () => {
+    expect(getRecipientCheck(proxyOf(undefined as unknown as DecodedTransaction))).toEqual({ kind: 'unresolved' });
+  });
+
+  it('reads the beneficiary location of an XCM transfer', () => {
+    expect(getRecipientCheck(xcmTransferTo(STRANGER))).toEqual({ kind: 'recipients', accountIds: [STRANGER] });
+    expect(getRecipientCheck(xcmTransferTo(STRANGER, TransactionType.XCM_LIMITED_TRANSFER))).toEqual({
+      kind: 'recipients',
+      accountIds: [STRANGER],
+    });
+  });
+
+  it('reads the recipient of an xTokens transfer from its dest location', () => {
+    const dest = JSON.stringify({
+      v3: { parents: 1, interior: { x2: [{ parachain: 1000 }, location(STRANGER).interior.x1[0]] } },
+    });
+
+    expect(getRecipientCheck(callOf(TransactionType.XTOKENS_TRANSFER, { dest }))).toEqual({
+      kind: 'recipients',
+      accountIds: [STRANGER],
+    });
+  });
+
+  it('collects every deposit of a type-and-then program', () => {
+    expect(getRecipientCheck(xcmProgramTo(TEST_ACCOUNTS[0], STRANGER))).toEqual({
+      kind: 'recipients',
+      accountIds: [TEST_ACCOUNTS[0], STRANGER],
+    });
+  });
+
+  it('is unresolved when an XCM recipient can not be read', () => {
+    expect(getRecipientCheck(callOf(TransactionType.POLKADOT_XCM_TRANSFER_ASSETS, { beneficiary: 'garbage' }))).toEqual(
+      {
+        kind: 'unresolved',
+      },
+    );
+    expect(getRecipientCheck(callOf(TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN, {}))).toEqual({
+      kind: 'unresolved',
+    });
+  });
+
+  it('treats an Account reward destination as a recipient and the others as none', () => {
+    expect(getRecipientCheck(callOf(TransactionType.DESTINATION, { payee: { Account: TEST_ADDRESS } }))).toEqual({
+      kind: 'recipients',
+      accountIds: [TEST_ACCOUNTS[0]],
+    });
+    expect(getRecipientCheck(callOf(TransactionType.BOND, { value: '1', payee: { Account: 'garbage' } }))).toEqual({
+      kind: 'unresolved',
+    });
+    expect(getRecipientCheck(callOf(TransactionType.DESTINATION, { payee: 'Staked' }))).toEqual({
+      kind: 'no-recipient',
+    });
+    expect(getRecipientCheck(callOf(TransactionType.BOND, { value: '1', payee: 'Stash' }))).toEqual({
+      kind: 'no-recipient',
+    });
+  });
+
+  it('reads the account of other calls that name one', () => {
+    const recipients = { kind: 'recipients', accountIds: [TEST_ACCOUNTS[0]] };
+
+    expect(getRecipientCheck(callOf(TransactionType.VESTED_TRANSFER, { target: TEST_ADDRESS }))).toEqual(recipients);
+    expect(getRecipientCheck(callOf(TransactionType.ADD_PROXY, { delegate: TEST_ADDRESS }))).toEqual(recipients);
+    expect(getRecipientCheck(callOf(TransactionType.DELEGATE, { target: TEST_ADDRESS }))).toEqual(recipients);
+    expect(getRecipientCheck(callOf(TransactionType.COLLECTIVE_SALARY_PAYOUT, { beneficiary: TEST_ADDRESS }))).toEqual(
+      recipients,
+    );
+    expect(getRecipientCheck(callOf(TransactionType.COLLECTIVE_SALARY_PAYOUT, { beneficiary: null }))).toEqual({
+      kind: 'no-recipient',
+    });
+  });
+
+  it('is unresolved for calls it does not understand', () => {
+    expect(getRecipientCheck(callOf(undefined, {}))).toEqual({ kind: 'unresolved' });
+    expect(getRecipientCheck(callOf(TransactionType.MULTISIG_AS_MULTI, { call: '0x00' }))).toEqual({
+      kind: 'unresolved',
+    });
+    expect(getRecipientCheck(batchOf(transferTx, callOf(undefined, {})))).toEqual({ kind: 'unresolved' });
   });
 });
 
