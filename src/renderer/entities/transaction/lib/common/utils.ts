@@ -3,6 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 
 import {
@@ -79,25 +80,6 @@ export const isProxyTransaction = (transaction?: Transaction | DecodedTransactio
   return transaction?.type === TransactionType.PROXY;
 };
 
-/**
- * A batch made only of delegate and undelegate calls (at least one of each).
- * Extra or nested calls disqualify the batch, so it stays a plain batch.
- */
-export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  if (transaction?.type !== TransactionType.BATCH_ALL) return false;
-
-  const transactions: Transaction[] = transaction.args?.transactions ?? [];
-  const isDelegationCall = (tx: Transaction) =>
-    tx.type === TransactionType.DELEGATE || tx.type === TransactionType.UNDELEGATE;
-
-  return (
-    transactions.length > 0 &&
-    transactions.every(isDelegationCall) &&
-    transactions.some((tx) => tx.type === TransactionType.DELEGATE) &&
-    transactions.some((tx) => tx.type === TransactionType.UNDELEGATE)
-  );
-};
-
 export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.DELEGATE);
 };
@@ -170,62 +152,6 @@ export const hasTransaction = (
   }
 
   return filter(transaction);
-};
-
-export const isWrappedInBatchAll = (type: TransactionType) => {
-  const batchAllOperations = new Set([
-    TransactionType.UNSTAKE,
-    TransactionType.BOND,
-    TransactionType.UNLOCK,
-    TransactionType.DELEGATE,
-    TransactionType.UNDELEGATE,
-    TransactionType.REMOVE_VOTE,
-    TransactionType.VESTED_TRANSFER,
-  ]);
-
-  return batchAllOperations.has(type);
-};
-
-/**
- * Batch shapes built by the app. A batch is represented by one of its calls
- * only when every call belongs to the same shape.
- */
-const BATCH_SHAPES: Set<TransactionType>[] = [
-  new Set([TransactionType.BOND, TransactionType.NOMINATE]),
-  new Set([TransactionType.CHILL, TransactionType.UNSTAKE]),
-  new Set([TransactionType.PAYOUT_STAKERS_BY_PAGE]),
-  new Set([TransactionType.REMOVE_VOTE, TransactionType.UNDELEGATE, TransactionType.UNLOCK]),
-  new Set([TransactionType.UNDELEGATE, TransactionType.DELEGATE]),
-  new Set([TransactionType.VESTED_TRANSFER]),
-  new Set([TransactionType.TRANSFER]),
-  new Set([TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY]),
-  new Set([TransactionType.ADD_PROXY, TransactionType.REMARK]),
-];
-
-const isKnownBatchShape = (transactions: Transaction[]): boolean => {
-  return BATCH_SHAPES.some((shape) => transactions.every((tx) => shape.has(tx.type)));
-};
-
-/**
- * Picks the transaction that represents a batch. Looks at direct children only,
- * never returns a batch and returns `null` for batches the app does not build.
- * A proxy change always represents its batch, so the batch is named after it.
- */
-export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
-  const transactions: Transaction[] = batch.args?.transactions ?? [];
-
-  if (transactions.length === 0 || !isKnownBatchShape(transactions)) {
-    return null;
-  }
-
-  return (
-    transactions.find((tx) => tx.type === TransactionType.ADD_PROXY) ??
-    transactions.find((tx) => tx.type === TransactionType.REMOVE_PROXY) ??
-    transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
-    transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
-    transactions.find((tx) => tx.type !== TransactionType.BATCH_ALL) ??
-    null
-  );
 };
 
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {

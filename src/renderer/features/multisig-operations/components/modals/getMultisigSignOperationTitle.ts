@@ -2,8 +2,8 @@ import { type TFunction } from 'i18next';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type MultisigOperation } from '@/domains/network';
-import { findCoreBatchAll, isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
+import { type MultisigOperation, findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
+import { type ProxyEditOperationInput, isProxyEditOperation } from '../../lib/proxy-edit';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -95,10 +95,6 @@ export const getModalTransactionTitle = (
     return t('operations.modalTitles.editDelegationOn');
   }
 
-  if (isEditFlexibleTransaction(transaction)) {
-    return t('operations.modalTitles.editFlexibleOn');
-  }
-
   if (transaction.type === TransactionType.BATCH_ALL) {
     const txMatch = findCoreBatchAll(transaction);
 
@@ -114,6 +110,23 @@ export const getModalTransactionTitle = (
   return TransactionTitlesModal[transaction.type](crossChain);
 };
 
+/**
+ * Dialog title of an operation. An edit-flexible operation is detected on the
+ * whole operation (the same detector as its card), since a live one is stored
+ * as a bare add + remove proxy pair with the proxied account kept aside.
+ */
+export const getModalOperationTitle = (
+  crossChain: boolean,
+  t: TFunction,
+  operation?: ProxyEditOperationInput | null,
+): string => {
+  if (operation && isProxyEditOperation(operation)) {
+    return 'operations.modalTitles.editFlexibleOn';
+  }
+
+  return getModalTransactionTitle(crossChain, t, operation?.transaction);
+};
+
 // TODO remove
 export const getMultisigSignOperationTitle = (
   crossChain: boolean,
@@ -121,7 +134,7 @@ export const getMultisigSignOperationTitle = (
   type?: TransactionType,
   operation?: MultisigOperation,
 ) => {
-  const innerTxTitle = getModalTransactionTitle(crossChain, t, operation?.transaction);
+  const innerTxTitle = getModalOperationTitle(crossChain, t, operation);
 
   if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
     return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;

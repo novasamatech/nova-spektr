@@ -1,6 +1,6 @@
 # Flexible Operation Details
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -22,9 +22,11 @@ specified here so the edit-flexible story lives in one place.
 | **Verified (add-only)**   | `proxy.proxy( batchAll[ addProxy, marker remark ] )` | **Only the new controller is added.** A `system.remark` marker in the batch records the outgoing controller. The old controller is removed later, after the new one proves access via a separate **verification operation** (below). |
 
 Accepted wrapper variations: the inner batch may be `batch` / `batchAll` / `forceBatch`; `addProxyWithDelay` counts as
-the add; and when the new controller's multisig is not known locally, the whole `proxy.proxy` may itself be wrapped in
-an outer batch alongside a `system.remarkWithEvent` carrying new-controller metadata — the detector recurses into it. A
-bare `addProxy` without the batch structure is a plain proxy addition, not an edit (see
+the add; and a live operation, stored with the `proxy.proxy` wrapper stripped and the proxied account kept aside, counts
+as the bare pair. When the new controller's multisig is not known locally the signatory also sends a
+`system.remarkWithEvent` with new-controller metadata next to the multisig call — that batch is the signatory's own
+extrinsic, never the operation, so a batch around `proxy.proxy` is not an edit. A bare `addProxy` without the batch
+structure is a plain proxy addition, not an edit (see
 [`proxy-operation-details`](../proxy-operation-details/README.md)).
 
 ## What the operation row shows
@@ -93,12 +95,12 @@ multisig isn't known locally, and the detectors never conflate the three.
 
 ## Fallback title and icon (this feature proper)
 
-For the exact shape `proxy.proxy( batchAll[ addProxy, removeProxy ] )` this feature registers the generic row title
-**"Edit flexible multisig"** and the delegated-authorities icon, and adds no Details rows of its own. In the operations
-table it is effectively shadowed: the domain stores a flexible-multisig operation's call with the proxy wrapper already
-stripped (so this detector's `proxy.proxy` requirement doesn't match), and the bespoke card claims the operation anyway.
-Where it does surface is the other consumers of the shared title/icon transformers — **draft rows** and **multisig
-notifications** — whose decoded calls keep the full wrapper.
+For both variants (`proxy.proxy( batchAll[ addProxy, removeProxy | marker remark ] )`, or the bare pair of an operation
+that carries a proxied account) this feature registers the generic row title **"Edit flexible multisig"** and the
+delegated-authorities icon, and adds no Details rows of its own. It uses the same detector as the bespoke card, so the
+two never disagree. In the operations table the bespoke card claims the operation anyway; the fallback surfaces in the
+other consumers of the shared title/icon transformers — **draft rows** and **multisig notifications** — whose decoded
+calls keep the full wrapper.
 
 ## Related
 

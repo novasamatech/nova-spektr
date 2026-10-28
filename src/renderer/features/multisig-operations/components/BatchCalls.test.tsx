@@ -13,12 +13,6 @@ vi.mock('@/shared/i18n', () => ({
 }));
 
 vi.mock('@/shared/ui', () => ({
-  DetailRow: ({ label, children }: { label: ReactNode; children: ReactNode }) => (
-    <div>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  ),
   FootnoteText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
 }));
 
@@ -152,5 +146,32 @@ describe('BatchCalls', () => {
     render(<BatchCalls transaction={proxied} chain={chain} />);
 
     expect(within(screen.getByTestId('batch-calls')).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('expands a proxy call nested in a batch without repeating its amount on the wrapper row', () => {
+    const inner = createBatch([
+      createCall(TransactionType.ADD_PROXY, 'proxy', 'addProxy', { delegate: ALICE, proxyType: 'Any' }),
+      createCall(TransactionType.TRANSFER, 'balances', 'transferKeepAlive', { dest: BOB, value: '7' }),
+    ]);
+    const batch = createBatch([
+      createCall(TransactionType.TRANSFER, 'balances', 'transferKeepAlive', { dest: BOB, value: '1' }),
+      createCall(TransactionType.PROXY, 'proxy', 'proxy', { real: ALICE, transaction: inner }),
+    ]);
+
+    render(<BatchCalls transaction={batch} chain={chain} />);
+
+    const list = screen.getByTestId('batch-calls');
+    const [, proxyItem] = Array.from(list.children);
+    const proxyRow = proxyItem?.firstElementChild;
+
+    expect(list.children).toHaveLength(2);
+    expect(proxyRow).toHaveTextContent('2. Proxy: Proxy');
+    expect(proxyRow).toHaveTextContent(`account:${ALICE_ACCOUNT_ID}`);
+    expect(proxyRow).not.toHaveTextContent('amount:');
+    expect(proxyItem).toHaveTextContent('2.1. Utility: Batch all');
+    expect(proxyItem).toHaveTextContent('2.1.1. Proxy: Add proxy');
+    expect(proxyItem).toHaveTextContent('2.1.2. Balances: Transfer keep alive');
+    expect(proxyItem).toHaveTextContent('amount:7');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(5);
   });
 });

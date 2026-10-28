@@ -195,28 +195,6 @@ describe('parseProxyEditOperation', () => {
     });
   });
 
-  test('handles outer batchAll wrap (multisig-new path) for trusted flow', () => {
-    // When the new-controller multisig isn't known locally, $coreTx wraps the proxy.proxy
-    // in an outer batchAll with a metadata REMARK_WITH_EVENT in front.
-    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxied(batchAll([addProxy(), removeProxy()]))]));
-    expect(parseProxyEditOperation(op)).toMatchObject({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      isTrustedFlow: true,
-    });
-  });
-
-  test('handles outer batchAll wrap (multisig-new path) for verified flow', () => {
-    const op = operation(
-      batchAll([remarkWithEvent(newCtrlMetadata), proxied(batchAll([addProxy(), remark(markerPayload)]))]),
-    );
-    expect(parseProxyEditOperation(op)).toMatchObject({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      isTrustedFlow: false,
-    });
-  });
-
   test('recognizes the bare pair of a live operation whose proxy wrapper was unwrapped on decode', () => {
     expect(parseProxyEditOperation(proxiedOperation(batchAll([addProxy(), removeProxy()])))).toEqual({
       newControllerAccountId: newController,
@@ -265,9 +243,11 @@ describe('parseProxyEditOperation', () => {
     ).toBeNull();
   });
 
-  test('returns null for an outer wrap with extra or reordered calls', () => {
+  test('returns null for an outer batch around the proxied edit (the signatory extrinsic, not the operation)', () => {
     const edit = proxied(batchAll([addProxy(), removeProxy()]));
 
+    expect(parseProxyEditOperation(operation(batchAll([remarkWithEvent(newCtrlMetadata), edit])))).toBeNull();
+    expect(parseProxyEditOperation(proxiedOperation(batchAll([remarkWithEvent(newCtrlMetadata), edit])))).toBeNull();
     expect(parseProxyEditOperation(operation(batchAll([edit])))).toBeNull();
     expect(parseProxyEditOperation(operation(batchAll([edit, remarkWithEvent(newCtrlMetadata)])))).toBeNull();
     expect(
@@ -293,6 +273,19 @@ describe('parseProxyEditOperation', () => {
   test('returns null for a batch with no addProxy', () => {
     expect(parseProxyEditOperation(operation(proxied(batchAll([removeProxy()]))))).toBeNull();
     expect(parseProxyEditOperation(operation(proxied(batchAll([removeProxy(), removeProxy()]))))).toBeNull();
+  });
+
+  test('returns null when a batch call carries no args', () => {
+    const argless = { section: 'proxy', method: 'removeProxy' } as unknown as DecodedTransaction;
+
+    expect(parseProxyEditOperation(operation(proxied(batchAll([addProxy(), argless]))))).toBeNull();
+  });
+
+  test('reads a bare decoded call without a proxied account (drafts, notifications)', () => {
+    expect(parseProxyEditOperation({ transaction: proxied(batchAll([addProxy(), removeProxy()])) })).toMatchObject({
+      isTrustedFlow: true,
+    });
+    expect(parseProxyEditOperation({ transaction: batchAll([addProxy(), removeProxy()]) })).toBeNull();
   });
 
   test('returns null for an unknown proxy type', () => {

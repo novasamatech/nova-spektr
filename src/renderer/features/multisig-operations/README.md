@@ -99,12 +99,16 @@ or an unlock+remove-vote) are **not** relabelled to their inner operation in the
 label (**"Utility: Batch all"**) with the generic icon. A batch is represented by one of its inner calls (for the
 amount, the type filter and the approve/reject dialog title) only when **every** call in it belongs to one of the shapes
 the app itself builds: bond + nominate, chill + unbond, payouts, remove vote + undelegate + unlock, delegate /
-undelegate, vested transfers, transfers, add + remove proxy, add proxy + remark. Any other batch — including one mixed
+undelegate, vested transfers, transfers, add + remove proxy, add proxy + remark. Any mix of one shape's calls counts,
+subsets included (a remove-vote-only unlock batch, a batch of delegations alone). Any other batch — including one mixed
 with a call outside its shape, or one that nests another batch — has no amount, filters as unknown, keeps the generic
 icon and is titled **"Unknown Operation"** in the dialog. The shape check runs before every special-case detector:
-**"Edit Delegation"** is only a batch made of delegate and undelegate calls alone, and a batch that contains a proxy
-change (add proxy, else remove proxy) is always named after that proxy change, whatever its other call is — e.g.
-remark + add proxy is titled **"Add delegated authority (proxy)"**, never "Remark".
+**"Edit Delegation"** is only a batch made of delegate and undelegate calls alone, and a proxy change (add proxy, else
+remove proxy) names its batch **only inside the two proxy shapes** — add + remove proxy, and add proxy + remark — e.g.
+remark + add proxy is titled **"Add delegated authority (proxy)"**, never "Remark". A proxy change next to any other
+call (add proxy + bond, transfer + add proxy, …) is an unknown batch like any other. An edit-flexible operation is the
+exception: the dialog title (**"Edit flexible multisig"**) and confirm icon come from the same operation-level detector
+as its card (below), so the dialog and the row always agree.
 
 ### Two special shapes
 
@@ -113,12 +117,13 @@ exclusive — an operation is at most one of them.
 
 - **Edit flexible multisig** — swapping which multisig controls a flexible multisig. Recognised only in the exact shape
   the app builds: a `proxy.proxy` call through the flexible multisig whose inner batch is precisely
-  `[addProxy, removeProxy]` or `[addProxy, marker remark]` (optionally preceded, in an outer two-call batch, by the
-  new-controller metadata `remarkWithEvent`). Live operations are stored with that proxy wrapper already unwrapped and
-  the proxied account kept on the operation, so the bare pair also counts when the operation carries a proxied account.
-  A bare add + remove proxy batch on a plain multisig (no proxied account), a reordered pair, or a pair with any extra
-  or nested call is a normal row with the shape-based title above. The card shows the old and new controllers
-  (identicons, old → new) and a coloured tag for the mode:
+  `[addProxy, removeProxy]` or `[addProxy, marker remark]`. Live operations are stored with that proxy wrapper already
+  unwrapped and the proxied account kept on the operation, so the bare pair also counts when the operation carries a
+  proxied account. The new-controller metadata `remarkWithEvent` the signatory may send alongside belongs to the
+  signatory's own extrinsic, never to the multisig operation, so a batch around the proxy call is not an edit. A bare
+  add + remove proxy batch on a plain multisig (no proxied account), a reordered pair, or a pair with any extra or
+  nested call is a normal row with the shape-based title above. The card shows the old and new controllers (identicons,
+  old → new) and a coloured tag for the mode:
   - **Atomic swap** — the old controller is removed in the same transaction (both add and remove happen together).
   - **Verified swap** — the new controller is added now; the old one is removed later, after verification. The old
     controller is recovered from a marker embedded in the transaction.
@@ -273,14 +278,16 @@ approved, is available on the operation's chain, and is not watch-only. Two case
 Approving runs a short wizard: **choose the signing account and path** (with the multisig deposit shown only on the
 first approval, plus the network fee) → **confirm** (a recap including the underlying core transaction on the final
 sign; for a batch, the recap lists **every call** in it in order — `Pallet: Call`, the amount and the recipient /
-delegate where the call has one, with proxy-management calls highlighted and their access type shown, e.g. "Any access";
-a nested batch is expanded in place as an indented sub-list numbered `3.1.`, `3.2.`, … so no call stays hidden behind
-"Utility: Batch all"; past eight nesting levels a single "N more nested calls not shown" line stands in for the rest) →
-**sign**. Signing adapts to the account's wallet type — Polkadot Vault (QR scan), browser Extension, or WalletConnect
-(watch-only accounts cannot sign and are excluded upstream). The signed extrinsic is then submitted, with a status modal
-showing **in progress → success** (auto-closing) **or error** (dispatch or submission failures such as insufficient
-balance or a network problem). On the final approval of an add/remove-proxy operation the wallet's accounts are
-re-synced; an optional operation description is posted to the address book at this point.
+delegate where the call has one (the proxied account for a proxy call), with proxy-management calls highlighted and
+their access type shown, e.g. "Any access"; a nested batch, or the call a nested proxy call dispatches, is expanded in
+place as an indented sub-list numbered `3.1.`, `3.2.`, … so no call stays hidden behind "Utility: Batch all" or "Proxy:
+Proxy" — only the innermost calls show an amount, never their wrapper rows; past eight nesting levels a single "N more
+nested calls not shown" line stands in for the rest) → **sign**. Signing adapts to the account's wallet type — Polkadot
+Vault (QR scan), browser Extension, or WalletConnect (watch-only accounts cannot sign and are excluded upstream). The
+signed extrinsic is then submitted, with a status modal showing **in progress → success** (auto-closing) **or error**
+(dispatch or submission failures such as insufficient balance or a network problem). On the final approval of an
+add/remove-proxy operation the wallet's accounts are re-synced; an optional operation description is posted to the
+address book at this point.
 
 ### Adding call data
 

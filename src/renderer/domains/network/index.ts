@@ -1,4 +1,10 @@
 export { transactionService } from './transaction/service';
+export {
+  findCoreBatchAll,
+  isEditDelegationTransaction,
+  isKnownBatchShape,
+  isWrappedInBatchAll,
+} from './transaction/batch';
 export type {
   AnyDecodedTransaction,
   AnyTransaction,

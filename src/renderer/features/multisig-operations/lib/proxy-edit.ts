@@ -20,15 +20,18 @@ const isRemoveProxy = (tx: DecodedTransaction): boolean => tx.section === 'proxy
 
 const isProxyCall = (tx: DecodedTransaction): boolean => tx.section === 'proxy' && tx.method === 'proxy';
 
-// Plain `system.remark` only — the outer new-controller metadata wrap uses
-// `system.remarkWithEvent`, and we deliberately don't conflate the two.
+// Plain `system.remark` only — the verify-proxy ping uses `system.remarkWithEvent`,
+// and we deliberately don't conflate the two.
 const isPlainRemark = (tx: DecodedTransaction): boolean => tx.section === 'system' && tx.method === 'remark';
 
-const isRemarkWithEvent = (tx: DecodedTransaction): boolean =>
-  tx.section === 'system' && tx.method === 'remarkWithEvent';
-
 const isDecodedTransaction = (value: unknown): value is DecodedTransaction =>
-  typeof value === 'object' && value !== null && 'section' in value && 'method' in value;
+  typeof value === 'object' &&
+  value !== null &&
+  'section' in value &&
+  'method' in value &&
+  'args' in value &&
+  typeof value.args === 'object' &&
+  value.args !== null;
 
 const getBatchCalls = (tx: DecodedTransaction): DecodedTransaction[] | null => {
   if (tx.section !== 'utility' || !BATCH_METHODS.has(tx.method)) return null;
@@ -54,37 +57,29 @@ const isEditFlexiblePair = (calls: DecodedTransaction[]): calls is [DecodedTrans
 // `proxy.proxy(real, call=batchAll([addProxy, removeProxy | marker]))`. Live
 // operations are stored with that wrapper already unwrapped — `getCoreCallData`
 // strips `proxy.proxy` and keeps `real` as `operation.proxiedAccountId` — so the
-// bare pair counts only when the operation carries a proxied account. When the
-// new-controller multisig isn't known locally, the producer wraps the proxy.proxy
-// in an outer batchAll with a `system.remarkWithEvent` carrying new-ctrl metadata
-// in front of it (see `change-signatories-model.ts > $coreTx`). Nothing else is
-// accepted: a bare pair on a plain multisig is an ordinary batch.
+// bare pair counts only when the operation carries a proxied account. The
+// signatory's own extrinsic may put a new-controller `remarkWithEvent` next to the
+// multisig call (`change-signatories-model.ts > $coreTx`), but that batch is never
+// the multisig operation itself, so it is not accepted here. Nothing else is
+// accepted either: a bare pair on a plain multisig is an ordinary batch.
 const findEditFlexibleBatch = (
   tx: DecodedTransaction | null,
   isProxied: boolean,
 ): [DecodedTransaction, DecodedTransaction] | null => {
-  if (nullable(tx)) return null;
+  if (!isDecodedTransaction(tx)) return null;
 
+  let batch: unknown = null;
   if (isProxyCall(tx)) {
-    const inner = tx.args['transaction'];
-    if (!isDecodedTransaction(inner)) return null;
-
-    const calls = getBatchCalls(inner);
-
-    return calls && isEditFlexiblePair(calls) ? calls : null;
+    batch = tx.args['transaction'];
+  } else if (isProxied) {
+    batch = tx;
   }
 
-  const calls = getBatchCalls(tx);
-  if (!calls) return null;
+  if (!isDecodedTransaction(batch)) return null;
 
-  if (isProxied && isEditFlexiblePair(calls)) return calls;
+  const calls = getBatchCalls(batch);
 
-  const [metadata, proxied] = calls;
-  if (calls.length !== 2 || !metadata || !proxied || !isRemarkWithEvent(metadata) || !isProxyCall(proxied)) {
-    return null;
-  }
-
-  return findEditFlexibleBatch(proxied, isProxied);
+  return calls && isEditFlexiblePair(calls) ? calls : null;
 };
 
 type ProxyArgs = { delegate: AccountId; proxyType: ProxyType };
@@ -107,7 +102,14 @@ const extractMarker = (tx: DecodedTransaction): EditControllerMarkerPayload | nu
   return typeof remark === 'string' ? parseEditControllerMarker(remark) : null;
 };
 
-export const parseProxyEditOperation = (operation: MultisigOperation): ProxyEditInfo | null => {
+/**
+ * What the detector reads from an operation: a live multisig operation, or a
+ * bare decoded call (drafts, notifications) that keeps its proxy wrapper.
+ */
+export type ProxyEditOperationInput = Pick<MultisigOperation, 'transaction'> &
+  Partial<Pick<MultisigOperation, 'proxiedAccountId'>>;
+
+export const parseProxyEditOperation = (operation: ProxyEditOperationInput): ProxyEditInfo | null => {
   // Bare `add_proxy` (no batch) is a plain proxy addition — not our edit-flexible flow,
   // so we deliberately require the proxy.proxy → batchAll structure, or the bare batch
   // of an operation whose proxy wrapper was unwrapped on decode (handled by
@@ -143,5 +145,5 @@ export const parseProxyEditOperation = (operation: MultisigOperation): ProxyEdit
   return null;
 };
 
-export const isProxyEditOperation = (operation: MultisigOperation): boolean =>
+export const isProxyEditOperation = (operation: ProxyEditOperationInput): boolean =>
   parseProxyEditOperation(operation) !== null;

@@ -1,15 +1,13 @@
 import { type Asset, type Chain, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { fromPrecision, getAssetById, getNativeAsset, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
 import {
   TransferTypes,
   XcmTypes,
-  findCoreBatchAll,
   findCoreTransaction,
   getTransactionAmount,
   getXcmTransactionBeneficiary,
-  isEditDelegationTransaction,
   isProxyTransaction,
 } from '@/entities/transaction';
 
@@ -104,10 +102,10 @@ const getCoreTx = (operation: MultisigOperation): DecodedTransaction | null => {
 };
 
 /**
- * Resolves the asset for a transaction. Priority: transaction's assetId >
- * native asset
+ * Resolves the asset for a transaction (proxy wrappers unwrapped). Priority:
+ * transaction's assetId > native asset
  */
-const resolveTransactionAsset = (transaction: DecodedTransaction | null, chain: Chain): Asset | null => {
+export const resolveTransactionAsset = (transaction: DecodedTransaction | null, chain: Chain): Asset | null => {
   if (!chain?.assets?.length) return null;
 
   const coreTx = findCoreTransaction(transaction);
