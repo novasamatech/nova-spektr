@@ -11,6 +11,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
 
+import { ExtrinsicTooHeavyError } from './errors';
 import { BlockWeight } from './helpers';
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction, type Extrinsic } from './types';
 
@@ -192,7 +193,12 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
 }
 
 async function getSplitExtrinsicFee(extrinsic: Extrinsic, api: ApiPromise) {
-  const parts = await splitExtrinsic(extrinsic, api);
+  // The fee of a call too heavy to sign is still its fee: estimating it keeps the
+  // confirmation readable, and signing is what refuses it (see `splitExtrinsic`).
+  const parts = await splitExtrinsic(extrinsic, api).catch((error: unknown) => {
+    if (error instanceof ExtrinsicTooHeavyError) return [extrinsic];
+    throw error;
+  });
   const fees = await Promise.all(parts.map(getExtrinsicFee));
   return fees.reduce((acc, fee) => acc.add(fee), BN_ZERO);
 }
@@ -234,8 +240,8 @@ function getExtrinsicWeightLimit(api: ApiPromise): BlockWeight {
 /**
  * How many of the `units` items carried by `extrinsic` (rows of a batch) fit
  * into a single extrinsic. Returns `units` when the extrinsic already fits;
- * otherwise a proportional estimate, rounded down, that is always below
- * `units`.
+ * otherwise a proportional estimate, rounded down, that is always below `units`
+ * and may be `0` when not even one item fits.
  */
 async function getBatchCapacity(extrinsic: Extrinsic, api: ApiPromise, units: number): Promise<number> {
   const weight = BlockWeight.fromWeight(await getExtrinsicWeight(extrinsic));
@@ -319,36 +325,67 @@ function rewrapWithInner(wrapped: Extrinsic, wrapper: CallWrapper, newInner: Ext
   return method(...args);
 }
 
+/**
+ * Budget left for `inner` once the wrapper's own overhead is paid. Also returns
+ * the inner weight it had to fetch, so the caller does not ask for it again.
+ */
 async function subtractWrapperOverhead(
   budget: BlockWeight,
   wrapped: Extrinsic,
   inner: Extrinsic,
-): Promise<BlockWeight> {
+): Promise<{ innerBudget: BlockWeight; innerWeight: BlockWeight }> {
   const wrappedWeight = BlockWeight.fromWeight(await getExtrinsicWeight(wrapped));
   const innerWeight = BlockWeight.fromWeight(await getExtrinsicWeight(inner));
 
-  return new BlockWeight(
+  const innerBudget = new BlockWeight(
     BN.max(budget.refTime.sub(BN.max(wrappedWeight.refTime.sub(innerWeight.refTime), BN_ZERO)), BN_ZERO),
     BN.max(budget.proofSize.sub(BN.max(wrappedWeight.proofSize.sub(innerWeight.proofSize), BN_ZERO)), BN_ZERO),
   );
+
+  return { innerBudget, innerWeight };
+}
+
+function isMultisigExtrinsic(extrinsic: Extrinsic) {
+  return extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti';
 }
 
 /**
  * Splits a batch that does not fit into a single extrinsic into several
  * batches, each keeping the original batch method (`batch` / `batchAll` /
- * `forceBatch`). An extrinsic that already fits is returned untouched, and a
- * multisig call is never split (see `CALL_WRAPPERS`).
+ * `forceBatch`). An extrinsic that already fits is returned untouched.
+ *
+ * A multisig call is never split (see `CALL_WRAPPERS`); when it does not fit,
+ * it throws `ExtrinsicTooHeavyError` instead of handing back a call the chain
+ * is bound to reject.
  */
-async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise, budget?: BlockWeight): Promise<Extrinsic[]> {
-  const effectiveBudget = budget ?? getExtrinsicWeightLimit(api);
+async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Extrinsic[]> {
+  return splitWithinBudget(extrinsic, api, getExtrinsicWeightLimit(api));
+}
+
+async function splitWithinBudget(
+  extrinsic: Extrinsic,
+  api: ApiPromise,
+  budget: BlockWeight,
+  knownWeight?: BlockWeight,
+): Promise<Extrinsic[]> {
+  const getWeight = async () => knownWeight ?? BlockWeight.fromWeight(await getExtrinsicWeight(extrinsic));
+
+  if (isMultisigExtrinsic(extrinsic)) {
+    const weight = await getWeight();
+    if (!weight.fitsIn(budget)) {
+      throw new ExtrinsicTooHeavyError(extrinsic.method.section, extrinsic.method.method);
+    }
+
+    return [extrinsic];
+  }
 
   if (isBatchExtrinsic(extrinsic)) {
-    const weight = BlockWeight.fromWeight(await getExtrinsicWeight(extrinsic));
-    if (weight.fitsIn(effectiveBudget)) return [extrinsic];
+    const weight = await getWeight();
+    if (weight.fitsIn(budget)) return [extrinsic];
 
     const callsArg = extrinsic.args.at(0);
     const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
-    const chunks = await splitCallsByWeight(api, calls, effectiveBudget);
+    const chunks = await splitCallsByWeight(api, calls, budget);
     const buildBatch = api.tx.utility[extrinsic.method.method];
     assert(buildBatch, `Unknown batch method utility.${extrinsic.method.method}`);
 
@@ -368,8 +405,8 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise, budget?: Bl
 
     if (innerCall?.section && innerCall.method) {
       const innerExtrinsic = api.tx(innerCall);
-      const innerBudget = await subtractWrapperOverhead(effectiveBudget, extrinsic, innerExtrinsic);
-      const splitInner = await splitExtrinsic(innerExtrinsic, api, innerBudget);
+      const { innerBudget, innerWeight } = await subtractWrapperOverhead(budget, extrinsic, innerExtrinsic);
+      const splitInner = await splitWithinBudget(innerExtrinsic, api, innerBudget, innerWeight);
 
       if (splitInner.length > 1) {
         return splitInner.map(inner => rewrapWithInner(extrinsic, wrapper, inner, api));

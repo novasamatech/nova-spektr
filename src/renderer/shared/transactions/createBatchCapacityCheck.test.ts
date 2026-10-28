@@ -123,6 +123,25 @@ describe('createBatchCapacityCheck', () => {
     expect(scope.getState($blocksSubmit)).toBe(false);
   });
 
+  it('clears the failure once the rows are gone', async () => {
+    vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
+    const { $rows, $hasError, $blocksSubmit, retry } = setup();
+
+    const scope = fork();
+    await allSettled($rows, { scope, params: 10 });
+    expect(scope.getState($hasError)).toBe(true);
+
+    await allSettled($rows, { scope, params: null });
+
+    expect(scope.getState($hasError)).toBe(false);
+    expect(scope.getState($blocksSubmit)).toBe(false);
+
+    // Nothing to re-check without rows: retry neither runs nor resurrects the failure.
+    await allSettled(retry, { scope });
+    expect(transactionService.getBatchCapacity).toHaveBeenCalledTimes(1);
+    expect(scope.getState($hasError)).toBe(false);
+  });
+
   it('keeps blocking submit when the retry fails again', async () => {
     vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
     const { $rows, $hasError, $blocksSubmit, retry } = setup();

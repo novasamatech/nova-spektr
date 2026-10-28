@@ -1,6 +1,6 @@
 # Multi-transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -51,16 +51,16 @@ real transaction once a file is loaded; before that a two-transfer dummy gives a
 
 The flow is **form → confirm → sign → submit**.
 
-| State               | When it appears                          | What the user sees                                                                        |
-| ------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Form                | Modal opened                             | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit)       |
-| Empty / malformed   | File parses to no rows, or bad headers   | Inline error; submit disabled                                                             |
-| Rows with errors    | ≥1 row fails a rule                      | Alert listing the failing rows; blocks submit                                             |
-| Rows with warnings  | ≥1 row raises a warning (e.g. duplicate) | Amber alert; does **not** block submit                                                    |
-| Too heavy           | File doesn't fit into one extrinsic      | Inline error naming how many rows fit; blocks submit and saving a draft                   |
-| Weight check failed | Weight RPC rejected                      | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds |
-| Confirm             | "Continue" pressed                       | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data         |
-| Sign / Submit       | Confirmed                                | Standard sign and submit screens                                                          |
+| State               | When it appears                          | What the user sees                                                                                                                     |
+| ------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Form                | Modal opened                             | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit)                                                    |
+| Empty / malformed   | File parses to no rows, or bad headers   | Inline error; submit disabled                                                                                                          |
+| Rows with errors    | ≥1 row fails a rule                      | Alert listing the failing rows; blocks submit                                                                                          |
+| Rows with warnings  | ≥1 row raises a warning (e.g. duplicate) | Amber alert; does **not** block submit                                                                                                 |
+| Too heavy           | File doesn't fit into one extrinsic      | Inline error naming how many rows fit (or that not even one does); blocks submit and saving a draft                                    |
+| Weight check failed | Weight RPC rejected                      | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds, and clears once the file or network changes |
+| Confirm             | "Continue" pressed                       | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data                                                      |
+| Sign / Submit       | Confirmed                                | Standard sign and submit screens                                                                                                       |
 
 **Draft mode** turns the form into "compose a draft" instead of "sign now": no signatory is required, the transaction is
 built from the draft signing-path's source account, and saving the draft redirects to the Operations page.

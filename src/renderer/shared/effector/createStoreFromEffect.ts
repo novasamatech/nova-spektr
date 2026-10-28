@@ -50,20 +50,26 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
 
   sample({
     clock: fx.failData,
-    filter: error => !isAbortError(error),
+    source: $source,
+    // A run that fails after its params were cleared describes inputs that no longer exist.
+    filter: (source, error) => nonNullableMap(source) && !isAbortError(error),
+    fn: (_, error) => error,
     target: $error,
   });
 
+  // The error lives exactly as long as the inputs that produced it.
   sample({
     clock: $source,
     filter: nullableMap,
     fn: () => ({
       value: params.defaultValue,
       isDefaultValue: true,
+      error: null,
     }),
     target: spread({
       value: $,
       isDefaultValue: $isDefaultValue,
+      error: $error,
     }),
   });
 
@@ -99,7 +105,10 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
     $: readonly($),
     $pending: fx.pending,
     $isDefaultValue: readonly($isDefaultValue),
-    /** Last non-abort failure of `fn`; cleared when the next run starts. */
+    /**
+     * Last non-abort failure of `fn`; cleared when the next run starts or a
+     * param becomes null.
+     */
     $error: readonly($error),
     /** Re-runs `fn` with the current params (no-op while any of them is null). */
     retry,

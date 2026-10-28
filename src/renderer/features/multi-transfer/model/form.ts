@@ -312,14 +312,17 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   routeOverride: $pathRoute,
 });
 
-// The whole file is signed as one batch: a multisig call is never split, and a
-// payout run must not be broken into independent transactions. A file heavier
-// than a single extrinsic is therefore rejected with the number of rows that fit.
+// The whole file is signed as one batch — see `createBatchCapacityCheck`.
 const $weightCheckTx = combine(
   { isDraftMode: draftMode.$isDraftMode, tx: $tx, draftTx: $draftCoreTx },
   ({ isDraftMode, tx, draftTx }) => (isDraftMode ? draftTx : tx),
 );
-const $rowCount = form.fields.transfers.$value.map((transfers) => (transfers.length > 0 ? transfers.length : null));
+// Only valid rows make it into the batch (see `$coreTx`), so only they are counted.
+const $rowCount = form.fields.transfers.$value.map((transfers) => {
+  const validRows = transfers.filter((t) => t.recipient.parsed && t.amount.parsed).length;
+
+  return validRows > 0 ? validRows : null;
+});
 
 const batchCapacity = createBatchCapacityCheck({ api: $api, transaction: $weightCheckTx, rows: $rowCount });
 
@@ -378,12 +381,12 @@ const $canSubmit = combine(
     fee: $fee,
     csvIssues: $csvIssues,
     csvError: $csvError,
-    isTooHeavy: batchCapacity.$blocksSubmit,
+    isBatchBlocked: batchCapacity.$blocksSubmit,
   },
-  ({ isFormValid, isTxValid, fee, csvIssues, csvError, isTooHeavy }) => {
+  ({ isFormValid, isTxValid, fee, csvIssues, csvError, isBatchBlocked }) => {
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
 
-    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors && !isTooHeavy;
+    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors && !isBatchBlocked;
   },
 );
 
@@ -398,12 +401,12 @@ const $canSaveAsDraft = combine(
     transfers: form.fields.transfers.$value,
     csvIssues: $csvIssues,
     csvError: $csvError,
-    isTooHeavy: batchCapacity.$blocksSubmit,
+    isBatchBlocked: batchCapacity.$blocksSubmit,
   },
-  ({ isDraftMode, isPathComplete, callData, chain, transfers, csvIssues, csvError, isTooHeavy }) => {
+  ({ isDraftMode, isPathComplete, callData, chain, transfers, csvIssues, csvError, isBatchBlocked }) => {
     if (!isDraftMode || !isPathComplete || !callData || !chain) return false;
     if (transfers.length === 0) return false;
-    if (isTooHeavy) return false;
+    if (isBatchBlocked) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
 
     return !hasCsvErrors;

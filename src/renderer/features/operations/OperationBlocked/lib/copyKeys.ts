@@ -66,6 +66,11 @@ export const REASON_COPY_KEYS: Record<OperationBlockReasonKind, ReasonCopyKeys> 
     descriptionKey: 'operations.blocked.invalidCallDataDescription',
     actions: ['close'],
   },
+  'extrinsic-too-heavy': {
+    titleKey: 'operations.blocked.extrinsicTooHeavyTitle',
+    descriptionKey: 'operations.blocked.extrinsicTooHeavyDescription',
+    actions: ['close'],
+  },
   internal: {
     titleKey: 'operations.blocked.internalTitle',
     descriptionKey: 'operations.blocked.internalDescription',

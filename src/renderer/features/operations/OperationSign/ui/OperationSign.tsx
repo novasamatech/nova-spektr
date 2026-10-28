@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { Alert, FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { walletUtils } from '@/entities/wallet';
+import { OperationBlocked } from '../../OperationBlocked';
 import { signModel } from '../model/sign-model';
 
 import { SigningSwitch } from './SigningSwitch';
@@ -21,6 +22,17 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
   const batchSplitWarning = useUnit(signModel.$batchSplitWarning);
+  const blocked = useUnit(signModel.$blocked);
+
+  if (blocked) {
+    // Nothing to retry: the call itself is too heavy, so the only way out is back
+    // to the step that built it.
+    return (
+      <div className="px-4 pb-4">
+        <OperationBlocked reason={blocked.reason} chain={blocked.chain} onRetry={onGoBack} onClose={onGoBack} />
+      </div>
+    );
+  }
 
   if (!signStore || !signerWallet) {
     const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';

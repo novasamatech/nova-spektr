@@ -215,7 +215,9 @@ const UploadCSV = () => {
       />
       {nonNullable(maxRowsPerTransaction) && (
         <InputHint variant="error" active>
-          {t('vestedTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
+          {maxRowsPerTransaction === 0
+            ? t('vestedTransfer.errors.csv.tooHeavyNoRowsDescription')
+            : t('vestedTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
         </InputHint>
       )}
       {batchCapacityCheckFailed && (

@@ -507,9 +507,7 @@ const $draftCoreTx = combine(
 
 const $draftCallDataHex = combine($draftCoreTx, $api, (tx, api) => transactionService.getCallDataHex(tx, api));
 
-// The whole file is signed as one batch: a multisig call is never split, and a
-// vesting run must not be broken into independent transactions. A file heavier
-// than a single extrinsic is therefore rejected with the number of rows that fit.
+// The whole file is signed as one batch — see `createBatchCapacityCheck`.
 const $weightCheckTx = combine(
   { isDraftMode: draftMode.$isDraftMode, tx: $tx, draftTx: $draftCoreTx },
   ({ isDraftMode, tx, draftTx }) => (isDraftMode ? draftTx : tx),
@@ -530,13 +528,13 @@ const $canSubmit = combine(
     fee: $fee,
     csvIssues: $csvIssues,
     csvError: $csvError,
-    isTooHeavy: batchCapacity.$blocksSubmit,
+    isBatchBlocked: batchCapacity.$blocksSubmit,
   },
-  ({ isDraftMode, isFormValid, isTxValid, fee, csvIssues, csvError, isTooHeavy }) => {
+  ({ isDraftMode, isFormValid, isTxValid, fee, csvIssues, csvError, isBatchBlocked }) => {
     if (isDraftMode) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
 
-    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors && !isTooHeavy;
+    return isFormValid && isTxValid && nonNullable(fee) && !hasCsvErrors && !isBatchBlocked;
   },
 );
 
@@ -549,12 +547,12 @@ const $canSaveAsDraft = combine(
     vestingSchedule: form.fields.vestingSchedule.$value,
     csvIssues: $csvIssues,
     csvError: $csvError,
-    isTooHeavy: batchCapacity.$blocksSubmit,
+    isBatchBlocked: batchCapacity.$blocksSubmit,
   },
-  ({ isDraftMode, isPathComplete, callData, networkStore, vestingSchedule, csvIssues, csvError, isTooHeavy }) => {
+  ({ isDraftMode, isPathComplete, callData, networkStore, vestingSchedule, csvIssues, csvError, isBatchBlocked }) => {
     if (!isDraftMode || !isPathComplete || !callData || !networkStore) return false;
     if (vestingSchedule.length === 0) return false;
-    if (isTooHeavy) return false;
+    if (isBatchBlocked) return false;
     const hasCsvErrors = nonNullable(csvError) || csvIssues?.some((issue) => issue.severity === 'error');
     return !hasCsvErrors;
   },

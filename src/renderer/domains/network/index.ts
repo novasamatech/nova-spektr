@@ -5,6 +5,7 @@ export {
   isKnownBatchShape,
   isWrappedInBatchAll,
 } from './transaction/batch';
+export { ExtrinsicTooHeavyError } from './transaction/errors';
 export type {
   AnyDecodedTransaction,
   AnyTransaction,

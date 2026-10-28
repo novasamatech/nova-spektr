@@ -108,7 +108,9 @@ export const UploadCSV = () => {
         )}
         {nonNullable(maxRowsPerTransaction) && (
           <InputHint variant="error" active>
-            {t('multiTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
+            {maxRowsPerTransaction === 0
+              ? t('multiTransfer.errors.csv.tooHeavyNoRowsDescription')
+              : t('multiTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
           </InputHint>
         )}
         {batchCapacityCheckFailed && (

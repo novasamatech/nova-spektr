@@ -1,6 +1,6 @@
 # Vested transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -68,8 +68,8 @@ The flow is **form → confirm → sign → submit**.
 | Malformed CSV       | Unknown/missing headers, unparseable file | Inline hint; preview disabled                                                                                                           |
 | Rows with errors    | ≥1 row fails a rule                       | Red alert listing "Row N: …", with a download of the file annotated with an `errors` column. Blocks submit                              |
 | Rows with warnings  | ≥1 row raises a warning                   | Amber alert, same annotated download. Does **not** block submit                                                                         |
-| Too heavy           | File doesn't fit into one extrinsic       | Inline error naming how many rows fit; blocks submit and saving a draft                                                                 |
-| Weight check failed | Weight RPC rejected                       | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds                                               |
+| Too heavy           | File doesn't fit into one extrinsic       | Inline error naming how many rows fit (or that not even one does); blocks submit and saving a draft                                     |
+| Weight check failed | Weight RPC rejected                       | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds, and clears once the file or network changes  |
 | Preview             | "Preview" clicked                         | The schedule table: recipient, locked, start block (with its resolved date), per block, and the cliff column only when some row has one |
 | Confirm             | "Continue" pressed                        | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
 | Sign / Submit       | Confirmed                                 | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |
