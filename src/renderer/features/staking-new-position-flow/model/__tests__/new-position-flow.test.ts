@@ -13,66 +13,22 @@ import {
   WalletType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { type TransactionStoresMock } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Step } from '../../types';
 
-/**
- * The node is out of scope here.
- *
- * `createComplexTxStore` and `createTxValidationStore` both cost a round trip
- * to a real api and have nothing to say about the decisions this model makes —
- * which step follows which, whose validator selection counts as its own, what
- * call gets built. They are replaced with the smallest stand-ins that keep the
- * graph honest: the tx store passes the core transaction straight through, so
- * assertions are made against the call this model actually built.
- */
+// The node is out of scope here: see `mockTransactionStores`.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
+
 vi.mock('@/shared/transactions', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  const { createStore, sample } = await import('effector');
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal());
 
-  return {
-    ...actual,
-    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
-      const $tx = createStore<unknown>(null);
-      sample({ clock: transaction, target: $tx });
-
-      return {
-        // The self-route a plain account gets from the real store — keeps the
-        // route-signer guard honest without the BFS over the account graph.
-        $route: initiator.map((account) => (account ? [account] : [])),
-        $tx,
-        $feeTx: createStore<unknown>(null),
-        $pendingWrapping: createStore(false),
-        $fee: createStore<unknown>(null),
-        $pendingFee: createStore(false),
-      };
-    },
-    // The real one asks the DI permission registry, which is empty in a unit
-    // fork — every account would read as unsignable. The permission check has
-    // its own tests; here the terminal hop simply signs.
-    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
-    // The verdict is seeded by the test: the rules themselves (over the
-    // balance, under the chain minimum) live in `bondNominateValidator` and
-    // are tested there. What is checked here is that the flow obeys them.
-    createTxValidationStore: () => {
-      const $errors = createStore<unknown[]>([]);
-      mocks.txErrors = $errors;
-
-      return {
-        $errors,
-        $balanceValidationResults: createStore<unknown[]>([]),
-        $pending: createStore(false),
-        $validationDone: createStore(true),
-        $valid: $errors.map((errors) => errors.length === 0),
-        $failed: $errors.map((errors) => errors.length > 0),
-        $available: createStore<unknown[]>([]),
-      };
-    },
-  };
+  return txStores.current.module;
 });
 
 const { mocks } = vi.hoisted(() => ({
-  mocks: { minBond: null as unknown, chains: null as unknown, txErrors: null as unknown },
+  mocks: { minBond: null as unknown, chains: null as unknown },
 }));
 
 vi.mock('@/aggregates/staking-positions', async () => {
@@ -238,7 +194,7 @@ const WALLET_CONNECT_WALLET: Wallet = { id: 1, name: 'WalletConnect', type: Wall
 
 const $chains = () => mocks.chains as Store<unknown[]>;
 const $minBond = () => mocks.minBond as Store<Record<string, string>>;
-const $txErrors = () => mocks.txErrors as Store<unknown[]>;
+const $txErrors = () => txStores.current!.$errors;
 
 const MINIMUM_BOND_ERROR = { rule: 'minimum bond', message: 'staking.belowMinimumBondError' };
 const OVER_BALANCE_ERROR = { action: 'amount', balance: { success: false } };

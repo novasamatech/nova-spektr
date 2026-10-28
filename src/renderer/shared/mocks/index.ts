@@ -373,3 +373,4 @@ export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): Pro
 });
 
 export { createExtrinsicPayload, createPayloadRegistry, signExtrinsicPayload } from './signed-payload';
+export * from './transaction-stores';

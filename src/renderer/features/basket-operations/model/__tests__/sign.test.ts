@@ -1,9 +1,9 @@
 import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type ID, type Transaction, type Wallet, CryptoType, SigningType, TransactionType } from '@/shared/core';
+import { type ID, type Transaction, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { createVaultBaseAccount, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -17,16 +17,7 @@ import { validation } from '../validation';
 
 const ALICE: AccountId = toAccountId(`0x${'1'.padStart(64, '0')}`);
 
-const ACCOUNT: Wallet['accounts'][number] = {
-  id: 'account-1',
-  type: 'universal',
-  name: 'Alice',
-  walletId: 1,
-  accountId: ALICE,
-  cryptoType: CryptoType.SR25519,
-  signingType: SigningType.POLKADOT_VAULT,
-  createdAt: 0,
-};
+const ACCOUNT = createVaultBaseAccount('alice', { walletId: 1, accountId: ALICE, name: 'Alice' });
 
 const coreTx: Transaction = {
   chainId: polkadotChainId,

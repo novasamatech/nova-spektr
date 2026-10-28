@@ -1,60 +1,28 @@
-import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'effector';
+import { type StoreWritable, allSettled, createWatch, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Wallet, ConnectionStatus, CryptoType, SigningType, TransactionType } from '@/shared/core';
 import { type RecipientCheck, type RecipientWarning } from '@/shared/lib/recipient-verification';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
-import { createPolkadotWallet, dotAsset, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import {
+  type TransactionStoresMock,
+  createPolkadotWallet,
+  dotAsset,
+  polkadotChain,
+  polkadotChainId,
+} from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Payee, type StakingPosition } from '@/domains/staking';
 import { Step } from '../../types';
 
-/**
- * The node is out of scope here.
- *
- * `createComplexTxStore` and `createTxValidationStore` both cost a round trip
- * to a real api, and neither has anything to say about the decisions this model
- * makes — which call is built, whether the selection changed, whether the
- * unknown-recipient gate holds. They are replaced with the smallest stand-ins
- * that keep the graph honest: the tx store passes the core transaction straight
- * through, so every assertion below is made against the call this model built.
- */
-// The validation verdict is a writable store so a test can turn it off.
-const { validationMock } = vi.hoisted(() => ({ validationMock: { $valid: null as unknown } }));
+// The node is out of scope here: see `mockTransactionStores`.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
 
 vi.mock('@/shared/transactions', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  const { createStore, sample } = await import('effector');
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal());
 
-  const $valid = createStore(true);
-  validationMock.$valid = $valid;
-
-  return {
-    ...actual,
-    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
-      const $tx = createStore<unknown>(null);
-      sample({ clock: transaction, target: $tx });
-
-      return {
-        $route: initiator.map((account) => (account ? [account] : [])),
-        $tx,
-        $feeTx: createStore<unknown>(null),
-        $pendingWrapping: createStore(false),
-        $fee: createStore<unknown>(null),
-        $pendingFee: createStore(false),
-      };
-    },
-    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
-    createTxValidationStore: () => ({
-      $errors: createStore<unknown[]>([]),
-      $balanceValidationResults: createStore<unknown[]>([]),
-      $pending: createStore(false),
-      $validationDone: createStore(true),
-      $valid,
-      $failed: createStore(false),
-      $available: createStore<unknown[]>([]),
-    }),
-  };
+  return txStores.current.module;
 });
 
 // The recipient verdict is owned by the backend-health aggregate; here it is a
@@ -180,7 +148,7 @@ const target = (payee: Payee | null = 'Staked') => ({
 const $resolveWarning = () =>
   resolveWarningMock.$store as StoreWritable<(accountId: AccountId | null) => RecipientWarning>;
 
-const $txValid = () => validationMock.$valid as StoreWritable<boolean>;
+const $txValid = () => txStores.current!.$valid;
 
 /** `$coreTx` is gated on the chain being connected — most tests want it open. */
 const connected = (values = new Map()) =>

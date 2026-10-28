@@ -13,7 +13,13 @@ import { pathModel } from '@/features/signing-path';
 import type * as DecodeDraft from '../lib/decode-draft-transaction';
 import { decodeDraftTransaction } from '../lib/decode-draft-transaction';
 
-import { type DraftSeed, DESCRIPTION_MAX_LENGTH, STEPS_ORDER, createDraftModel } from './create-draft-model';
+import {
+  type DraftSeed,
+  DESCRIPTION_MAX_LENGTH,
+  DraftNotCreatedError,
+  STEPS_ORDER,
+  createDraftModel,
+} from './create-draft-model';
 
 vi.mock('../lib/decode-draft-transaction', async (importOriginal) => ({
   ...(await importOriginal<typeof DecodeDraft>()),
@@ -50,6 +56,28 @@ const forkWithChains = (chains: Chain[]) =>
 
 const VALID_CALL_DATA = '0xdeadbeef';
 const COMPLETE_PATH: PathNode[] = [multisig(acc(1)), signer(acc(2))];
+
+/** The draft the backend answers a create with. */
+const makeDraft = (): Draft => ({
+  id: 'draft-1',
+  operation: null,
+  multisigAccountId: acc(1),
+  chainId: CHAIN_A,
+  callData: null,
+  description: null,
+  createdBy: 'user-1',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  signingPath: COMPLETE_PATH,
+  initiatorAccountId: null,
+});
+
+/** A refused create fails with the reason the gate gave. */
+const expectRefused = (result: { status: 'done' | 'fail'; value: unknown }, reason: string) => {
+  expect(result.status).toBe('fail');
+  expect(result.value).toBeInstanceOf(DraftNotCreatedError);
+  expect(result.value).toMatchObject({ reason });
+};
 
 const open = (scope: Scope, seed?: DraftSeed) =>
   allSettled(createDraftModel.createDraftRequested, { scope, params: seed });
@@ -453,7 +481,7 @@ describe('createDraftModel · unknown recipient gate', () => {
     expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
     expect(scope.getState(createDraftModel.$canContinue)).toBe(false);
 
-    await allSettled(createDraftModel.createDraftFx, { scope });
+    expectRefused(await allSettled(createDraftModel.createDraftFx, { scope }), 'not-ready');
     expect(draftsService.createDraft).not.toHaveBeenCalled();
 
     await allSettled(createDraftModel.riskAcknowledgedToggled, { scope, params: true });
@@ -464,7 +492,7 @@ describe('createDraftModel · unknown recipient gate', () => {
 describe('createDraftModel · create', () => {
   const BACKEND_URL = 'https://address-book.test';
   const seed: DraftSeed = { chainId: CHAIN_A, callData: VALID_CALL_DATA, path: COMPLETE_PATH };
-  const created = { id: 'draft-1' } as unknown as Draft;
+  const created = makeDraft();
 
   const forkWithBackend = () =>
     fork({
@@ -525,7 +553,7 @@ describe('createDraftModel · create', () => {
       expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
       expect(scope.getState(createDraftModel.$canContinue)).toBe(false);
 
-      await allSettled(createDraftModel.createDraftFx, { scope });
+      expectRefused(await allSettled(createDraftModel.createDraftFx, { scope }), 'not-ready');
 
       expect(draftsService.createDraft).not.toHaveBeenCalled();
       expect(announced).toEqual([]);
@@ -541,7 +569,22 @@ describe('createDraftModel · create', () => {
     await allSettled(createDraftModel.descriptionChanged, { scope, params: 'Pay the team' });
     expect(scope.getState(createDraftModel.$canContinue)).toBe(true);
 
-    await allSettled(createDraftModel.createDraftFx, { scope });
+    expectRefused(await allSettled(createDraftModel.createDraftFx, { scope }), 'not-ready');
+
+    expect(draftsService.createDraft).not.toHaveBeenCalled();
+  });
+
+  it('refuses a path that could never be submitted, and says it is the path', async () => {
+    // A lone signer is a complete path, so the confirm is otherwise ready —
+    // but a draft along it has no delegation hop to submit through.
+    const scope = forkWithBackend();
+
+    await open(scope, { ...seed, path: [signer(acc(2))] });
+    await allSettled(createDraftModel.descriptionChanged, { scope, params: 'Pay the team' });
+    expect(scope.getState(createDraftModel.$activeStep)).toBe('confirm');
+    expect(scope.getState(createDraftModel.$canContinue)).toBe(true);
+
+    expectRefused(await allSettled(createDraftModel.createDraftFx, { scope }), 'invalid-path');
 
     expect(draftsService.createDraft).not.toHaveBeenCalled();
   });

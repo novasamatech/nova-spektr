@@ -1,7 +1,7 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { isHex, nonNullable } from '@/shared/lib/utils';
+import { isHex } from '@/shared/lib/utils';
 import { type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -234,12 +234,35 @@ const $canContinue = combine(
 
 const $canSkip = combine($activeStep, $selectedChain, (step, chain) => step === 'call-data' && !!chain);
 
+export type DraftNotCreatedReason = 'not-ready' | 'invalid-path';
+
 /**
- * Everything the create call needs, or `null` while any of it is missing — the
- * confirm gate included, so the backend is never asked for a draft the modal
- * would not let the user create.
+ * The create action refused: the gate in front of the backend call was closed
+ * when it ran. `reason` says which part of it — the confirm as a whole, or the
+ * signing path in particular — so the caller can tell the user why nothing
+ * happened.
  */
-const $createParams = combine(
+export class DraftNotCreatedError extends Error {
+  constructor(
+    readonly reason: DraftNotCreatedReason,
+    /** What exactly is wrong with the path, when the validator says. */
+    readonly detail?: string,
+  ) {
+    super(`Draft not created: ${reason}`);
+    this.name = 'DraftNotCreatedError';
+  }
+}
+
+type CreateRequest =
+  | { ok: true; backendUrl: string; params: Parameters<typeof draftsService.createDraft>[1] }
+  | { ok: false; reason: DraftNotCreatedReason; detail?: string };
+
+/**
+ * Everything the create call needs, or why it cannot be made — the confirm gate
+ * included, so the backend is never asked for a draft the modal would not let
+ * the user create.
+ */
+const $createRequest = combine(
   {
     canContinue: $canContinue,
     backendUrl: backendConfigurationModel.$backendUrl,
@@ -248,13 +271,18 @@ const $createParams = combine(
     callData: $callData,
     description: $description,
   },
-  ({ canContinue, backendUrl, chain, path, callData, description }) => {
-    if (!canContinue || !backendUrl || !chain) return null;
+  ({ canContinue, backendUrl, chain, path, callData, description }): CreateRequest => {
+    if (!canContinue || !backendUrl || !chain) return { ok: false, reason: 'not-ready' };
+
     // A lone `signer` is grammatically valid, but a draft along it could never
     // be submitted — the signing path needs at least one delegation hop.
-    if (!isValidPath(path).ok || !isUsablePath(path)) return null;
+    const validation = isValidPath(path);
+    if (!validation.ok || !isUsablePath(path)) {
+      return { ok: false, reason: 'invalid-path', detail: validation.ok ? undefined : validation.reason };
+    }
 
     return {
+      ok: true,
       backendUrl,
       params: {
         chainId: chain.chainId,
@@ -271,19 +299,22 @@ const $createParams = combine(
 
 /**
  * The create action. An effect so the modal can await it for its toasts; the
- * gate lives inside, so a call while the confirm is not ready resolves to
- * `null` and creates nothing — the button's `disabled` is not the only thing
- * standing in the way.
+ * gate lives inside, so a call while the confirm is not ready creates nothing
+ * and fails with a {@link DraftNotCreatedError} — the button's `disabled` is not
+ * the only thing standing in the way, and a gate that closed after the click
+ * still says why.
  */
 const createDraftFx = attach({
-  source: $createParams,
-  effect: (createParams) =>
-    createParams ? draftsService.createDraft(createParams.backendUrl, createParams.params) : Promise.resolve(null),
+  source: $createRequest,
+  effect: async (request) => {
+    if (!request.ok) throw new DraftNotCreatedError(request.reason, request.detail);
+
+    return draftsService.createDraft(request.backendUrl, request.params);
+  },
 });
 
 sample({
   clock: createDraftFx.doneData,
-  filter: nonNullable,
   target: [draftsResource.draftCreated, draftCreated],
 });
 

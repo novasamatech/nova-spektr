@@ -1,7 +1,8 @@
-import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'effector';
+import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
 import { type Asset, type Chain, type ChainId, type Wallet, ConnectionStatus } from '@/shared/core';
+import { type TransactionStoresMock } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { type UnclaimedPayout } from '@/domains/staking';
@@ -15,60 +16,19 @@ import { type ClaimRequest, type ClaimRewardsConfirm, Step } from '../types';
 import { claimRewardsModel } from './claim';
 import { confirmModel } from './confirm';
 
-/**
- * The node is out of scope here.
- *
- * `createComplexTxStore` and `createTxValidationStore` both cost a round trip
- * to a real api, and neither has anything to say about the decisions this model
- * makes. They are replaced with the smallest stand-ins that keep the graph
- * honest: the tx store passes the core transaction straight through, and the
- * validation verdict is a writable store with no verdict by default — exactly
- * the state the confirm opens in — that a test can turn on.
- */
-const { validationMock } = vi.hoisted(() => ({ validationMock: { $valid: null as unknown } }));
+// The node is out of scope here: see `mockTransactionStores`. The verdict starts
+// empty — exactly the state the confirm opens in — and a test turns it on.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
 
 vi.mock('@/shared/transactions', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  const { createStore, sample } = await import('effector');
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal(), { valid: false });
 
-  const $valid = createStore(false);
-  validationMock.$valid = $valid;
-
-  return {
-    ...actual,
-    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
-      const $tx = createStore<unknown>(null);
-      sample({ clock: transaction, target: $tx });
-
-      return {
-        // The self-route a plain account gets from the real store — keeps the
-        // route-signer guard honest without the BFS over the account graph.
-        $route: initiator.map((account) => (account ? [account] : [])),
-        $tx,
-        $feeTx: createStore<unknown>(null),
-        $pendingWrapping: createStore(false),
-        $fee: createStore<unknown>(null),
-        $pendingFee: createStore(false),
-      };
-    },
-    // The real one asks the DI permission registry, which is empty in a unit
-    // fork — every account would read as unsignable. The permission check has
-    // its own tests; here the terminal hop simply signs.
-    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
-    createTxValidationStore: () => ({
-      $errors: createStore<unknown[]>([]),
-      $balanceValidationResults: createStore<unknown[]>([]),
-      $pending: createStore(false),
-      $validationDone: $valid,
-      $valid,
-      $failed: createStore(false),
-      $available: createStore<unknown[]>([]),
-    }),
-  };
+  return txStores.current.module;
 });
 
 /** The validator's verdict on the primary transaction. */
-const $valid = () => validationMock.$valid as StoreWritable<boolean>;
+const $valid = () => txStores.current!.$valid;
 
 /**
  * The primary call is only built on a connected chain; the verdict is seeded

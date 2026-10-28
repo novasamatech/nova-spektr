@@ -1,57 +1,20 @@
 import { BN } from '@polkadot/util';
-import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'effector';
+import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Wallet, CryptoType, SigningType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { polkadotChain } from '@/shared/mocks';
+import { type TransactionStoresMock, createVaultBaseAccount, polkadotChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type UnlockRequest, Step } from '../../types';
 
-/**
- * The node is out of scope here.
- *
- * `createComplexTxStore` and `createTxValidationStore` both cost a round trip
- * to a real api, and neither has anything to say about the decisions this model
- * makes — whether the confirm opens, whether signing is allowed. They are
- * replaced with the smallest stand-ins that keep the graph honest: the tx store
- * passes the core transaction straight through, and the validation verdict is a
- * writable store a test can turn off.
- */
-const { validationMock } = vi.hoisted(() => ({ validationMock: { $valid: null as unknown } }));
+// The node is out of scope here: see `mockTransactionStores`.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
 
 vi.mock('@/shared/transactions', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  const { createStore, sample } = await import('effector');
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal());
 
-  const $valid = createStore(true);
-  validationMock.$valid = $valid;
-
-  return {
-    ...actual,
-    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
-      const $tx = createStore<unknown>(null);
-      sample({ clock: transaction, target: $tx });
-
-      return {
-        $route: initiator.map((account) => (account ? [account] : [])),
-        $tx,
-        $feeTx: createStore<unknown>(null),
-        $pendingWrapping: createStore(false),
-        $fee: createStore<unknown>(null),
-        $pendingFee: createStore(false),
-      };
-    },
-    createTxValidationStore: () => ({
-      $errors: createStore<unknown[]>([]),
-      $balanceValidationResults: createStore<unknown[]>([]),
-      $pending: createStore(false),
-      $validationDone: createStore(true),
-      $valid,
-      $failed: createStore(false),
-      $available: createStore<unknown[]>([]),
-    }),
-  };
+  return txStores.current.module;
 });
 
 const { unlockFlowModel } = await import('../unlock-flow');
@@ -62,16 +25,7 @@ const { signModel } = await import('@/features/operations/OperationSign');
 
 const ALICE: AccountId = toAccountId(`0x${'1'.padStart(64, '0')}`);
 
-const ACCOUNT: Wallet['accounts'][number] = {
-  id: 'account-1',
-  type: 'universal',
-  name: 'Alice',
-  walletId: 1,
-  accountId: ALICE,
-  cryptoType: CryptoType.SR25519,
-  signingType: SigningType.POLKADOT_VAULT,
-  createdAt: 0,
-};
+const ACCOUNT = createVaultBaseAccount('alice', { walletId: 1, accountId: ALICE, name: 'Alice' });
 
 /** Alice releases her own expired lock on one track. */
 const request = (): UnlockRequest => ({
@@ -83,7 +37,7 @@ const request = (): UnlockRequest => ({
 });
 
 /** The validator's verdict on the wrapped release. */
-const $valid = () => validationMock.$valid as StoreWritable<boolean>;
+const $valid = () => txStores.current!.$valid;
 
 // --- tests -------------------------------------------------------------------
 
