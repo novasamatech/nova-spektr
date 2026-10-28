@@ -802,6 +802,8 @@ export const formModel = {
   $csvError,
   $csvIssues,
   $maxRowsPerTransaction: batchCapacity.$maxRows,
+  $batchCapacityCheckFailed: batchCapacity.$hasError,
+  retryBatchCapacityCheck: batchCapacity.retry,
   $availableChains,
   $initiators,
   $signatories,

@@ -95,4 +95,43 @@ describe('createBatchCapacityCheck', () => {
 
     expect(scope.getState($blocksSubmit)).toBe(false);
   });
+
+  it('blocks submit and reports the failure when the weight check cannot be run', async () => {
+    vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
+    const { $rows, $maxRows, $hasError, $blocksSubmit } = setup();
+
+    const scope = fork();
+    await allSettled($rows, { scope, params: 10 });
+
+    expect(scope.getState($maxRows)).toBeNull();
+    expect(scope.getState($hasError)).toBe(true);
+    expect(scope.getState($blocksSubmit)).toBe(true);
+  });
+
+  it('unblocks submit once a retry succeeds', async () => {
+    vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValueOnce(new Error('rpc down')).mockResolvedValue(10);
+    const { $rows, $hasError, $blocksSubmit, retry } = setup();
+
+    const scope = fork();
+    await allSettled($rows, { scope, params: 10 });
+    expect(scope.getState($blocksSubmit)).toBe(true);
+
+    await allSettled(retry, { scope });
+
+    expect(transactionService.getBatchCapacity).toHaveBeenCalledTimes(2);
+    expect(scope.getState($hasError)).toBe(false);
+    expect(scope.getState($blocksSubmit)).toBe(false);
+  });
+
+  it('keeps blocking submit when the retry fails again', async () => {
+    vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
+    const { $rows, $hasError, $blocksSubmit, retry } = setup();
+
+    const scope = fork();
+    await allSettled($rows, { scope, params: 10 });
+    await allSettled(retry, { scope });
+
+    expect(scope.getState($hasError)).toBe(true);
+    expect(scope.getState($blocksSubmit)).toBe(true);
+  });
 });

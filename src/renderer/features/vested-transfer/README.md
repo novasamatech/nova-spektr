@@ -10,7 +10,8 @@ every row against the chain's own vesting rules, previews the result, and submit
 `utility.batchAll` once more than one call is produced). The run is atomic: it is never split into several transactions,
 so a file too heavy for one extrinsic is rejected before signing — an inline error names how many rows fit (estimated
 against the chain's static per-extrinsic weight limit, wrapping included), and submit and draft saving stay blocked
-until a smaller file is uploaded.
+until a smaller file is uploaded. While the weight RPC behind that check fails, the file is unverified and stays blocked
+the same way, with an inline error and a retry action.
 
 CSV is the **only** input channel: there is no manual row-by-row entry. The feature exists because these payouts arrive
 as spreadsheets, and a mistake in one row of a hundred is expensive and irreversible — so the emphasis is on catching
@@ -60,17 +61,18 @@ per chain selection.
 
 The flow is **form → confirm → sign → submit**.
 
-| State              | When it appears                           | What the user sees                                                                                                                      |
-| ------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Form               | Modal opened                              | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit on a multisig route)                                 |
-| Empty CSV          | File parses but has no data rows          | Inline hint; preview disabled                                                                                                           |
-| Malformed CSV      | Unknown/missing headers, unparseable file | Inline hint; preview disabled                                                                                                           |
-| Rows with errors   | ≥1 row fails a rule                       | Red alert listing "Row N: …", with a download of the file annotated with an `errors` column. Blocks submit                              |
-| Rows with warnings | ≥1 row raises a warning                   | Amber alert, same annotated download. Does **not** block submit                                                                         |
-| Too heavy          | File doesn't fit into one extrinsic       | Inline error naming how many rows fit; blocks submit and saving a draft                                                                 |
-| Preview            | "Preview" clicked                         | The schedule table: recipient, locked, start block (with its resolved date), per block, and the cliff column only when some row has one |
-| Confirm            | "Continue" pressed                        | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
-| Sign / Submit      | Confirmed                                 | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |
+| State               | When it appears                           | What the user sees                                                                                                                      |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Form                | Modal opened                              | Network, signing path, CSV upload, derived total amount, fee (and multisig deposit on a multisig route)                                 |
+| Empty CSV           | File parses but has no data rows          | Inline hint; preview disabled                                                                                                           |
+| Malformed CSV       | Unknown/missing headers, unparseable file | Inline hint; preview disabled                                                                                                           |
+| Rows with errors    | ≥1 row fails a rule                       | Red alert listing "Row N: …", with a download of the file annotated with an `errors` column. Blocks submit                              |
+| Rows with warnings  | ≥1 row raises a warning                   | Amber alert, same annotated download. Does **not** block submit                                                                         |
+| Too heavy           | File doesn't fit into one extrinsic       | Inline error naming how many rows fit; blocks submit and saving a draft                                                                 |
+| Weight check failed | Weight RPC rejected                       | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds                                               |
+| Preview             | "Preview" clicked                         | The schedule table: recipient, locked, start block (with its resolved date), per block, and the cliff column only when some row has one |
+| Confirm             | "Continue" pressed                        | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
+| Sign / Submit       | Confirmed                                 | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |
 
 Changing the network or uploading a new file **discards the parsed CSV and all row errors** — every rule depends on
 chain constants, so nothing validated against the previous chain can be trusted.

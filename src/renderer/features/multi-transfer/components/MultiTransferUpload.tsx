@@ -24,8 +24,9 @@ export const UploadCSV = () => {
   const csvIssues = useUnit(formModel.$csvIssues);
   const csvError = useUnit(formModel.$csvError);
   const maxRowsPerTransaction = useUnit(formModel.$maxRowsPerTransaction);
+  const batchCapacityCheckFailed = useUnit(formModel.$batchCapacityCheckFailed);
 
-  const hasError = !nullable(csvError) || nonNullable(maxRowsPerTransaction);
+  const hasError = !nullable(csvError) || nonNullable(maxRowsPerTransaction) || batchCapacityCheckFailed;
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
   const showPreview = (nullable(csvError) || csvError === MultiTransferCsvError.DATA) && hasParsedCsv;
   const showDisabledPreview = !showPreview;
@@ -108,6 +109,14 @@ export const UploadCSV = () => {
         {nonNullable(maxRowsPerTransaction) && (
           <InputHint variant="error" active>
             {t('multiTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
+          </InputHint>
+        )}
+        {batchCapacityCheckFailed && (
+          <InputHint variant="error" active className="flex items-center gap-x-2">
+            {t('multiTransfer.errors.csv.weightCheckFailedDescription')}
+            <Button className="p-0" size="sm" variant="text" onClick={() => formModel.retryBatchCapacityCheck()}>
+              {t('multiTransfer.errors.csv.weightCheckRetry')}
+            </Button>
           </InputHint>
         )}
         {csvError === MultiTransferCsvError.DATA && nullable(csvIssues) && (
