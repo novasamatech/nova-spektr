@@ -2960,6 +2960,7 @@
       "accessType": "Access type",
       "account": "Account",
       "amount": "Amount",
+      "batchCallProxyType": "{proxyType} access",
       "batchCalls": "Calls in batch",
       "callData": "Call Data",
       "coreCallData": "Core Call Data",

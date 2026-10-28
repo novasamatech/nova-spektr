@@ -142,113 +142,55 @@ describe('buildEditControllerMarkerTx', () => {
   });
 });
 
+const proxied = (transaction: DecodedTransaction) =>
+  tx({
+    section: 'proxy',
+    method: 'proxy',
+    args: { real: oldController, forceProxyType: 'Any', transaction },
+  });
+
+const transfer = () =>
+  tx({
+    section: 'balances',
+    method: 'transferKeepAlive',
+    args: { dest: newController, value: '1' },
+  });
+
 describe('parseProxyEditOperation', () => {
+  const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
+
   test('returns null for a bare addProxy (plain proxy add — not our flow)', () => {
     expect(parseProxyEditOperation(operation(addProxy()))).toBeNull();
-  });
-
-  test('recognizes verified flow: batchAll([addProxy, marker remark])', () => {
-    const op = operation(batchAll([addProxy(), remark(markerPayload)]));
-    expect(parseProxyEditOperation(op)).toEqual({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      proxyType: 'Any',
-      isTrustedFlow: false,
-    });
-  });
-
-  test('recognizes verified flow with outer new-ctrl REMARK_WITH_EVENT prepended', () => {
-    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
-    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), addProxy(), remark(markerPayload)]));
-    expect(parseProxyEditOperation(op)).toMatchObject({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      isTrustedFlow: false,
-    });
-  });
-
-  test('recognizes trusted flow: batchAll([addProxy, removeProxy]) — marker not required', () => {
-    const op = operation(batchAll([addProxy(), removeProxy()]));
-    expect(parseProxyEditOperation(op)).toEqual({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      proxyType: 'Any',
-      isTrustedFlow: true,
-    });
-  });
-
-  test('recognizes trusted flow with outer new-ctrl REMARK_WITH_EVENT prepended', () => {
-    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
-    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), addProxy(), removeProxy()]));
-    expect(parseProxyEditOperation(op)).toMatchObject({
-      newControllerAccountId: newController,
-      oldControllerAccountId: oldController,
-      isTrustedFlow: true,
-    });
-  });
-
-  test('returns null for a batch with addProxy + non-marker remark only', () => {
-    const op = operation(batchAll([addProxy(), remark(JSON.stringify({ kind: 'unrelated' }))]));
-    expect(parseProxyEditOperation(op)).toBeNull();
-  });
-
-  test('returns null for a batch with addProxy + REMARK_WITH_EVENT carrying marker payload (we accept plain remark only)', () => {
-    const op = operation(batchAll([addProxy(), remarkWithEvent(markerPayload)]));
-    expect(parseProxyEditOperation(op)).toBeNull();
-  });
-
-  test('returns null for a batch with no addProxy', () => {
-    const op = operation(batchAll([removeProxy()]));
-    expect(parseProxyEditOperation(op)).toBeNull();
   });
 
   test('returns null for null transaction', () => {
     expect(parseProxyEditOperation(operation(null))).toBeNull();
   });
 
-  test('unwraps proxy.proxy and recognizes verified flow inside', () => {
-    const inner = batchAll([addProxy(), remark(markerPayload)]);
-    const wrapped = tx({
-      section: 'proxy',
-      method: 'proxy',
-      args: { real: oldController, forceProxyType: 'Any', transaction: inner },
-    });
-    expect(parseProxyEditOperation(operation(wrapped))).toMatchObject({
+  test('recognizes verified flow: proxy.proxy(batchAll([addProxy, marker remark]))', () => {
+    const op = operation(proxied(batchAll([addProxy(), remark(markerPayload)])));
+    expect(parseProxyEditOperation(op)).toEqual({
       newControllerAccountId: newController,
       oldControllerAccountId: oldController,
+      proxyType: 'Any',
       isTrustedFlow: false,
     });
   });
 
-  test('unwraps proxy.proxy and recognizes trusted flow inside', () => {
-    // Production shape for trusted flow: the batch sits inside a proxy.proxy wrapper.
-    const inner = batchAll([addProxy(), removeProxy()]);
-    const wrapped = tx({
-      section: 'proxy',
-      method: 'proxy',
-      args: { real: oldController, forceProxyType: 'Any', transaction: inner },
-    });
-    expect(parseProxyEditOperation(operation(wrapped))).toMatchObject({
+  test('recognizes trusted flow: proxy.proxy(batchAll([addProxy, removeProxy])) — marker not required', () => {
+    const op = operation(proxied(batchAll([addProxy(), removeProxy()])));
+    expect(parseProxyEditOperation(op)).toEqual({
       newControllerAccountId: newController,
       oldControllerAccountId: oldController,
+      proxyType: 'Any',
       isTrustedFlow: true,
     });
   });
 
   test('handles outer batchAll wrap (multisig-new path) for trusted flow', () => {
     // When the new-controller multisig isn't known locally, $coreTx wraps the proxy.proxy
-    // in an outer batchAll with a metadata REMARK_WITH_EVENT alongside.
-    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
-    const proxyWrap = tx({
-      section: 'proxy',
-      method: 'proxy',
-      args: {
-        real: oldController,
-        forceProxyType: 'Any',
-        transaction: batchAll([addProxy(), removeProxy()]),
-      },
-    });
-    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxyWrap]));
+    // in an outer batchAll with a metadata REMARK_WITH_EVENT in front.
+    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxied(batchAll([addProxy(), removeProxy()]))]));
     expect(parseProxyEditOperation(op)).toMatchObject({
       newControllerAccountId: newController,
       oldControllerAccountId: oldController,
@@ -257,21 +199,73 @@ describe('parseProxyEditOperation', () => {
   });
 
   test('handles outer batchAll wrap (multisig-new path) for verified flow', () => {
-    const newCtrlMetadata = JSON.stringify({ signatories: [newController], threshold: 1 });
-    const proxyWrap = tx({
-      section: 'proxy',
-      method: 'proxy',
-      args: {
-        real: oldController,
-        forceProxyType: 'Any',
-        transaction: batchAll([addProxy(), remark(markerPayload)]),
-      },
-    });
-    const op = operation(batchAll([remarkWithEvent(newCtrlMetadata), proxyWrap]));
+    const op = operation(
+      batchAll([remarkWithEvent(newCtrlMetadata), proxied(batchAll([addProxy(), remark(markerPayload)]))]),
+    );
     expect(parseProxyEditOperation(op)).toMatchObject({
       newControllerAccountId: newController,
       oldControllerAccountId: oldController,
       isTrustedFlow: false,
     });
+  });
+
+  test('returns null for a bare batch without the proxy wrapper', () => {
+    expect(parseProxyEditOperation(operation(batchAll([addProxy(), removeProxy()])))).toBeNull();
+    expect(parseProxyEditOperation(operation(batchAll([addProxy(), remark(markerPayload)])))).toBeNull();
+    expect(
+      parseProxyEditOperation(operation(batchAll([remarkWithEvent(newCtrlMetadata), addProxy(), removeProxy()]))),
+    ).toBeNull();
+  });
+
+  test('returns null for a reversed pair', () => {
+    expect(parseProxyEditOperation(operation(proxied(batchAll([removeProxy(), addProxy()]))))).toBeNull();
+    expect(parseProxyEditOperation(operation(proxied(batchAll([remark(markerPayload), addProxy()]))))).toBeNull();
+  });
+
+  test('returns null for a pair with an extra call', () => {
+    expect(parseProxyEditOperation(operation(proxied(batchAll([addProxy(), removeProxy(), transfer()]))))).toBeNull();
+    expect(parseProxyEditOperation(operation(proxied(batchAll([addProxy(), removeProxy(), addProxy()]))))).toBeNull();
+    expect(
+      parseProxyEditOperation(operation(proxied(batchAll([addProxy(), remark(markerPayload), transfer()])))),
+    ).toBeNull();
+  });
+
+  test('returns null for an outer wrap with extra or reordered calls', () => {
+    const edit = proxied(batchAll([addProxy(), removeProxy()]));
+
+    expect(parseProxyEditOperation(operation(batchAll([edit])))).toBeNull();
+    expect(parseProxyEditOperation(operation(batchAll([edit, remarkWithEvent(newCtrlMetadata)])))).toBeNull();
+    expect(
+      parseProxyEditOperation(operation(batchAll([remarkWithEvent(newCtrlMetadata), edit, transfer()]))),
+    ).toBeNull();
+  });
+
+  test('returns null for a nested batch inside the pair', () => {
+    const op = operation(proxied(batchAll([addProxy(), batchAll([removeProxy()])])));
+    expect(parseProxyEditOperation(op)).toBeNull();
+  });
+
+  test('returns null for addProxy + non-marker remark', () => {
+    const op = operation(proxied(batchAll([addProxy(), remark(JSON.stringify({ kind: 'unrelated' }))])));
+    expect(parseProxyEditOperation(op)).toBeNull();
+  });
+
+  test('returns null for addProxy + REMARK_WITH_EVENT carrying marker payload (we accept plain remark only)', () => {
+    const op = operation(proxied(batchAll([addProxy(), remarkWithEvent(markerPayload)])));
+    expect(parseProxyEditOperation(op)).toBeNull();
+  });
+
+  test('returns null for a batch with no addProxy', () => {
+    expect(parseProxyEditOperation(operation(proxied(batchAll([removeProxy()]))))).toBeNull();
+    expect(parseProxyEditOperation(operation(proxied(batchAll([removeProxy(), removeProxy()]))))).toBeNull();
+  });
+
+  test('returns null for an unknown proxy type', () => {
+    const weird = tx({
+      section: 'proxy',
+      method: 'addProxy',
+      args: { delegate: newController, proxyType: 'Whatever', delay: 0 },
+    });
+    expect(parseProxyEditOperation(operation(proxied(batchAll([weird, removeProxy()]))))).toBeNull();
   });
 });

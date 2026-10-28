@@ -79,15 +79,23 @@ export const isProxyTransaction = (transaction?: Transaction | DecodedTransactio
   return transaction?.type === TransactionType.PROXY;
 };
 
-export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    const delegateTx = transaction.args.transactions?.some(isDelegateTransaction);
-    const undelegateTx = transaction.args.transactions?.some(isUndelegateTransaction);
+/**
+ * A batch made only of delegate and undelegate calls (at least one of each).
+ * Extra or nested calls disqualify the batch, so it stays a plain batch.
+ */
+export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
+  if (transaction?.type !== TransactionType.BATCH_ALL) return false;
 
-    return delegateTx && undelegateTx;
-  }
+  const transactions: Transaction[] = transaction.args?.transactions ?? [];
+  const isDelegationCall = (tx: Transaction) =>
+    tx.type === TransactionType.DELEGATE || tx.type === TransactionType.UNDELEGATE;
 
-  return false;
+  return (
+    transactions.length > 0 &&
+    transactions.every(isDelegationCall) &&
+    transactions.some((tx) => tx.type === TransactionType.DELEGATE) &&
+    transactions.some((tx) => tx.type === TransactionType.UNDELEGATE)
+  );
 };
 
 export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
@@ -201,6 +209,7 @@ const isKnownBatchShape = (transactions: Transaction[]): boolean => {
 /**
  * Picks the transaction that represents a batch. Looks at direct children only,
  * never returns a batch and returns `null` for batches the app does not build.
+ * A proxy change always represents its batch, so the batch is named after it.
  */
 export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
   const transactions: Transaction[] = batch.args?.transactions ?? [];
@@ -210,6 +219,8 @@ export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Trans
   }
 
   return (
+    transactions.find((tx) => tx.type === TransactionType.ADD_PROXY) ??
+    transactions.find((tx) => tx.type === TransactionType.REMOVE_PROXY) ??
     transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
     transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
     transactions.find((tx) => tx.type !== TransactionType.BATCH_ALL) ??

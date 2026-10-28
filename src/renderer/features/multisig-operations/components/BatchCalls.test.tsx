@@ -7,7 +7,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BatchCalls } from './BatchCalls';
 
 vi.mock('@/shared/i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({
+    t: (key: string, params?: Record<string, unknown>) => (params ? `${key}:${JSON.stringify(params)}` : key),
+  }),
 }));
 
 vi.mock('@/shared/ui', () => ({
@@ -75,6 +77,51 @@ describe('BatchCalls', () => {
     expect(items[1]).toHaveTextContent('2. Proxy: Add proxy');
     expect(items[1]).toHaveTextContent(`account:${ALICE_ACCOUNT_ID}`);
     expect(items[2]).toHaveTextContent('3. System: Remark');
+  });
+
+  it('shows the proxy type of proxy management calls', () => {
+    const batch = createBatch([
+      createCall(TransactionType.ADD_PROXY, 'proxy', 'addProxy', { delegate: ALICE, proxyType: 'Any' }),
+      createCall(TransactionType.REMOVE_PROXY, 'proxy', 'removeProxy', { delegate: BOB, proxyType: 'Staking' }),
+      createCall(TransactionType.CREATE_PURE_PROXY, 'proxy', 'createPure', { proxyType: 'NonTransfer' }),
+      createCall(TransactionType.TRANSFER, 'balances', 'transferKeepAlive', { dest: BOB, value: '1' }),
+    ]);
+
+    render(<BatchCalls transaction={batch} chain={chain} />);
+
+    const items = within(screen.getByTestId('batch-calls')).getAllByRole('listitem');
+
+    expect(items[0]).toHaveTextContent('operation.details.batchCallProxyType:{"proxyType":"Any"}');
+    expect(items[1]).toHaveTextContent('operation.details.batchCallProxyType:{"proxyType":"Staking"}');
+    expect(items[2]).toHaveTextContent('operation.details.batchCallProxyType:{"proxyType":"NonTransfer"}');
+    expect(items[3]).not.toHaveTextContent('batchCallProxyType');
+  });
+
+  it('lists the calls of a nested batch under their parent', () => {
+    const batch = createBatch([
+      createCall(TransactionType.UNDELEGATE, 'convictionVoting', 'undelegate', { class: 0 }),
+      createCall(TransactionType.DELEGATE, 'convictionVoting', 'delegate', { target: BOB, balance: '10' }),
+      createBatch([
+        createCall(TransactionType.ADD_PROXY, 'proxy', 'addProxy', { delegate: ALICE, proxyType: 'Any' }),
+        createBatch([createCall(TransactionType.TRANSFER, 'balances', 'transferKeepAlive', { dest: BOB, value: '7' })]),
+      ]),
+    ]);
+
+    render(<BatchCalls transaction={batch} chain={chain} />);
+
+    const list = screen.getByTestId('batch-calls');
+    const topLevelItems = Array.from(list.children);
+
+    expect(screen.getByText('operation.details.batchCalls').parentElement).toHaveTextContent('3');
+    expect(topLevelItems).toHaveLength(3);
+    expect(topLevelItems[2]).toHaveTextContent('3. Utility: Batch all');
+    expect(topLevelItems[2]).toHaveTextContent('3.1. Proxy: Add proxy');
+    expect(topLevelItems[2]).toHaveTextContent(`account:${ALICE_ACCOUNT_ID}`);
+    expect(topLevelItems[2]).toHaveTextContent('operation.details.batchCallProxyType:{"proxyType":"Any"}');
+    expect(topLevelItems[2]).toHaveTextContent('3.2. Utility: Batch all');
+    expect(topLevelItems[2]).toHaveTextContent('3.2.1. Balances: Transfer keep alive');
+    expect(topLevelItems[2]).toHaveTextContent('amount:7');
+    expect(within(list).getAllByRole('listitem')).toHaveLength(6);
   });
 
   it('lists calls of a proxied batch', () => {

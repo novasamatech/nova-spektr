@@ -35,6 +35,46 @@ describe('getModalTransactionTitle', () => {
     expect(getModalTransactionTitle(false, t, batch)).toEqual('operations.modalTitles.startStakingOn');
   });
 
+  test('should title an edit delegation batch only when it holds delegation calls alone', () => {
+    const undelegate = createTransaction(TransactionType.UNDELEGATE);
+    const delegate = createTransaction(TransactionType.DELEGATE, { balance: '10000000000' });
+    const nestedAddProxy = createBatch([createTransaction(TransactionType.ADD_PROXY, { proxyType: 'Any' })]);
+
+    expect(getModalTransactionTitle(false, t, createBatch([undelegate, delegate]))).toEqual(
+      'operations.modalTitles.editDelegationOn',
+    );
+    expect(getModalTransactionTitle(false, t, createBatch([undelegate, delegate, nestedAddProxy]))).toEqual(
+      'operations.modalTitles.unknownOn',
+    );
+  });
+
+  test('should name a batch after its proxy change', () => {
+    const addProxy = createTransaction(TransactionType.ADD_PROXY, { proxyType: 'Any' });
+    const removeProxy = createTransaction(TransactionType.REMOVE_PROXY, { proxyType: 'Any' });
+    const remark = createTransaction(TransactionType.REMARK);
+
+    expect(getModalTransactionTitle(false, t, createBatch([remark, addProxy]))).toEqual(
+      'operations.modalTitles.addProxy',
+    );
+    expect(getModalTransactionTitle(false, t, createBatch([removeProxy, addProxy]))).toEqual(
+      'operations.modalTitles.addProxy',
+    );
+    expect(getModalTransactionTitle(false, t, createBatch([removeProxy]))).toEqual(
+      'operations.modalTitles.removeProxy',
+    );
+  });
+
+  test('should title edit flexible only for a proxied add + remove proxy pair', () => {
+    const addProxy = createTransaction(TransactionType.ADD_PROXY, { proxyType: 'Any' });
+    const removeProxy = createTransaction(TransactionType.REMOVE_PROXY, { proxyType: 'Any' });
+    const proxied = createTransaction(TransactionType.PROXY, { transaction: createBatch([addProxy, removeProxy]) });
+
+    expect(getModalTransactionTitle(false, t, proxied)).toEqual('operations.modalTitles.editFlexibleOn');
+    expect(getModalTransactionTitle(false, t, createBatch([addProxy, removeProxy]))).toEqual(
+      'operations.modalTitles.addProxy',
+    );
+  });
+
   test('should fall back to unknown for batches the app does not build', () => {
     const batch = createBatch([createTransaction(TransactionType.ADD_PROXY), createTransaction(TransactionType.BOND)]);
     const proxied = createTransaction(TransactionType.PROXY, { transaction: batch });

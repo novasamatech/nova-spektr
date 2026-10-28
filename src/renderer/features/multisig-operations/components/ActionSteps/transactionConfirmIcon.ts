@@ -1,6 +1,6 @@
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
+import { findCoreBatchAll, isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -79,7 +79,9 @@ export const getIconName = (transaction: Transaction | DecodedTransaction | null
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getIconName(transaction?.args?.transactions?.[0]);
+    const coreTransaction = findCoreBatchAll(transaction);
+
+    return coreTransaction ? getIconName(coreTransaction) : TransactionIcons[TransactionType.BATCH_ALL];
   }
 
   if (transaction.type === TransactionType.PROXY) {

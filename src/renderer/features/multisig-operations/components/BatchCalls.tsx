@@ -21,6 +21,13 @@ const PROXY_MANAGEMENT_TYPES = new Set<TransactionType | undefined>([
   TransactionType.PROXY,
 ]);
 
+const PROXY_TYPE_CALLS = new Set<TransactionType | undefined>([
+  TransactionType.ADD_PROXY,
+  TransactionType.REMOVE_PROXY,
+  TransactionType.CREATE_PURE_PROXY,
+  TransactionType.KILL_PURE_PROXY,
+]);
+
 const getCallAccountId = (call: DecodedTransaction): AccountId | null => {
   const address =
     (isTransferTransaction(call) && call.args?.dest) ||
@@ -28,6 +35,12 @@ const getCallAccountId = (call: DecodedTransaction): AccountId | null => {
     (call.type === TransactionType.DELEGATE && call.args?.target);
 
   return typeof address === 'string' ? toAccountId(address) : null;
+};
+
+const getCallProxyType = (call: DecodedTransaction): string | null => {
+  const proxyType = PROXY_TYPE_CALLS.has(call.type) ? call.args?.proxyType : null;
+
+  return typeof proxyType === 'string' ? proxyType : null;
 };
 
 const getCallAsset = (call: DecodedTransaction, chain: Chain) => {
@@ -42,14 +55,73 @@ const getCallAsset = (call: DecodedTransaction, chain: Chain) => {
   return getNativeAsset(chain.assets) ?? null;
 };
 
+const getBatchCalls = (call: DecodedTransaction): DecodedTransaction[] => {
+  return call.type === TransactionType.BATCH_ALL ? (call.args?.transactions ?? []) : [];
+};
+
+type CallListProps = {
+  calls: DecodedTransaction[];
+  chain: Chain;
+  prefix?: string;
+};
+
+const CallList = ({ calls, chain, prefix = '' }: CallListProps) => {
+  const { t } = useI18n();
+
+  return (
+    <ol
+      className={cnTw('flex flex-col gap-y-2', { 'mt-2 pl-4': prefix })}
+      data-testid={prefix ? undefined : 'batch-calls'}
+    >
+      {calls.map((call, index) => {
+        const number = `${prefix}${index + 1}.`;
+        const nestedCalls = getBatchCalls(call);
+        const accountId = getCallAccountId(call);
+        const proxyType = getCallProxyType(call);
+        const amount = nestedCalls.length > 0 ? null : getTransactionAmount(call);
+        const asset = amount ? getCallAsset(call, chain) : null;
+
+        return (
+          <li key={index}>
+            <DetailRow
+              label={
+                <FootnoteText
+                  className={cnTw('text-text-tertiary', {
+                    'text-text-warning': PROXY_MANAGEMENT_TYPES.has(call.type),
+                  })}
+                >
+                  {number} {formatSectionAndMethod(call.section, call.method)}
+                </FootnoteText>
+              }
+              className="text-text-secondary"
+            >
+              <div className="flex items-center gap-x-2">
+                {amount && asset && <AssetBalance value={amount} asset={asset} className="text-text-secondary" />}
+                {accountId && <NamedAccount chain={chain} accountId={accountId} variant="short" />}
+                {proxyType && (
+                  <FootnoteText className="text-text-tertiary">
+                    {t('operation.details.batchCallProxyType', { proxyType })}
+                  </FootnoteText>
+                )}
+              </div>
+            </DetailRow>
+
+            {nestedCalls.length > 0 && <CallList calls={nestedCalls} chain={chain} prefix={number} />}
+          </li>
+        );
+      })}
+    </ol>
+  );
+};
+
 type Props = {
   transaction?: DecodedTransaction | null;
   chain: Chain;
 };
 
 /**
- * Lists every call of a batch operation, so the whole batch is visible
- * regardless of the operation title.
+ * Lists every call of a batch operation, nested batches included, so the whole
+ * batch is visible regardless of the operation title.
  */
 export const BatchCalls = ({ transaction, chain }: Props) => {
   const { t } = useI18n();
@@ -60,7 +132,7 @@ export const BatchCalls = ({ transaction, chain }: Props) => {
     return null;
   }
 
-  const calls: DecodedTransaction[] = batch.args?.transactions ?? [];
+  const calls = getBatchCalls(batch);
 
   if (calls.length === 0) {
     return null;
@@ -74,35 +146,7 @@ export const BatchCalls = ({ transaction, chain }: Props) => {
         <FootnoteText className="text-text-secondary">{calls.length}</FootnoteText>
       </DetailRow>
 
-      <ol className="flex flex-col gap-y-2" data-testid="batch-calls">
-        {calls.map((call, index) => {
-          const accountId = getCallAccountId(call);
-          const amount = getTransactionAmount(call);
-          const asset = amount ? getCallAsset(call, chain) : null;
-
-          return (
-            <li key={index}>
-              <DetailRow
-                label={
-                  <FootnoteText
-                    className={cnTw('text-text-tertiary', {
-                      'text-text-warning': PROXY_MANAGEMENT_TYPES.has(call.type),
-                    })}
-                  >
-                    {index + 1}. {formatSectionAndMethod(call.section, call.method)}
-                  </FootnoteText>
-                }
-                className="text-text-secondary"
-              >
-                <div className="flex items-center gap-x-2">
-                  {amount && asset && <AssetBalance value={amount} asset={asset} className="text-text-secondary" />}
-                  {accountId && <NamedAccount chain={chain} accountId={accountId} variant="short" />}
-                </div>
-              </DetailRow>
-            </li>
-          );
-        })}
-      </ol>
+      <CallList calls={calls} chain={chain} />
     </>
   );
 };

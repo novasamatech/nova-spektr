@@ -3,6 +3,7 @@ import {
   findCoreBatchAll,
   getTransactionAmount,
   isAddProxyTransaction,
+  isEditDelegationTransaction,
   isEditFlexibleTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
@@ -330,7 +331,10 @@ describe('entities/transaction/lib/onChainUtils', () => {
       [[TransactionType.VESTED_TRANSFER, TransactionType.VESTED_TRANSFER], TransactionType.VESTED_TRANSFER],
       [[TransactionType.TRANSFER, TransactionType.TRANSFER], TransactionType.TRANSFER],
       [[TransactionType.ADD_PROXY, TransactionType.REMOVE_PROXY], TransactionType.ADD_PROXY],
+      [[TransactionType.REMOVE_PROXY, TransactionType.ADD_PROXY], TransactionType.ADD_PROXY],
+      [[TransactionType.REMOVE_PROXY, TransactionType.REMOVE_PROXY], TransactionType.REMOVE_PROXY],
       [[TransactionType.ADD_PROXY, TransactionType.REMARK], TransactionType.ADD_PROXY],
+      [[TransactionType.REMARK, TransactionType.ADD_PROXY], TransactionType.ADD_PROXY],
     ])('should resolve batch built by the app: %j', (types, expected) => {
       expect(findCoreBatchAll(createBatchOf(types))?.type).toBe(expected);
     });
@@ -382,6 +386,48 @@ describe('entities/transaction/lib/onChainUtils', () => {
       const transfer = createTransaction(TransactionType.TRANSFER, { value: '5' });
 
       expect(getTransactionAmount(createBatch([transfer, createTransaction(TransactionType.ADD_PROXY)]))).toBeNull();
+    });
+  });
+
+  describe('isEditDelegationTransaction', () => {
+    const createTransaction = (type: TransactionType, args: Record<string, unknown> = {}) =>
+      ({ type, args }) as unknown as Transaction;
+    const createBatch = (transactions: Transaction[]) => createTransaction(TransactionType.BATCH_ALL, { transactions });
+
+    const delegate = createTransaction(TransactionType.DELEGATE, { balance: '1' });
+    const undelegate = createTransaction(TransactionType.UNDELEGATE);
+
+    test('should detect a batch of delegate and undelegate calls only', () => {
+      expect(isEditDelegationTransaction(createBatch([undelegate, delegate]))).toBe(true);
+      expect(isEditDelegationTransaction(createBatch([undelegate, undelegate, delegate, delegate]))).toBe(true);
+    });
+
+    test('should require both delegate and undelegate calls', () => {
+      expect(isEditDelegationTransaction(createBatch([delegate]))).toBe(false);
+      expect(isEditDelegationTransaction(createBatch([undelegate, undelegate]))).toBe(false);
+      expect(isEditDelegationTransaction(createBatch([]))).toBe(false);
+      expect(isEditDelegationTransaction(delegate)).toBe(false);
+      expect(isEditDelegationTransaction(null)).toBe(false);
+    });
+
+    test('should reject a batch with an extra call', () => {
+      const addProxy = createTransaction(TransactionType.ADD_PROXY);
+
+      expect(isEditDelegationTransaction(createBatch([undelegate, delegate, addProxy]))).toBe(false);
+    });
+
+    test('should reject a batch with a nested batch', () => {
+      const nested = createBatch([createTransaction(TransactionType.ADD_PROXY)]);
+
+      expect(isEditDelegationTransaction(createBatch([undelegate, delegate, nested]))).toBe(false);
+      expect(isEditDelegationTransaction(createBatch([createBatch([undelegate, delegate])]))).toBe(false);
+    });
+
+    test('should not return a delegation amount for a batch with extra calls', () => {
+      const nested = createBatch([createTransaction(TransactionType.ADD_PROXY)]);
+
+      expect(getTransactionAmount(createBatch([undelegate, delegate]))).toBe('1');
+      expect(getTransactionAmount(createBatch([undelegate, delegate, nested]))).toBeNull();
     });
   });
 });

@@ -100,15 +100,22 @@ label (**"Utility: Batch all"**) with the generic icon. A batch is represented b
 amount, the type filter and the approve/reject dialog title) only when **every** call in it belongs to one of the shapes
 the app itself builds: bond + nominate, chill + unbond, payouts, remove vote + undelegate + unlock, delegate /
 undelegate, vested transfers, transfers, add + remove proxy, add proxy + remark. Any other batch — including one mixed
-with a call outside its shape, or one that nests another batch — has no amount, filters as unknown and is titled
-**"Unknown Operation"** in the dialog.
+with a call outside its shape, or one that nests another batch — has no amount, filters as unknown, keeps the generic
+icon and is titled **"Unknown Operation"** in the dialog. The shape check runs before every special-case detector:
+**"Edit Delegation"** is only a batch made of delegate and undelegate calls alone, and a batch that contains a proxy
+change (add proxy, else remove proxy) is always named after that proxy change, whatever its other call is — e.g.
+remark + add proxy is titled **"Add delegated authority (proxy)"**, never "Remark".
 
 ### Two special shapes
 
 These bypass the normal amount row and get a bespoke card in the list plus a bespoke details panel. Detection is
 exclusive — an operation is at most one of them.
 
-- **Edit flexible multisig** — swapping which multisig controls a flexible multisig. The card shows the old and new
+- **Edit flexible multisig** — swapping which multisig controls a flexible multisig. Recognised only in the exact shape
+  the app builds: a `proxy.proxy` call through the flexible multisig whose inner batch is precisely
+  `[addProxy, removeProxy]` or `[addProxy, marker remark]` (optionally preceded, in an outer two-call batch, by the
+  new-controller metadata `remarkWithEvent`). A bare add + remove proxy batch on a plain multisig, a reordered pair, or
+  a pair with any extra or nested call is a normal row with the shape-based title above. The card shows the old and new
   controllers (identicons, old → new) and a coloured tag for the mode:
   - **Atomic swap** — the old controller is removed in the same transaction (both add and remove happen together).
   - **Verified swap** — the new controller is added now; the old one is removed later, after verification. The old
@@ -264,12 +271,13 @@ approved, is available on the operation's chain, and is not watch-only. Two case
 Approving runs a short wizard: **choose the signing account and path** (with the multisig deposit shown only on the
 first approval, plus the network fee) → **confirm** (a recap including the underlying core transaction on the final
 sign; for a batch, the recap lists **every call** in it in order — `Pallet: Call`, the amount and the recipient /
-delegate where the call has one, with proxy-management calls highlighted) → **sign**. Signing adapts to the account's
-wallet type — Polkadot Vault (QR scan), browser Extension, or WalletConnect (watch-only accounts cannot sign and are
-excluded upstream). The signed extrinsic is then submitted, with a status modal showing **in progress → success**
-(auto-closing) **or error** (dispatch or submission failures such as insufficient balance or a network problem). On the
-final approval of an add/remove-proxy operation the wallet's accounts are re-synced; an optional operation description
-is posted to the address book at this point.
+delegate where the call has one, with proxy-management calls highlighted and their access type shown, e.g. "Any access";
+a nested batch is expanded in place as an indented sub-list numbered `3.1.`, `3.2.`, … so no call stays hidden behind
+"Utility: Batch all") → **sign**. Signing adapts to the account's wallet type — Polkadot Vault (QR scan), browser
+Extension, or WalletConnect (watch-only accounts cannot sign and are excluded upstream). The signed extrinsic is then
+submitted, with a status modal showing **in progress → success** (auto-closing) **or error** (dispatch or submission
+failures such as insufficient balance or a network problem). On the final approval of an add/remove-proxy operation the
+wallet's accounts are re-synced; an optional operation description is posted to the address book at this point.
 
 ### Adding call data
 
