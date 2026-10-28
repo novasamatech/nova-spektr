@@ -86,11 +86,15 @@ const getOwnRecipients = (tx: DecodedTransaction): AccountId[] | null => {
   const recipientArg = RECIPIENT_ARG[type];
   if (recipientArg) return readRecipient(args?.[recipientArg]);
 
-  // Rewards go to an account only for the `Account` payee.
+  // Rewards go to an account only for the `Account` payee. The decoder
+  // normalises it to `{ Account }`; the raw codec JSON spells it `account`.
   if (type === TransactionType.BOND || type === TransactionType.DESTINATION) {
     const payee: unknown = args?.payee;
+    if (!isRecord(payee)) return [];
 
-    return isRecord(payee) && 'Account' in payee ? readRecipient(payee.Account) : [];
+    const account = 'Account' in payee ? payee.Account : payee.account;
+
+    return account === undefined ? [] : readRecipient(account);
   }
 
   // `payout()` pays the caller, `payoutOther(beneficiary)` someone else.
