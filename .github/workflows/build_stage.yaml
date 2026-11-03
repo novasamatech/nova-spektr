@@ -240,7 +240,7 @@ jobs:
           echo "name=$escaped" >> "$GITHUB_OUTPUT"
 
       - name: Notify Telegram channel
-        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
+        uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
           token: ${{ secrets.TELEGRAM_TOKEN }}

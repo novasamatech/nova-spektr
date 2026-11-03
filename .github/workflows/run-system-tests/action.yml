@@ -21,7 +21,8 @@ runs:
         TEST_GREP: ${{ inputs.test_grep }}
       run: |
         set +e
-        timeout 43m allurectl watch -- npx playwright test --grep "$TEST_GREP"
+        # The token stays with allurectl; the test process and its dependencies never see it.
+        timeout 43m allurectl watch -- env -u ALLURE_TOKEN npx playwright test --grep "$TEST_GREP"
         EXIT_CODE=$?
         set -e
         if [ $EXIT_CODE -eq 124 ]; then
@@ -55,7 +56,7 @@ runs:
 
     - name: Notify Telegram channel
       if: always()
-      uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
+      uses: ./.github/workflows/notify-telegram
       with:
         to: ${{ inputs.telegram_to }}
         token: ${{ inputs.telegram_token }}

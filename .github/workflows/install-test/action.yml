@@ -32,4 +32,4 @@ runs:
       if: steps.playwright-cache.outputs.cache-hit != 'true'
 
     - name: Install allurectl
-      uses: allure-framework/setup-allurectl@2d89ee0b7ba2f59dbe9849b6df5763cab78e14db # v1.0.3
+      uses: ./.github/workflows/install-allurectl
