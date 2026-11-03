@@ -9,7 +9,7 @@ runs:
 
     - name: Build compose
       shell: bash
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Get installed Playwright version
       id: playwright-version
