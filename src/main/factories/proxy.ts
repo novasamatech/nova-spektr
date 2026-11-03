@@ -15,6 +15,14 @@ const SECURITY_LOG_PREFIX = '[Security]';
 const EMPTY_JSON_BODY = '{}';
 const NETWORK_FAILURE_STATUS = 0;
 
+/**
+ * Identifies requests from the desktop app to the address-book backend. Set in
+ * main after the renderer's headers, so the page can neither drop nor change
+ * it.
+ */
+export const CLIENT_HEADER = 'X-Client';
+export const DESKTOP_CLIENT_ID = 'spektr-desktop';
+
 /** Marks policy rejections (as opposed to network errors) in main and its tests. */
 export const PROXY_BLOCKED_STATUS_TEXT = 'Blocked by proxy policy';
 
@@ -84,12 +92,15 @@ export function setupProxy() {
       return failure(PROXY_BLOCKED_STATUS_TEXT);
     }
 
+    const requestHeaders = new Headers(init?.headers);
+    requestHeaders.set(CLIENT_HEADER, DESKTOP_CLIENT_ID);
+
     let response: Response;
     try {
       // A pinned origin must not bounce main elsewhere: a redirect is a failure, not a follow.
       response = await session.fromPartition(AUTH_PARTITION).fetch(url, {
         method: init?.method,
-        headers: init?.headers,
+        headers: requestHeaders,
         body: init?.body,
         redirect: 'error',
       });

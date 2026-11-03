@@ -60,7 +60,7 @@ describe('proxy.ts — fetch proxy policy', () => {
 
     expect(mockFetch).toHaveBeenCalledWith(`${ORIGIN}/health`, {
       method: 'GET',
-      headers: undefined,
+      headers: expect.any(Headers),
       body: undefined,
       redirect: 'error',
     });
@@ -71,6 +71,22 @@ describe('proxy.ts — fetch proxy policy', () => {
       headers: { 'x-csrf-token': 'token' },
       body: '{"status":"ok"}',
     });
+  });
+
+  it('adds the desktop client marker after the renderer headers', async () => {
+    const proxy = await setup();
+    mockFetch.mockResolvedValueOnce(okResponse());
+    await proxy.pin(ORIGIN);
+
+    await proxy.fetch(`${ORIGIN}/contacts`, {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': 'token', 'x-client': 'other' },
+      body: '{}',
+    });
+
+    const headers = new Headers(mockFetch.mock.calls[0]?.[1]?.headers);
+    expect(headers.get('X-Client')).toBe('spektr-desktop');
+    expect(headers.get('X-CSRF-Token')).toBe('token');
   });
 
   it('blocks file: URLs without touching the network', async () => {
