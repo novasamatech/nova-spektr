@@ -1,12 +1,13 @@
 # Assets balances
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
-Keeps account balances current for every screen that shows or spends them. The module owns two things: the balance
+Keeps account balances current for every screen that shows or spends them. The module owns three things: the balance
 subscription model (`balanceSubModel`) — which accounts are watched on which chains, and how missed requests are
-recovered — and the shared `AmountInput` that every amount-entering form renders.
+recovered — the `useBalanceCoverage` readiness hook, and the shared `AmountInput` that every amount-entering form
+renders.
 
 ## Who can use it / when it applies
 
@@ -35,9 +36,27 @@ moment, the ask used to vanish. The flow then failed its fee check with "this op
 nothing was wrong with the operation. Staking flows additionally re-request the balances of every account on the signing
 route when the route resolves, so the payer's balance is asked for at the moment it is needed.
 
+## Balance coverage
+
+`useBalanceCoverage(accountIds)` answers "have the balances of this whole selection arrived?" for views that must not
+present a partial or empty picture as final. A record is written for every (account, chain, asset) pair a fetch queries,
+zero balances included, so an account with no record at all has not been read yet.
+
+| Situation                                                               | Result                                                                  |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Some selected account that lives on a known chain has no record yet     | Not complete; the account counts as awaiting                            |
+| Every such account has at least one record                              | Complete                                                                |
+| An account fits no chain (no availability / no matching address scheme) | Not waited for — it is never requested                                  |
+| No selected account has any record (e.g. chains not loaded yet)         | Not complete                                                            |
+| 30s pass since the selection was set and it is still not complete       | Timed out — the view renders what it has; awaiting count stays reported |
+
+Wallet accounts count on the chains they are available on, other ids (contacts) on every chain of a matching address
+scheme — the same pairing the dashboard uses when requesting their balances.
+
 ## Related
 
-- `dashboard-accounts-table`, `dashboard-portfolio-overview` — one-shot fetches for the dashboard's account filter.
+- `dashboard-accounts-table`, `dashboard-portfolio-overview` — one-shot fetches for the dashboard's account filter;
+  readiness via `useBalanceCoverage`.
 - `staking-amount-flow`, `staking-confirm-flow`, `staking-new-position-flow`, `multi-transfer`, `vested-transfer` —
   re-request the signing route's balances before validation.
 - `@/shared/transactions` `createTxValidator` — the fee check that reads what this module fetched.

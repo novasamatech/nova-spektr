@@ -681,6 +681,8 @@
         "description": "The selected accounts hold nothing on the connected networks."
       },
       "footer": {
+        "incomplete_one": "Balances of {count} account have not loaded yet",
+        "incomplete_other": "Balances of {count} accounts have not loaded yet",
         "showing": "Showing {rows} of {total} rows in {accounts} accounts"
       }
     },

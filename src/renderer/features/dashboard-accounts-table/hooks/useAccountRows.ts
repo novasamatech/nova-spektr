@@ -10,7 +10,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { useStakingPositions } from '@/aggregates/staking-positions';
-import { hasBalanceRecords } from '../lib/balanceRecords';
+import { useBalanceCoverage } from '@/features/assets-balances';
 import { buildAccountRow } from '../lib/rows';
 import { type AccountRow } from '../lib/types';
 
@@ -21,10 +21,16 @@ type Entry = { accountId: string; name: string };
 export type AccountRowsResult = {
   rows: AccountRow[];
   /**
-   * False until the balance store holds at least one record for the selection —
-   * render a skeleton, never an empty table / zeros.
+   * False until every selected account that can hold balances has at least one
+   * record (or the wait timed out) — render a skeleton, never an empty table /
+   * zeros.
    */
   ready: boolean;
+  /**
+   * Selected accounts still without any balance record. Non-zero on a `ready`
+   * table only after the wait timed out: the rows are what has arrived so far.
+   */
+  awaitingCount: number;
 };
 
 /**
@@ -44,6 +50,7 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
   const prices = useUnit(currencySelect.$assetsPrices);
   const currency = useUnit(currencySelect.$activeCurrency);
   const { positions, pending: stakingPending } = useStakingPositions();
+  const coverage = useBalanceCoverage(accountIds);
 
   const selectedAccounts = useMemo(() => {
     const selected = new Set(accountIds);
@@ -106,9 +113,8 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
     return map;
   }, [positions]);
 
-  return useMemo(() => {
-    // Empty selection is an answer, not a pending state.
-    if (accountIds.length === 0) return { rows: [], ready: true };
+  const rows = useMemo(() => {
+    if (accountIds.length === 0) return [];
 
     const selectedIds = new Set(accountIds);
     const rows: AccountRow[] = [];
@@ -153,7 +159,7 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
       return a.asset.assetId - b.asset.assetId;
     });
 
-    return { rows, ready: hasBalanceRecords(balanceMap, accountIds) };
+    return rows;
   }, [
     accountIds,
     balanceMap,
@@ -166,4 +172,13 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
     accountByAccountId,
     nameByAccountId,
   ]);
+
+  // Empty selection is an answer, not a pending state.
+  if (accountIds.length === 0) return { rows, ready: true, awaitingCount: 0 };
+
+  return {
+    rows,
+    ready: coverage.complete || coverage.timedOut,
+    awaitingCount: coverage.awaitingCount,
+  };
 };

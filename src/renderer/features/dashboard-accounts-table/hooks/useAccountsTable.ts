@@ -51,6 +51,11 @@ export type AccountsTableState = {
    */
   groups: AccountGroup[];
   ready: boolean;
+  /**
+   * Selected accounts whose balances have not arrived — non-zero on a `ready`
+   * table only once the wait for them timed out.
+   */
+  awaitingCount: number;
   hasSelection: boolean;
   fiatVisible: boolean;
   activeCurrency: CurrencyItem | null;
@@ -99,7 +104,7 @@ export const useAccountsTable = ({ accountIds, allEntries }: Params): AccountsTa
   const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(new Set());
 
   useStakingAccountSelection(accountIds);
-  const { rows, ready } = useAccountRows(accountIds, allEntries);
+  const { rows, ready, awaitingCount } = useAccountRows(accountIds, allEntries);
 
   const groups = useMemo(() => buildVisibleGroups({ rows, search, filters, sort }), [rows, search, filters, sort]);
 
@@ -194,6 +199,7 @@ export const useAccountsTable = ({ accountIds, allEntries }: Params): AccountsTa
     visibleRows,
     groups,
     ready,
+    awaitingCount,
     hasSelection: accountIds.length > 0,
     fiatVisible,
     activeCurrency,
