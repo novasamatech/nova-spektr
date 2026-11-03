@@ -112,7 +112,7 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     initiator: account!,
     signatory: account!,
     validators,
-    route: [account!],
+    route: transaction.route,
 
     fee: fee.toString(),
     totalFee: fee.toString(),
@@ -438,7 +438,7 @@ sample({
 sample({
   clock: prepareNominateDataFx.doneData,
   fn: (data) => [data],
-  target: nominateConfirmModel.startSigning,
+  target: nominateConfirmModel.formInitiated,
 });
 
 sample({

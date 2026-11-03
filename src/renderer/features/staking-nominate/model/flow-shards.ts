@@ -336,13 +336,14 @@ sample({
 sample({
   clock: confirmModel.startSigning,
   source: {
+    step: $step,
     nominateData: $nominateData,
     walletData: $walletData,
     transactions: $transactions,
     txWrappers: $txWrappers,
   },
-  filter: ({ nominateData, walletData, transactions }) => {
-    return Boolean(nominateData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ step, nominateData, walletData, transactions }) => {
+    return nominateUtils.isConfirmStep(step) && Boolean(nominateData) && Boolean(walletData) && Boolean(transactions);
   },
   fn: ({ nominateData, walletData, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
