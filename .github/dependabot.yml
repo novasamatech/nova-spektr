@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Keeps the commit-SHA pins of GitHub Actions (and their `# vX.Y.Z` comments) up to date.
+  - package-ecosystem: github-actions
+    directories:
+      - '/'
+      # Local composite actions live under .github/workflows/<name>/action.y(a)ml
+      - '/.github/workflows/*'
+    target-branch: dev
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch

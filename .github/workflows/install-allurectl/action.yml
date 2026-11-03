@@ -1,0 +1,37 @@
+name: Install allurectl
+description: Download a fixed allurectl release from GitHub, verify its checksum and put it on PATH
+
+inputs:
+  version:
+    description: allurectl release tag
+    required: false
+    default: '2.23.1'
+  sha256:
+    description: SHA-256 of allurectl_linux_amd64 for that release
+    required: false
+    default: '93ba4a60949675fa5074e7dd18556a79f2dd373b78d9192b9adec2cec2495ee3'
+
+runs:
+  using: composite
+  steps:
+    - name: Download and verify allurectl
+      shell: bash
+      env:
+        ALLURECTL_VERSION: ${{ inputs.version }}
+        ALLURECTL_SHA256: ${{ inputs.sha256 }}
+      run: |
+        if [ "$RUNNER_OS" != "Linux" ] || [ "$RUNNER_ARCH" != "X64" ]; then
+          echo "::error::This action pins allurectl for Linux x64 only (runner is $RUNNER_OS/$RUNNER_ARCH)"
+          exit 1
+        fi
+
+        install_dir="$RUNNER_TEMP/allurectl"
+        mkdir -p "$install_dir"
+        curl --silent --show-error --fail --location --max-time 120 \
+          --output "$install_dir/allurectl" \
+          "https://github.com/allure-framework/allurectl/releases/download/${ALLURECTL_VERSION}/allurectl_linux_amd64"
+
+        echo "${ALLURECTL_SHA256}  $install_dir/allurectl" | sha256sum --check --strict
+        chmod +x "$install_dir/allurectl"
+        echo "$install_dir" >> "$GITHUB_PATH"
+        "$install_dir/allurectl" --version

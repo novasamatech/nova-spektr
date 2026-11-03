@@ -21,15 +21,13 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  pull-requests: write
-  checks: write
+  contents: read
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
   CI: true
   ALLURE_ENDPOINT: https://nova.testops.cloud/
   ALLURE_PROJECT_ID: 1
-  ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
   ALLURE_JOB_RUN_ID: ${{ github.event.inputs.ALLURE_JOB_RUN_ID }}
   ALLURE_RESULTS: allure-results
 
@@ -37,22 +35,29 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
 
     steps:
       - name: ⚙️Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: Install allurectl
-        uses: allure-framework/setup-allurectl@2d89ee0b7ba2f59dbe9849b6df5763cab78e14db # v1.0.3
+        uses: ./.github/workflows/install-allurectl
 
       - name: 🧪 Run integration tests
         id: vitest_tests
+        env:
+          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
         run: |
           set +e
-          timeout 43m allurectl watch -- pnpm test:integration
+          # The token stays with allurectl; the test process and its dependencies never see it.
+          timeout 43m allurectl watch -- env -u ALLURE_TOKEN pnpm test:integration
           EXIT_CODE=$?
           set -e
           if [ $EXIT_CODE -eq 124 ]; then
@@ -68,7 +73,7 @@ jobs:
 
       - name: 📄 Post results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        uses: EnricoMi/publish-unit-test-result-action/linux@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
           files: ./junit.xml
           check_name: 'Integration Test Results'
@@ -78,6 +83,8 @@ jobs:
       - name: Prepare Telegram notification
         if: always()
         shell: bash
+        env:
+          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
         run: |
           allurectl job-run env >> $GITHUB_ENV
           COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
@@ -94,7 +101,7 @@ jobs:
 
       - name: Notify Telegram channel
         if: always()
-        uses: appleboy/telegram-action@214f06cfa3d3a588c1472116889437e7c6fd29b1 # v1.1.1
+        uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}

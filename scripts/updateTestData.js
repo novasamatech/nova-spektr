@@ -1,6 +1,28 @@
 import fs from 'node:fs';
 import url from 'node:url';
 
+const MAX_CHAIN_NAME_LENGTH = 100;
+
+const isChain = (chain) =>
+  chain !== null &&
+  typeof chain === 'object' &&
+  typeof chain.name === 'string' &&
+  chain.name.length > 0 &&
+  chain.name.length <= MAX_CHAIN_NAME_LENGTH &&
+  Array.isArray(chain.options) &&
+  chain.options.every((option) => typeof option === 'string');
+
+const assertChainsConfig = (chainsJson) => {
+  if (!Array.isArray(chainsJson)) {
+    throw new Error('Unexpected chains config: expected an array of chains');
+  }
+
+  const invalidIndex = chainsJson.findIndex((chain) => !isChain(chain));
+  if (invalidIndex !== -1) {
+    throw new Error(`Unexpected chains config: invalid chain entry at index ${invalidIndex}`);
+  }
+};
+
 const updateChainsList = async () => {
   const chainsListURL = new URL('../tests/system/data/chains/chainsList.ts', import.meta.url);
   const chainsListPath = url.fileURLToPath(chainsListURL);
@@ -18,6 +40,8 @@ const updateChainsList = async () => {
     throw new Error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
   }
   const chainsJson = await response.json();
+  assertChainsConfig(chainsJson);
+
   const reachableChains = chainsJson.filter((chain) => !EXCLUDED_CHAIN_NAMES.has(chain.name));
 
   const substrateChains = reachableChains
@@ -27,15 +51,10 @@ const updateChainsList = async () => {
     .filter((chain) => chain.options.includes('ethereum_based'))
     .map((chain) => ({ name: chain.name }));
 
-  const formatChains = (chains) => chains.map((chain) => `  { name: '${chain.name}' }`).join(',\n');
+  // Values are serialized as JSON literals, never interpolated as raw source text.
+  const chainsListContent = `export const substrateChains = ${JSON.stringify(substrateChains)};
 
-  const chainsListContent = `export const substrateChains = [
-${formatChains(substrateChains)},
-];
-
-export const ethChains = [
-${formatChains(ethChains)},
-];
+export const ethChains = ${JSON.stringify(ethChains)};
 `;
 
   // Emit prettier-clean output — the file is committed, and a formatting

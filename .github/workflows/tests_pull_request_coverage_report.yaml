@@ -7,13 +7,17 @@ on:
   #     - 'src/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
 
     steps:
       - name: ⚙️Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
       - run: |
@@ -29,7 +33,7 @@ jobs:
       - name: Jest coverage comment
         id: coverage-report
         if: always()
-        uses: MishaKav/jest-coverage-comment@main
+        uses: MishaKav/jest-coverage-comment@642ef024cc554a34b7082cea12c7bf63575ae151 # v1.0.36
         with:
           coverage-summary-path: ./coverage/coverage-summary.json
           title: Current coverage report

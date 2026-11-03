@@ -1,0 +1,48 @@
+name: Notify Telegram
+description: Send a message to a Telegram chat through the Bot API with curl; no third-party action or image is involved
+
+inputs:
+  token:
+    description: Telegram bot token
+    required: true
+  to:
+    description: Telegram chat id
+    required: true
+  format:
+    description: Message parse mode, `markdown` or `html`
+    required: false
+    default: markdown
+  message:
+    description: Message text
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send message
+      shell: bash
+      env:
+        TELEGRAM_TOKEN: ${{ inputs.token }}
+        TELEGRAM_TO: ${{ inputs.to }}
+        TELEGRAM_FORMAT: ${{ inputs.format }}
+        TELEGRAM_MESSAGE: ${{ inputs.message }}
+      run: |
+        case "$TELEGRAM_FORMAT" in
+          markdown) parse_mode=Markdown ;;
+          html) parse_mode=HTML ;;
+          *) echo "::error::Unknown Telegram message format: $TELEGRAM_FORMAT"; exit 1 ;;
+        esac
+
+        response_file="$RUNNER_TEMP/telegram-response.json"
+        status=$(curl --silent --show-error --max-time 30 \
+          --output "$response_file" --write-out '%{http_code}' \
+          --data-urlencode "chat_id=${TELEGRAM_TO}" \
+          --data-urlencode "parse_mode=${parse_mode}" \
+          --data-urlencode "text=${TELEGRAM_MESSAGE}" \
+          "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage")
+
+        if [ "$status" != "200" ]; then
+          echo "::error::Telegram API answered HTTP $status"
+          cat "$response_file"
+          exit 1
+        fi
