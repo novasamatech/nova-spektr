@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type GenericExtrinsic } from '@polkadot/types';
+import { type GenericExtrinsic, GenericCall } from '@polkadot/types';
 import { type AnyTuple } from '@polkadot/types/types';
-import { u8aToHex } from '@polkadot/util';
+import { isHex, u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
 import { uniqBy } from 'lodash';
 
@@ -10,13 +10,16 @@ import {
   type Chain,
   type DecodedTransaction,
   type FlexibleMultisigAccount,
+  type HexString,
   type MultisigAccount,
   type NoID,
   type Serializable,
   type Signatory,
+  type Transaction,
   ChainOptions,
   CryptoType,
   SigningType,
+  TransactionType,
 } from '@/shared/core';
 import { isEqual, merge, nonNullable, nullable, toAccountId, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -95,6 +98,61 @@ function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
   };
 
   return findAsMulti(extrinsic.method);
+}
+
+/**
+ * Returns the hash of the call that a wrapped transaction places inside
+ * `multisig.asMulti` / `multisig.approveAsMulti` — the hash on-chain multisig
+ * operations are keyed by. For a flexible multisig or a proxied account over a
+ * multisig this is the hash of the `proxy.proxy` call, not of the core call.
+ * Outer `proxy.proxy` layers (a signatory acting through its proxy) are
+ * unwrapped.
+ *
+ * @returns `null` when the transaction has no multisig call or its call data
+ *   can't be decoded.
+ */
+function getWrappedMultisigCallHash(transaction: Transaction, api: ApiPromise): HexString | null {
+  const { type, args } = transaction;
+
+  try {
+    if (type === TransactionType.MULTISIG_AS_MULTI) {
+      if (isHex(args.call)) return api.createType('Call', args.call).hash.toHex();
+
+      return isHex(args.callHash) ? args.callHash : null;
+    }
+
+    if (type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
+      return isHex(args.callHash) ? args.callHash : null;
+    }
+
+    if (type === TransactionType.PROXY && isHex(args.call)) {
+      return findMultisigCallHash(api.createType('Call', args.call));
+    }
+  } catch (error) {
+    console.error(`Failed to decode ${type} call data`, error);
+  }
+
+  return null;
+}
+
+function findMultisigCallHash(call: GenericCall): HexString | null {
+  const { section, method } = call;
+
+  if (section === 'multisig' && method === 'asMulti') {
+    return call.args[MULTISIG_EXTRINSIC_CALL_INDEX]?.hash.toHex() ?? null;
+  }
+
+  if (section === 'multisig' && method === 'approveAsMulti') {
+    return call.args[MULTISIG_EXTRINSIC_CALL_INDEX]?.toHex() ?? null;
+  }
+
+  if (section === 'proxy' && method === 'proxy') {
+    const innerCall = call.args[WRAP_EXTRINSIC_CALL_INDEX];
+
+    return innerCall instanceof GenericCall ? findMultisigCallHash(innerCall) : null;
+  }
+
+  return null;
 }
 
 // Callback for not indexed transaction
@@ -376,6 +434,7 @@ export const multisigOperationService = {
   generateMultisigOperationRelativeLink,
 
   findInnerExtrinsicCall,
+  getWrappedMultisigCallHash,
 
   getApprovals,
   getApprovers,

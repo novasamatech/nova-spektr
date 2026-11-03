@@ -15,11 +15,9 @@ import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable, toAddres
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { operationsUtils } from '@/entities/operations';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SuccessResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -97,15 +95,6 @@ const $transactions = combine(
       }),
     );
   },
-);
-
-const $multisigAlreadyExists = combine(
-  {
-    apis: networkModel.$apis,
-    coreTxs: $pureTxs,
-    transactions: selectedWalletMultisigOperations.$list,
-  },
-  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );
 
 // Max validators
@@ -462,7 +451,6 @@ export const bondNominateFlowShards = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
-  $multisigAlreadyExists,
 
   flowStarted,
   stepChanged,

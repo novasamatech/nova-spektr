@@ -1,11 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain, type ChainId, type ID, type Transaction, type Wallet } from '@/shared/core';
+import { type Chain, type ChainId, type HexString, type ID, type Transaction, type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { type AnyAccount, type MultisigOperation } from '@/domains/network';
-import { operationsUtils } from '@/entities/operations';
-import { walletUtils } from '@/entities/wallet';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  MultisigOperationStatus,
+  multisigOperationService,
+} from '@/domains/network';
+import { getExtrinsic } from '@/entities/transaction';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 import { activeOperationRoute } from './activeOperationRoute';
 
@@ -127,23 +132,14 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
       transactions: $multisigTransactions,
     },
     ({ apis, confirmMap, transactions }) => {
-      if (!apis || !confirmMap || !transactions) return false;
+      if (!apis || !transactions) return false;
 
-      for (const confirmData of Object.values(confirmMap)) {
-        const { meta } = confirmData;
+      return Object.values(confirmMap).some(({ meta }) => {
+        const api = apis[meta.chain.chainId];
+        if (!api) return false;
 
-        if (
-          operationsUtils.isMultisigAlreadyExists({
-            coreTxs: [meta.coreTx],
-            apis,
-            transactions,
-          })
-        ) {
-          return true;
-        }
-      }
-
-      return false;
+        return isMultisigOperationPending(meta, api, transactions);
+      });
     },
   );
 
@@ -159,3 +155,39 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
     startSigning,
   };
 };
+
+/**
+ * Whether the confirmed transaction would duplicate a multisig operation that
+ * is still pending on the same chain.
+ */
+function isMultisigOperationPending(meta: TxConfirmInfo, api: ApiPromise, operations: MultisigOperation[]): boolean {
+  const callHash = getMultisigCallHash(meta, api);
+
+  if (!callHash) {
+    // Nothing to compare against: block signing on a multisig route rather than
+    // risk creating a duplicate operation.
+    return meta.route.some(accountUtils.isAnyMultisigAccount);
+  }
+
+  return operations.some(
+    (operation) =>
+      operation.status === MultisigOperationStatus.Pending &&
+      operation.chainId === meta.chain.chainId &&
+      operation.callHash === callHash,
+  );
+}
+
+function getMultisigCallHash(meta: TxConfirmInfo, api: ApiPromise): HexString | null {
+  const wrappedCallHash = multisigOperationService.getWrappedMultisigCallHash(meta.tx, api);
+  if (wrappedCallHash) return wrappedCallHash;
+
+  // Flows that confirm the unwrapped transaction (e.g. baskets) wrap it only at
+  // signing time — fall back to the core call.
+  try {
+    return getExtrinsic[meta.coreTx.type](meta.coreTx.args, api).method.hash.toHex();
+  } catch (error) {
+    console.error(`Failed to encode ${meta.coreTx.type} call`, error);
+
+    return null;
+  }
+}
