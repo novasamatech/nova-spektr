@@ -177,7 +177,7 @@ notes.
 
 - `basket-navigation` (no spec planned)
 - `basket-operations`
-- `basket-operations` (aggregate)
+- [`basket-operations`](../aggregates/basket-operations/README.md) (aggregate)
 
 > See also: domain basket flows live with their domains — [`staking-basket`](#staking), [`transfer-basket`](#transfers),
 > [`proxy-basket`](#proxy), [`governance-basket`](#governance), [`fellowship-basket`](#fellowship).

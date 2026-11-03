@@ -98,10 +98,6 @@ export const isUndelegateTransaction = (transaction?: Transaction | DecodedTrans
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNDELEGATE);
 };
 
-export const isUnlockTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNLOCK);
-};
-
 export const isEditFlexibleTransaction = (
   transaction?: Transaction | DecodedTransaction | null,
   proxiedAccountId?: AccountId,
@@ -182,14 +178,20 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
   return batchAllOperations.has(type);
 };
 
-export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Transaction => {
-  if (isUnlockTransaction(coreTx)) {
-    return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
-  }
+/**
+ * Picks the transaction that represents a batch. Looks at direct children only
+ * and never returns a batch, so recursive callers cannot loop on a nested
+ * batch.
+ */
+export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
+  const transactions: Transaction[] = batch.args?.transactions ?? [];
 
-  const supportedTransaction = coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+  const coreTransaction =
+    transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
+    transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
+    transactions.find((tx) => tx.type !== TransactionType.BATCH_ALL);
 
-  return supportedTransaction || coreTx.args?.transactions?.[0];
+  return coreTransaction ?? null;
 };
 
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {
@@ -245,10 +247,9 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     // unstake - chill, unbond
     // start staking - bond, nominate
     // unlock - unlock, remove_vote
-    if (!tx.args?.transactions) return null;
     const txMatch = findCoreBatchAll(tx);
 
-    return getTransactionAmount(txMatch);
+    return txMatch && getTransactionAmount(txMatch);
   }
 
   if (txType === TransactionType.PROXY) {
