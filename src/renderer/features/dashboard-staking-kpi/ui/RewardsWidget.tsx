@@ -91,6 +91,7 @@ export const RewardsWidget = ({ accountIds }: Props) => {
           eraDurations={eraDurations}
           historyDepths={historyDepths}
           walletByAccount={kpi.walletByAccount}
+          onRetryUnclaimed={kpi.retryUnclaimed}
           onClose={handleClose}
         />
       )}

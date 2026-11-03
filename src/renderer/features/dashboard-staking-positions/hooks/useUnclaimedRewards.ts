@@ -16,9 +16,14 @@ export type UnclaimedRewards = {
   expiryDays: number | null;
   urgency: ExpiryUrgency | null;
   pending: boolean;
+  /**
+   * The scan looked everywhere. Only then is a `'0'` "nothing to claim";
+   * otherwise `total` is at least what is owed, possibly less than all of it.
+   */
+  complete: boolean;
 };
 
-const EMPTY: UnclaimedRewards = { total: '0', expiryDays: null, urgency: null, pending: false };
+const EMPTY: UnclaimedRewards = { total: '0', expiryDays: null, urgency: null, pending: false, complete: false };
 
 /**
  * Unclaimed payouts of one stash, plus how urgently they need claiming.
@@ -64,8 +69,10 @@ export const useUnclaimedRewards = (chain: Chain | null, stash: AccountId | null
   });
 
   return useMemo(() => {
-    if (nullable(chain) || nullable(payouts) || payouts.payouts.length === 0) {
-      return { ...EMPTY, pending };
+    const complete = !pending && payouts.completeness === 'complete';
+
+    if (nullable(chain) || payouts.payouts.length === 0) {
+      return { ...EMPTY, pending, complete };
     }
 
     // `payouts` arrives newest first, so the last entry is the one about to
@@ -88,6 +95,7 @@ export const useUnclaimedRewards = (chain: Chain | null, stash: AccountId | null
       expiryDays,
       urgency: nonNullable(expiryDays) ? getExpiryUrgency(expiryDays) : null,
       pending,
+      complete,
     };
   }, [chain, payouts, pending, activeEra, historyDepth, eraProgressCache]);
 };

@@ -56,6 +56,8 @@ export type StakingKpiData = {
   rewardsFiat: string;
   rewardAmounts: AssetAmount[];
   unclaimedFooter: UnclaimedFooter | null;
+  /** Re-runs every payout scan whose answer is not complete. */
+  retryUnclaimed: () => Promise<void>;
 
   /** Drill-down rows. */
   breakdownRows: BreakdownRow[];
@@ -103,7 +105,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
   const { weightedApy, networkAvg, apyByChain, avgRateByChain } = useApyKpi(positions, chainIds, toFiat);
   const rewardsSince = useRewardsWindowStart();
   const { byChain: rewardsByChain } = useRewardsWindow(chainIds, stakingAccountIds, rewardsSince);
-  const unclaimed = useUnclaimedPayoutsByPosition(positions);
+  const { byPosition: unclaimed, retry: retryUnclaimed } = useUnclaimedPayoutsByPosition(positions);
 
   const accountByAccountId = useMemo(() => {
     const map = new Map<string, (typeof allAccounts)[number]>();
@@ -228,7 +230,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
         precision: asset.precision,
         earned: rewardsByChain[position.chainId]?.[position.accountId] ?? '0',
         unclaimed: entry?.total ?? '0',
-        unclaimedKnown: Boolean(entry),
+        unclaimedStatus: entry?.completeness ?? 'pending',
         unclaimedFiat: toFiat(position.chainId, entry?.total ?? '0'),
         eras,
         payouts,
@@ -350,6 +352,7 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     rewardsFiat,
     rewardAmounts,
     unclaimedFooter,
+    retryUnclaimed,
 
     breakdownRows,
     claimRows,

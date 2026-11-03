@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type RewardSource } from '../../types';
 import { PERBILL } from '../calculator';
 import { getUnclaimedPayouts } from '../service';
-import { type EraValidatorExposure } from '../types';
+import { type DataCompleteness, type EraValidatorExposure } from '../types';
 
 vi.mock('@/shared/pallet/staking', () => ({
   stakingPallet: {
@@ -44,6 +44,7 @@ const api = {} as ApiPromise;
 
 type SetupParams = {
   exposures?: EraValidatorExposure[];
+  indexerCompleteness?: DataCompleteness;
   legacyClaimedRewards?: number[];
   claimedPages?: number[];
   nominationTargets?: AccountId[] | null;
@@ -58,6 +59,7 @@ type SetupParams = {
 
 function setup({
   exposures = [{ era: ERA, validator: VALIDATOR, total: '1000', own: '200' }],
+  indexerCompleteness = 'complete',
   legacyClaimedRewards = [],
   claimedPages = [],
   nominationTargets = [VALIDATOR],
@@ -69,7 +71,10 @@ function setup({
   validatorPoints = 100,
   commission = PERBILL.divn(10),
 }: SetupParams = {}) {
-  fetchExposures.mockResolvedValue(exposures);
+  fetchExposures.mockResolvedValue({
+    exposures: indexerCompleteness === 'unavailable' ? [] : exposures,
+    completeness: indexerCompleteness,
+  });
 
   storage.bonded.mockResolvedValue([{ stash: STASH, controller: STASH }]);
   storage.ledger.mockResolvedValue([
@@ -146,8 +151,10 @@ describe('domains/staking/payouts/service', () => {
     const result = await getUnclaimedPayouts(params);
 
     expect(result.source).toEqual('subquery');
+    expect(result.completeness).toEqual('complete');
     expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
     expect(result.total).toEqual('135');
+    expect(storage.nominators).not.toHaveBeenCalled();
   });
 
   test('should pay commission and own share when the stash is the validator', async () => {
@@ -168,6 +175,7 @@ describe('domains/staking/payouts/service', () => {
     expect(result.payouts).toEqual([]);
     expect(result.total).toEqual('0');
     expect(result.source).toEqual('subquery');
+    expect(result.completeness).toEqual('complete');
   });
 
   test('should still claim a page when another page of the validator was paid', async () => {
@@ -211,6 +219,8 @@ describe('domains/staking/payouts/service', () => {
 
     expect(fetchExposures).not.toHaveBeenCalled();
     expect(result.source).toEqual('chain');
+    // Only the last few eras of the current nominations were looked at.
+    expect(result.completeness).toEqual('partial');
     expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
   });
 
@@ -223,12 +233,12 @@ describe('domains/staking/payouts/service', () => {
     expect(scannedEras).toEqual([92, 93, 94, 95, 96, 97, 98, 99]);
   });
 
-  test('should degrade to unavailable when neither indexer nor chain data exists', async () => {
+  test('should report an empty chain scan as partial, never as a known zero', async () => {
     setup({ exposures: [], nominationTargets: null, overviewEras: [] });
 
     const result = await getUnclaimedPayouts({ ...params, rewardSources: [] });
 
-    expect(result).toEqual({ total: '0', payouts: [], source: 'unavailable' });
+    expect(result).toEqual({ total: '0', payouts: [], source: 'chain', completeness: 'partial' });
   });
 
   test('should clamp the era range at genesis', async () => {
@@ -237,5 +247,116 @@ describe('domains/staking/payouts/service', () => {
     await getUnclaimedPayouts({ ...params, activeEra: 3, historyDepth: 84 });
 
     expect(fetchExposures).toHaveBeenCalledWith(expect.objectContaining({ eraFrom: 0, eraTo: 2 }));
+  });
+
+  test('should not report a known zero when every claimedRewards read fails', async () => {
+    setup();
+    storage.claimedRewards.mockRejectedValue(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.completeness).toEqual('unavailable');
+    expect(result.payouts).toEqual([]);
+  });
+
+  test('should mark the result partial and drop the keys of a failed claimedRewards chunk', async () => {
+    const exposures = Array.from({ length: 101 }, (_, index) => ({
+      era: index + 1,
+      validator: VALIDATOR,
+      total: '1000',
+      own: '200',
+    }));
+    setup({ exposures });
+    storage.claimedRewards
+      .mockImplementationOnce((_api, keys) =>
+        Promise.resolve(keys.map(({ era, validator }) => ({ era, validator, pages: [] }))),
+      )
+      .mockRejectedValueOnce(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts({ ...params, activeEra: 102, historyDepth: 101 });
+
+    expect(result.completeness).toEqual('partial');
+    expect(result.payouts).toHaveLength(100);
+    expect(result.payouts.some(payout => payout.era === 101)).toBe(false);
+  });
+
+  test('should mark the result partial when an exposure page cannot be read', async () => {
+    setup();
+    storage.erasStakersPaged.mockRejectedValue(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.completeness).toEqual('partial');
+    expect(result.payouts).toEqual([]);
+  });
+
+  test('should report unavailable instead of guessing when the ledger cannot be read', async () => {
+    setup();
+    storage.ledger.mockRejectedValue(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result).toEqual({ total: '0', payouts: [], source: 'unavailable', completeness: 'unavailable' });
+    expect(storage.claimedRewards).not.toHaveBeenCalled();
+  });
+
+  test('should top up a partial indexer answer with the chain scan and stay partial', async () => {
+    setup({ exposures: [], indexerCompleteness: 'partial' });
+    storage.erasStakersOverview.mockImplementation((_api, era) =>
+      Promise.resolve(
+        era === ERA
+          ? [
+              {
+                validator: VALIDATOR,
+                overview: { total: new BN(1000), own: new BN(200), nominatorCount: 1, pageCount: 1 },
+              },
+            ]
+          : [],
+      ),
+    );
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(storage.nominators).toHaveBeenCalled();
+    expect(result.source).toEqual('subquery');
+    expect(result.completeness).toEqual('partial');
+    expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
+  });
+
+  test('should never call an empty partial indexer answer complete', async () => {
+    setup({ exposures: [], indexerCompleteness: 'partial', nominationTargets: null, overviewEras: [] });
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.total).toEqual('0');
+    expect(result.completeness).toEqual('partial');
+  });
+
+  test('should fall back to the chain scan when the indexer is unavailable', async () => {
+    setup({ indexerCompleteness: 'unavailable' });
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.source).toEqual('chain');
+    expect(result.completeness).toEqual('partial');
+    expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
+  });
+
+  test('should report unavailable when the indexer and every chain read fail', async () => {
+    setup({ indexerCompleteness: 'unavailable' });
+    storage.erasStakersOverview.mockRejectedValue(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.completeness).toEqual('unavailable');
+  });
+
+  test('should report unavailable instead of rejecting when a reward read fails', async () => {
+    setup();
+    storage.erasValidatorReward.mockRejectedValue(new Error('rpc down'));
+
+    const result = await getUnclaimedPayouts(params);
+
+    expect(result.completeness).toEqual('unavailable');
   });
 });

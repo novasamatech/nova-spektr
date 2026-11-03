@@ -12,7 +12,13 @@ import { type RewardSource } from '../types';
 
 import { calculateNominatorPayout, calculateValidatorPayout } from './calculator';
 import { fetchNominatorEraValidators } from './subquery';
-import { type EraValidatorExposure, type PayoutSource, type UnclaimedPayout, type UnclaimedPayouts } from './types';
+import {
+  type DataCompleteness,
+  type EraValidatorExposure,
+  type PayoutSource,
+  type UnclaimedPayout,
+  type UnclaimedPayouts,
+} from './types';
 
 /** How deep the on-chain fallback is allowed to scan without an indexer. */
 export const PAYOUTS_CHAIN_SCAN_ERAS = 8;
@@ -20,7 +26,12 @@ export const PAYOUTS_CHAIN_SCAN_ERAS = 8;
 /** `claimedRewards` keys per storage request. */
 const CLAIMED_REWARDS_CHUNK = 100;
 
-const EMPTY_PAYOUTS: UnclaimedPayouts = { total: '0', payouts: [], source: 'unavailable' };
+const UNAVAILABLE_PAYOUTS: UnclaimedPayouts = {
+  total: '0',
+  payouts: [],
+  source: 'unavailable',
+  completeness: 'unavailable',
+};
 
 type GetUnclaimedPayoutsParams = {
   api: ApiPromise;
@@ -45,26 +56,23 @@ type ResolvedPayout = {
   isSelf: boolean;
 };
 
-function emptyResult(source: PayoutSource): UnclaimedPayouts {
-  return { total: '0', payouts: [], source };
+function emptyResult(source: PayoutSource, completeness: DataCompleteness): UnclaimedPayouts {
+  return { total: '0', payouts: [], source, completeness };
 }
 
 /**
  * Eras claimed under the pre-paging reward scheme — they are recorded on the
  * ledger instead of `claimedRewards`.
+ *
+ * A failed read is not "nothing claimed": it throws, and the scan reports
+ * itself `unavailable` rather than offer eras that may already be paid out.
  */
 async function getLegacyClaimedEras(api: ApiPromise, stash: AccountId): Promise<Set<EraIndex>> {
-  try {
-    const [bonded] = await stakingPallet.storage.bonded(api, [stash]);
-    const controller = bonded?.controller ?? stash;
-    const [entry] = await stakingPallet.storage.ledger(api, [controller]);
+  const [bonded] = await stakingPallet.storage.bonded(api, [stash]);
+  const controller = bonded?.controller ?? stash;
+  const [entry] = await stakingPallet.storage.ledger(api, [controller]);
 
-    return new Set(entry?.ledger?.legacyClaimedRewards ?? []);
-  } catch (error) {
-    console.warn('Staking payouts: legacy claimed eras unavailable, treating none as claimed', error);
-
-    return new Set();
-  }
+  return new Set(entry?.ledger?.legacyClaimedRewards ?? []);
 }
 
 /**
@@ -109,10 +117,12 @@ async function getClaimedPages(
 
 /**
  * `pageCount` of the given eras, keyed by `(era, validator)`. One storage walk
- * per era instead of one request per validator.
+ * per era instead of one request per validator. `failedEras` counts the eras
+ * the chain did not answer for — their validators are simply absent.
  */
 async function getExposureMetadata(api: ApiPromise, eras: EraIndex[], storage: EraStorage) {
   const metadata = new Map<string, { total: BN; own: BN; pageCount: number }>();
+  let failedEras = 0;
 
   const responses = await Promise.all(
     eras.map(era =>
@@ -128,7 +138,10 @@ async function getExposureMetadata(api: ApiPromise, eras: EraIndex[], storage: E
   );
 
   for (const response of responses) {
-    if (!response) continue;
+    if (!response) {
+      failedEras += 1;
+      continue;
+    }
 
     for (const { validator, overview } of response.items) {
       metadata.set(exposureKey(response.era, validator), {
@@ -139,12 +152,14 @@ async function getExposureMetadata(api: ApiPromise, eras: EraIndex[], storage: E
     }
   }
 
-  return metadata;
+  return { metadata, failedEras };
 }
 
 /**
  * Exposures reachable without an indexer: current nomination targets (plus the
  * stash itself, in case it validates) over the last few eras.
+ *
+ * Never `complete` — past nominations and older eras are out of its reach.
  */
 async function collectChainExposures(
   api: ApiPromise,
@@ -152,7 +167,7 @@ async function collectChainExposures(
   eraFrom: EraIndex,
   eraTo: EraIndex,
   storage: EraStorage,
-): Promise<EraValidatorExposure[]> {
+): Promise<{ exposures: EraValidatorExposure[]; completeness: DataCompleteness }> {
   try {
     const [nominator] = await stakingPallet.storage.nominators(api, [stash]);
 
@@ -165,7 +180,8 @@ async function collectChainExposures(
       eras.push(era);
     }
 
-    const metadata = await getExposureMetadata(api, eras, storage);
+    const { metadata, failedEras } = await getExposureMetadata(api, eras, storage);
+    if (failedEras === eras.length) return { exposures: [], completeness: 'unavailable' };
 
     const exposures: EraValidatorExposure[] = [];
     for (const era of eras) {
@@ -182,17 +198,18 @@ async function collectChainExposures(
       }
     }
 
-    return exposures;
+    return { exposures, completeness: 'partial' };
   } catch (error) {
     console.warn('Staking payouts: on-chain exposure scan failed for stash', stash, error);
 
-    return [];
+    return { exposures: [], completeness: 'unavailable' };
   }
 }
 
 /**
  * Turns exposures into concrete `(era, validator, page)` claims, dropping
- * everything already paid out.
+ * everything already paid out. `incomplete` — an exposure page could not be
+ * read, so a payout may be missing.
  */
 async function resolvePayoutPages(
   api: ApiPromise,
@@ -200,7 +217,7 @@ async function resolvePayoutPages(
   exposures: EraValidatorExposure[],
   claimed: Map<string, readonly number[]>,
   storage: EraStorage,
-): Promise<ResolvedPayout[]> {
+): Promise<{ resolved: ResolvedPayout[]; incomplete: boolean }> {
   const selfPayouts: ResolvedPayout[] = [];
   const withClaimedPages: EraValidatorExposure[] = [];
   const needsPageLookup: EraValidatorExposure[] = [];
@@ -232,7 +249,9 @@ async function resolvePayoutPages(
 
   // Validators with every page already paid out need no page lookup at all.
   if (withClaimedPages.length > 0) {
-    const metadata = await getExposureMetadata(api, uniq(withClaimedPages.map(exposure => exposure.era)), storage);
+    // An era that failed here is safe: its validators fall through to the page
+    // lookup below, which reads the exposure itself.
+    const { metadata } = await getExposureMetadata(api, uniq(withClaimedPages.map(exposure => exposure.era)), storage);
 
     for (const exposure of withClaimedPages) {
       const key = exposureKey(exposure.era, exposure.validator);
@@ -245,10 +264,13 @@ async function resolvePayoutPages(
     }
   }
 
+  let incomplete = false;
+
   const paged = await Promise.all(
     needsPageLookup.map(async exposure => {
       const pages = await storage.erasStakersPaged(api, exposure.era, exposure.validator).catch((error: unknown) => {
         console.warn('Staking payouts: erasStakersPaged failed for', exposure.era, exposure.validator, error);
+        incomplete = true;
 
         return [];
       });
@@ -274,7 +296,7 @@ async function resolvePayoutPages(
     }),
   );
 
-  return selfPayouts.concat(paged.filter(nonNullable));
+  return { resolved: selfPayouts.concat(paged.filter(nonNullable)), incomplete };
 }
 
 async function calculatePayouts(
@@ -337,50 +359,91 @@ async function calculatePayouts(
 }
 
 /**
- * Unclaimed staking rewards of a stash within the runtime `historyDepth`.
+ * Indexer exposures when the indexer's answer is whole; otherwise whatever it
+ * did return topped up by the bounded on-chain scan, and never `complete`.
  */
-export async function getUnclaimedPayouts({
-  api,
-  stash,
-  activeEra,
-  historyDepth,
-  rewardSources,
-  storage = stakingPallet.storage,
-}: GetUnclaimedPayoutsParams): Promise<UnclaimedPayouts> {
+async function collectExposures(
+  { api, stash, rewardSources }: GetUnclaimedPayoutsParams,
+  eraFrom: EraIndex,
+  eraTo: EraIndex,
+  storage: EraStorage,
+): Promise<{ exposures: EraValidatorExposure[]; source: PayoutSource; completeness: DataCompleteness }> {
+  const indexed =
+    rewardSources.length > 0 ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo }) : null;
+
+  if (indexed?.completeness === 'complete') {
+    return { exposures: indexed.exposures, source: 'subquery', completeness: 'complete' };
+  }
+
+  const chain = await collectChainExposures(api, stash, eraFrom, eraTo, storage);
+  const hasIndexed = indexed !== null && indexed.completeness !== 'unavailable';
+
+  if (!hasIndexed && chain.completeness === 'unavailable') {
+    return { exposures: [], source: 'unavailable', completeness: 'unavailable' };
+  }
+
+  // On-chain figures win over the indexer's for the same key.
+  const merged = new Map<string, EraValidatorExposure>();
+  for (const exposure of [...(indexed?.exposures ?? []), ...chain.exposures]) {
+    merged.set(exposureKey(exposure.era, exposure.validator), exposure);
+  }
+
+  return {
+    exposures: Array.from(merged.values()),
+    source: hasIndexed ? 'subquery' : 'chain',
+    completeness: 'partial',
+  };
+}
+
+async function scanUnclaimedPayouts(params: GetUnclaimedPayoutsParams): Promise<UnclaimedPayouts> {
+  const { api, stash, activeEra, historyDepth, rewardSources, storage = stakingPallet.storage } = params;
+
   const eraFrom = Math.max(0, activeEra - historyDepth);
   const eraTo = activeEra - 1;
 
-  const hasIndexer = rewardSources.length > 0;
-
   if (eraTo < eraFrom) {
-    return emptyResult(hasIndexer ? 'subquery' : 'chain');
+    return emptyResult(rewardSources.length > 0 ? 'subquery' : 'chain', 'complete');
   }
 
-  // `null` means the indexer never answered, which is not the same as "nothing
-  // to claim over the full history" — fall through to the bounded chain scan
-  // rather than telling the user their rewards do not exist.
-  const indexed = hasIndexer ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo }) : null;
-  const exposures = indexed ?? (await collectChainExposures(api, stash, eraFrom, eraTo, storage));
-
-  const source: PayoutSource = indexed !== null ? 'subquery' : exposures.length > 0 ? 'chain' : 'unavailable';
-  if (source === 'unavailable') return EMPTY_PAYOUTS;
-  if (exposures.length === 0) return emptyResult(source);
+  const { exposures, source, completeness } = await collectExposures(params, eraFrom, eraTo, storage);
+  if (completeness === 'unavailable') return UNAVAILABLE_PAYOUTS;
+  if (exposures.length === 0) return emptyResult(source, completeness);
 
   const legacyClaimedEras = await getLegacyClaimedEras(api, stash);
   const candidates = exposures.filter(exposure => !legacyClaimedEras.has(exposure.era));
-  if (candidates.length === 0) return emptyResult(source);
+  if (candidates.length === 0) return emptyResult(source, completeness);
 
+  // Keys the chain did not answer for are dropped: offering them could build a
+  // claim the runtime rejects as already paid. Their absence makes the result
+  // partial, and a result with nothing answered says nothing at all.
   const { claimed, unknown } = await getClaimedPages(api, candidates);
   const answered =
     unknown.size === 0 ? candidates : candidates.filter(e => !unknown.has(exposureKey(e.era, e.validator)));
-  if (answered.length === 0) return emptyResult(source);
+  if (answered.length === 0) return { ...UNAVAILABLE_PAYOUTS, source };
 
-  const resolved = await resolvePayoutPages(api, stash, answered, claimed, storage);
-  if (resolved.length === 0) return emptyResult(source);
+  const { resolved, incomplete } = await resolvePayoutPages(api, stash, answered, claimed, storage);
+  const finalCompleteness = unknown.size > 0 || incomplete ? 'partial' : completeness;
+  if (resolved.length === 0) return emptyResult(source, finalCompleteness);
 
   const { total, payouts } = await calculatePayouts(api, resolved, storage);
 
-  return { total, payouts, source };
+  return { total, payouts, source, completeness: finalCompleteness };
+}
+
+/**
+ * Unclaimed staking rewards of a stash within the runtime `historyDepth`.
+ *
+ * Never rejects: a read that fails outright turns the whole answer
+ * `unavailable`, which the UI shows as "could not check" rather than as zero.
+ */
+export async function getUnclaimedPayouts(params: GetUnclaimedPayoutsParams): Promise<UnclaimedPayouts> {
+  try {
+    return await scanUnclaimedPayouts(params);
+  } catch (error) {
+    console.warn('Staking payouts: scan failed for stash', params.stash, error);
+
+    return UNAVAILABLE_PAYOUTS;
+  }
 }
 
 export const payoutsService = {

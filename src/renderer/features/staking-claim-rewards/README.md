@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -172,8 +172,9 @@ flowchart TD
 
 ### Refreshing the unclaimed figures
 
-`payoutsResource` holds an answer for five minutes, and its cache key is `(chainId, stash, activeEra)` — none of which a
-landed claim changes. So the figures would keep showing the rewards that were just claimed until the era rolled over.
+`payoutsResource` holds a complete answer for five minutes (an incomplete one for 30 seconds), and its cache key is
+`(chainId, stash, activeEra)` — none of which a landed claim changes. So the figures would keep showing the rewards that
+were just claimed until the era rolled over.
 
 A plain refetch does not fix that on its own: the resource answers a repeat request from its in-memory request cache
 without going near the network. The entry has to be dropped first, which is what `createQueryResource`'s `invalidate`

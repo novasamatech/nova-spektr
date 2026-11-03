@@ -28,10 +28,13 @@ import {
  */
 
 const indexer = vi.hoisted(() => {
-  type Response = { eraValidatorInfos: { totalCount: number; nodes: unknown[] } };
+  type Response = {
+    indexedTo: { nodes: { era: number }[] };
+    eraValidatorInfos: { totalCount: number; nodes: unknown[] };
+  };
 
   const state: { response: Response; requests: number } = {
-    response: { eraValidatorInfos: { totalCount: 0, nodes: [] } },
+    response: { indexedTo: { nodes: [] }, eraValidatorInfos: { totalCount: 0, nodes: [] } },
     requests: 0,
   };
 
@@ -64,8 +67,17 @@ function indexerNode(era: number, validator: AccountId, total: string, own: stri
   return { era, address: toAddress(validator, { prefix: 0 }), total, own };
 }
 
-function setIndexerResponse(nodes: ReturnType<typeof indexerNode>[]) {
-  indexer.response = { eraValidatorInfos: { totalCount: nodes.length, nodes } };
+/**
+ * Newest era the stubbed indexer holds — far ahead of any test era unless a
+ * test says otherwise.
+ */
+const CAUGHT_UP = 1_000_000;
+
+function setIndexerResponse(nodes: ReturnType<typeof indexerNode>[], indexedTo = CAUGHT_UP) {
+  indexer.response = {
+    indexedTo: { nodes: [{ era: indexedTo }] },
+    eraValidatorInfos: { totalCount: nodes.length, nodes },
+  };
 }
 
 describe('Staking Payouts - Integration', () => {
@@ -174,6 +186,7 @@ describe('Staking Payouts - Integration', () => {
     const result = await requestPayouts(handle, activeEra);
 
     expect(result?.source).toBe('subquery');
+    expect(result?.completeness).toBe('complete');
     // The already-claimed era is dropped, the open one is paid on its real page.
     expect(result?.payouts).toEqual([
       { era: activeEra - 1, validator: validatorOne, page: 1, amount: EXPECTED_PAYOUT },
@@ -190,13 +203,14 @@ describe('Staking Payouts - Integration', () => {
 
     // Nomination targets are the only reachable exposures without an indexer.
     expect(result?.source).toBe('chain');
+    expect(result?.completeness).toBe('partial');
     expect(result?.payouts).toEqual([
       { era: activeEra - 1, validator: validatorOne, page: 1, amount: EXPECTED_PAYOUT },
     ]);
     expect(indexer.requests).toBe(0);
   });
 
-  it('should report `unavailable` when neither the indexer nor the chain can answer', async () => {
+  it('should report an empty chain scan as partial rather than as nothing to claim', async () => {
     const activeEra = nextStakingEra();
     const handle = createStakingApi({
       chainId: POLKADOT_AH,
@@ -208,7 +222,24 @@ describe('Staking Payouts - Integration', () => {
     await startScenario(handle);
     const result = await requestPayouts(handle, activeEra, []);
 
-    expect(result).toEqual({ total: '0', payouts: [], source: 'unavailable' });
+    expect(result).toEqual({ total: '0', payouts: [], source: 'chain', completeness: 'partial' });
+  });
+
+  it('should not trust an empty answer from an indexer that has not reached the claim window', async () => {
+    const activeEra = nextStakingEra();
+    const handle = createPayoutsApi(activeEra);
+
+    // The indexer answers "nothing", but it stopped indexing long before.
+    setIndexerResponse([], activeEra - 10);
+
+    await startScenario(handle);
+    const result = await requestPayouts(handle, activeEra);
+
+    // The chain scan still finds the open payout, and the answer is flagged.
+    expect(result?.completeness).toBe('partial');
+    expect(result?.payouts).toEqual([
+      { era: activeEra - 1, validator: validatorOne, page: 1, amount: EXPECTED_PAYOUT },
+    ]);
   });
 
   it('should report an empty but known result when the indexer answers with nothing', async () => {
@@ -221,7 +252,7 @@ describe('Staking Payouts - Integration', () => {
     const result = await requestPayouts(handle, activeEra);
 
     // An indexer that answered "no exposures" is still an answer.
-    expect(result).toEqual({ total: '0', payouts: [], source: 'subquery' });
+    expect(result).toEqual({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
     expect(indexer.requests).toBe(1);
   });
 
@@ -252,6 +283,29 @@ describe('Staking Payouts - Integration', () => {
     const refreshed = await requestPayouts(handle, activeEra);
 
     expect(indexer.requests).toBe(2);
-    expect(refreshed).toEqual({ total: '0', payouts: [], source: 'subquery' });
+    expect(refreshed).toEqual({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
+  });
+
+  it('should retry a partial result after thirty seconds instead of five minutes', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(ERA_START_MS);
+
+    const activeEra = nextStakingEra();
+    const handle = createPayoutsApi(activeEra);
+
+    setIndexerResponse([], activeEra - 10);
+
+    await startScenario(handle);
+    expect((await requestPayouts(handle, activeEra))?.completeness).toBe('partial');
+    expect(indexer.requests).toBe(1);
+
+    // The indexer catches up.
+    setIndexerResponse([indexerNode(activeEra - 1, validatorOne, '1000', '0')]);
+    vi.setSystemTime(ERA_START_MS + 30 * 1000 + 1);
+
+    const refreshed = await requestPayouts(handle, activeEra);
+
+    expect(indexer.requests).toBe(2);
+    expect(refreshed?.completeness).toBe('complete');
   });
 });
