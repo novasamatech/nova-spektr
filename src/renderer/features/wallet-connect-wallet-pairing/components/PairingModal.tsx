@@ -6,6 +6,7 @@ import { type PropsWithChildren, memo, useEffect } from 'react';
 import { type StatusModalProps, useStatusContext } from '@/app/providers';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { type IconNames, Button, HeaderTitleText, Icon, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
@@ -89,9 +90,54 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   const header = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.title`);
   const scanTitle = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.scanTitle`);
 
-  if (step === Step.REJECT && error) {
-    return (
-      <>
+  // The trigger stays mounted in every state: it is the only thing that can reopen the flow, and
+  // `Modal.Trigger` is what gives the card its click handler.
+  const rejected = step === Step.REJECT && nonNullable(error);
+
+  return (
+    <>
+      <Modal size="xl" isOpen={open && !rejected} onToggle={toggleModal}>
+        <Modal.Trigger>{children}</Modal.Trigger>
+        <Modal.Content disableScroll>
+          <Carousel item={step.toString()} fixedHeight>
+            <Carousel.Item id={Step.SCAN.toString()} index={0}>
+              <div className="flex h-full w-full">
+                <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
+                  <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
+                  <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
+
+                  <div className="py-7">
+                    <WalletConnectQrCode uri={uri} type={variant} />
+                  </div>
+
+                  <div className="mt-auto">
+                    <Button variant="text" onClick={() => toggleModal(false)}>
+                      {t('onboarding.backButton')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex w-full flex-col bg-black duration-500 animate-in fade-in">
+                  <video className="h-full object-contain" autoPlay loop>
+                    <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
+                    <source src={novawallet_onboarding_tutorial} type="video/mp4" />
+                  </video>
+                </div>
+              </div>
+            </Carousel.Item>
+            <Carousel.Item id={Step.MANAGE.toString()} index={1}>
+              {session ? (
+                <PairingForm
+                  type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
+                  onBack={goToScan}
+                />
+              ) : null}
+            </Carousel.Item>
+          </Carousel>
+        </Modal.Content>
+      </Modal>
+
+      {rejected ? (
         <StatusModal
           isOpen={open}
           content={<Animation variant="error" />}
@@ -99,51 +145,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
           description={error.description}
           onClose={closeStatusModal}
         />
-        {children}
-      </>
-    );
-  }
-
-  return (
-    <Modal size="xl" isOpen={open} onToggle={toggleModal}>
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Content disableScroll>
-        <Carousel item={step.toString()} fixedHeight>
-          <Carousel.Item id={Step.SCAN.toString()} index={0}>
-            <div className="flex h-full w-full">
-              <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
-                <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
-                <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
-
-                <div className="py-7">
-                  <WalletConnectQrCode uri={uri} type={variant} />
-                </div>
-
-                <div className="mt-auto">
-                  <Button variant="text" onClick={() => toggleModal(false)}>
-                    {t('onboarding.backButton')}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex w-full flex-col bg-black duration-500 animate-in fade-in">
-                <video className="h-full object-contain" autoPlay loop>
-                  <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
-                  <source src={novawallet_onboarding_tutorial} type="video/mp4" />
-                </video>
-              </div>
-            </div>
-          </Carousel.Item>
-          <Carousel.Item id={Step.MANAGE.toString()} index={1}>
-            {session ? (
-              <PairingForm
-                type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
-                onBack={goToScan}
-              />
-            ) : null}
-          </Carousel.Item>
-        </Carousel>
-      </Modal.Content>
-    </Modal>
+      ) : null}
+    </>
   );
 });

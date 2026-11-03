@@ -22,9 +22,24 @@ const $connected = combine($accounts, walletConnect.$sessions, (accounts, sessio
   );
 });
 
+/**
+ * Identity of one reconnect request. `start` mints a fresh object, so a request
+ * the user superseded can be told apart from the one in progress. Requests run
+ * for minutes: `refreshSession` retries the session internally, so a failure
+ * can arrive long after the user asked for another reconnect.
+ */
+type ReconnectAttempt = object;
+
+const startAttempt = sample({ clock: start, fn: (): ReconnectAttempt => ({}) });
+const $liveAttempt = createStore<ReconnectAttempt | null>(null).reset(flow.close, abort);
+
+/** The request was started by the reconnect the user is waiting for. */
+const isLiveAttempt = (live: ReconnectAttempt | null, { params }: { params: { attempt: ReconnectAttempt } }) =>
+  params.attempt === live;
+
 const updateSessionFx = attach({
   source: { accounts: $accounts, chains: networkModel.$chains },
-  mapParams(_, { accounts, chains }) {
+  mapParams(_params: { attempt: ReconnectAttempt }, { accounts, chains }) {
     const account = accounts
       .filter(walletConnectService.isWalletConnectAccount)
       .find(a => a.signingExtras.pairingTopic);
@@ -42,17 +57,33 @@ const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).res
 const $error = createStore<{ title: string; description?: string } | null>(null).reset(flow.close);
 
 sample({
-  clock: start,
-  fn: () => ReconnectStep.RECONNECTING,
-  target: [$reconnectStep, updateSessionFx],
+  clock: startAttempt,
+  target: $liveAttempt,
 });
 
+sample({
+  clock: startAttempt,
+  fn: () => ReconnectStep.RECONNECTING,
+  target: $reconnectStep,
+});
+
+sample({
+  clock: startAttempt,
+  fn: attempt => ({ attempt }),
+  target: updateSessionFx,
+});
+
+// A superseded request can still succeed. Its accounts are dropped rather than written, because they
+// name a session the live request has already replaced. That session is left to expire: both requests
+// refresh the same pairing, so a disconnect by pairing topic could take out the live one.
 sample({
   clock: updateSessionFx.done,
   source: {
     accounts: $accounts,
     chains: networkModel.$chains,
+    attempt: $liveAttempt,
   },
+  filter: ({ attempt }, done) => isLiveAttempt(attempt, done),
   fn: ({ accounts, chains }, { result: session }) => {
     const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
     const accountsFromSession = walletConnectService.getAccountsFromSession(session, Object.values(chains));
@@ -105,22 +136,25 @@ sample({
 
 sample({
   clock: updateSessionFx.done,
-  source: $reconnectStep,
+  source: $liveAttempt,
+  filter: isLiveAttempt,
   fn: () => ReconnectStep.NOT_STARTED,
   target: $reconnectStep,
 });
 
 sample({
   clock: updateSessionFx.fail,
-  source: $reconnectStep,
-  filter: step => step === ReconnectStep.RECONNECTING,
+  source: { step: $reconnectStep, attempt: $liveAttempt },
+  filter: ({ step, attempt }, fail) => step === ReconnectStep.RECONNECTING && isLiveAttempt(attempt, fail),
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
 
 sample({
   clock: updateSessionFx.fail,
-  fn: ({ error }) =>
+  source: $liveAttempt,
+  filter: isLiveAttempt,
+  fn: (_attempt, { error }) =>
     walletConnectService.buildErrorDisplay(error, {
       rejected: {
         title: t('walletDetails.walletConnect.rejectTitle'),

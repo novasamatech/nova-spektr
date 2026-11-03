@@ -1,5 +1,5 @@
 import { type SessionTypes } from '@walletconnect/types';
-import { attach, combine, createEvent, createStore, sample } from 'effector';
+import { type EffectParams, attach, combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { noop } from 'lodash';
@@ -15,10 +15,18 @@ import { walletConnect, walletConnectService } from '@/features/wallet-connect-w
 import { IDENTITY_CHAIN, Step, WALLET_NAME_MAX_LENGTH } from '../lib/constants';
 import { type WalletTypeName } from '../lib/types';
 
-const flow = createFlow<{
+/**
+ * Identity of a single pairing attempt. `flow.open` builds a fresh object on
+ * every click and `flow.state` holds it until the flow is shut or reopened. A
+ * session request carries the object it started with, so its outcome can be
+ * matched against the attempt on screen.
+ */
+type PairingAttempt = {
   type: 'novawallet' | 'walletconnect' | null;
   onComplete: (walletName: string, type: WalletTypeName) => void;
-}>({ type: null, onComplete: noop });
+};
+
+const flow = createFlow<PairingAttempt>({ type: null, onComplete: noop });
 
 const reset = createEvent();
 
@@ -71,7 +79,17 @@ const $accounts = combine($session, networkModel.$chains, (session, chains) => {
   return walletConnectService.getAccountsFromSession(session, Object.values(chains));
 });
 
-const createSessionFx = attach({ effect: walletConnect.createSession });
+type CreateSessionParams = EffectParams<typeof walletConnect.createSession> & { attempt: PairingAttempt };
+
+const createSessionFx = attach({
+  effect: walletConnect.createSession,
+  mapParams: ({ attempt: _attempt, ...params }: CreateSessionParams) => params,
+});
+
+/** The request was started by the attempt the modal shows now. */
+const isLiveAttempt = (attempt: PairingAttempt, { params }: { params: CreateSessionParams }) =>
+  params.attempt === attempt;
+
 const createWalletConnectWalletFx = attach({ effect: walletModel.createWallet });
 const requestIdentityFx = attach({ effect: identity.request });
 
@@ -154,16 +172,30 @@ sample({
 sample({
   clock: readyToPair,
   source: networkModel.$chains,
-  fn: (chains, { trigger: client }) => ({
+  fn: (chains, { event: attempt, trigger: client }) => ({
     client,
     chains: Object.values(chains).map(c => c.chainId),
+    attempt,
   }),
   target: createSessionFx,
 });
 
 sample({
-  clock: createSessionFx.doneData,
+  clock: createSessionFx.done,
+  source: flow.state,
+  filter: isLiveAttempt,
+  fn: (_attempt, { result }) => result,
   target: $session,
+});
+
+// A session from an abandoned attempt never reaches the screen. Disconnect it, so the phone does not
+// keep a session this app forgot. Every attempt pairs on its own topic, so the live session is safe.
+sample({
+  clock: createSessionFx.done,
+  source: flow.state,
+  filter: (attempt, done) => !isLiveAttempt(attempt, done),
+  fn: (_attempt, { result }) => ({ pairingTopic: result.pairingTopic }),
+  target: walletConnect.removeSession,
 });
 
 sample({
@@ -189,23 +221,25 @@ sample({
 
 sample({
   clock: createSessionFx.done,
-  source: $step,
-  filter: step => step === Step.SCAN,
+  source: { step: $step, attempt: flow.state },
+  filter: ({ step, attempt }, done) => step === Step.SCAN && isLiveAttempt(attempt, done),
   fn: () => Step.MANAGE,
   target: $step,
 });
 
 sample({
   clock: createSessionFx.fail,
-  source: $step,
-  filter: step => step === Step.SCAN,
+  source: { step: $step, attempt: flow.state },
+  filter: ({ step, attempt }, fail) => step === Step.SCAN && isLiveAttempt(attempt, fail),
   fn: () => Step.REJECT,
   target: $step,
 });
 
 sample({
   clock: createSessionFx.fail,
-  fn: ({ error }) =>
+  source: flow.state,
+  filter: isLiveAttempt,
+  fn: (_attempt, { error }) =>
     walletConnectService.buildErrorDisplay(error, {
       rejected: { title: t('onboarding.walletConnect.rejected') },
       unknown: { title: t('onboarding.walletConnect.connectionFailed') },

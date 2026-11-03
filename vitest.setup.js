@@ -34,6 +34,7 @@ Object.defineProperty(global, 'jest', {
     clearAllMocks: vi.clearAllMocks,
     clearAllTimers: vi.clearAllTimers,
     useFakeTimers: vi.useFakeTimers,
+    advanceTimersByTime: vi.advanceTimersByTime,
     runAllTimersAsync: vi.runAllTimersAsync,
     runOnlyPendingTimersAsync: vi.runOnlyPendingTimersAsync,
     spyOn: vi.spyOn,
