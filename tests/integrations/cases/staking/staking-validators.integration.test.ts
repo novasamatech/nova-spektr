@@ -5,7 +5,7 @@ import { createAccountId } from '@/shared/mocks';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
-import { AssetHubChains, DEFAULT_RECOMMENDATION_CRITERIA, validators } from '@/domains/staking';
+import { AssetHubChains, DEFAULT_RECOMMENDATION_CRITERIA, era as eraModel, validators } from '@/domains/staking';
 import { stakingValidators } from '@/aggregates/staking-validators';
 import { $persistedCriteria, STAKING_RECOMMENDATION_CRITERIA } from '@/aggregates/staking-validators/model';
 import { polkadotAssetHubChain } from '../../fixtures/index';
@@ -139,11 +139,26 @@ describe('Staking Validators - Integration', () => {
   ): Promise<StakingScenario> => {
     stubIdentities(names);
 
+    // No accounts: the positions aggregate would otherwise hold the era
+    // subscription, and that pool outlives the scope - the next test would join
+    // it instead of reading its own api's era.
     const started = await startScenario({
       chains: [polkadotAssetHubChain],
+      accounts: [],
       apis: { [POLKADOT_AH]: handle.api },
     });
 
+    // The aggregate serves the set of the chain's active era only, so the era
+    // subscription has to report it first. The subscription pool is shared
+    // across scopes, so it is released right away - the next test must open its
+    // own against its own api, not join this one.
+    const eraParams = { chainId: POLKADOT_AH, api: handle.api };
+    await allSettled(eraModel.eraResource.start, { scope: started.env.scope, params: eraParams });
+    await started.settle();
+    await allSettled(eraModel.eraResource.stop, {
+      scope: started.env.scope,
+      params: eraModel.eraResource.createKey(eraParams),
+    });
     await allSettled(validatorsResource.start, {
       scope: started.env.scope,
       params: { chainId: POLKADOT_AH, api: handle.api, era, timelineApi: handle.api },

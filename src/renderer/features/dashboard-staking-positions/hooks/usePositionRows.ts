@@ -6,7 +6,13 @@ import { type ChainId } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
-import { type EraValidatorMap, type StakingPosition, validators as validatorsStore } from '@/domains/staking';
+import {
+  type EraValidatorMap,
+  type StakingPosition,
+  era as eraStore,
+  readEraScoped,
+  validators as validatorsStore,
+} from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { useStakingPositions } from '@/aggregates/staking-positions';
@@ -59,6 +65,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
   const wallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
   const eraValidators = useUnit(validatorsStore.validatorsResource.$cache);
+  const eras = useUnit(eraStore.eraResource.$cache);
   const { drafts, available: draftsAvailable } = useVisibleDrafts();
 
   const selectedIds = useMemo(() => {
@@ -137,7 +144,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
 
       const account = accountByAccountId.get(position.accountId) ?? null;
       const wallet = nonNullable(account) ? (walletUtils.getWalletById(wallets, account.walletId) ?? null) : null;
-      const chainValidators = eraValidators[position.chainId] ?? null;
+      const chainValidators = readEraScoped(eraValidators[position.chainId], eras[position.chainId]) ?? null;
 
       rows.push({
         id: `${position.chainId}-${position.accountId}`,
@@ -180,6 +187,7 @@ export const usePositionRows = (accountIds: string[]): PositionRowsResult => {
     draftPolicy,
     accountByAccountId,
     eraValidators,
+    eras,
     draftCountByKey,
     pending,
     draftsAvailable,

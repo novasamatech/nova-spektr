@@ -9,6 +9,7 @@ import {
   era as eraStore,
   exposurePagesCacheKey,
   exposures as exposuresStore,
+  readEraScoped,
   validators as validatorsStore,
 } from '@/domains/staking';
 import { stakingPositions } from '@/aggregates/staking-positions';
@@ -42,7 +43,7 @@ export const useNominationRows = (position: StakingPosition | null): NominationR
     if (nullable(position)) return { rows: [], counts: EMPTY_COUNTS };
 
     const activeEra = eraCache[position.chainId];
-    const eraValidators = validatorCache[position.chainId] ?? null;
+    const eraValidators = readEraScoped(validatorCache[position.chainId], activeEra) ?? null;
 
     const exposures = nullable(activeEra)
       ? EMPTY_EXPOSURES

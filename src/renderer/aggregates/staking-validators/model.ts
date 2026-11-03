@@ -14,6 +14,7 @@ import {
   DEFAULT_RECOMMENDATION_CRITERIA,
   buildOperatorClusters,
   era,
+  readEraScoped,
   recommendationsService,
   validators,
   validatorsService,
@@ -91,20 +92,27 @@ const $api = combine($chainId, networkModel.$apis, (chainId, apis) => apis[chain
  */
 const $era = combine($chainId, era.eraResource.$cache, (chainId, cache): EraIndex | null => cache[chainId] ?? null);
 
-const $validators = combine(
-  $chainId,
-  validators.validatorsResource.$cache,
-  (chainId, cache) => cache[chainId] ?? EMPTY_VALIDATORS,
+/**
+ * Elected set of the scoped chain for its active era. The validators resource
+ * keeps one entry per chain tagged with the era it was computed for; an entry
+ * from a previous era is not an answer for this one, so after a rollover the
+ * set reads as empty until the new era's request lands.
+ */
+const $eraValidators = combine(
+  { chainId: $chainId, era: $era, cache: validators.validatorsResource.$cache },
+  ({ chainId, era, cache }) => readEraScoped(cache[chainId], era) ?? null,
 );
+
+const $validators = $eraValidators.map(map => map ?? EMPTY_VALIDATORS);
 
 const $validatorList = $validators.map(map => Object.values(map));
 
 /**
- * True while the elected set of the selected chain has not landed yet. The
- * validators resource caches per chain and never goes stale, so "no entry for
- * this chain" is exactly "still loading" from the user's point of view.
+ * True while the elected set of the selected chain for its active era has not
+ * landed yet - including the window after an era rollover, before the new era's
+ * set arrives.
  */
-const $pending = combine($chainId, validators.validatorsResource.$cache, (chainId, cache) => nullable(cache[chainId]));
+const $pending = $eraValidators.map(nullable);
 
 // --- request health --------------------------------------------------------------
 //
@@ -209,9 +217,9 @@ sample({
 // its identities have to be asked for separately.
 sample({
   clock: $chainId,
-  source: validators.validatorsResource.$cache,
-  filter: (cache, chainId) => nonNullable(cache[chainId]),
-  fn: (cache, chainId) => ({ chainId, accounts: collectAccountIds(cache[chainId] ?? EMPTY_VALIDATORS) }),
+  source: $eraValidators,
+  filter: (eraValidators: EraValidatorMap | null): eraValidators is EraValidatorMap => nonNullable(eraValidators),
+  fn: (eraValidators, chainId) => ({ chainId, accounts: collectAccountIds(eraValidators) }),
   target: requestIdentitiesFx,
 });
 

@@ -1,6 +1,6 @@
 # Staking Positions
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 

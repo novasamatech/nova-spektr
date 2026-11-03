@@ -8,6 +8,7 @@ import {
   type StakingPosition,
   exposurePagesCacheKey,
   exposures,
+  readEraScoped,
   validators,
 } from '@/domains/staking';
 import { stakingPositions } from '@/aggregates/staking-positions';
@@ -54,7 +55,7 @@ export const useNominationSpread = (positions: StakingPosition[]): SpreadRow[] =
         precision: asset.precision,
       };
 
-      const eraValidators = validatorCache[chainId];
+      const eraValidators = readEraScoped(validatorCache[chainId], era);
       if (eraValidators) {
         eraValidatorsByChain[chainId] = eraValidators;
       }

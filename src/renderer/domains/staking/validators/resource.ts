@@ -4,6 +4,7 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { type EraScopedCache, writeEraScoped } from '../era-scoped';
 import { exposuresResource } from '../exposures/resource';
 import { type ValidatorMap } from '../types';
 
@@ -18,7 +19,7 @@ export type ValidatorsResourceParams = {
   timelineApi?: ApiPromise | null;
 };
 
-const $validatorsCache = createStore<Record<ChainId, EraValidatorMap>>({});
+const $validatorsCache = createStore<EraScopedCache<EraValidatorMap>>({});
 
 export const validatorsResource = createQueryResource<ValidatorsResourceParams>({
   key: ({ chainId, era }) => [chainId, String(era)],
@@ -36,10 +37,7 @@ export const validatorsResource = createQueryResource<ValidatorsResourceParams>(
   .retry({ count: 3, delay: 1000 })
   .cache({
     store: $validatorsCache,
-    map: (state, validators, { chainId }) => ({
-      ...state,
-      [chainId]: validators,
-    }),
+    map: (state, validators, { chainId, era }) => writeEraScoped(state, chainId, era, validators),
     staleAfter: Number.POSITIVE_INFINITY,
   })
   .build();

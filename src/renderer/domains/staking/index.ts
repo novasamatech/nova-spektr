@@ -1,6 +1,8 @@
 export type { MonthlyRewardRecord, Payee, RewardSource, RewardsMap, StakingMap, ValidatorMap } from './types';
 export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './constants';
 export { stakingUtils } from './helpers';
+export type { EraScoped, EraScopedCache } from './era-scoped';
+export { readEraScoped } from './era-scoped';
 
 export type { EraAnchor } from './era/service';
 export type { ActiveEraAnchor, EraProgress } from './era/resource';

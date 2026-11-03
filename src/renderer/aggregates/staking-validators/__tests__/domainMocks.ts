@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AccountIdentity } from '@/domains/network';
-import { type EraValidatorMap, type ValidatorsResourceParams } from '@/domains/staking';
+import { type EraScopedCache, type EraValidatorMap, type ValidatorsResourceParams } from '@/domains/staking';
 
 /**
  * Writable stand-ins for the domain resource caches, which are exposed as
@@ -14,7 +14,7 @@ import { type EraValidatorMap, type ValidatorsResourceParams } from '@/domains/s
  * Only type imports above, so this module stays outside the mocked modules'
  * runtime graph.
  */
-export const $validatorsCache = createStore<Record<ChainId, EraValidatorMap>>({});
+export const $validatorsCache = createStore<EraScopedCache<EraValidatorMap>>({});
 
 export const $identityCache = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
 
