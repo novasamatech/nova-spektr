@@ -2,10 +2,17 @@ import { z } from 'zod';
 
 import { authFetch, clearCsrfToken, parseResponse } from '@/shared/api/backend-fetch';
 
+/**
+ * Challenge nonces are 32 random bytes as lower-case hex; anything else is
+ * refused before signing.
+ */
+const NONCE_PATTERN = /^0x[0-9a-f]{64}$/;
+
 const challengeResponseSchema = z.object({
   challengeId: z.string(),
-  nonce: z.string(),
+  nonce: z.string().regex(NONCE_PATTERN),
   expiresAt: z.number(),
+  messageVersion: z.number().int().positive().optional(),
 });
 
 const verifyResponseSchema = z.object({

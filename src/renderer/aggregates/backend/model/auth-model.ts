@@ -248,12 +248,17 @@ sample({
 });
 
 sample({
-  clock: requestChallengeFx.doneData,
+  clock: requestChallengeFx.done,
   source: { account: $selectedAccount, chainId: $selectedChainId },
   filter: ({ account }) => account !== null,
-  fn: ({ account, chainId }, challengeData) => {
+  fn: ({ account, chainId }, { params, result }) => {
     const signatory = account!.account;
-    const messageText = buildSignMessage(challengeData.nonce);
+    // The origin comes from the URL the challenge was requested from — the user's own configuration.
+    const messageText = buildSignMessage({
+      backendUrl: params.baseUrl,
+      nonce: result.nonce,
+      messageVersion: result.messageVersion,
+    });
     const message = new TextEncoder().encode(messageText);
 
     return { message, signatory, chainId };

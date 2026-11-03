@@ -201,7 +201,8 @@ describe('authModel — login flow', () => {
     vi.restoreAllMocks();
   });
 
-  const CHALLENGE = { challengeId: 'challenge-1', nonce: 'nonce-1', expiresAt: 1_000_000 };
+  const NONCE = `0x${'ab'.repeat(32)}`;
+  const CHALLENGE = { challengeId: 'challenge-1', nonce: NONCE, expiresAt: 1_000_000, messageVersion: 2 };
 
   it('completes the happy path: connect → challenge → sign → verified session', async () => {
     const challengeSpy = vi.spyOn(backendAuthService, 'requestChallenge').mockResolvedValue(CHALLENGE);
@@ -235,10 +236,13 @@ describe('authModel — login flow', () => {
     expect(scope.getState(backendConfigurationModel.$backendUrl)).toBe(BACKEND_URL);
     expect(scope.getState(authModel.$authStep)).toBe('signing');
 
-    // Challenge response reached the signing flow.
+    // Challenge response reached the signing flow, as a v2 message naming the configured backend.
     await vi.waitFor(() => {
       expect(scope.getState(messageSignModel.$signStore)).not.toBeNull();
     });
+    expect(new TextDecoder().decode(scope.getState(messageSignModel.$signStore)?.message)).toBe(
+      `<Bytes>ADDRESS_BOOK_AUTH v2\norigin: ${BACKEND_URL}\nnonce: ${NONCE}</Bytes>`,
+    );
 
     void allSettled(messageSignModel.signed, {
       scope,
