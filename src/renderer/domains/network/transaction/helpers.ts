@@ -1,5 +1,5 @@
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
 
@@ -26,9 +26,5 @@ export class BlockWeight {
 
   fitsIn(limit: BlockWeight): boolean {
     return this.refTime.lt(limit.refTime) && this.proofSize.lt(limit.proofSize);
-  }
-
-  static takeMinimums(a: BlockWeight, b: BlockWeight): BlockWeight {
-    return new BlockWeight(BN.min(a.refTime, b.refTime), BN.min(a.proofSize, b.proofSize));
   }
 }

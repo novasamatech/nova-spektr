@@ -3,10 +3,11 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { createGate } from 'effector-react';
 import { once } from 'patronum';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type Extrinsic, transactionService } from '@/domains/network';
+import { type OperationBlockReason } from '@/shared/transactions';
+import { type Extrinsic, ExtrinsicTooHeavyError, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -51,6 +52,18 @@ const $signStore = createStore<ExtrinsicSigningPayload[] | null>(null).reset([in
 const $payloadCountBeforeSplit = createStore<number>(0).reset([init, flow.close]);
 
 const $batchSplitWarning = createStore<BatchSplitWarning | null>(null).reset([init, flow.close]);
+
+export type SignBlocked = {
+  reason: OperationBlockReason;
+  chain: Chain | null;
+};
+
+/**
+ * Why the payloads cannot be signed at all; `null` while signing can proceed.
+ * Set instead of `$signStore` when a call is too heavy to fit into one
+ * extrinsic and cannot be split.
+ */
+const $blocked = createStore<SignBlocked | null>(null).reset([init, flow.close]);
 
 /**
  * @deprecated Use "init" instead
@@ -116,7 +129,7 @@ const $signerWallet = combine(
     const payload = store.at(0);
     if (nullable(payload)) return null;
 
-    return walletUtils.getWalletById(wallets, payload.signatory.walletId);
+    return walletUtils.getWalletById(wallets, payload.signatory.walletId) ?? null;
   },
 );
 
@@ -153,6 +166,16 @@ sample({
 sample({
   clock: splitExtrinsicsFx.doneData,
   target: $signStore,
+});
+
+sample({
+  clock: splitExtrinsicsFx.fail,
+  filter: ({ error }) => error instanceof ExtrinsicTooHeavyError,
+  fn: ({ params, error }): SignBlocked => ({
+    reason: { kind: 'extrinsic-too-heavy', detail: error.message },
+    chain: params.at(0)?.chain ?? null,
+  }),
+  target: $blocked,
 });
 
 sample({
@@ -193,6 +216,7 @@ export const signModel = {
   $signStore,
   $signerWallet,
   $batchSplitWarning,
+  $blocked,
 
   init,
   signed,

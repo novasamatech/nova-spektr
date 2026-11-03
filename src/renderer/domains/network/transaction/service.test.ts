@@ -1,12 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
-import { type Call } from '@polkadot/types/interfaces';
+import { type Call, type Weight } from '@polkadot/types/interfaces';
+import { BN } from '@polkadot/util';
 import { describe, vi } from 'vitest';
 
 import { type HexString } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
+import { ExtrinsicTooHeavyError } from './errors';
 import { transactionService } from './service';
 import { metadata } from './service.mocks';
 import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from './types';
@@ -358,6 +360,174 @@ describe('Transaction service', () => {
 
       expect(result).toEqual({ callData, callHash });
       expect(createType).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('transactionService.splitExtrinsic', () => {
+    // Mock metadata: normal-class maxExtrinsic refTime is ~1.48e12, so the
+    // budget with margin is ~1.33e12 — 13 calls of CALL_REF_TIME fit, 14 do not.
+    const CALL_REF_TIME = 100_000_000_000;
+    const WRAPPER_REF_TIME = 1_000_000_000;
+
+    type MockCall = { section: string; method: string; args: readonly unknown[] };
+
+    const getMockRefTime = (call: MockCall): number => {
+      if (call.section === 'utility' && ['batch', 'batchAll', 'forceBatch'].includes(call.method)) {
+        return (call.args[0] as MockCall[]).reduce((sum, inner) => sum + getMockRefTime(inner), 0);
+      }
+      if (call.section === 'multisig' && call.method === 'asMulti') {
+        return WRAPPER_REF_TIME + getMockRefTime(call.args[3] as MockCall);
+      }
+      if (call.section === 'proxy' && call.method === 'proxy') {
+        return WRAPPER_REF_TIME + getMockRefTime(call.args[2] as MockCall);
+      }
+
+      return CALL_REF_TIME;
+    };
+
+    const createWeightedApi = async () => {
+      const api = await createMockApi();
+      const prototype = Object.getPrototypeOf(createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1));
+
+      vi.spyOn(prototype, 'paymentInfo').mockImplementation(function (this: { method: MockCall }) {
+        const weight = api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
+          refTime: getMockRefTime(this.method),
+          proofSize: 1,
+        });
+
+        return Promise.resolve({ weight });
+      });
+
+      return api;
+    };
+
+    const createTransfers = (api: ApiPromise, count: number) =>
+      Array.from({ length: count }, (_, index) => createTransferExtrinsic(api, TEST_ADDRESS_1, index + 1));
+
+    const countCalls = (extrinsics: { method: MockCall }[]) =>
+      extrinsics.reduce((sum, { method }) => sum + (method.args[0] as unknown[]).length, 0);
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('returns a batch that fits into one extrinsic untouched', async () => {
+      const api = await createWeightedApi();
+      const extrinsic = api.tx.utility.batchAll(createTransfers(api, 13));
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result).toEqual([extrinsic]);
+    });
+
+    it.each(['batch', 'batchAll', 'forceBatch'] as const)(
+      'keeps utility.%s when splitting a heavy batch',
+      async method => {
+        const api = await createWeightedApi();
+        const extrinsic = api.tx.utility[method](createTransfers(api, 20));
+
+        const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+        expect(result.length).toBeGreaterThan(1);
+        expect(result.every(part => part.method.section === 'utility' && part.method.method === method)).toBe(true);
+        expect(countCalls(result)).toEqual(20);
+      },
+    );
+
+    const createMultisig = (api: ApiPromise, calls: number) => {
+      const batch = api.tx.utility.batchAll(createTransfers(api, calls));
+
+      return api.tx.multisig.asMulti(2, [TEST_ADDRESS_2], null, batch.method, {
+        refTime: getMockRefTime(batch.method),
+        proofSize: 1,
+      });
+    };
+
+    it('signs a multisig call that fits as is', async () => {
+      const api = await createWeightedApi();
+      const extrinsic = createMultisig(api, 13);
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.method.hash.toHex()).toEqual(extrinsic.method.hash.toHex());
+    });
+
+    it('refuses to split a heavy batch wrapped in multisig.asMulti', async () => {
+      const api = await createWeightedApi();
+      const extrinsic = createMultisig(api, 20);
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it('refuses a heavy multisig call behind a proxy', async () => {
+      const api = await createWeightedApi();
+      const extrinsic = api.tx.proxy.proxy(TEST_ADDRESS_2, null, createMultisig(api, 20).method);
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it('still estimates the fee of a heavy multisig call', async () => {
+      const api = await createWeightedApi();
+      const extrinsic = createMultisig(api, 20);
+      const prototype = Object.getPrototypeOf(extrinsic);
+      vi.spyOn(prototype, 'paymentInfo').mockImplementation(function (this: { method: MockCall }) {
+        const weight = api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
+          refTime: getMockRefTime(this.method),
+          proofSize: 1,
+        });
+
+        return Promise.resolve({ weight, partialFee: api.registry.createType('Balance', 42) });
+      });
+
+      await expect(transactionService.getSplitExtrinsicFee(extrinsic, api)).resolves.toEqual(new BN(42));
+    });
+
+    it('still splits a heavy batch behind a single-signer proxy', async () => {
+      const api = await createWeightedApi();
+      const batch = api.tx.utility.batchAll(createTransfers(api, 20));
+      const extrinsic = api.tx.proxy.proxy(TEST_ADDRESS_2, null, batch.method);
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(result.every(part => part.method.section === 'proxy' && part.method.method === 'proxy')).toBe(true);
+    });
+  });
+
+  describe('transactionService.getBatchCapacity', () => {
+    it('returns the row count when the extrinsic fits and a lower estimate when it does not', async () => {
+      const api = await createMockApi();
+      const extrinsic = createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1);
+      const paymentInfo = vi.spyOn(Object.getPrototypeOf(extrinsic), 'paymentInfo');
+
+      paymentInfo.mockResolvedValueOnce({
+        weight: api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
+          refTime: 1_000_000_000_000,
+          proofSize: 1,
+        }),
+      });
+      await expect(transactionService.getBatchCapacity(extrinsic, api, 10)).resolves.toEqual(10);
+
+      // 2e12 against a ~1.33e12 budget: 20 rows scale down to 13
+      paymentInfo.mockResolvedValueOnce({
+        weight: api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
+          refTime: 2_000_000_000_000,
+          proofSize: 1,
+        }),
+      });
+      await expect(transactionService.getBatchCapacity(extrinsic, api, 20)).resolves.toEqual(13);
+
+      // a single row that does not fit leaves no row that does
+      paymentInfo.mockResolvedValueOnce({
+        weight: api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
+          refTime: 2_000_000_000_000,
+          proofSize: 1,
+        }),
+      });
+      await expect(transactionService.getBatchCapacity(extrinsic, api, 1)).resolves.toEqual(0);
+
+      paymentInfo.mockRestore();
     });
   });
 });

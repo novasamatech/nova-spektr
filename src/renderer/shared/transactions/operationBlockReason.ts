@@ -24,6 +24,9 @@ export type OperationBlockReasonKind =
   | 'invalid-call-data'
   | 'no-signatory'
   | 'fee-unavailable'
+  // The call is heavier than one extrinsic may be and cannot be split (a
+  // multisig call is signed exactly as co-signers agreed on).
+  | 'extrinsic-too-heavy'
   | 'internal';
 
 export type OperationBlockReason = {

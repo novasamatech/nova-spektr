@@ -146,6 +146,8 @@ const UploadCSV = () => {
   const parsedCsv = useUnit(formModel.$parsedCsv);
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
+  const maxRowsPerTransaction = useUnit(formModel.$maxRowsPerTransaction);
+  const batchCapacityCheckFailed = useUnit(formModel.$batchCapacityCheckFailed);
   const apis = useUnit(networkModel.$apis);
   const chains = useUnit(networkModel.$chains);
   const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
@@ -154,7 +156,7 @@ const UploadCSV = () => {
   const timelineChain = timelineChainId ? (chains[timelineChainId] ?? null) : null;
   const timelineApi = timelineChainId ? (apis[timelineChainId] ?? null) : null;
 
-  const hasError = nonNullable(csvError);
+  const hasError = nonNullable(csvError) || nonNullable(maxRowsPerTransaction) || batchCapacityCheckFailed;
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
 
   const showPreview = (nullable(csvError) || csvError === VestingCsvError.DATA) && hasParsedCsv;
@@ -211,6 +213,21 @@ const UploadCSV = () => {
         invalid={hasError}
         onChange={(file) => formModel.fileUploaded(file)}
       />
+      {nonNullable(maxRowsPerTransaction) && (
+        <InputHint variant="error" active>
+          {maxRowsPerTransaction === 0
+            ? t('vestedTransfer.errors.csv.tooHeavyNoRowsDescription')
+            : t('vestedTransfer.errors.csv.tooHeavyDescription', { maxRows: maxRowsPerTransaction })}
+        </InputHint>
+      )}
+      {batchCapacityCheckFailed && (
+        <InputHint variant="error" active className="flex items-center gap-x-2">
+          {t('vestedTransfer.errors.csv.weightCheckFailedDescription')}
+          <Button className="p-0" size="sm" variant="text" onClick={() => formModel.retryBatchCapacityCheck()}>
+            {t('vestedTransfer.errors.csv.weightCheckRetry')}
+          </Button>
+        </InputHint>
+      )}
     </label>
   );
 };

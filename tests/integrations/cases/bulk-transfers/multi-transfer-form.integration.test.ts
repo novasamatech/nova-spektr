@@ -1,3 +1,5 @@
+import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { allSettled } from 'effector';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,9 +17,10 @@ vi.mock('graphql-request', async (importOriginal) => {
 
 import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { accounts } from '@/domains/network';
+import { type Extrinsic, accounts, transactionService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { MultiTransferCsvError, MultiTransferFieldError, MultiTransferFieldWarning } from '@/entities/multi-transfer';
+import { getExtrinsic } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '@/features/multi-transfer/model/form';
 import {
@@ -343,6 +346,70 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
       expect(env.getState(formModel.$csvError)).toBeNull();
       expect(env.getState(formModel.$parsedCsv)).toHaveLength(2);
       expect(hasBlockingCsvState()).toBe(false);
+    });
+  });
+
+  describe('Batch weight check', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Operations',
+        feature: 'MultiTransfer',
+        story: 'Batch weight check',
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    // Only the seams the weight check crosses are stubbed: wrapping (needs a
+    // live chain), extrinsic construction and the weight RPC itself.
+    const fakeApi = {} as unknown as ApiPromise;
+
+    async function createWeightEnv(): Promise<FeatureTestEnvironment> {
+      vi.spyOn(transactionService, 'wrapLegacyTransaction').mockImplementation(async (tx) => tx);
+      vi.spyOn(transactionService, 'getSplitExtrinsicFee').mockResolvedValue(new BN(1));
+      vi.spyOn(getExtrinsic, TransactionType.BATCH_ALL).mockReturnValue({} as unknown as Extrinsic);
+
+      const testEnv = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withChain(kusamaChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withApi(polkadotChainId, fakeApi)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
+
+      await allSettled(formModel.form.fields.chain.change, { scope: testEnv.scope, params: polkadotChain });
+      await allSettled(formModel.form.fields.initiator.change, { scope: testEnv.scope, params: senderAccount });
+      await allSettled(formModel.form.fields.signatory.change, { scope: testEnv.scope, params: senderAccount });
+
+      return testEnv;
+    }
+
+    it('should report how many rows fit and count only valid rows', async () => {
+      const capacity = vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(1);
+      env = await createWeightEnv();
+
+      // Two valid rows and two broken ones: the batch carries only the valid two.
+      await env.executeEvent(formModel.fileUploaded, csvFile(MIXED_CSV.replace(/\n$/, `\n${ADDRESS_3},3\n`)));
+
+      await env.waitForState(formModel.$maxRowsPerTransaction, (maxRows) => maxRows === 1);
+      expect(capacity).toHaveBeenLastCalledWith(expect.anything(), fakeApi, 2);
+    });
+
+    it('should drop a failed check once the network changes', async () => {
+      vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
+      env = await createWeightEnv();
+
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+      await env.waitForState(formModel.$batchCapacityCheckFailed, (failed) => failed);
+
+      await allSettled(formModel.form.fields.chain.change, { scope: env.scope, params: kusamaChain });
+
+      expect(env.getState(formModel.$batchCapacityCheckFailed)).toBe(false);
+      expect(env.getState(formModel.$maxRowsPerTransaction)).toBeNull();
     });
   });
 
