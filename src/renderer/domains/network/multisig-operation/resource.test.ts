@@ -70,11 +70,11 @@ describe('mapSubqueryOperationRecord', () => {
     expect(operation?.method).toBeNull();
   });
 
-  it('falls back to the indexer section/method when the call data decodes but is absent', () => {
+  it('does not take section/method from the indexer when the call data is absent', () => {
     const operation = mapSubqueryOperationRecord(makeNode({ callData: null }), apis, chains);
 
-    expect(operation?.section).toBe('balances');
-    expect(operation?.method).toBe('transfer');
+    expect(operation?.section).toBeNull();
+    expect(operation?.method).toBeNull();
   });
 
   it('recovers section/method only from validated call data when full decoding throws', () => {
@@ -83,7 +83,8 @@ describe('mapSubqueryOperationRecord', () => {
     });
     decoder.extractSectionMethodFromCallData.mockReturnValue({ section: 'utility', method: 'batchAll' });
 
-    const operation = mapSubqueryOperationRecord(makeNode({ section: null, method: null }), apis, chains);
+    // The indexer names the call balances.transfer — the recovered name wins.
+    const operation = mapSubqueryOperationRecord(makeNode(), apis, chains);
 
     expect(decoder.extractSectionMethodFromCallData).toHaveBeenCalledTimes(1);
     expect(decoder.extractSectionMethodFromCallData).toHaveBeenCalledWith(api, callData);

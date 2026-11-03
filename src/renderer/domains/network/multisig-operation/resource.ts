@@ -131,8 +131,6 @@ const operationsGqlSchema = z.object({
     .string()
     .transform(x => x as HexString)
     .nullable(),
-  method: z.string().nullable(),
-  section: z.string().nullable(),
   events: z.object({
     nodes: z.array(
       z.object({
@@ -175,8 +173,6 @@ const operationsQuery = gql`
         blockCreated
         indexCreated
         timestamp
-        method
-        section
         events {
           nodes {
             accountId
@@ -212,11 +208,10 @@ export function mapSubqueryOperationRecord(
 
   // The indexer is untrusted: call data that doesn't hash to `callHash` is
   // dropped before anything decodes it, and the record is flagged so the UI
-  // can tell the user why the call is missing. The indexer's pre-decoded
-  // section/method describe that same discarded data, so they go with it.
+  // can tell the user why the call is missing. Section/method are only taken
+  // from call data that passed this check, never from the indexer itself.
   const callDataMismatch = Boolean(response.callData && !validateCallData(response.callData, response.callHash));
   const callData = callDataMismatch ? null : response.callData;
-  const indexerMeta = callDataMismatch ? null : response;
 
   let transaction: DecodedTransaction | null = null;
   let extractedMeta: { section: string; method: string } | null = null;
@@ -247,8 +242,8 @@ export function mapSubqueryOperationRecord(
   return {
     id: operationId,
     transaction,
-    section: transaction?.section ?? indexerMeta?.section ?? extractedMeta?.section ?? null,
-    method: transaction?.method ?? indexerMeta?.method ?? extractedMeta?.method ?? null,
+    section: transaction?.section ?? extractedMeta?.section ?? null,
+    method: transaction?.method ?? extractedMeta?.method ?? null,
     timestamp: response.timestamp,
     multisigAccountId,
     ...(proxiedAccountId ? { proxiedAccountId } : {}),
