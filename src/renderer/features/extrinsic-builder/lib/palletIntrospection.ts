@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { isBalanceLikeParam, resolveTypeDef } from './typeResolver';
+import { resolveTypeDef, withBalanceHint } from './typeResolver';
 import { type CallArgDef, type CallMeta } from './types';
 
 /**
@@ -44,12 +44,8 @@ export function getCallMeta(api: ApiPromise, pallet: string, method: string): Ca
     const name = arg.name.toString();
     const typeStr = arg.type.toString();
     const metaTypeName = arg.typeName?.isSome ? arg.typeName.unwrap().toString() : null;
-    let typeDef = resolveTypeDef(api, typeStr);
-
-    // Override to balance if metadata typeName hints at it, or if it's Compact<u128/u64>
-    if (typeDef.kind !== 'balance' && isBalanceLikeParam(typeDef, metaTypeName)) {
-      typeDef = { ...typeDef, kind: 'balance' };
-    }
+    // An argument is an amount only when its metadata type name says so (`BalanceOf<T>`, `T::Balance`)
+    const typeDef = withBalanceHint(resolveTypeDef(api, typeStr), metaTypeName);
 
     return { name, typeDef };
   });

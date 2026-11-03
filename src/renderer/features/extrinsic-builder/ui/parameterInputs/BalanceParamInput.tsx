@@ -1,34 +1,64 @@
-import { type ApiPromise } from '@polkadot/api';
 import { memo, useMemo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { validateDecimals, validateSymbols } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { Input } from '@/shared/ui-kit';
+import { Box, Input } from '@/shared/ui-kit';
+import { type AmountUnit, toBaseUnits } from '../../lib/amountUnit';
 
 type Props = {
   value: string;
-  api: ApiPromise | null;
+  /**
+   * Null when the amount's unit is not known — the value is then entered in
+   * whole base units
+   */
+  unit: AmountUnit | null;
   onChange: (value: string) => void;
 };
 
-export const BalanceParamInput = memo(({ value, api, onChange }: Props) => {
-  const symbol = useMemo(() => {
-    if (!api) return '';
-
-    return api.registry.chainTokens[0] ?? '';
-  }, [api]);
-  const precision = api?.registry.chainDecimals[0];
+export const BalanceParamInput = memo(({ value, unit, onChange }: Props) => {
+  const { t } = useI18n();
 
   const handleChange = (val: string) => {
     // Refuse the keystroke rather than let encoding fail later on excess decimals
-    if (validateSymbols(val) && (precision === undefined || validateDecimals(val, precision))) {
+    const isValid = unit ? validateSymbols(val) && validateDecimals(val, unit.precision) : /^\d*$/.test(val);
+
+    if (isValid) {
       onChange(val);
     }
   };
 
-  const suffixElement = symbol ? (
-    <FootnoteText className="whitespace-nowrap text-text-tertiary">{symbol}</FootnoteText>
-  ) : undefined;
+  // The exact integer that goes into the call data
+  const baseUnits = useMemo(() => {
+    if (!unit || value === '') return null;
 
-  return <Input height="sm" value={value} placeholder="0.0" suffixElement={suffixElement} onChange={handleChange} />;
+    try {
+      return toBaseUnits(value, unit);
+    } catch {
+      return null;
+    }
+  }, [value, unit]);
+
+  const suffixElement = (
+    <FootnoteText className="whitespace-nowrap text-text-tertiary">
+      {unit ? unit.symbol : t('extrinsicBuilder.baseUnits')}
+    </FootnoteText>
+  );
+
+  return (
+    <Box direction="column" gap={1}>
+      <Input
+        height="sm"
+        value={value}
+        placeholder={unit ? '0.0' : '0'}
+        suffixElement={suffixElement}
+        onChange={handleChange}
+      />
+      {baseUnits !== null && (
+        <FootnoteText className="text-text-tertiary">
+          {t('extrinsicBuilder.baseUnitsPreview', { amount: baseUnits })}
+        </FootnoteText>
+      )}
+    </Box>
+  );
 });

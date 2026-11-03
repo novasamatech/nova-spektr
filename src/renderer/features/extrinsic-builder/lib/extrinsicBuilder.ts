@@ -7,9 +7,11 @@
  * - CallDataParser: parseCallData (hex → UI values)
  * - CallDataEncoder: encodeCallData (UI values → hex)
  * - TypeResolver: resolveTypeDef (metadata → ParameterTypeDef tree)
+ * - AmountUnit: resolveAmountUnit (which unit amount arguments are entered in)
  */
 
 export { getCallMeta, getCallNames, getPalletNames } from './palletIntrospection';
 export { type ParsedCallData, parseCallData } from './callDataParser';
 export { encodeCallData } from './callDataEncoder';
 export { resolveTypeDef } from './typeResolver';
+export { type AmountUnit, resolveAmountUnit } from './amountUnit';

@@ -75,6 +75,7 @@ export const StepTransaction = ({
             <Tabs.Content value="build">
               <ExtrinsicBuilder
                 api={api}
+                chain={selectedChain}
                 initialCallData={inputMode === 'build' ? callData : undefined}
                 onCallDataChange={(hex) => {
                   if (inputMode === 'build') onCallDataChanged(hex ?? '');

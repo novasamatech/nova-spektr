@@ -1,7 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
-import BigNumber from 'bignumber.js';
 
+import { type Chain } from '@/shared/core';
+
+import { type AmountUnit, fromBaseUnits, resolveAmountUnit } from './amountUnit';
 import { getCallMeta } from './palletIntrospection';
+import { type ParameterTypeDef } from './types';
 
 export type ParsedCallData = {
   pallet: string;
@@ -11,41 +14,127 @@ export type ParsedCallData = {
 
 /**
  * Parse hex call data into pallet, call, and args. Used when switching from
- * Paste to Build tab.
+ * Paste to Build tab. Amounts, nested ones included, are shown in the unit
+ * `resolveAmountUnit` picks for the call — the same one the encoder uses — so
+ * hex → form → hex is stable.
  */
-export function parseCallData(api: ApiPromise, callDataHex: string): ParsedCallData | null {
+export function parseCallData(api: ApiPromise, callDataHex: string, chain: Chain | null = null): ParsedCallData | null {
   try {
     if (!callDataHex || !callDataHex.startsWith('0x')) return null;
 
     const extrinsicCall = api.createType('Call', callDataHex);
     const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
 
-    // Get arg defs to detect balance params for precision conversion
-    const callMeta = getCallMeta(api, section, method);
-    const precision = api.registry.chainDecimals[0] ?? 10;
-
-    const args: Record<string, unknown> = {};
-    let argIndex = 0;
+    const rawArgs: Record<string, unknown> = {};
     for (const [key, value] of extrinsicCall.argsEntries as Iterable<[string, any]>) {
-      let converted = codecToValue(value);
+      rawArgs[key] = codecToValue(value);
+    }
 
-      // Convert raw planck to human-readable for balance params (full precision, no truncation)
-      if (
-        callMeta?.args[argIndex]?.typeDef.kind === 'balance' &&
-        typeof converted === 'string' &&
-        /^\d+$/.test(converted)
-      ) {
-        converted = new BigNumber(converted).shiftedBy(-precision).toFixed();
-      }
+    // The unit may depend on other args (e.g. the asset id), so resolve it after decoding
+    const unit = resolveAmountUnit({ chain, pallet: section, method, args: rawArgs });
+    if (!unit) return { pallet: section, call: method, args: rawArgs };
 
-      args[key] = converted;
-      argIndex++;
+    const argDefs = getCallMeta(api, section, method)?.args ?? [];
+    const args: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(rawArgs)) {
+      const def = argDefs.find((argDef) => argDef.name === key)?.typeDef;
+      args[key] = def ? convertAmountsForDisplay(value, def, unit) : value;
     }
 
     return { pallet: section, call: method, args };
   } catch {
     return null;
   }
+}
+
+type EnumValue = { variant: string; values: Record<string, unknown> };
+type OptionValue = { enabled: boolean; inner: unknown };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isEnumValue(value: unknown): value is EnumValue {
+  return isRecord(value) && typeof value['variant'] === 'string' && isRecord(value['values']);
+}
+
+function isOptionValue(value: unknown): value is OptionValue {
+  return isRecord(value) && typeof value['enabled'] === 'boolean' && 'inner' in value;
+}
+
+/**
+ * Walk a decoded UI value along its type and convert every balance leaf from
+ * base units to `unit` — the mirror of the encoder's conversion.
+ */
+function convertAmountsForDisplay(value: unknown, def: ParameterTypeDef, unit: AmountUnit): unknown {
+  switch (def.kind) {
+    case 'balance':
+      return typeof value === 'string' ? fromBaseUnits(value, unit) : value;
+
+    case 'compact':
+      return def.inner ? convertAmountsForDisplay(value, def.inner, unit) : value;
+
+    case 'option':
+      if (!isOptionValue(value) || !value.enabled || !def.inner) return value;
+
+      return { ...value, inner: convertAmountsForDisplay(value.inner, def.inner, unit) };
+
+    case 'vec': {
+      const inner = def.inner;
+      if (!Array.isArray(value) || !inner) return value;
+
+      return value.map((item) => convertAmountsForDisplay(item, inner, unit));
+    }
+
+    case 'struct':
+    case 'tuple':
+      return convertFields(value, def.fields ?? [], unit);
+
+    case 'enum': {
+      if (!isEnumValue(value)) return value;
+
+      const variant = def.variants?.find((v) => v.name === value.variant);
+      if (!variant || variant.fields.length === 0) return value;
+
+      const [firstField] = variant.fields;
+      // The decoder puts a variant's payload under key "0": a single field directly, several as a struct
+      if (variant.fields.length === 1 && firstField && !(firstField.name in value.values) && '0' in value.values) {
+        return { ...value, values: { '0': convertAmountsForDisplay(value.values['0'], firstField.typeDef, unit) } };
+      }
+      if (variant.fields.length > 1 && isRecord(value.values['0'])) {
+        return { ...value, values: { '0': convertFields(value.values['0'], variant.fields, unit) } };
+      }
+
+      return { ...value, values: convertFields(value.values, variant.fields, unit) };
+    }
+
+    default:
+      return value;
+  }
+}
+
+function convertFields(
+  value: unknown,
+  fields: { name: string; typeDef: ParameterTypeDef }[],
+  unit: AmountUnit,
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item, index) => {
+      const field = fields[index];
+
+      return field ? convertAmountsForDisplay(item, field.typeDef, unit) : item;
+    });
+  }
+  if (!isRecord(value)) return value;
+
+  const converted: Record<string, unknown> = { ...value };
+  for (const field of fields) {
+    if (field.name in value) {
+      converted[field.name] = convertAmountsForDisplay(value[field.name], field.typeDef, unit);
+    }
+  }
+
+  return converted;
 }
 
 /**
