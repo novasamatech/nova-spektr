@@ -1,6 +1,5 @@
 import { type Transaction, TransactionType } from '@/shared/core';
 import {
-  findCoreBatchAll,
   getTransactionAmount,
   isAddProxyTransaction,
   isEditFlexibleTransaction,
@@ -294,41 +293,14 @@ describe('entities/transaction/lib/onChainUtils', () => {
     });
   });
 
-  describe('findCoreBatchAll', () => {
+  describe('getTransactionAmount of batches', () => {
     const createTransaction = (type: TransactionType, args: Record<string, unknown> = {}) =>
       ({ type, args }) as unknown as Transaction;
     const createBatch = (transactions: Transaction[]) => createTransaction(TransactionType.BATCH_ALL, { transactions });
 
     const unlock = createTransaction(TransactionType.UNLOCK, { value: '1' });
-
-    test('should prefer unlock among direct children', () => {
-      const removeVote = createTransaction(TransactionType.REMOVE_VOTE);
-
-      expect(findCoreBatchAll(createBatch([removeVote, unlock]))).toBe(unlock);
-    });
-
-    test('should pick a supported transaction over the first one', () => {
-      const chill = createTransaction(TransactionType.CHILL);
-      const unstake = createTransaction(TransactionType.UNSTAKE);
-
-      expect(findCoreBatchAll(createBatch([chill, unstake]))).toBe(unstake);
-    });
-
-    test('should return null for an empty batch', () => {
-      expect(findCoreBatchAll(createBatch([]))).toBeNull();
-    });
-
-    test('should never return a batch', () => {
-      const nested = createBatch([createBatch([unlock])]);
-
-      expect(findCoreBatchAll(nested)).toBeNull();
-    });
-
-    test('should skip a nested batch in favour of a plain sibling', () => {
-      const transfer = createTransaction(TransactionType.TRANSFER);
-
-      expect(findCoreBatchAll(createBatch([createBatch([unlock]), transfer]))).toBe(transfer);
-    });
+    const delegate = createTransaction(TransactionType.DELEGATE, { balance: '1' });
+    const undelegate = createTransaction(TransactionType.UNDELEGATE);
 
     test('should not recurse endlessly on nested batches', () => {
       const nested = createBatch([createBatch([createBatch([unlock])])]);
@@ -338,6 +310,19 @@ describe('entities/transaction/lib/onChainUtils', () => {
 
     test('should return the amount of the core transaction', () => {
       expect(getTransactionAmount(createBatch([createTransaction(TransactionType.REMOVE_VOTE), unlock]))).toBe('1');
+    });
+
+    test('should not return an amount for unknown batch shape', () => {
+      const transfer = createTransaction(TransactionType.TRANSFER, { value: '5' });
+
+      expect(getTransactionAmount(createBatch([transfer, createTransaction(TransactionType.ADD_PROXY)]))).toBeNull();
+    });
+
+    test('should not return a delegation amount for a batch with extra calls', () => {
+      const nested = createBatch([createTransaction(TransactionType.ADD_PROXY)]);
+
+      expect(getTransactionAmount(createBatch([undelegate, delegate]))).toBe('1');
+      expect(getTransactionAmount(createBatch([undelegate, delegate, nested]))).toBeNull();
     });
   });
 });

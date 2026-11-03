@@ -1,6 +1,13 @@
 export * from './callDataDecoder';
 export * from './transactionService';
 export * from './common/utils';
+// Batch shapes now live in the network domain; re-exported for existing importers.
+export {
+  findCoreBatchAll,
+  isEditDelegationTransaction,
+  isKnownBatchShape,
+  isWrappedInBatchAll,
+} from '@/domains/network';
 export * from './common/types';
 export * from './common/constants';
 export * from './validateBalance';

@@ -1,6 +1,6 @@
 # Vested Transfer Operation Details
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-15
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -40,8 +40,8 @@ batch entries) in the native asset, with fiat value. It renders only for vested-
 
 ## Supported wrappers
 
-- **`utility.batchAll`** — recognized whenever the batch's representative inner call is a `vestedTransfer`; title, icon,
-  details and amounts all match through the batch.
+- **`utility.batchAll`** — recognized when **every** call in the batch is a `vestedTransfer`; title, icon, details and
+  amounts all match through the batch. A batch that mixes `vestedTransfer` with other calls is not a vested transfer.
 - **`proxy.proxy`** — for flexible multisigs the call is unwrapped before matching everywhere, including the
   confirmation amount block.
 

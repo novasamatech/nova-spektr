@@ -3,6 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 
 import {
@@ -79,17 +80,6 @@ export const isProxyTransaction = (transaction?: Transaction | DecodedTransactio
   return transaction?.type === TransactionType.PROXY;
 };
 
-export const isEditDelegationTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    const delegateTx = transaction.args.transactions?.some(isDelegateTransaction);
-    const undelegateTx = transaction.args.transactions?.some(isUndelegateTransaction);
-
-    return delegateTx && undelegateTx;
-  }
-
-  return false;
-};
-
 export const isDelegateTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.DELEGATE);
 };
@@ -162,36 +152,6 @@ export const hasTransaction = (
   }
 
   return filter(transaction);
-};
-
-export const isWrappedInBatchAll = (type: TransactionType) => {
-  const batchAllOperations = new Set([
-    TransactionType.UNSTAKE,
-    TransactionType.BOND,
-    TransactionType.UNLOCK,
-    TransactionType.DELEGATE,
-    TransactionType.UNDELEGATE,
-    TransactionType.REMOVE_VOTE,
-    TransactionType.VESTED_TRANSFER,
-  ]);
-
-  return batchAllOperations.has(type);
-};
-
-/**
- * Picks the transaction that represents a batch. Looks at direct children only
- * and never returns a batch, so recursive callers cannot loop on a nested
- * batch.
- */
-export const findCoreBatchAll = (batch: Transaction | DecodedTransaction): Transaction | null => {
-  const transactions: Transaction[] = batch.args?.transactions ?? [];
-
-  const coreTransaction =
-    transactions.find((tx) => tx.type === TransactionType.UNLOCK) ??
-    transactions.find((tx) => isWrappedInBatchAll(tx.type)) ??
-    transactions.find((tx) => tx.type !== TransactionType.BATCH_ALL);
-
-  return coreTransaction ?? null;
 };
 
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {

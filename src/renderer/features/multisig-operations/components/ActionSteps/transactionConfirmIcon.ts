@@ -1,6 +1,7 @@
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
+import { findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
+import { type ProxyEditOperationInput, isProxyEditOperation } from '../../lib/proxy-edit';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -66,25 +67,35 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: 'voteMst',
 };
 
-// TODO remove
-export const getIconName = (transaction: Transaction | DecodedTransaction | null): IconNames => {
+export const getTransactionIconName = (transaction?: Transaction | DecodedTransaction | null): IconNames => {
   if (!transaction?.type) return 'unknownConfirm';
 
   if (isEditDelegationTransaction(transaction)) {
     return 'editDelegationConfirm';
   }
 
-  if (isEditFlexibleTransaction(transaction)) {
-    return 'multisigCreationConfirm';
-  }
-
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getIconName(transaction?.args?.transactions?.[0]);
+    const coreTransaction = findCoreBatchAll(transaction);
+
+    return coreTransaction ? getTransactionIconName(coreTransaction) : TransactionIcons[TransactionType.BATCH_ALL];
   }
 
   if (transaction.type === TransactionType.PROXY) {
-    return getIconName(transaction?.args?.transaction);
+    return getTransactionIconName(transaction.args?.transaction);
   }
 
   return TransactionIcons[transaction.type];
+};
+
+/**
+ * Confirm icon of an operation. An edit-flexible operation is detected on the
+ * whole operation, the same way as its card and dialog title.
+ */
+// TODO remove
+export const getIconName = (operation: ProxyEditOperationInput): IconNames => {
+  if (isProxyEditOperation(operation)) {
+    return 'multisigCreationConfirm';
+  }
+
+  return getTransactionIconName(operation.transaction);
 };

@@ -222,7 +222,8 @@ describe('operations-sort', () => {
         }),
         account: mockAccount,
       };
-      // Mixed batch is not a multi-transfer: it carries value but the column shows nothing.
+      // Mixed batch is not a shape the app builds: it has no amount at all, so it
+      // sorts with the no-value operations even though a call inside moves funds.
       const mixedBatchOp: OperationWithAccount = {
         operation: createMockOperation({
           id: 'op-mixed',
@@ -251,15 +252,15 @@ describe('operations-sort', () => {
         'op-multi',
         'op-one',
         'op-delegate',
-        'op-mixed',
         'op-remark',
+        'op-mixed',
       ]);
 
       const asc = sortOperations(input, { by: 'value', direction: 'asc' }, context);
       expect(asc.map(i => i.operation.id)).toEqual([
         'op-remark',
-        'op-delegate',
         'op-mixed',
+        'op-delegate',
         'op-one',
         'op-multi',
         'op-five',

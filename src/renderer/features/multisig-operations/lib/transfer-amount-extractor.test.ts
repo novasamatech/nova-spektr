@@ -175,6 +175,64 @@ describe('transfer-amount-extractor', () => {
       expect(hasTransferAmount(operation)).toBe(true);
     });
 
+    test('should return false for batch_all of unknown shape', () => {
+      const operation = createMockOperation({
+        transaction: mockDecodedTransaction({
+          type: TransactionType.BATCH_ALL,
+          section: 'utility',
+          method: 'batchAll',
+          args: {
+            transactions: [
+              {
+                type: TransactionType.TRANSFER,
+                section: 'balances',
+                method: 'transferKeepAlive',
+                args: { dest: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', value: '10000000000' },
+              },
+              {
+                type: TransactionType.ADD_PROXY,
+                section: 'proxy',
+                method: 'addProxy',
+                args: { delegate: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', proxyType: 'Any', delay: 0 },
+              },
+            ],
+          },
+        }),
+      });
+
+      expect(hasTransferAmount(operation)).toBe(false);
+      expect(extractTransferAmount(operation, createMockChain())).toBeNull();
+    });
+
+    test('should return true for an edit delegation batch', () => {
+      const operation = createMockOperation({
+        transaction: mockDecodedTransaction({
+          type: TransactionType.BATCH_ALL,
+          section: 'utility',
+          method: 'batchAll',
+          args: {
+            transactions: [
+              {
+                type: TransactionType.UNDELEGATE,
+                section: 'convictionVoting',
+                method: 'undelegate',
+                args: { class: 0 },
+              },
+              {
+                type: TransactionType.DELEGATE,
+                section: 'convictionVoting',
+                method: 'delegate',
+                args: { target: '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', balance: '20000000000' },
+              },
+            ],
+          },
+        }),
+      });
+
+      expect(hasTransferAmount(operation)).toBe(true);
+      expect(extractTransferAmount(operation, createMockChain())?.rawAmount).toBe('20000000000');
+    });
+
     test('should handle proxy-wrapped transfer', () => {
       const operation = createMockOperation({
         transaction: mockDecodedTransaction({

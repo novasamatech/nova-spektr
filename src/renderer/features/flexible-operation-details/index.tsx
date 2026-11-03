@@ -1,7 +1,7 @@
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { isProxyEditOperation } from '@/features/multisig-operations';
 
 export const flexibleOperationDetailFeature = createFeature({
   name: 'flexible/operation-details',
@@ -9,14 +9,14 @@ export const flexibleOperationDetailFeature = createFeature({
 
 multisigOperationsSDK(flexibleOperationDetailFeature, {
   icon({ operation }) {
-    if (isEditFlexibleTransaction(operation.transaction)) {
+    if (isProxyEditOperation(operation)) {
       return 'proxyMst';
     }
   },
   title({ operation, t }) {
     if (nullable(operation) || nullable(t)) return null;
 
-    if (isEditFlexibleTransaction(operation.transaction)) {
+    if (isProxyEditOperation(operation)) {
       return {
         title: t('operations.titles.editFlexible'),
         sourceChainId: operation.chainId,

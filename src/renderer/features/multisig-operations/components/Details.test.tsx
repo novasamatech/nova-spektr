@@ -120,6 +120,10 @@ vi.mock('@/entities/transaction', () => ({
   isXcmTransaction: () => false,
 }));
 
+vi.mock('./BatchCalls', () => ({
+  BatchCalls: () => null,
+}));
+
 vi.mock('@/entities/wallet', () => ({
   walletModel: { $wallets: stores.walletsStore },
 }));

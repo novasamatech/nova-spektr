@@ -102,7 +102,7 @@ export const Confirmation = ({
       {errors && <TransactionValidationError errors={errors} wallets={wallets} />}
 
       <div className="mb-6 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
+        <Icon className="text-icon-default" name={getIconName(operation)} size={60} />
 
         <Slot id={confirmTransactionInfoSlot} props={{ operation }} />
       </div>
