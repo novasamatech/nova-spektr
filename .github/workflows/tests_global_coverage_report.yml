@@ -36,7 +36,7 @@ jobs:
 
       - name: Jest coverage comment
         id: coverageComment
-        uses: MishaKav/jest-coverage-comment@642ef024cc554a34b7082cea12c7bf63575ae151 # v1.0.36
+        uses: MishaKav/jest-coverage-comment@7032bf8e71aa2b267b6b143be3c4480b625c2b12 # v1.0.38
         with:
           hide-comment: true
           coverage-summary-path: ./.coverage/coverage-summary.json
@@ -63,7 +63,7 @@ jobs:
           echo "color - ${{ steps.coverageComment.outputs.color }}"
           echo "Coverage Html - ${{ steps.coverageComment.outputs.coverageHtml }}"
       - name: Create the Badge
-        uses: schneegans/dynamic-badges-action@b90feefcb07693386596d07ff4b7b7f0c6e99bff # v1.0.0
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         with:
           auth: ${{ secrets.PAT_GIST_TOKEN }}
           gistID: ${{ env.GIST_ID }}
