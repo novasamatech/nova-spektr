@@ -1,6 +1,6 @@
 # Account Sync
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-06-11
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -83,7 +83,9 @@ sequenceDiagram
 ```
 
 A pass discovers accounts, fetches each chain's last-indexed block and the identities used to name new wallets, then
-reconciles the wallet store: create what's new, update what changed, and delete what's gone.
+reconciles the wallet store: create what's new, update what changed, and delete what's gone. A new wallet takes the
+account's identity name (invisible and control characters removed); when the identity has no visible name it falls back
+to the generated name (short address or proxied name).
 
 ### When a derived wallet is deleted
 

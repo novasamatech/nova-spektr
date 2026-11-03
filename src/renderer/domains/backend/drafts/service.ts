@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { authFetch, parseResponse } from '@/shared/api/backend-fetch';
 import { type CallData, type ChainId } from '@/shared/core';
-import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
+import { isCorrectAccountId, isEthereumAccountId, sanitizeDisplayName } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const pathNodeKindSchema = z.enum(['proxied', 'multisig', 'signer']);
@@ -20,6 +20,12 @@ const accountIdStringSchema = z
   .transform(v => v as AccountId);
 
 const chainIdStringSchema = z.string().transform(v => v as ChainId);
+
+// A contact whose name is empty once sanitized names nothing — drop it so
+// consumers fall back to their own name resolution.
+const contactRefSchema = z
+  .object({ name: z.string().transform(sanitizeDisplayName), accountId: z.string() })
+  .transform(contact => (contact.name ? contact : null));
 
 export const pathNodeSchema = z.object({
   kind: pathNodeKindSchema,
@@ -41,7 +47,7 @@ const backendDraftSchema = z.object({
   operation: linkedOperationSchema.nullable(),
   multisigAccountId: accountIdStringSchema.nullable(),
   proxyAccountId: accountIdStringSchema.nullable().optional(),
-  proxyContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
+  proxyContact: contactRefSchema.nullable().optional(),
   chainId: chainIdStringSchema,
   callData: z
     .string()
@@ -50,7 +56,7 @@ const backendDraftSchema = z.object({
   decodedCallData: z.unknown().optional(),
   description: z.string().nullable(),
   createdBy: z.string(),
-  createdByContact: z.object({ name: z.string(), accountId: z.string() }).nullable().optional(),
+  createdByContact: contactRefSchema.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   signingPath: z.array(pathNodeSchema).default([]),

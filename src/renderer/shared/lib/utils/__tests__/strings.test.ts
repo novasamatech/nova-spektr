@@ -1,72 +1,88 @@
-import { formatSectionAndMethod, isValidContactName, sanitizeContactName, splitCamelCaseString } from '../strings';
+import { formatSectionAndMethod, isValidContactName, sanitizeDisplayName, splitCamelCaseString } from '../strings';
 
-describe('sanitizeContactName', () => {
+describe('sanitizeDisplayName', () => {
   it('returns regular name unchanged', () => {
-    expect(sanitizeContactName('Alice')).toBe('Alice');
+    expect(sanitizeDisplayName('Alice')).toBe('Alice');
   });
 
   it('trims leading and trailing whitespace', () => {
-    expect(sanitizeContactName('  Alice  ')).toBe('Alice');
+    expect(sanitizeDisplayName('  Alice  ')).toBe('Alice');
   });
 
   it('returns empty string for empty input', () => {
-    expect(sanitizeContactName('')).toBe('');
+    expect(sanitizeDisplayName('')).toBe('');
   });
 
   it('removes zero-width space \\u200B', () => {
-    expect(sanitizeContactName('Alice\u200BBob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u200BBob')).toBe('AliceBob');
   });
 
   it('removes zero-width non-joiner \\u200C', () => {
-    expect(sanitizeContactName('Alice\u200CBob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u200CBob')).toBe('AliceBob');
   });
 
   it('removes zero-width joiner \\u200D', () => {
-    expect(sanitizeContactName('Alice\u200DBob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u200DBob')).toBe('AliceBob');
   });
 
   it('removes word joiner \\u2060', () => {
-    expect(sanitizeContactName('Alice\u2060Bob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u2060Bob')).toBe('AliceBob');
   });
 
   it('removes BOM \\uFEFF prepended to name', () => {
-    expect(sanitizeContactName('\uFEFFAlice')).toBe('Alice');
+    expect(sanitizeDisplayName('\uFEFFAlice')).toBe('Alice');
   });
 
   it('removes soft hyphen \\u00AD', () => {
-    expect(sanitizeContactName('Alice\u00ADBob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u00ADBob')).toBe('AliceBob');
   });
 
   it('removes Mongolian vowel separator \\u180E', () => {
-    expect(sanitizeContactName('Alice\u180EBob')).toBe('AliceBob');
+    expect(sanitizeDisplayName('Alice\u180EBob')).toBe('AliceBob');
   });
 
   it('removes directional formatting character \\u202A (left-to-right embedding)', () => {
-    expect(sanitizeContactName('\u202AAlice\u202C')).toBe('Alice');
+    expect(sanitizeDisplayName('\u202AAlice\u202C')).toBe('Alice');
   });
 
   it('removes right-to-left override \\u202E', () => {
-    expect(sanitizeContactName('\u202EAlice')).toBe('Alice');
+    expect(sanitizeDisplayName('\u202EAlice')).toBe('Alice');
   });
 
   it('removes directional isolate characters \\u2066-\\u2069', () => {
-    expect(sanitizeContactName('\u2066Alice\u2069')).toBe('Alice');
+    expect(sanitizeDisplayName('\u2066Alice\u2069')).toBe('Alice');
   });
 
   it('returns empty string for name composed entirely of invisible characters', () => {
-    expect(sanitizeContactName('\u200B\u200C\uFEFF\u2060')).toBe('');
+    expect(sanitizeDisplayName('\u200B\u200C\uFEFF\u2060')).toBe('');
   });
 
   it('normalizes NFD to NFC (e + combining accent → é)', () => {
     const nfd = 'e\u0301'; // e + combining acute accent = 2 codepoints
     const nfc = '\u00E9'; // é as single codepoint
-    expect(sanitizeContactName(nfd)).toBe(nfc);
-    expect(sanitizeContactName(nfd).length).toBe(1);
+    expect(sanitizeDisplayName(nfd)).toBe(nfc);
+    expect(sanitizeDisplayName(nfd).length).toBe(1);
   });
 
   it('combines trim, invisible char removal, and NFC normalization', () => {
     const name = '  \uFEFFe\u0301\u200Btest  ';
-    expect(sanitizeContactName(name)).toBe('\u00E9test');
+    expect(sanitizeDisplayName(name)).toBe('\u00E9test');
+  });
+
+  it('replaces line breaks, tabs and other control characters with a space', () => {
+    expect(sanitizeDisplayName('Alice\nBob')).toBe('Alice Bob');
+    expect(sanitizeDisplayName('Alice\r\tBob')).toBe('Alice  Bob');
+    expect(sanitizeDisplayName('Alice\u0000Bob')).toBe('Alice Bob');
+    expect(sanitizeDisplayName('Alice\u0085Bob')).toBe('Alice Bob');
+  });
+
+  it('replaces line and paragraph separators with a space', () => {
+    expect(sanitizeDisplayName('Alice\u2028Bob\u2029')).toBe('Alice Bob');
+  });
+
+  it('keeps regular names in other scripts and emoji unchanged', () => {
+    expect(sanitizeDisplayName('Алиса 🚀')).toBe('Алиса 🚀');
+    expect(sanitizeDisplayName('日本語 name')).toBe('日本語 name');
   });
 });
 

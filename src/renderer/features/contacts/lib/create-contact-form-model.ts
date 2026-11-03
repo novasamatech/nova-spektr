@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { not } from 'patronum';
 
 import { type Contact, type LocalContact } from '@/shared/core';
-import { isValidContactName, sanitizeContactName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { isValidContactName, sanitizeDisplayName, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 type ContactFormFields = {
@@ -15,9 +15,9 @@ type ContactFormFields = {
 function validateNameUnique(value: string, _: unknown, contacts: Contact[]): boolean {
   if (!value) return true;
 
-  const sanitized = sanitizeContactName(value);
+  const sanitized = sanitizeDisplayName(value);
 
-  return contacts.every((contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized.toLowerCase());
+  return contacts.every((contact) => sanitizeDisplayName(contact.name).toLowerCase() !== sanitized.toLowerCase());
 }
 
 function validateAddressUnique(value: string, _: unknown, contacts: Contact[]): boolean {
@@ -35,10 +35,10 @@ function validateNameUniqueEdit(
 ): boolean {
   if (!value) return true;
 
-  const sanitized = sanitizeContactName(value).toLowerCase();
-  const sanitizedOriginal = sanitizeContactName(params.contactToEdit.name).toLowerCase();
+  const sanitized = sanitizeDisplayName(value).toLowerCase();
+  const sanitizedOriginal = sanitizeDisplayName(params.contactToEdit.name).toLowerCase();
   const isSameName = sanitized === sanitizedOriginal;
-  const isUnique = params.contacts.every((contact) => sanitizeContactName(contact.name).toLowerCase() !== sanitized);
+  const isUnique = params.contacts.every((contact) => sanitizeDisplayName(contact.name).toLowerCase() !== sanitized);
 
   return isSameName || isUnique;
 }
@@ -111,7 +111,7 @@ export function createCreateFormModel() {
       const address = toAddress(data.address);
 
       return {
-        name: sanitizeContactName(data.name),
+        name: sanitizeDisplayName(data.name),
         address,
         accountId: toAccountId(address),
         source: 'local' as const,
@@ -212,7 +212,7 @@ export function createEditFormModel() {
     fn: (contactToEdit: LocalContact, form): LocalContact => {
       const address = toAddress(form.address);
 
-      return { ...contactToEdit, name: sanitizeContactName(form.name), address, accountId: toAccountId(address) };
+      return { ...contactToEdit, name: sanitizeDisplayName(form.name), address, accountId: toAccountId(address) };
     },
     target: contactModel.effects.updateContactFx,
   });

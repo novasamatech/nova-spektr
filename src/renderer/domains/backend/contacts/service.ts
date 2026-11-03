@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { authFetch } from '@/shared/api/backend-fetch';
 import { type BackendContact, type Contact, type ContactField } from '@/shared/core';
-import { nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { nonNullable, sanitizeDisplayName, toAccountId, toAddress } from '@/shared/lib/utils';
 
 export class HttpError extends Error {
   constructor(
@@ -13,11 +13,13 @@ export class HttpError extends Error {
   }
 }
 
+const displayNameSchema = z.string().transform(sanitizeDisplayName);
+
 const backendContactSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  name: displayNameSchema,
   accountId: z.string(),
-  chain: z.object({ chainId: z.string(), name: z.string() }).nullish(),
+  chain: z.object({ chainId: z.string(), name: displayNameSchema }).nullish(),
   derivationPath: z.string().nullish(),
   ownerAccountId: z.string().nullish(),
   signatories: z.array(z.string()).nullish(),
@@ -29,9 +31,9 @@ const backendContactSchema = z.object({
       z.object({
         fieldOption: z.object({
           id: z.string(),
-          value: z.string(),
+          value: displayNameSchema,
           field: z
-            .object({ id: z.string(), name: z.string(), multiSelect: z.boolean().optional().default(false) })
+            .object({ id: z.string(), name: displayNameSchema, multiSelect: z.boolean().optional().default(false) })
             .nullish(),
         }),
       }),

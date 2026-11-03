@@ -314,16 +314,16 @@ export const syncProxiedAccounts = ({
         // creating new wallet
 
         const identity = identities[proxiedAccountId];
-        const name = identity
-          ? identityService.getFullName(identity)
-          : proxyUtils.getProxiedName(
-              {
-                accountId: proxiedAccountId,
-                proxyVariant: firstAccount.proxyVariant,
-                connections,
-              },
-              chain.addressPrefix,
-            );
+        const name =
+          (identity && identityService.getFullName(identity)) ||
+          proxyUtils.getProxiedName(
+            {
+              accountId: proxiedAccountId,
+              proxyVariant: firstAccount.proxyVariant,
+              connections,
+            },
+            chain.addressPrefix,
+          );
 
         createWallets.push({
           wallet: {
@@ -506,9 +506,8 @@ export const syncMultisigAccounts = ({ allAccounts, allWallets, syncResult, iden
       deleteAccounts.delete(existingMultisigAccount);
     } else {
       const identity = identities[syncedAccount.accountId];
-      const name = identity
-        ? identityService.getFullName(identity)
-        : toShortAddress(toAddress(syncedAccount.accountId), 5);
+      const name =
+        (identity && identityService.getFullName(identity)) || toShortAddress(toAddress(syncedAccount.accountId), 5);
 
       createWallets.push({
         wallet: {
@@ -606,9 +605,9 @@ export const syncFlexibleMultisigs = ({
       } else {
         const proxiedIdentity = identities[matchedSyncedProxy.accountId];
         const chain = allChains[matchedSyncedProxy.chainId];
-        const proxiedName = proxiedIdentity
-          ? identityService.getFullName(proxiedIdentity)
-          : toShortAddress(toAddress(matchedSyncedProxy.accountId, { prefix: chain?.addressPrefix }), 5);
+        const proxiedName =
+          (proxiedIdentity && identityService.getFullName(proxiedIdentity)) ||
+          toShortAddress(toAddress(matchedSyncedProxy.accountId, { prefix: chain?.addressPrefix }), 5);
 
         const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
           accountType: AccountType.FLEX_MULTISIG,

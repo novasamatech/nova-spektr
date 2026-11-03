@@ -1,6 +1,6 @@
 # Multisig Wallet Create
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
 
 ## Overview
 
@@ -79,9 +79,10 @@ flowchart TD
   the options.
 - The **name field auto-fills** from the matched account or contact and is locked for own accounts. Every signatory
   needs a name: external signatories are saved to the local contacts on success (new contacts created, renamed local
-  ones updated), so other flows show consistent names. Only external addresses are saved — an address of any of the
-  user's own accounts is skipped even when it was pasted or picked from Contacts, and so is a name that is just the
-  signatory's own short address. External address book (backend) contacts are never changed by this flow.
+  ones updated), so other flows show consistent names. Saved names are cleaned of invisible and control characters and
+  trimmed. Only external addresses are saved — an address of any of the user's own accounts is skipped even when it was
+  pasted or picked from Contacts, and so is a name that is just the signatory's own short address. External address book
+  (backend) contacts are never changed by this flow.
 - Duplicated addresses and addresses not valid on the selected network are flagged inline; both block submission.
 - The threshold select unlocks once at least two rows are filled; minimum threshold is 2.
 

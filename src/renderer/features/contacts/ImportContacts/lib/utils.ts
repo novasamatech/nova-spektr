@@ -1,5 +1,5 @@
 import { type Contact } from '@/shared/core';
-import { sanitizeContactName, toAccountId } from '@/shared/lib/utils';
+import { sanitizeDisplayName, toAccountId } from '@/shared/lib/utils';
 
 import { type AccountIdConflict, type DuplicateGroup, type DuplicateResolutions } from './types';
 import { type ContactImport, contactsArraySchema } from './validation';
@@ -114,7 +114,7 @@ function resolveNameConflicts(
   existingContacts: Contact[],
 ): { name: string; address: string; accountId: string }[] {
   // Use sanitized names for all comparisons to prevent optical duplicates
-  const allExistingNames = new Set(existingContacts.map((c) => sanitizeContactName(c.name).toLowerCase()));
+  const allExistingNames = new Set(existingContacts.map((c) => sanitizeDisplayName(c.name).toLowerCase()));
   const usedNames = new Set<string>();
   const resolved: { name: string; address: string; accountId: string }[] = [];
 
@@ -124,7 +124,7 @@ function resolveNameConflicts(
     let nameIndex = 1;
 
     const existingWithSameName = existingContacts.find(
-      (c) => sanitizeContactName(c.name).toLowerCase() === contact.name.toLowerCase(),
+      (c) => sanitizeDisplayName(c.name).toLowerCase() === contact.name.toLowerCase(),
     );
     const isAccountIdConflict = existingWithSameName && existingWithSameName.accountId === accountId;
 
