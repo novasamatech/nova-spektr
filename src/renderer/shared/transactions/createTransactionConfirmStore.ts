@@ -10,7 +10,7 @@ import {
   multisigOperationService,
 } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 import { activeOperationRoute } from './activeOperationRoute';
 
@@ -180,7 +180,11 @@ function getMultisigCallHash(meta: TxConfirmInfo, api: ApiPromise): HexString | 
   if (wrappedCallHash) return wrappedCallHash;
 
   // Flows that confirm the unwrapped transaction (e.g. baskets) wrap it only at
-  // signing time — fall back to the core call.
+  // signing time — fall back to the core call, but only when the route actually
+  // goes through a multisig: a single-signer call that happens to equal a
+  // pending multisig operation's call is not that operation.
+  if (!meta.route.some(accountUtils.isAnyMultisigAccount)) return null;
+
   try {
     return getExtrinsic[meta.coreTx.type](meta.coreTx.args, api).method.hash.toHex();
   } catch (error) {
