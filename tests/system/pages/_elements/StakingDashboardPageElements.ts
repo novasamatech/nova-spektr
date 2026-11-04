@@ -24,8 +24,8 @@ export class StakingDashboardPageElements implements BasePageElements {
     rewards: 'Rewards',
   };
 
+  /** Footer of the Total staked card: `Unbonding {amount} Redeem →`. */
   unbondingFooterLabel = 'Unbonding';
-  withdrawableChipPattern = /\d+ withdrawable/;
   redeemLinkLabel = 'Redeem →';
 
   apyBreakdownTitle = 'Estimated APY breakdown';
@@ -34,7 +34,7 @@ export class StakingDashboardPageElements implements BasePageElements {
   minStakeRangeSwitchLabel = 'Era range';
   positionsModalTitle = 'Staking positions';
   /** Green chip of a fully matured unbonding chunk: `{amount} ready`. */
-  readyChipPattern = /ready/;
+  readyChipPattern = /[\d.,]+\s*[KMBT]?\s*(DOT|KSM|WND) ready/;
 
   // --- Positions widget ----------------------------------------------------
   positionsTitle = 'Positions';

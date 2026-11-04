@@ -195,17 +195,16 @@ test.describe('Staking dashboard — matured unbonding chunk (watch-only)', { ta
     await setupTestMetadata('Staking dashboard', 'Unbonding');
   });
 
-  test('S5: Total staked footer surfaces the withdrawable chunk and its drill-down', async ({
-    stakingDashboardPage,
-  }) => {
+  test('S5: Total staked footer surfaces the unbonding amount and its drill-down', async ({ stakingDashboardPage }) => {
     test.setTimeout(TEST_TIMEOUT);
 
+    // The footer reads "Unbonding {amount} Redeem →" — no chunk count, no
+    // maturity on the card itself; that detail lives in the drill-down.
     const footer = stakingDashboardPage.getKpiFooter('totalStaked');
 
     await expect(footer).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
     await expect(footer).toContainText(elements.unbondingFooterLabel);
     await expect(footer).toContainText(elements.amountPattern);
-    await expect(footer).toContainText(elements.withdrawableChipPattern);
     await expect(footer.getByRole('button', { name: elements.redeemLinkLabel })).toBeVisible();
 
     await stakingDashboardPage.clickRedeemLink();
@@ -215,9 +214,10 @@ test.describe('Staking dashboard — matured unbonding chunk (watch-only)', { ta
     await expect(modal).toContainText(elements.positionsModalTitle);
     await expect(modal).toContainText(elements.unbondingFooterLabel); // "Unbonding" column
     await expect(modal.locator(elements.donutSelector)).toBeVisible();
-    await expect(modal.locator(elements.tableRowSelector).first()).toBeVisible();
-    // The matured chunk shows up as a "ready" chip rather than a countdown.
-    await expect(modal).toContainText(elements.readyChipPattern);
+    const row = modal.locator(elements.tableRowSelector).first();
+    await expect(row).toBeVisible();
+    // The matured chunk shows up as a "{amount} ready" chip rather than a countdown.
+    await expect(row).toContainText(elements.readyChipPattern);
 
     await stakingDashboardPage.closeOverlay(modal);
   });
