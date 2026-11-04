@@ -50,11 +50,20 @@ export class StakingDashboardPageElements implements BasePageElements {
 
   // --- Position detail drawer ----------------------------------------------
   drawerStatLabels = ['Staked', 'Status', 'Est. APY', 'Share', 'Unclaimed', 'Validators'];
-  watchOnlyNote = 'Watch-only account — data only';
+  /** `blocked.watchOnly` — the tooltip of a disabled origin-bound chip. */
+  watchOnlyNote = 'Watch-only account — this wallet holds no key to sign with.';
   nominationsSectionTitle = 'Nominations';
   nominationsFooterPattern = /\d+ nominations · \d+ active/;
-  /** Every action chip the drawer can offer — none may exist for watch-only. */
-  actionChipPattern = /^(Claim|Add stake|Unbond|Change validators)/;
+  /**
+   * Every action chip the drawer can offer — all rendered disabled for
+   * watch-only.
+   */
+  actionChipPattern = /^(Claim|Add stake|Unbond|Change reward destination|Change validators)/;
+  /**
+   * The chip whose tooltip carries `watchOnlyNote` (Claim explains the missing
+   * signer instead).
+   */
+  watchOnlyHoverChipLabel = 'Add stake';
 
   // --- Rewards chart -------------------------------------------------------
   rewardsAssetSwitchLabel = 'Rewards asset';

@@ -83,10 +83,16 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await expect(row).toContainText(elements.viewOnlyLabel);
   });
 
-  test('S2: position row opens the detail drawer with no actions for watch-only', async ({ stakingDashboardPage }) => {
+  test('S2: position row opens the detail drawer with every action disabled for watch-only', async ({
+    stakingDashboardPage,
+  }) => {
     test.setTimeout(TEST_TIMEOUT);
 
-    await expect(stakingDashboardPage.getPositionRows().first()).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
+    // The skeleton rows are excluded by the locator; the amount proves the
+    // ledger has landed, so the click lands on a row with a drawer behind it.
+    const row = stakingDashboardPage.getPositionRows().first();
+    await expect(row).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
+    await expect(row).toContainText(elements.amountPattern, { timeout: LIVE_DATA_TIMEOUT });
 
     const drawer = await stakingDashboardPage.openPositionRow(0);
 
@@ -99,11 +105,18 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
 
     // --- watch-only is stated, not implied
     await expect(drawer.getByText(elements.viewOnlyLabel, { exact: true })).toBeVisible();
-    await expect(drawer.getByText(elements.watchOnlyNote)).toBeVisible();
 
-    // --- and carries NO action chips at all. This is the design requirement:
-    // actions are absent by design, never rendered disabled.
-    await expect(drawer.getByRole('button', { name: elements.actionChipPattern })).toHaveCount(0);
+    // --- the action strip stays, every chip disabled, and the chip says why.
+    // This is the design requirement: a blocked position keeps its chips and
+    // explains the block in a tooltip rather than dropping the strip.
+    const chips = stakingDashboardPage.getActionChips(drawer);
+    await expect(chips).not.toHaveCount(0);
+    for (const chip of await chips.all()) {
+      await expect(chip).toBeDisabled();
+    }
+    const tooltip = await stakingDashboardPage.hoverActionChip(drawer, elements.watchOnlyHoverChipLabel);
+    await expect(tooltip).toHaveText(elements.watchOnlyNote);
+    await stakingDashboardPage.dismissTooltip(tooltip);
 
     // --- nominations table
     await expect(drawer.getByText(elements.nominationsSectionTitle, { exact: true })).toBeVisible();
