@@ -10,7 +10,7 @@ import { LoginPageElements } from './pages/_elements/LoginPageElements';
  * boots in that window times out on the onboarding page. Opening the app once
  * here, before any worker starts, absorbs that cost.
  */
-export const DEFAULT_WARMUP_TIMEOUT_MS = 10 * 60_000;
+const DEFAULT_WARMUP_TIMEOUT_MS = 10 * 60_000;
 const RELOAD_WAIT_MS = 20_000;
 const RETRY_DELAY_MS = 3_000;
 
@@ -22,21 +22,24 @@ const getWarmupTimeoutMs = (): number => {
   return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : DEFAULT_WARMUP_TIMEOUT_MS;
 };
 
-const getBaseUrl = (config: FullConfig): string => {
-  const baseURL = config.projects[0]?.use.baseURL;
-  if (!baseURL) {
+const getProjectUse = (config: FullConfig): FullConfig['projects'][number]['use'] => {
+  const use = config.projects[0]?.use;
+  if (!use?.baseURL) {
     throw new Error('System tests warm-up: no baseURL configured on the first project');
   }
 
-  return baseURL;
+  return use;
 };
 
 const warmUpRenderer = async (config: FullConfig): Promise<void> => {
   const timeoutMs = getWarmupTimeoutMs();
-  const deadline = Date.now() + timeoutMs;
-  const url = new URL(loginElements.url, getBaseUrl(config)).toString();
+  const startedAt = Date.now();
+  const deadline = startedAt + timeoutMs;
+  const { baseURL, launchOptions } = getProjectUse(config);
+  const url = new URL(loginElements.url, baseURL).toString();
 
-  const browser = await chromium.launch();
+  // Same browser flags as the tests themselves, so the warm-up sees the page the way they do.
+  const browser = await chromium.launch(launchOptions);
   try {
     const page = await browser.newPage({ ignoreHTTPSErrors: true });
 
@@ -48,6 +51,8 @@ const warmUpRenderer = async (config: FullConfig): Promise<void> => {
 
         return;
       } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`System tests warm-up: attempt ${attempt} failed after ${Date.now() - startedAt} ms: ${message}`);
         if (Date.now() >= deadline) {
           throw new Error(`System tests warm-up: renderer at ${url} did not render onboarding within ${timeoutMs} ms`, {
             cause: error,
