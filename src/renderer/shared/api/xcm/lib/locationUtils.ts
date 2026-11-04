@@ -80,8 +80,8 @@ export const extractAccountIdFromLocation = (value: unknown): AccountId | undefi
 
 /** Instructions whose body is a nested program (`[Instruction]`). */
 const NESTED_PROGRAM_INSTRUCTIONS = new Set(['setappendix', 'seterrorhandler']);
-/** Instruction fields holding a program to run on another chain. */
-const NESTED_PROGRAM_FIELDS = ['xcm', 'remoteXcm'];
+/** Instruction fields holding a program to run on another chain, lower-cased. */
+const NESTED_PROGRAM_FIELDS = new Set(['xcm', 'remotexcm']);
 /** Instructions that run an opaque call on the destination: unreadable. */
 const OPAQUE_INSTRUCTIONS = new Set(['transact']);
 
@@ -117,8 +117,8 @@ const collectProgramBeneficiaries = (program: unknown, into: Beneficiaries): voi
         else into.unresolved = true;
       }
 
-      for (const field of NESTED_PROGRAM_FIELDS) {
-        if (field in body) nested.push(body[field]);
+      for (const [field, value] of Object.entries(body)) {
+        if (NESTED_PROGRAM_FIELDS.has(field.toLowerCase())) nested.push(value);
       }
     }
   }
