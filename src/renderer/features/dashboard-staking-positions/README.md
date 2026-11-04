@@ -1,6 +1,6 @@
 # Dashboard Staking Positions
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -224,10 +224,13 @@ states, in order of precedence:
 
 - **No signer on the chain** — disabled, with "None of your wallets can sign on {network}". This wins over everything
   else: whatever the payout scan finds, nobody here could sign the claim.
-- **Nothing to claim**, scan finished and complete — disabled, with "Nothing to claim on this position".
-- **Scan still running, or finished incomplete** — enabled; the chip does not assert "nothing to claim" about payouts
-  nobody has checked.
-- Otherwise — enabled, leading with the unclaimed amount.
+- **Scan still running** — disabled, with "Checking what is still unclaimed…".
+- **Nothing found, scan complete** — disabled, with "Nothing to claim on this position".
+- **Nothing found, scan incomplete** — disabled, with "Unclaimed rewards couldn't be fully checked on this network": the
+  chip does not assert "nothing to claim" about payouts nobody has checked, but it has no payouts to build a claim from
+  either, so an enabled chip here would be a click that does nothing.
+- **Payouts found**, complete scan or not — enabled, leading with the unclaimed amount. An incomplete scan that found
+  some payouts still claims them: claiming what is known is a valid claim.
 
 (As with every chip, disabling still falls back to the "not connected yet" tooltip when the action is unwired — but a
 `blockedHint` above wins the tooltip text whenever both apply, so an unwired _and_ blocked chip explains the block, not
