@@ -46,33 +46,25 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
   for (const { sub, parent } of identities) {
     if (nullable(parent?.identity)) continue;
     const parentIdentity = Array.isArray(parent.identity) ? parent.identity[0] : parent.identity;
-    const name = sanitizeDisplayName(parentIdentity.info.display);
-    const subName = sanitizeDisplayName(sub.identity?.[1] ?? '') || undefined;
+    const { info } = parentIdentity;
 
-    result[sub.account] = {
+    // Every on-chain text field can reach the UI (name, tooltip, validator details),
+    // so each one is cleaned, not only the display name.
+    const identity: Omit<AccountIdentity, 'accountId'> = {
       chainId,
-      accountId: sub.account,
-      subName,
-      name,
-      email: parentIdentity.info.email,
-      image: parentIdentity.info.image,
-      website: parentIdentity.info.web,
-      github: parentIdentity.info.github,
-      matrix: parentIdentity.info.matrix,
+      name: sanitizeDisplayName(info.display),
+      subName: sanitizeDisplayName(sub.identity?.[1] ?? '') || undefined,
+      email: sanitizeDisplayName(info.email),
+      image: sanitizeDisplayName(info.image),
+      website: sanitizeDisplayName(info.web),
+      github: nullable(info.github) ? undefined : sanitizeDisplayName(info.github),
+      matrix: nullable(info.matrix) ? undefined : sanitizeDisplayName(info.matrix),
     };
 
+    result[sub.account] = { ...identity, accountId: sub.account };
+
     if (sub.account !== parent.account) {
-      result[parent.account] = {
-        chainId,
-        accountId: parent.account,
-        subName,
-        name,
-        email: parentIdentity.info.email,
-        image: parentIdentity.info.image,
-        website: parentIdentity.info.web,
-        github: parentIdentity.info.github,
-        matrix: parentIdentity.info.matrix,
-      };
+      result[parent.account] = { ...identity, accountId: parent.account };
     }
   }
 

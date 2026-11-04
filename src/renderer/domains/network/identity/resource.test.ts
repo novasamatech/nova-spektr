@@ -15,18 +15,22 @@ vi.mock('@/shared/pallet/identity', () => ({
   },
 }));
 
-const identityInfo = (display: string) => ({
-  identity: { info: { display, email: '', image: '', web: '', github: '', matrix: '' } },
+type Info = { display: string; email?: string; web?: string; github?: string; matrix?: string };
+
+const identityInfo = ({ display, email = '', web = '', github, matrix }: Info) => ({
+  identity: { info: { display, email, image: '', web, github, matrix } },
 });
 
 // Each call uses its own accounts: the resource caches responses by account list.
-const requestIdentity = async (seed: string, display: string, subName?: string) => {
+const requestIdentity = async (seed: string, info: string | Info, subName?: string) => {
   const parent = createAccountId(`${seed}-parent`);
   const sub = createAccountId(`${seed}-sub`);
   const account = subName === undefined ? parent : sub;
 
   superOfMock.mockResolvedValue([{ account, identity: subName === undefined ? null : [parent, subName] }]);
-  identityOfMock.mockResolvedValue([{ account: parent, ...identityInfo(display) }]);
+  identityOfMock.mockResolvedValue([
+    { account: parent, ...identityInfo(typeof info === 'string' ? { display: info } : info) },
+  ]);
 
   const scope = fork({
     values: [
@@ -49,6 +53,22 @@ describe('identityResource', () => {
     const identity = await requestIdentity('cleaned', '\u202EAlice\u200B\n', ' treasury\u2066 ');
 
     expect(identity).toMatchObject({ name: 'Alice', subName: 'treasury' });
+  });
+
+  it('removes invisible characters from the other identity text fields', async () => {
+    const identity = await requestIdentity('fields', {
+      display: 'Alice',
+      email: 'alice​@example.com',
+      web: '‮https://alice.example',
+      github: 'alice⁠-gh',
+    });
+
+    expect(identity).toMatchObject({
+      email: 'alice@example.com',
+      website: 'https://alice.example',
+      github: 'alice-gh',
+      matrix: undefined,
+    });
   });
 
   it('drops a sub-identity name that has no visible characters', async () => {
