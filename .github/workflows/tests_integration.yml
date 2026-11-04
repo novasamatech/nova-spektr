@@ -87,7 +87,7 @@ jobs:
           ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
         run: |
           allurectl job-run env >> $GITHUB_ENV
-          COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+          COMMIT_INFO="Commit: <a href=\"${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}\">${{ github.sha }}</a>"
           echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
           echo "$COMMIT_INFO" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -99,17 +99,28 @@ jobs:
             echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
           fi
 
+      # The Allure URL is interpolated into the message; escape it for HTML format.
+      - name: Escape Telegram message values
+        id: telegram
+        if: always()
+        env:
+          ALLURE_URL: ${{ env.ALLURE_JOB_RUN_URL }}
+        run: |
+          escaped=$(printf '%s' "$ALLURE_URL" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')
+          echo "allure_url=$escaped" >> "$GITHUB_OUTPUT"
+
       - name: Notify Telegram channel
         if: always()
+        continue-on-error: true
         uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
+          format: html
           message: |
             📋 Integration Test Report Published
             ${{ env.COMMIT_INFO }}
             ${{ env.TEST_STATUS }}
 
-            URL: ${{ env.ALLURE_JOB_RUN_URL }}
+            URL: ${{ steps.telegram.outputs.allure_url }}
             Test group: tests/integrations/cases

@@ -16,8 +16,10 @@
 #                         electron-builder.js, package.json scripts) is reviewed
 #                         code. It downloads the compiled bundle as plain data
 #                         and signs/notarizes/packages it.
-#   distribute         -> uploads installers to S3 and notifies Telegram. No
-#                         checkout at all; only pinned third-party actions.
+#   distribute         -> uploads installers to S3 and notifies Telegram. Its
+#                         only checkout is the notify-telegram action, taken
+#                         from the repository default branch (never the PR);
+#                         everything else is pinned third-party actions.
 #
 # `package` and `distribute` run in the `internal-build` GitHub environment.
 # The environment must be created in repository settings with required
@@ -239,7 +241,21 @@ jobs:
           escaped=$(printf '%s' "$HEAD_REF" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')
           echo "name=$escaped" >> "$GITHUB_OUTPUT"
 
+      # Local actions resolve from the job workspace, so the notify action has to
+      # be checked out. Only its directory, and from the default branch, so no PR
+      # code lands next to the release credentials. It runs after the upload on
+      # purpose: checkout clears the workspace, which by then only holds the
+      # already-uploaded installers.
+      - name: ⚙️Checkout notify-telegram action from trusted ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/workflows/notify-telegram
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: Notify Telegram channel
+        continue-on-error: true
         uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}
