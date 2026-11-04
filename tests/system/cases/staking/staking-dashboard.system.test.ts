@@ -214,10 +214,10 @@ test.describe('Staking dashboard — matured unbonding chunk (watch-only)', { ta
     await expect(modal).toContainText(elements.positionsModalTitle);
     await expect(modal).toContainText(elements.unbondingFooterLabel); // "Unbonding" column
     await expect(modal.locator(elements.donutSelector)).toBeVisible();
-    const row = modal.locator(elements.tableRowSelector).first();
-    await expect(row).toBeVisible();
-    // The matured chunk shows up as a "{amount} ready" chip rather than a countdown.
-    await expect(row).toContainText(elements.readyChipPattern);
+    // The matured chunk shows up as a "{amount} ready" chip rather than a
+    // countdown — on whichever row holds it, the table order is not under test.
+    const readyRows = modal.locator(elements.tableRowSelector).filter({ hasText: elements.readyChipPattern });
+    await expect(readyRows.first()).toBeVisible();
 
     await stakingDashboardPage.closeOverlay(modal);
   });

@@ -96,6 +96,11 @@ export class StakingDashboardPage extends BasePage<StakingDashboardPageElements>
   /**
    * Loaded rows only: `PositionsTableSkeleton` renders the same ui-kit `Table`
    * with shimmer cells, and a click on one of those rows opens nothing.
+   *
+   * The same `:not(:has(skeleton))` guard also skips a loaded row whose status
+   * pill is still a skeleton (`PositionStatusPill` renders one while the status
+   * is `unknown`) — intended, so the drawer opens on a fully resolved
+   * position.
    */
   public getPositionRows(): Locator {
     const { tableRowSelector, skeletonSelector } = this.pageElements;
