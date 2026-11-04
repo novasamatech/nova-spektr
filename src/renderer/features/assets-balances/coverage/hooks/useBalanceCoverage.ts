@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { accounts } from '@/domains/network';
@@ -28,24 +28,38 @@ export type BalanceCoverageState = {
   timedOut: boolean;
 };
 
+type Coverage = Pick<BalanceCoverageState, 'complete' | 'awaitingCount'>;
+
+const isSameCoverage = (next: Coverage, current: Coverage) => {
+  return next.complete === current.complete && next.awaitingCount === current.awaitingCount;
+};
+
 /**
  * Whether the balances of an account selection have arrived — for every
  * account, not just the first one to answer. See {@link getBalanceCoverage}.
  */
 export const useBalanceCoverage = (accountIds: string[]): BalanceCoverageState => {
-  const balanceMap = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chainsList);
+  const connections = useUnit(networkModel.$connections);
 
   const accountsWithChains = useMemo(
-    () => getAccountsWithChains(accountIds, allAccounts, chains),
-    [accountIds, allAccounts, chains],
+    () => getAccountsWithChains(accountIds, allAccounts, chains, connections),
+    [accountIds, allAccounts, chains, connections],
   );
 
-  const { complete, awaiting } = useMemo(
-    () => getBalanceCoverage(Object.values(balanceMap), accountIds, accountsWithChains),
-    [balanceMap, accountIds, accountsWithChains],
-  );
+  // The balance map changes on every balance update; only the small answer is
+  // kept, so the view re-renders when coverage changes, not when a balance does.
+  const { complete, awaitingCount } = useStoreMap({
+    store: balanceModel.$balanceMap,
+    keys: [accountIds, accountsWithChains],
+    fn: (balanceMap): Coverage => {
+      const coverage = getBalanceCoverage(Object.values(balanceMap), accountIds, accountsWithChains);
+
+      return { complete: coverage.complete, awaitingCount: coverage.awaiting.length };
+    },
+    updateFilter: (next, current) => !isSameCoverage(next, current),
+  });
 
   // Re-armed per selection: a new selection is a new question, and its
   // balances may not be in the store yet even though the previous one's were.
@@ -58,5 +72,5 @@ export const useBalanceCoverage = (accountIds: string[]): BalanceCoverageState =
     return () => clearTimeout(id);
   }, [accountKey]);
 
-  return { complete, awaitingCount: awaiting.length, timedOut };
+  return { complete, awaitingCount, timedOut };
 };
