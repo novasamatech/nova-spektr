@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
+import { polkadotAssetHubChain } from '@/shared/mocks';
 import { encodeCallData, getCallMeta, parseCallData, resolveAmountUnit } from '../extrinsicBuilder';
 
 function makeSiType(def: Record<string, unknown>) {
@@ -34,6 +35,7 @@ const SI_TYPES: Record<number, unknown> = {
   3: primitive('U128'),
   4: compact('3'),
   5: primitive('U32'),
+  6: compact('5'),
   // sp_weights::Weight { #[compact] ref_time: u64, #[compact] proof_size: u64 }
   10: makeSiType({
     isComposite: true,
@@ -63,6 +65,24 @@ const SI_TYPES: Record<number, unknown> = {
       ],
     },
   }),
+  // AccountVote { Standard { vote: Vote, balance: Balance }, Split { aye: Balance, nay: Balance } }
+  14: makeSiType({
+    isVariant: true,
+    asVariant: {
+      variants: [
+        {
+          name: { toString: () => 'Standard' },
+          index: { toNumber: () => 0 },
+          fields: [named('vote', '5', 'Vote'), named('balance', '3', 'Balance')],
+        },
+        {
+          name: { toString: () => 'Split' },
+          index: { toNumber: () => 1 },
+          fields: [named('aye', '3', 'Balance'), named('nay', '3', 'Balance')],
+        },
+      ],
+    },
+  }),
 };
 
 const arg = (name: string, type: string, typeName: string | null) => ({
@@ -73,6 +93,17 @@ const arg = (name: string, type: string, typeName: string | null) => ({
 
 const CALLS: Record<string, Record<string, ReturnType<typeof arg>[]>> = {
   multisig: { asMulti: [arg('threshold', '5', 'u16'), arg('max_weight', '10', 'Weight')] },
+  balances: { transferKeepAlive: [arg('dest', 'MultiAddress', null), arg('value', '4', 'T::Balance')] },
+  assets: {
+    transfer: [
+      arg('id', '6', 'T::AssetIdParameter'),
+      arg('target', 'MultiAddress', null),
+      arg('amount', '4', 'T::Balance'),
+    ],
+  },
+  convictionVoting: {
+    vote: [arg('poll_index', '5', 'PollIndexOf<T, I>'), arg('vote', '14', 'AccountVote<BalanceOf<T, I>>')],
+  },
   vesting: { vestedTransfer: [arg('schedule', '11', 'VestingInfo<BalanceOf<T>, BlockNumberFor<T>>')] },
   nominationPools: { bondExtra: [arg('extra', '13', 'BondExtra<BalanceOf<T>>')] },
   xcmPallet: { send: [arg('asset', '12', 'Fungibility')] },
@@ -82,38 +113,91 @@ const CALLS: Record<string, Record<string, ReturnType<typeof arg>[]>> = {
 const num = (value: bigint) => ({ toBigInt: () => value, toString: () => value.toString() });
 const struct = (entries: [string, unknown][]) => ({ defKeys: entries.map(([k]) => k), entries: () => entries });
 const variant = (type: string, inner?: unknown) => ({ type, [`is${type}`]: true, [`as${type}`]: inner });
+const address = (value: string) => ({ type: 'Id', inner: { toString: () => value } });
+
+const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+
+type Decoded = { call: string; args: [string, unknown][] };
 
 /**
- * Decoded argument codecs per call, as the parser receives them from
+ * Decoded argument codecs per case, as the parser receives them from
  * `api.createType('Call', hex)`.
  */
-const DECODED: Record<string, [string, unknown][]> = {
-  'multisig.asMulti': [
-    ['threshold', num(2n)],
-    [
-      'max_weight',
-      struct([
-        ['ref_time', num(1_000_000_000n)],
-        ['proof_size', num(5_000n)],
-      ]),
+const DECODED: Record<string, Decoded> = {
+  'multisig.asMulti': {
+    call: 'multisig.asMulti',
+    args: [
+      ['threshold', num(2n)],
+      [
+        'max_weight',
+        struct([
+          ['ref_time', num(1_000_000_000n)],
+          ['proof_size', num(5_000n)],
+        ]),
+      ],
     ],
-  ],
-  'vesting.vestedTransfer': [
-    [
-      'schedule',
-      struct([
-        ['locked', num(15_000_000_000n)],
-        ['start', num(100n)],
-      ]),
+  },
+  'balances.transferKeepAlive': {
+    call: 'balances.transferKeepAlive',
+    args: [
+      ['dest', address(ALICE)],
+      ['value', num(15_000_000_001n)],
     ],
-  ],
-  'nominationPools.bondExtra': [['extra', variant('FreeBalance', num(25_000_000_000n))]],
-  'xcmPallet.send': [['asset', variant('Fungible', num(1_500_000n))]],
-  'timestamp.set': [['now', num(1_700_000_000_000n)]],
+  },
+  'assets.transfer USDT': {
+    call: 'assets.transfer',
+    args: [
+      ['id', num(1984n)],
+      ['target', address(ALICE)],
+      ['amount', num(1_500_001n)],
+    ],
+  },
+  'assets.transfer zero decimals': {
+    call: 'assets.transfer',
+    args: [
+      ['id', num(4242n)],
+      ['target', address(ALICE)],
+      ['amount', num(7n)],
+    ],
+  },
+  'vesting.vestedTransfer': {
+    call: 'vesting.vestedTransfer',
+    args: [
+      [
+        'schedule',
+        struct([
+          ['locked', num(15_000_000_000n)],
+          ['start', num(100n)],
+        ]),
+      ],
+    ],
+  },
+  'nominationPools.bondExtra': {
+    call: 'nominationPools.bondExtra',
+    args: [['extra', variant('FreeBalance', num(25_000_000_000n))]],
+  },
+  'convictionVoting.vote': {
+    call: 'convictionVoting.vote',
+    args: [
+      ['poll_index', num(42n)],
+      [
+        'vote',
+        variant(
+          'Split',
+          struct([
+            ['aye', num(10_000_000_000n)],
+            ['nay', num(5_000_000_000n)],
+          ]),
+        ),
+      ],
+    ],
+  },
+  'xcmPallet.send': { call: 'xcmPallet.send', args: [['asset', variant('Fungible', num(1_500_000n))]] },
+  'timestamp.set': { call: 'timestamp.set', args: [['now', num(1_700_000_000_000n)]] },
 };
 
 function createApi(onCall: (args: unknown[]) => void) {
-  let decodeTarget = '';
+  let decoded: Decoded = { call: '', args: [] };
 
   const tx: Record<string, Record<string, unknown>> = {};
   for (const [pallet, calls] of Object.entries(CALLS)) {
@@ -147,27 +231,29 @@ function createApi(onCall: (args: unknown[]) => void) {
         types: [],
       },
       findMetaCall: () => {
-        const [section, method] = decodeTarget.split('.');
+        const [section, method] = decoded.call.split('.');
 
         return { section, method };
       },
     },
-    createType: () => ({ argsEntries: DECODED[decodeTarget], callIndex: new Uint8Array([0, 0]) }),
+    createType: () => ({ argsEntries: decoded.args, callIndex: new Uint8Array([0, 0]) }),
   } as unknown as ApiPromise;
 
   return {
     api,
     decode: (target: string) => {
-      decodeTarget = target;
+      decoded = DECODED[target]!;
 
       return parseCallData(api, '0x00', chain);
     },
   };
 }
 
-const chain = {
-  assets: [{ assetId: 0, symbol: 'DOT', precision: 10, type: 'native' }],
-} as unknown as Chain;
+const [, usdt] = polkadotAssetHubChain.assets;
+const zeroDecimalAsset: Asset = { ...usdt!, symbol: 'ZERO', precision: 0, typeExtras: { assetId: '4242' } };
+
+/** DOT (10 decimals), USDT 1984 (6 decimals) and a 0-decimal asset */
+const chain: Chain = { ...polkadotAssetHubChain, assets: [...polkadotAssetHubChain.assets, zeroDecimalAsset] };
 
 /**
  * Decode, then re-encode what the form would hold, capturing the args handed to
@@ -205,6 +291,27 @@ describe('features/extrinsic-builder amount round-trip', () => {
     expect(captured[1]).toEqual({ ref_time: '1000000000', proof_size: '5000' });
   });
 
+  it('shows a native amount at full precision and encodes it back unchanged', () => {
+    const { parsed, captured } = roundTrip('balances.transferKeepAlive');
+
+    expect(parsed.args).toEqual({ dest: ALICE, value: '1.5000000001' });
+    expect(captured).toEqual([ALICE, '15000000001']);
+  });
+
+  it('shows an assets.transfer amount in the asset precision and encodes it back unchanged', () => {
+    const { parsed, captured } = roundTrip('assets.transfer USDT');
+
+    expect(parsed.args).toEqual({ id: '1984', target: ALICE, amount: '1.500001' });
+    expect(captured).toEqual(['1984', ALICE, '1500001']);
+  });
+
+  it('keeps an amount of a 0-decimal asset whole in both directions', () => {
+    const { parsed, captured } = roundTrip('assets.transfer zero decimals');
+
+    expect(parsed.args).toEqual({ id: '4242', target: ALICE, amount: '7' });
+    expect(captured).toEqual(['4242', ALICE, '7']);
+  });
+
   it('shows a nested native amount in tokens and encodes it back unchanged', () => {
     const { parsed, captured } = roundTrip('vesting.vestedTransfer');
 
@@ -217,6 +324,13 @@ describe('features/extrinsic-builder amount round-trip', () => {
 
     expect(parsed.args['extra']).toEqual({ variant: 'FreeBalance', values: { '0': '2.5' } });
     expect(captured[0]).toEqual({ FreeBalance: '25000000000' });
+  });
+
+  it('shows amounts of a multi-field enum variant by field name and encodes them back unchanged', () => {
+    const { parsed, captured } = roundTrip('convictionVoting.vote');
+
+    expect(parsed.args['vote']).toEqual({ variant: 'Split', values: { aye: '1', nay: '0.5' } });
+    expect(captured).toEqual(['42', { Split: { aye: '10000000000', nay: '5000000000' } }]);
   });
 
   it('keeps an XCM amount in base units instead of scaling it by the native precision', () => {

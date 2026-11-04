@@ -4,6 +4,8 @@ import { camelCase } from 'lodash';
 import { type Asset, type Chain, AssetType } from '@/shared/core';
 import { formatAmountStrict, getNativeAsset } from '@/shared/lib/utils';
 
+import { type CallArgDef, type ParameterTypeDef } from './types';
+
 /**
  * Unit an amount argument is entered in. `null` means the unit is not known
  * reliably, so the amount is entered and encoded as a raw base-unit integer.
@@ -58,7 +60,8 @@ export function resolveAmountUnit({ chain, pallet, method, args }: ResolveParams
   if (!chain || !pallet || !method) return null;
 
   if (NATIVE_AMOUNT_PALLETS.has(pallet) && !NON_NATIVE_AMOUNT_CALLS.has(`${pallet}.${method}`)) {
-    return toUnit(getNativeAsset(chain.assets));
+    // A chain without assets degrades to base units instead of throwing from a render
+    return chain.assets.length > 0 ? toUnit(getNativeAsset(chain.assets)) : null;
   }
 
   if (ASSET_ID_PALLETS.has(pallet)) {
@@ -92,6 +95,61 @@ function toUnit(asset: Asset): AmountUnit {
   }
 
   return unit;
+}
+
+function isSameUnit(a: AmountUnit | null, b: AmountUnit | null): boolean {
+  if (!a || !b) return a === b;
+
+  return a.symbol === b.symbol && a.precision === b.precision;
+}
+
+/** Whether a value of this type carries an amount anywhere inside it. */
+function holdsAmount(def: ParameterTypeDef): boolean {
+  switch (def.kind) {
+    case 'balance':
+      return true;
+    case 'compact':
+    case 'option':
+    case 'vec':
+      return def.inner !== undefined && holdsAmount(def.inner);
+    case 'struct':
+    case 'tuple':
+      return def.fields?.some((field) => holdsAmount(field.typeDef)) ?? false;
+    case 'enum':
+      return def.variants?.some((variant) => variant.fields.some((field) => holdsAmount(field.typeDef))) ?? false;
+    default:
+      return false;
+  }
+}
+
+type UnitChangeParams = {
+  chain: Chain | null;
+  pallet: string | null;
+  method: string | null;
+  argDefs: CallArgDef[];
+};
+
+/**
+ * Drop every amount argument from `next` when the change from `prev` moved the
+ * call's unit (an `assets` call whose `id` is edited): an amount typed in one
+ * unit must not be silently re-read in another. The amounts are cleared rather
+ * than rescaled, so nothing is rounded behind the user's back.
+ */
+export function clearAmountsOnUnitChange(
+  prev: Record<string, unknown>,
+  next: Record<string, unknown>,
+  { chain, pallet, method, argDefs }: UnitChangeParams,
+): Record<string, unknown> {
+  const prevUnit = resolveAmountUnit({ chain, pallet, method, args: prev });
+  const nextUnit = resolveAmountUnit({ chain, pallet, method, args: next });
+  if (isSameUnit(prevUnit, nextUnit)) return next;
+
+  const cleared = { ...next };
+  for (const def of argDefs) {
+    if (holdsAmount(def.typeDef)) delete cleared[def.name];
+  }
+
+  return cleared;
 }
 
 /**
