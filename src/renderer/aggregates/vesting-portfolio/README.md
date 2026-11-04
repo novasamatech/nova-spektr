@@ -1,6 +1,6 @@
 # Vesting portfolio
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-04
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 

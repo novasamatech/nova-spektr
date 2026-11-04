@@ -201,4 +201,16 @@ describe('proxy.ts — fetch proxy policy', () => {
 
     expect(result).toEqual({ ok: false, status: 0, statusText: 'ECONNREFUSED', headers: {}, body: '{}' });
   });
+
+  it('reports an invalid request header as a failure instead of rejecting the call', async () => {
+    const proxy = await setup();
+    mockFetch.mockResolvedValueOnce(okResponse());
+    await proxy.pin(ORIGIN);
+
+    const result = await proxy.fetch(`${ORIGIN}/health`, { headers: { 'x-csrf-token': 'token\ninjected' } });
+
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ ok: false, status: 0, headers: {}, body: '{}' });
+    expect(result).not.toMatchObject({ statusText: proxy.blockedStatusText });
+  });
 });

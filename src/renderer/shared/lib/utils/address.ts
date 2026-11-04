@@ -10,6 +10,7 @@ import {
   PUBLIC_KEY_LENGTH,
   PUBLIC_KEY_LENGTH_BYTES,
   SS58_DEFAULT_PREFIX,
+  SS58_GENERIC_SUBSTRATE_PREFIX,
 } from './constants';
 import { truncate } from './strings';
 
@@ -157,7 +158,7 @@ const GENERATED_NAME_CHUNKS = [5, 6];
 // Prefixes a stored auto-name may have been built with: the chain's own, the
 // app default and the generic substrate one. Callers without chain data still
 // get the last two.
-const GENERATED_NAME_FALLBACK_PREFIXES = [SS58_DEFAULT_PREFIX, 42];
+const GENERATED_NAME_FALLBACK_PREFIXES = [SS58_DEFAULT_PREFIX, SS58_GENERIC_SUBSTRATE_PREFIX];
 
 /**
  * Every string the app could have stored as this account's auto-generated name:

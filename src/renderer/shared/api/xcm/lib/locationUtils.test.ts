@@ -92,6 +92,17 @@ describe('extractBeneficiariesFromXcmInstructions', () => {
     expect(extractBeneficiariesFromXcmInstructions(forwarded)).toEqual([ALICE, BOB, ALICE]);
   });
 
+  it('descends into a forwarded program whatever the casing of its field', () => {
+    const forwarded = {
+      V5: [
+        { InitiateTransfer: { destination: {}, assets: [], RemoteXcm: [depositAsset(v4Location(ALICE))] } },
+        { DepositReserveAsset: { assets: {}, dest: {}, Xcm: [depositAsset(v4Location(BOB))] } },
+      ],
+    };
+
+    expect(extractBeneficiariesFromXcmInstructions(forwarded)).toEqual([ALICE, BOB]);
+  });
+
   it('is unreadable when any deposit has no readable beneficiary', () => {
     const program = { v4: [depositAsset(v4Location(ALICE)), depositAsset({ parents: 0, interior: { here: null } })] };
 

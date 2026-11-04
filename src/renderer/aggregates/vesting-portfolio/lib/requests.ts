@@ -60,7 +60,7 @@ type ResolutionSource = {
   cache: Cache;
   /** Heads of the timeline chains — see the height check below. */
   blockHeights: Record<ChainId, BlockHeight>;
-  /** The wait for chains to connect has run out — see `GRACE_MS` in the model. */
+  /** The chains' deadline to connect has passed (`graceElapsed` in the model). */
   graceExpired: boolean;
 };
 
