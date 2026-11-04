@@ -1,8 +1,10 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+
+import { allureMetadata } from '../../utils/index';
 
 /**
  * Static checks of the web-build / CI configuration shipped with the release:
@@ -35,9 +37,9 @@ const parseNginxDirectives = (source: string): Directive[] => {
   return directives;
 };
 
-/** Cuts the `location …{ … }` blocks of the server block out of an nginx config. */
 const stripComments = (source: string) => source.replace(/#.*$/gm, '');
 
+/** Cuts the `location …{ … }` blocks of the server block out of an nginx config. */
 const parseLocationBlocks = (rawSource: string): { selector: string; body: string }[] => {
   const source = stripComments(rawSource);
   const blocks: { selector: string; body: string }[] = [];
@@ -61,6 +63,14 @@ const parseLocationBlocks = (rawSource: string): { selector: string; body: strin
 const SNIPPET_PATH = '/etc/nginx/snippets/response-headers.conf';
 
 describe('web build nginx response headers', () => {
+  beforeEach(async () => {
+    await allureMetadata({
+      epic: 'Release',
+      feature: 'Web build',
+      story: 'nginx response headers',
+    });
+  });
+
   const snippet = readText('docker/nginx/response-headers.conf');
   const serverConfig = readText('docker/nginx.conf');
   const headers = parseNginxDirectives(snippet).filter((directive) => directive.name === 'add_header');
@@ -74,7 +84,6 @@ describe('web build nginx response headers', () => {
       'Referrer-Policy': { value: 'strict-origin-when-cross-origin', flag: 'always' },
       'Content-Security-Policy': { value: "frame-ancestors 'none'", flag: 'always' },
     });
-    expect(Object.keys(byName)).not.toContain('X-XSS-Protection');
   });
 
   it('SP-23: the server block and every location that adds its own header include the snippet', () => {
@@ -165,6 +174,14 @@ const listYamlFiles = (directory: string): string[] => {
 };
 
 describe('system-test workflows compose invocation', () => {
+  beforeEach(async () => {
+    await allureMetadata({
+      epic: 'Release',
+      feature: 'Web build',
+      story: 'system-test workflows compose invocation',
+    });
+  });
+
   const action = parse(readText('.github/workflows/install-test/action.yml'));
 
   it('SP-25: install-test starts the services with the compose v2 plugin', () => {

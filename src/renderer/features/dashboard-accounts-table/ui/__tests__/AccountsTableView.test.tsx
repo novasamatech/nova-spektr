@@ -13,10 +13,10 @@ import { DEFAULT_SORT } from '../../lib/sorting';
 import { type AccountGroup } from '../../lib/types';
 import { AccountsTableView } from '../AccountsTableView';
 
-// Name resolution reaches into wallet/contact stores; the view only needs a
-// label per group header.
+// Name resolution reaches into wallet/contact stores; the group header hands
+// the resolved group name over as `title`, so the mock prints just that.
 vi.mock('@/widgets/NameResolver', () => ({
-  NamedAccount: ({ accountId }: { accountId: string }) => <span>{accountId}</span>,
+  NamedAccount: ({ title }: { title: string }) => <span>{title}</span>,
 }));
 
 const ACCOUNT = createAccountId('table-account') as AccountId;
@@ -104,7 +104,7 @@ describe('features/dashboard-accounts-table/ui/AccountsTableView', () => {
 
       expect(skeletonCount(container)).toBe(0);
       expect(screen.getByText('Chain')).toBeInTheDocument();
-      expect(screen.getByText(ACCOUNT)).toBeInTheDocument();
+      expect(screen.getByText(group.name)).toBeInTheDocument();
       expect(screen.getByText('Showing 1 of 1 rows in 1 accounts')).toBeInTheDocument();
       expect(screen.queryByText(/have not loaded yet/)).not.toBeInTheDocument();
     });

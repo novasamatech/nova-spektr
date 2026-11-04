@@ -176,11 +176,7 @@ async function signWithExtension(
 }
 
 /** What OperationMessageSign does with a signature from either signer. */
-async function submitSignature(
-  env: FeatureTestEnvironment,
-  signature: HexString,
-  accountId: Signer['account']['accountId'],
-) {
+function submitSignature(env: FeatureTestEnvironment, signature: HexString, accountId: Signer['account']['accountId']) {
   void allSettled(messageSignModel.signed, { scope: env.scope, params: { signature, accountId } });
 }
 
@@ -210,7 +206,6 @@ describe('Backend sign-in message', () => {
 
   afterEach(async () => {
     vi.unstubAllGlobals();
-    vi.restoreAllMocks();
     removeFakeExtension();
     clearCsrfToken();
     if (env) {
@@ -241,7 +236,7 @@ describe('Backend sign-in message', () => {
       expect(decodeSignRawData(signRequest)).toBe(V2_MESSAGE);
       expect(signature).toBe(SIGNATURE);
 
-      await submitSignature(env, signature!, extensionAccountId);
+      submitSignature(env, signature!, extensionAccountId);
       await env.waitForState(authModel.$isAuthenticated, (authenticated) => authenticated);
 
       // The verify body carries the signature over the challenge the backend issued; the
@@ -302,7 +297,7 @@ describe('Backend sign-in message', () => {
       expect(signRaw).toHaveBeenCalledTimes(1);
       expect(decodeSignRawData(signRaw.mock.calls[0]![0])).toBe(V1_MESSAGE);
 
-      await submitSignature(env, signature!, extensionAccountId);
+      submitSignature(env, signature!, extensionAccountId);
       await env.waitForState(authModel.$isAuthenticated, (authenticated) => authenticated);
 
       expect(requests['/auth/verify']![0]!.body).toEqual({
@@ -324,7 +319,7 @@ describe('Backend sign-in message', () => {
 
       const payload = await connectAndWaitForMessage(env);
       const signature = await signWithExtension(env, payload);
-      await submitSignature(env, signature!, extensionAccountId);
+      submitSignature(env, signature!, extensionAccountId);
 
       await env.waitForState(authModel.$authStep, (step) => step === 'error');
 
@@ -360,7 +355,7 @@ describe('Backend sign-in message', () => {
 
       const payload = await connectAndWaitForMessage(env);
       const signature = await signWithExtension(env, payload);
-      await submitSignature(env, signature!, extensionAccountId);
+      submitSignature(env, signature!, extensionAccountId);
       await env.waitForState(authModel.$isAuthenticated, (authenticated) => authenticated);
 
       // Pre-session requests had no token to send.
@@ -410,7 +405,7 @@ describe('Backend sign-in message', () => {
       expect(qrPayload.subarray(messageEnd)).toEqual(genesisHash);
 
       // The Vault returns a signature over those bytes through the QR reader.
-      await submitSignature(env, SIGNATURE, vaultAccountId);
+      submitSignature(env, SIGNATURE, vaultAccountId);
       await env.waitForState(authModel.$isAuthenticated, (authenticated) => authenticated);
 
       expect(requests['/auth/verify']![0]!.body).toEqual({

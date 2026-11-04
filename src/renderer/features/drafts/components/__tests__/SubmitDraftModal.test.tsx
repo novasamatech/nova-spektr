@@ -150,6 +150,8 @@ const fakeApi = {
   registry: { createType: () => fakeCall },
   consts: { multisig: { depositBase: new BN(20), depositFactor: new BN(1) } },
   genesisHash: { toHex: () => CHAIN_ID },
+  // The network domain polls the block height of every seeded api.
+  rpc: { chain: { getBlock: async () => ({ block: { header: { number: { toNumber: () => 1 } } } }) } },
 } as unknown as ApiPromise;
 
 const wrappedSentinel = {

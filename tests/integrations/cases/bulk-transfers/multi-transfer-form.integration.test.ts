@@ -25,7 +25,6 @@ import { MultiTransferCsvError, MultiTransferFieldError, MultiTransferFieldWarni
 import { getExtrinsic } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '@/features/multi-transfer/model/form';
-import { seedDiHandlers } from '@/features/multisig-operations/model/test-helpers';
 import {
   kusamaChain,
   polkadotChain,
@@ -34,7 +33,12 @@ import {
   senderBalance,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 // Same valid/invalid SS58 fixtures as src/renderer/features/multi-transfer/utils.test.ts
 const ADDRESS_1 = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9';
@@ -410,7 +414,7 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
       vi.spyOn(getExtrinsic, TransactionType.BATCH_ALL).mockReturnValue({
         method: { toHex: () => '0x00' },
       } as unknown as Extrinsic);
-      await seedDiHandlers(testEnv.scope);
+      await seedAccountHandlers(testEnv.scope);
     };
 
     it('SP-53: signs a file that fits as one batch and keeps Continue available', async () => {
@@ -450,9 +454,13 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
     it('SP-54: reports that not even one row fits', async () => {
       vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(0);
       env = await createWeightEnv();
+      await stubSubmitSeams(env);
 
       await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
       await env.waitForState(formModel.$maxRowsPerTransaction, (maxRows) => maxRows === 0);
+      // Only the batch verdict holds Continue back: the form and the transaction are valid.
+      await env.waitForState(formModel.$isTxValid, (valid) => valid);
+      expect(env.getState(formModel.form.$isValid)).toBe(true);
       expect(env.getState(formModel.$canSubmit)).toBe(false);
     });
 

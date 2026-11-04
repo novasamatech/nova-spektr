@@ -101,8 +101,12 @@ const createdDraft: Draft = {
   initiatorAccountId: SIGNER_ID,
 };
 
-// Only what the modal reads off the api outside a try/catch.
-const fakeApi = { runtimeVersion: { specVersion: { toNumber: () => 1 } } } as unknown as ApiPromise;
+// Only what the modal reads off the api outside a try/catch, plus the block
+// poll the network domain starts for every seeded api.
+const fakeApi = {
+  runtimeVersion: { specVersion: { toNumber: () => 1 } },
+  rpc: { chain: { getBlock: async () => ({ block: { header: { number: { toNumber: () => 1 } } } }) } },
+} as unknown as ApiPromise;
 
 const healthyBook = { accountId: createAccountId('backend-user'), accountName: 'Backend user', permissions: [] };
 
