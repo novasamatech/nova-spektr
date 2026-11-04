@@ -1,6 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
+import { blockRpcWebsockets } from '../../utils/blockWebsockets';
+
 // Real UI copy from `src/renderer/shared/i18n/locales/en.json`.
 const CUSTOM_OPERATION_BUTTON = 'Custom operation'; // navigation.customOperationLabel
 const MULTI_TRANSFER_ITEM = 'Multi-transfer'; // navigation.multiTransferLabel
@@ -24,7 +26,7 @@ export class MultiTransferModalWindow {
 
   public async blockWebsockets(): Promise<void> {
     await step('Block all RPC websockets', async () => {
-      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+      await blockRpcWebsockets(this.page);
     });
   }
 
