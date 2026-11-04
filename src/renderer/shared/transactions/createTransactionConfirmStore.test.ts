@@ -5,7 +5,13 @@ import { allSettled, createStore, fork } from 'effector';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { type ChainId, type Transaction, type Wallet, AccountType, TransactionType } from '@/shared/core';
-import { createAccountId, createPolkadotWallet, createVaultBaseAccount, polkadotChain } from '@/shared/mocks';
+import {
+  createAccountId,
+  createPolkadotWallet,
+  createVaultBaseAccount,
+  createVaultChainAccount,
+  polkadotChain,
+} from '@/shared/mocks';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 // eslint-disable-next-line boundaries/entry-point -- test-only runtime metadata fixture, not part of the domain API
 import { metadata } from '@/domains/network/transaction/service.mocks';
@@ -148,5 +154,33 @@ describe('createTransactionConfirmStore $isMultisigExists', () => {
     // An unknown hash is not a duplicate: the sign step blocks it with the
     // `call-hash-unavailable` reason instead of the "operation exists" alert.
     await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(false);
+  });
+
+  it('SP-62: raises no alert for unwrapped multishard transactions while other operations are pending', async () => {
+    const shards = ['shard-1', 'shard-2', 'shard-3'].map((id, index) =>
+      createVaultChainAccount(id, { walletId: 1, derivationPath: `//${index}` }),
+    );
+    // Every shard signs its own copy of the core call; there is no multisig in the route to wrap it.
+    const metas = shards.map((shard) => {
+      const shardTx = { ...coreTx, accountId: shard.accountId };
+
+      return { ...createMeta(shardTx, [shard], shardTx), signatory: shard };
+    });
+    const otherCall = getExtrinsic[coreTx.type]({ ...coreTx.args, value: '2000' }, api);
+
+    const store = createTransactionConfirmStore({
+      $wallets: createStore<Wallet[]>([wallet]),
+      $apis: createStore<Record<ChainId, ApiPromise> | null>({ [polkadotChain.chainId]: api }),
+      $multisigTransactions: createStore<MultisigOperation[]>([
+        createPendingOperation(otherCall.method.hash.toHex()),
+        createPendingOperation(coreCallHash(), '0x01'),
+      ]),
+    });
+
+    const scope = fork();
+    await allSettled(store.init, { scope, params: metas });
+
+    expect(Object.keys(scope.getState(store.$confirmMap))).toHaveLength(shards.length);
+    expect(scope.getState(store.$isMultisigExists)).toBe(false);
   });
 });
