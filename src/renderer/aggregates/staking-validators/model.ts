@@ -154,11 +154,14 @@ const $failedRequest = createStore<{ chainId: ChainId; era: EraIndex } | null>(n
   .reset(retryRequested);
 
 // A set that landed anyway - another consumer retried, the era moved on -
-// retires the failure it supersedes.
+// retires the failure it supersedes. Only a set of the failed era or a newer
+// one does: a late answer for the era before the rollover is not an answer for
+// the era that failed, and `readEraScoped` rejects it as stale anyway, so
+// dropping the failure on it would leave the chain pending with no Retry.
 sample({
   clock: validators.validatorsResource.push,
   source: $failedRequest,
-  filter: (failed, { params }) => nonNullable(failed) && failed.chainId === params.chainId,
+  filter: (failed, { params }) => nonNullable(failed) && failed.chainId === params.chainId && params.era >= failed.era,
   fn: () => null,
   target: $failedRequest,
 });
