@@ -1,6 +1,7 @@
 import { type Locator, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
+import { blockRpcWebsockets } from '../../utils/blockWebsockets';
 import { type DraftScenario } from '../../utils/buildDraftScenario';
 import { type BuiltData } from '../../utils/buildMultisigOperations';
 import { type OperationWithDescriptionScenario } from '../../utils/buildOperationWithDescription';
@@ -36,7 +37,7 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
 
       // Block RPC before the reload so no api connects → `$expectedChainIds`
       // stays empty → `multisigOperation.$list` serves the seeded cache verbatim.
-      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+      await blockRpcWebsockets(this.page);
 
       await this.page.waitForTimeout(2000); // let IndexedDB writes settle
 
@@ -268,10 +269,7 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
       // Allow only Asset Hub websockets — the app connects there and decodes the
       // transfer drafts; every other chain's ws is closed so the run stays fast.
       const allowedHosts = new Set(scenario.assetHubHosts);
-      await this.page.routeWebSocket(
-        (url) => !allowedHosts.has(url.host),
-        (ws) => ws.close(),
-      );
+      await blockRpcWebsockets(this.page, (url) => allowedHosts.has(url.host));
 
       await this.page.waitForTimeout(2000); // let IndexedDB writes settle
 
@@ -444,7 +442,7 @@ export class OperationsPage extends BasePage<OperationsPageElements> {
 
       // Block RPC — the operation renders from its cached transaction, and the
       // description arrives over the mocked HTTP backend, not the chain.
-      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+      await blockRpcWebsockets(this.page);
 
       await this.page.waitForTimeout(2000); // let IndexedDB writes settle
 

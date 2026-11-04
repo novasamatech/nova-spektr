@@ -2,6 +2,7 @@ import { type Locator, type Page, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
 import { TEST_IDS } from '@/shared/constants';
+import { blockRpcWebsockets } from '../../utils/blockWebsockets';
 
 // Real UI copy from `src/renderer/shared/i18n/locales/en.json`.
 const SETTINGS_SECTION_TITLE = 'External Address Book'; // settings.backendSync.title
@@ -30,7 +31,7 @@ export class BackendConnectionModalWindow {
    */
   public async blockWebsockets(): Promise<void> {
     await step('Block all RPC websockets', async () => {
-      await this.page.routeWebSocket(/.*/, (ws) => ws.close());
+      await blockRpcWebsockets(this.page);
     });
   }
 
