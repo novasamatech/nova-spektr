@@ -1,13 +1,45 @@
 import { type HexString } from '@/shared/core';
 
 /**
+ * Control characters and line/paragraph separators — replaced with a space so a
+ * multi-line value still reads as one line.
+ */
+const LINE_BREAKING_CHARS = /[\p{Cc}\p{Zl}\p{Zp}]/gu;
+
+/**
+ * Invisible formatting characters that are removed from a display name:
+ *
+ * - U+00AD soft hyphen
+ * - U+180E Mongolian vowel separator
+ * - U+200B zero width space
+ * - U+200E / U+200F left-to-right / right-to-left mark
+ * - U+202A–U+202E bidi embedding / override controls
+ * - U+2060–U+2064 word joiner and invisible operators
+ * - U+2066–U+206F bidi isolates and deprecated format controls
+ * - U+FEFF byte order mark / zero width no-break space
+ *
+ * ZERO WIDTH NON-JOINER (U+200C) and ZERO WIDTH JOINER (U+200D) are
+ * deliberately kept: they shape letters in Persian/Urdu/Kurdish text, build
+ * Indic conjuncts and join emoji sequences, so stripping them changes the word.
+ * The address book backend applies the same character set — keep both in sync.
+ */
+const INVISIBLE_CHARS = /[\u00AD\u180E\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/gu;
+
+/**
+ * Whitespace plus the kept joiners: a joiner at the edge of a name shapes
+ * nothing.
+ */
+const EDGE_CHARS = /^[\s\u200C\u200D]+|[\s\u200C\u200D]+$/gu;
+
+/**
  * Sanitizes a name shown to the user as a single line of text — contact, wallet
  * or identity name — by:
  *
  * - Replacing control characters and line/paragraph separators with a space
- * - Removing Unicode "Format" category characters (invisible chars, bidi
- *   controls, etc.)
- * - Trimming leading/trailing whitespace
+ * - Removing invisible formatting characters (zero width space, bidi controls,
+ *   BOM, soft hyphen, …) while keeping the joiners U+200C / U+200D
+ * - Trimming leading/trailing whitespace and joiners, so a name made of joiners
+ *   only sanitizes to an empty string
  * - Normalizing Unicode to NFC form
  *
  * @param name Name to sanitize
@@ -15,11 +47,7 @@ import { type HexString } from '@/shared/core';
  * @returns {String} Sanitized name
  */
 export const sanitizeDisplayName = (name: string): string => {
-  return name
-    .replace(/[\p{Cc}\p{Zl}\p{Zp}]/gu, ' ')
-    .replace(/\p{Cf}/gu, '')
-    .trim()
-    .normalize('NFC');
+  return name.replace(LINE_BREAKING_CHARS, ' ').replace(INVISIBLE_CHARS, '').replace(EDGE_CHARS, '').normalize('NFC');
 };
 
 /**

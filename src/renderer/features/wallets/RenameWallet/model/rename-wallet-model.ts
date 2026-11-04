@@ -4,7 +4,7 @@ import { storageService } from '@/shared/api/storage';
 import { type LocalContact, type Wallet, AccountNameType } from '@/shared/core';
 import { createForm } from '@/shared/forms/createForm';
 import { type ValidationError } from '@/shared/forms/types';
-import { toAddress } from '@/shared/lib/utils';
+import { sanitizeDisplayName, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -25,6 +25,29 @@ type SourceParams = {
   wallets: Wallet[];
 };
 
+const isSameWalletName = (name: string, wallet: Wallet): boolean => {
+  return name.toLowerCase() === wallet.name.toLowerCase();
+};
+
+const validateWalletName = (value: string, params: SourceParams): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  const name = sanitizeDisplayName(value);
+
+  if (!name) {
+    errors.push({ message: 'walletDetails.common.nameRequiredError' });
+    return errors;
+  }
+
+  const isSameName = isSameWalletName(name, params.walletToEdit);
+  const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== name.toLowerCase());
+
+  if (!isSameName && !isUnique) {
+    errors.push({ message: 'walletDetails.common.nameExistsError' });
+  }
+
+  return errors;
+};
+
 const $walletForm = createForm<{ name: string }>({
   fields: {
     name: {
@@ -34,23 +57,7 @@ const $walletForm = createForm<{ name: string }>({
           walletToEdit: $walletToEdit,
           wallets: walletModel.$wallets,
         }),
-        fn: (value: string, _: unknown, params: SourceParams): ValidationError[] => {
-          const errors: ValidationError[] = [];
-
-          if (!value) {
-            errors.push({ message: 'walletDetails.common.nameRequiredError' });
-            return errors;
-          }
-
-          const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
-          const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
-
-          if (!isSameName && !isUnique) {
-            errors.push({ message: 'walletDetails.common.nameExistsError' });
-          }
-
-          return errors;
-        },
+        fn: (value: string, _: unknown, params: SourceParams) => validateWalletName(value, params),
       }),
     },
   },
@@ -129,14 +136,21 @@ sample({
   target: $walletForm.fields.name.change,
 });
 
-sample({
+// The typed name is sanitized once here; the wallet, its accounts and the synced
+// local contact all receive this value.
+const submittedName = sample({
   clock: $walletForm.submit.doneData,
+  fn: ({ name }) => sanitizeDisplayName(name),
+});
+
+sample({
+  clock: submittedName,
   source: $walletToEdit,
-  filter: (walletToEdit: Wallet | null, { name }): boolean => {
+  filter: (walletToEdit: Wallet | null, name): boolean => {
     if (!walletToEdit) return false;
-    return name.toLowerCase() !== walletToEdit.name.toLowerCase();
+    return !isSameWalletName(name, walletToEdit);
   },
-  fn: (walletToEdit, { name }) => {
+  fn: (walletToEdit, name) => {
     const wallet = walletToEdit!;
     const accounts = walletUtils.isPolkadotVault(wallet)
       ? wallet.accounts
@@ -148,11 +162,11 @@ sample({
 });
 
 sample({
-  clock: $walletForm.submit.doneData,
+  clock: submittedName,
   source: $walletToEdit,
-  filter: (walletToEdit: Wallet | null, { name }): boolean => {
+  filter: (walletToEdit: Wallet | null, name): boolean => {
     if (!walletToEdit) return false;
-    return name.toLowerCase() === walletToEdit.name.toLowerCase();
+    return isSameWalletName(name, walletToEdit);
   },
   target: attach({
     source: $callbacks,
@@ -197,5 +211,6 @@ export const renameWalletModel = {
 
   __test: {
     syncContactsOnWalletRenameFx,
+    validateWalletName,
   },
 };
