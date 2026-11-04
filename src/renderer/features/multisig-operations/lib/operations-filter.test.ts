@@ -130,6 +130,26 @@ describe('operations-filter', () => {
       });
       expect(getFilterableTxType(op)).toBe(TransactionType.TRANSFER);
     });
+
+    test('SP-14: a batch mixing a transfer and a proxy call filters as unknown', () => {
+      const op = createMockOperation({
+        transaction: {
+          type: TransactionType.BATCH_ALL,
+          section: 'utility',
+          method: 'batchAll',
+          args: {
+            transactions: [
+              { type: TransactionType.TRANSFER, section: 'balances', method: 'transferKeepAlive', args: {} },
+              { type: TransactionType.ADD_PROXY, section: 'proxy', method: 'addProxy', args: { proxyType: 'Any' } },
+            ],
+          },
+        } as never,
+      });
+
+      expect(getFilterableTxType(op)).toBe('UNKNOWN_TYPE');
+      expect(matchesTxType(op, ['UNKNOWN_TYPE'])).toBe(true);
+      expect(matchesTxType(op, [TransactionType.TRANSFER])).toBe(false);
+    });
   });
 
   describe('matchesTab', () => {
