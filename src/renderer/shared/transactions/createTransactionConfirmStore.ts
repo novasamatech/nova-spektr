@@ -10,7 +10,7 @@ import {
   multisigOperationService,
 } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 
 import { activeOperationRoute } from './activeOperationRoute';
 
@@ -158,16 +158,14 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 
 /**
  * Whether the confirmed transaction would duplicate a multisig operation that
- * is still pending on the same chain.
+ * is still pending on the same chain. Answers only what it knows: a call whose
+ * hash cannot be computed is not reported as a duplicate — the sign step
+ * refuses it with the `call-hash-unavailable` block reason instead, so the user
+ * sees why signing stopped rather than a non-existent duplicate.
  */
 function isMultisigOperationPending(meta: TxConfirmInfo, api: ApiPromise, operations: MultisigOperation[]): boolean {
   const callHash = getMultisigCallHash(meta, api);
-
-  if (!callHash) {
-    // Nothing to compare against: block signing on a multisig route rather than
-    // risk creating a duplicate operation.
-    return meta.route.some(accountUtils.isAnyMultisigAccount);
-  }
+  if (!callHash) return false;
 
   return operations.some(
     (operation) =>

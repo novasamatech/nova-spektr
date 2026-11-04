@@ -3253,6 +3253,8 @@
       }
     },
     "blocked": {
+      "callHashUnavailableDescription": "The call could not be encoded, so it can't be checked against pending multisig operations. Go back and try again.",
+      "callHashUnavailableTitle": "We couldn't prepare this operation for signing",
       "cancel": "Cancel",
       "changeNode": "Change node",
       "close": "Close",

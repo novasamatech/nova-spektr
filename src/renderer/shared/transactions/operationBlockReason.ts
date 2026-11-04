@@ -27,6 +27,10 @@ export type OperationBlockReasonKind =
   // The call is heavier than one extrinsic may be and cannot be split (a
   // multisig call is signed exactly as co-signers agreed on).
   | 'extrinsic-too-heavy'
+  // The call could not be encoded, so there is nothing to sign and no call
+  // hash to check against pending multisig operations. A local verdict: the
+  // operation has to be rebuilt, retrying against the network changes nothing.
+  | 'call-hash-unavailable'
   | 'internal';
 
 export type OperationBlockReason = {
