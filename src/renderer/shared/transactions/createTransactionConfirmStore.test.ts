@@ -125,6 +125,12 @@ describe('createTransactionConfirmStore $isMultisigExists', () => {
     await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(true);
   });
 
+  it('raises no alert for a single-signer call that equals a pending multisig operation', async () => {
+    const meta = createMeta(coreTx, [signatory]);
+
+    await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(false);
+  });
+
   it('detects a pending duplicate of a plain multisig call wrapped in asMulti', async () => {
     const coreCall = getExtrinsic[coreTx.type](coreTx.args, api);
     const tx: Transaction = {
