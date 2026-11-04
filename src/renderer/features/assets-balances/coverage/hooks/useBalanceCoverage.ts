@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { CHAIN_ANSWER_DEADLINE_MS } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -14,7 +15,7 @@ import { getAccountsWithChains, getBalanceCoverage } from '../lib/balanceCoverag
  * than open-ended; after this the view renders what it has and says it is
  * incomplete. Matches the deadline the vesting aggregate gives chains.
  */
-export const BALANCE_COVERAGE_TIMEOUT_MS = 30_000;
+export const BALANCE_COVERAGE_TIMEOUT_MS = CHAIN_ANSWER_DEADLINE_MS;
 
 export type BalanceCoverageState = {
   /** Every selected account that can hold balances has at least one record. */

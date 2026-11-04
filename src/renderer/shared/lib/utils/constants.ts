@@ -63,6 +63,14 @@ export const MONTH = 30 * 24 * 60 * 60 * 1000;
 export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
 
 /**
+ * How long a chain is given to answer before a view stops waiting for it: a
+ * chain whose RPC is down keeps retrying for the life of the app, so waits on
+ * per-chain data (balances, vesting schedules) are bounded by this instead of
+ * open-ended.
+ */
+export const CHAIN_ANSWER_DEADLINE_MS = 30_000;
+
+/**
  * Signers hash payloads longer than this with blake2 and sign the hash instead
  * of the raw bytes.
  */
