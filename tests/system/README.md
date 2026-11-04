@@ -31,6 +31,10 @@ pnpm run start:renderer
 pnpm run test:system
 ```
 
+The global setup first opens the app once and waits for the onboarding page, so a cold dev server (re-bundling
+dependencies after a lockfile change) is warm before any test starts. Set `SYSTEM_TESTS_WARMUP_TIMEOUT_MS` to change the
+default 10-minute limit.
+
 5. To view the test results, use:
 
 ```bash
