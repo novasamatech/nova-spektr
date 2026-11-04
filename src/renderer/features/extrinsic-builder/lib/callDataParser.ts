@@ -4,7 +4,7 @@ import { type Chain } from '@/shared/core';
 
 import { type AmountUnit, fromBaseUnits, resolveAmountUnit } from './amountUnit';
 import { getCallMeta } from './palletIntrospection';
-import { type ParameterTypeDef } from './types';
+import { type ParameterTypeDef, type ParameterTypeDefField } from './types';
 
 export type ParsedCallData = {
   pallet: string;
@@ -15,10 +15,11 @@ export type ParsedCallData = {
 /**
  * Parse hex call data into pallet, call, and args. Used when switching from
  * Paste to Build tab. Amounts, nested ones included, are shown in the unit
- * `resolveAmountUnit` picks for the call — the same one the encoder uses — so
- * hex → form → hex is stable.
+ * `resolveAmountUnit` picks for the call — the same one the encoder uses — and
+ * enum payloads are keyed by field name, the shape the encoder reads, so hex →
+ * form → hex is stable.
  */
-export function parseCallData(api: ApiPromise, callDataHex: string, chain: Chain | null = null): ParsedCallData | null {
+export function parseCallData(api: ApiPromise, callDataHex: string, chain: Chain | null): ParsedCallData | null {
   try {
     if (!callDataHex || !callDataHex.startsWith('0x')) return null;
 
@@ -32,13 +33,12 @@ export function parseCallData(api: ApiPromise, callDataHex: string, chain: Chain
 
     // The unit may depend on other args (e.g. the asset id), so resolve it after decoding
     const unit = resolveAmountUnit({ chain, pallet: section, method, args: rawArgs });
-    if (!unit) return { pallet: section, call: method, args: rawArgs };
 
     const argDefs = getCallMeta(api, section, method)?.args ?? [];
     const args: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(rawArgs)) {
       const def = argDefs.find((argDef) => argDef.name === key)?.typeDef;
-      args[key] = def ? convertAmountsForDisplay(value, def, unit) : value;
+      args[key] = def ? toFormValue(value, def, unit) : value;
     }
 
     return { pallet: section, call: method, args };
@@ -63,27 +63,28 @@ function isOptionValue(value: unknown): value is OptionValue {
 }
 
 /**
- * Walk a decoded UI value along its type and convert every balance leaf from
- * base units to `unit` — the mirror of the encoder's conversion.
+ * Walk a decoded UI value along its type: key enum payloads by field name and
+ * convert every balance leaf from base units to `unit` — the mirror of the
+ * encoder's conversion.
  */
-function convertAmountsForDisplay(value: unknown, def: ParameterTypeDef, unit: AmountUnit): unknown {
+function toFormValue(value: unknown, def: ParameterTypeDef, unit: AmountUnit | null): unknown {
   switch (def.kind) {
     case 'balance':
       return typeof value === 'string' ? fromBaseUnits(value, unit) : value;
 
     case 'compact':
-      return def.inner ? convertAmountsForDisplay(value, def.inner, unit) : value;
+      return def.inner ? toFormValue(value, def.inner, unit) : value;
 
     case 'option':
       if (!isOptionValue(value) || !value.enabled || !def.inner) return value;
 
-      return { ...value, inner: convertAmountsForDisplay(value.inner, def.inner, unit) };
+      return { ...value, inner: toFormValue(value.inner, def.inner, unit) };
 
     case 'vec': {
       const inner = def.inner;
       if (!Array.isArray(value) || !inner) return value;
 
-      return value.map((item) => convertAmountsForDisplay(item, inner, unit));
+      return value.map((item) => toFormValue(item, inner, unit));
     }
 
     case 'struct':
@@ -96,16 +97,7 @@ function convertAmountsForDisplay(value: unknown, def: ParameterTypeDef, unit: A
       const variant = def.variants?.find((v) => v.name === value.variant);
       if (!variant || variant.fields.length === 0) return value;
 
-      const [firstField] = variant.fields;
-      // The decoder puts a variant's payload under key "0": a single field directly, several as a struct
-      if (variant.fields.length === 1 && firstField && !(firstField.name in value.values) && '0' in value.values) {
-        return { ...value, values: { '0': convertAmountsForDisplay(value.values['0'], firstField.typeDef, unit) } };
-      }
-      if (variant.fields.length > 1 && isRecord(value.values['0'])) {
-        return { ...value, values: { '0': convertFields(value.values['0'], variant.fields, unit) } };
-      }
-
-      return { ...value, values: convertFields(value.values, variant.fields, unit) };
+      return { ...value, values: convertFields(keyPayloadByField(value.values, variant.fields), variant.fields, unit) };
     }
 
     default:
@@ -113,16 +105,29 @@ function convertAmountsForDisplay(value: unknown, def: ParameterTypeDef, unit: A
   }
 }
 
-function convertFields(
-  value: unknown,
-  fields: { name: string; typeDef: ParameterTypeDef }[],
-  unit: AmountUnit,
-): unknown {
+/**
+ * The decoder puts a variant's payload under key "0": a single field directly,
+ * several named fields as a struct, several unnamed ones as an array. Re-key it
+ * by field name — the shape the encoder and the enum input read.
+ */
+function keyPayloadByField(values: Record<string, unknown>, fields: ParameterTypeDefField[]): Record<string, unknown> {
+  const keys = Object.keys(values);
+  if (keys.length !== 1 || keys[0] !== '0') return values;
+
+  const [firstField] = fields;
+  const payload = values['0'];
+  if (fields.length === 1 && firstField) return { [firstField.name]: payload };
+  if (Array.isArray(payload)) return Object.fromEntries(fields.map((field, index) => [field.name, payload[index]]));
+
+  return isRecord(payload) ? payload : values;
+}
+
+function convertFields(value: unknown, fields: ParameterTypeDefField[], unit: AmountUnit | null): unknown {
   if (Array.isArray(value)) {
     return value.map((item, index) => {
       const field = fields[index];
 
-      return field ? convertAmountsForDisplay(item, field.typeDef, unit) : item;
+      return field ? toFormValue(item, field.typeDef, unit) : item;
     });
   }
   if (!isRecord(value)) return value;
@@ -130,7 +135,7 @@ function convertFields(
   const converted: Record<string, unknown> = { ...value };
   for (const field of fields) {
     if (field.name in value) {
-      converted[field.name] = convertAmountsForDisplay(value[field.name], field.typeDef, unit);
+      converted[field.name] = toFormValue(value[field.name], field.typeDef, unit);
     }
   }
 

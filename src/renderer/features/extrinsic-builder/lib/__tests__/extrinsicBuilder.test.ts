@@ -189,7 +189,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         balances: { transfer: { hex: '0xabcd' } },
       });
 
-      const result = encodeCallData(api, 'balances', 'transfer', ['dest', '100']);
+      const result = encodeCallData(api, 'balances', 'transfer', ['dest', '100'], [], null);
 
       expect(result).toBe('0xabcd');
     });
@@ -197,13 +197,13 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
     it('should return null for non-existent pallet', () => {
       const api = createMockApi({});
 
-      expect(encodeCallData(api, 'nope', 'call', [])).toBeNull();
+      expect(encodeCallData(api, 'nope', 'call', [], [], null)).toBeNull();
     });
 
     it('should return null for non-existent call', () => {
       const api = createMockApi({ balances: { transfer: {} } });
 
-      expect(encodeCallData(api, 'balances', 'nope', [])).toBeNull();
+      expect(encodeCallData(api, 'balances', 'nope', [], [], null)).toBeNull();
     });
 
     it('should convert balance args using formatAmount', () => {
@@ -281,7 +281,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'system', 'remark', [{ variant: 'System', values: {} }], argDefs);
+      encodeCallData(api, 'system', 'remark', [{ variant: 'System', values: {} }], argDefs, null);
 
       expect(capturedArgs[0]).toBe('System');
     });
@@ -316,7 +316,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'xcm', 'send', [{ variant: 'V3', values: { location: '42' } }], argDefs);
+      encodeCallData(api, 'xcm', 'send', [{ variant: 'V3', values: { location: '42' } }], argDefs, null);
 
       expect(capturedArgs[0]).toEqual({ V3: '42' });
     });
@@ -354,7 +354,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'xcm', 'send', [{ variant: 'V2', values: { parents: '1', interior: '0' } }], argDefs);
+      encodeCallData(api, 'xcm', 'send', [{ variant: 'V2', values: { parents: '1', interior: '0' } }], argDefs, null);
 
       expect(capturedArgs[0]).toEqual({ V2: { parents: '1', interior: '0' } });
     });
@@ -383,7 +383,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'staking', 'nominate', [{ enabled: true, inner: '5GrwvaEF...' }], argDefs);
+      encodeCallData(api, 'staking', 'nominate', [{ enabled: true, inner: '5GrwvaEF...' }], argDefs, null);
 
       expect(capturedArgs[0]).toBe('5GrwvaEF...');
     });
@@ -412,7 +412,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         },
       ];
 
-      encodeCallData(api, 'staking', 'nominate', [{ enabled: false, inner: '' }], argDefs);
+      encodeCallData(api, 'staking', 'nominate', [{ enabled: false, inner: '' }], argDefs, null);
 
       expect(capturedArgs[0]).toBeNull();
     });
@@ -481,6 +481,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
           ],
         ],
         argDefs,
+        null,
       );
 
       expect(capturedArgs[0]).toEqual(['1', null]);
@@ -570,7 +571,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
       // No argDefs — triggers convertUnknownArg via "unknown" kind fallback
       const argDefs = [{ name: 'val', typeDef: { kind: 'unknown' as const, typeName: 'SomeType' } }];
 
-      encodeCallData(api, 'test', 'call', [{ variant: 'Transfer', values: { dest: 'alice' } }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ variant: 'Transfer', values: { dest: 'alice' } }], argDefs, null);
 
       expect(capturedArgs[0]).toEqual({ Transfer: 'alice' });
     });
@@ -590,7 +591,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
 
       const argDefs = [{ name: 'val', typeDef: { kind: 'unknown' as const, typeName: 'X' } }];
 
-      encodeCallData(api, 'test', 'call', [{ variant: 'None', values: {} }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ variant: 'None', values: {} }], argDefs, null);
 
       expect(capturedArgs[0]).toBe('None');
     });
@@ -610,10 +611,10 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
 
       const argDefs = [{ name: 'val', typeDef: { kind: 'unknown' as const, typeName: 'Y' } }];
 
-      encodeCallData(api, 'test', 'call', [{ enabled: true, inner: 'hello' }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ enabled: true, inner: 'hello' }], argDefs, null);
       expect(capturedArgs[0]).toBe('hello');
 
-      encodeCallData(api, 'test', 'call', [{ enabled: false, inner: 'hello' }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ enabled: false, inner: 'hello' }], argDefs, null);
       expect(capturedArgs[0]).toBeNull();
     });
 
@@ -643,6 +644,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
           ],
         ],
         argDefs,
+        null,
       );
 
       expect(capturedArgs[0]).toEqual(['A', { B: 'y' }]);
@@ -663,7 +665,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
 
       const argDefs = [{ name: 'val', typeDef: { kind: 'unknown' as const, typeName: 'W' } }];
 
-      encodeCallData(api, 'test', 'call', [{ foo: { variant: 'X', values: {} }, bar: 'plain' }], argDefs);
+      encodeCallData(api, 'test', 'call', [{ foo: { variant: 'X', values: {} }, bar: 'plain' }], argDefs, null);
 
       expect(capturedArgs[0]).toEqual({ foo: 'X', bar: 'plain' });
     });
@@ -719,7 +721,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         }),
       };
 
-      const result = parseCallData(api, '0xabcd');
+      const result = parseCallData(api, '0xabcd', null);
 
       expect(result).not.toBeNull();
       expect(result!.pallet).toBe('xcm');
@@ -774,7 +776,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         }),
       };
 
-      const result = parseCallData(api, '0x1234');
+      const result = parseCallData(api, '0x1234', null);
 
       expect(result).not.toBeNull();
       // Should NOT be hex bytes — should be parsed as array of enum elements
@@ -831,7 +833,7 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
         }),
       };
 
-      const result = parseCallData(api, '0xbeef');
+      const result = parseCallData(api, '0xbeef', null);
 
       expect(result).not.toBeNull();
       // Some(accountId) → { enabled: true, inner: address_string }
@@ -961,8 +963,8 @@ describe('features/extrinsic-builder/lib/extrinsicBuilder', () => {
     it('should return null for invalid hex', () => {
       const api = createMockApi({});
 
-      expect(parseCallData(api, '')).toBeNull();
-      expect(parseCallData(api, 'not-hex')).toBeNull();
+      expect(parseCallData(api, '', null)).toBeNull();
+      expect(parseCallData(api, 'not-hex', null)).toBeNull();
     });
   });
 });

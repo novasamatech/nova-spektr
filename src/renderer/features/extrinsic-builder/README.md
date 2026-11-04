@@ -1,6 +1,6 @@
 # Extrinsic Builder
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -46,7 +46,8 @@ Inputs are chosen by the resolved type of each argument:
     `convictionVoting`, `democracy`, `referenda`, `treasury` except `spend`, `bounties`, `childBounties`, `vesting`,
     `proxy`, `multisig`, `identity`, `crowdloan`) → the chain's native token;
   - `assets` / `poolAssets` → the asset whose id equals the call's `id` argument in the chain's asset list; the unit
-    follows the `id` as it is typed;
+    follows the `id` as it is typed. When an edit changes the unit (a different asset, or base units ↔ an asset), every
+    amount already typed in the call is **cleared**, never rescaled — the user re-enters it in the new unit;
   - anything else (`foreignAssets`, XCM pallets, `assetConversion`, `treasury.spend`, unknown pallets, or an asset id
     not in the list) → **no unit**.
 
@@ -86,8 +87,10 @@ Inputs are chosen by the resolved type of each argument:
    carrying stale nested hex.
 5. When the host supplies hex the builder did not produce itself (switching from the Paste tab, returning from Confirm),
    the builder decodes it and pre-fills the form. Amounts, nested ones included, are shown in the unit resolved for the
-   decoded call — the same resolution the encoder uses — at full precision, so hex → form → hex is unchanged. Hex that
-   cannot be decoded leaves the form as is.
+   decoded call — the same resolution the encoder uses — at full precision, and enum variant payloads are keyed by field
+   name (the shape the enum input and the encoder read), so for every argument whose type resolves, hex → form → hex is
+   unchanged. Pre-filling never clears amounts: the asset id and the amounts arrive together. Hex that cannot be decoded
+   leaves the form as is.
 
 ## Related
 

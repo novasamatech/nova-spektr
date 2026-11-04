@@ -13,8 +13,8 @@ export function encodeCallData(
   pallet: string,
   method: string,
   args: unknown[],
-  argDefs?: CallArgDef[],
-  unit: AmountUnit | null = null,
+  argDefs: CallArgDef[],
+  unit: AmountUnit | null,
 ): string | null {
   try {
     const section = api.tx[pallet];
@@ -24,7 +24,7 @@ export function encodeCallData(
     if (!callFn) return null;
 
     const convertedArgs = args.map((arg, i) => {
-      const def = argDefs?.[i]?.typeDef;
+      const def = argDefs[i]?.typeDef;
 
       return convertArgForEncoding(arg, def, unit);
     });
