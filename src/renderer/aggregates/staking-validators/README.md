@@ -1,6 +1,6 @@
 # Staking Validators
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -54,8 +54,9 @@ era **failed**, with a **retry** that re-issues it.
 
 The failure is remembered against the network and era it belongs to, not cleared by scoping elsewhere: coming back to a
 chain whose set failed shows the failure again rather than pretending the data is on its way. It retires by itself when
-a set for that chain lands anyway — another consumer retried, or the era moved on — so the aggregate never asks the user
-to retry something that has already succeeded.
+a set for that chain and that era (or a newer one) lands anyway — another consumer retried, or the era moved on — so the
+aggregate never asks the user to retry something that has already succeeded. A late answer for an older era does not
+count: it is stale on read, so the failure and its retry stay.
 
 ### A set belongs to one era
 
