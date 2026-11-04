@@ -5,7 +5,6 @@ import { isHex } from '@/shared/lib/utils';
 import { type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
-import { findCoreTransaction } from '@/entities/transaction';
 import { backendConfigurationModel } from '@/aggregates/backend';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
 import {
