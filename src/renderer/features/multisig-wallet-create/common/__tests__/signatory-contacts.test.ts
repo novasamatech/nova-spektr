@@ -47,6 +47,17 @@ describe('getSignatoryContactChanges', () => {
     expect(updated).toEqual([localContact({ name: 'Alice' })]);
   });
 
+  it('SP-06: leaves a local contact alone when the typed name is unchanged', () => {
+    const { created, updated } = getSignatoryContactChanges({
+      signatories: [signer, { ...external, name: 'Old Alice' }],
+      contacts: [localContact()],
+      accounts: [],
+    });
+
+    expect(created).toEqual([]);
+    expect(updated).toEqual([]);
+  });
+
   it('should leave an address book contact untouched', () => {
     const { created, updated } = getSignatoryContactChanges({
       signatories: [signer, external],
