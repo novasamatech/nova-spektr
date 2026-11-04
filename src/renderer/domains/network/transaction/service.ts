@@ -2,7 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { type Registry } from '@polkadot/types/types';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BN, BN_ZERO, compactFromU8a, hexToU8a } from '@polkadot/util';
+import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
@@ -537,6 +538,40 @@ const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, regi
   return errorInfo;
 };
 
+/**
+ * Signers hash payloads longer than this with blake2 and sign the hash instead
+ * of the raw bytes.
+ */
+const SIGNED_PAYLOAD_HASH_THRESHOLD = 256;
+
+/**
+ * Bytes a signer actually signs for an encoded `ExtrinsicPayload`: the same
+ * payload with `method` inlined, i.e. without its compact length prefix
+ * (`ExtrinsicPayload.toU8a({ method: true })`).
+ */
+function getSignedBytes(encodedPayload: Uint8Array): Uint8Array {
+  const [prefixLength] = compactFromU8a(encodedPayload);
+
+  return encodedPayload.subarray(prefixLength);
+}
+
+/**
+ * Checks that `signature` was made by `accountId` over the encoded
+ * `ExtrinsicPayload` that was handed to the signer. Strips the method length
+ * prefix and hashes payloads longer than 256 bytes, exactly like signers do, so
+ * callers never need to know which bytes were signed.
+ */
+function verifyPayloadSignature(encodedPayload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
+  const signedBytes = getSignedBytes(encodedPayload);
+  const message = signedBytes.length > SIGNED_PAYLOAD_HASH_THRESHOLD ? blake2AsU8a(signedBytes) : signedBytes;
+
+  try {
+    return signatureVerify(message, signature, accountId).isValid;
+  } catch {
+    return false;
+  }
+}
+
 type SubmitResult =
   | {
       executed: true;
@@ -671,5 +706,6 @@ export const transactionService = {
   getCoreCallData,
 
   splitExtrinsic,
+  verifyPayloadSignature,
   submitExtrinsic,
 };

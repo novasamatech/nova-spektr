@@ -1,9 +1,8 @@
-import { t } from 'i18next';
 import { type ComponentProps, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ValidationErrors, cnTw } from '@/shared/lib/utils';
+import { ValidationErrorLabels, ValidationErrors, cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, Countdown, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Select, ThemeProvider } from '@/shared/ui-kit';
 import { type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit/QrReader/types';
@@ -15,11 +14,10 @@ import { QrSignatureReader } from './QrSignatureReader';
 import { SignatureReaderError } from './SignatureReaderError';
 import './style.css';
 
-const ValidationErrorLabels = {
-  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
-  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
-  [ValidationErrors.EXPIRED]: t('signing.qrNotValid'),
+// the scanned QR, not the transaction, is what expired from the user's point of view
+const QrValidationErrorLabels: Record<ValidationErrors, string> = {
+  ...ValidationErrorLabels,
+  [ValidationErrors.EXPIRED]: 'signing.qrNotValid',
 };
 
 type ScanResult = HexString | HexString[];
@@ -137,7 +135,7 @@ export const QrReaderWrapper = ({ onResult, countdown, validationError, isMultiF
           <div className="z-10 mt-3 h-4.5">
             {validationError && (
               <FootnoteText className="flex h-full max-w-[320px] items-center justify-center text-center text-white">
-                {t(ValidationErrorLabels[validationError as keyof typeof ValidationErrorLabels])}
+                {t(QrValidationErrorLabels[validationError])}
               </FootnoteText>
             )}
           </div>

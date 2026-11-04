@@ -11,7 +11,6 @@ import {
   type Timepoint,
   type Transaction,
 } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 // =====================================================
 // =========== ITransactionService interface ===========
@@ -21,7 +20,6 @@ export type ITransactionService = {
   getExtrinsicWeight: (extrinsic: SubmittableExtrinsic<'promise'>) => Promise<Weight>;
   getTxWeight: (transaction: Transaction, api: ApiPromise) => Promise<Weight>;
   decodeCallData: (api: ApiPromise, accountId: Address, callData: CallData) => DecodedTransaction;
-  verifySignature: (payload: Uint8Array, signature: HexString, accountId: AccountId) => boolean;
 };
 
 // =====================================================

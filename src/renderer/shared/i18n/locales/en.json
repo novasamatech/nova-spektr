@@ -3095,6 +3095,12 @@
     },
     "submitError": "Operation Failed",
     "submitErrorButton": "Close",
+    "submitErrors": {
+      "buildFailed": "The signed transactions could not be prepared for submission. Please sign the operation again.",
+      "nothingSigned": "Nothing was signed. Please sign the operation again.",
+      "signatureCountMismatch": "The number of signatures does not match the number of signed transactions. Please sign the operation again.",
+      "unknownSignatory": "A signature was not made by a signatory of this operation. Please sign the operation again."
+    },
     "submitCloseConfirmTitle": "Leave submission?",
     "submitCloseConfirmDescription": "The transaction is being submitted. Leaving now may cause the transaction to fail.",
     "submitCloseConfirmLeave": "Leave",
