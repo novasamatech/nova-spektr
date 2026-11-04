@@ -502,6 +502,54 @@ describe('stakingValidators era rollover', () => {
     expect(scope.getState(stakingValidators.$failed)).toBe(true);
     expect(scope.getState(stakingValidators.$validatorList)).toEqual([]);
   });
+
+  it('keeps the failure when an older-era answer arrives after a failed newer-era request', async () => {
+    // A request started before the rollover can land after the new era's
+    // request has already given up. Its set is stale for the active era, so it
+    // cannot stand in for the failed one - and must not retire the failure.
+    const scope = await forkRollover();
+
+    await allSettled($eraCache, { scope, params: { [CHAIN]: NEXT_ERA } });
+    await allSettled(validatorsFail, {
+      scope,
+      params: {
+        params: { chainId: CHAIN, api, era: NEXT_ERA, timelineApi: api },
+        error: new Error('rpc'),
+      },
+    });
+    await allSettled(validatorsPush, {
+      scope,
+      params: {
+        params: { chainId: CHAIN, api, era: ERA, timelineApi: api },
+        result: toValidatorMap([makeValidator(1)]),
+      },
+    });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(true);
+    expect(scope.getState(stakingValidators.$pending)).toBe(true);
+  });
+
+  it('retires the failure once the set of the failed era lands', async () => {
+    const scope = await forkRollover();
+
+    await allSettled($eraCache, { scope, params: { [CHAIN]: NEXT_ERA } });
+    await allSettled(validatorsFail, {
+      scope,
+      params: {
+        params: { chainId: CHAIN, api, era: NEXT_ERA, timelineApi: api },
+        error: new Error('rpc'),
+      },
+    });
+    await allSettled(validatorsPush, {
+      scope,
+      params: {
+        params: { chainId: CHAIN, api, era: NEXT_ERA, timelineApi: api },
+        result: toValidatorMap([makeValidator(2)]),
+      },
+    });
+
+    expect(scope.getState(stakingValidators.$failed)).toBe(false);
+  });
 });
 
 function relaxed(patch: Partial<CriteriaFlags>): CriteriaFlags {

@@ -15,6 +15,7 @@ export {
   getPositionAccess,
 } from './position-access';
 export { getBlockedReasonKey, isViewOnly } from './blocked-reason';
+export { getClaimBlockedReasonKey } from './claim-chip';
 export {
   EXPIRY_CRITICAL_DAYS,
   EXPIRY_WARNING_DAYS,
