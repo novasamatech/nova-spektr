@@ -71,6 +71,11 @@ export const REASON_COPY_KEYS: Record<OperationBlockReasonKind, ReasonCopyKeys> 
     descriptionKey: 'operations.blocked.extrinsicTooHeavyDescription',
     actions: ['close'],
   },
+  'call-hash-unavailable': {
+    titleKey: 'operations.blocked.callHashUnavailableTitle',
+    descriptionKey: 'operations.blocked.callHashUnavailableDescription',
+    actions: ['close'],
+  },
   internal: {
     titleKey: 'operations.blocked.internalTitle',
     descriptionKey: 'operations.blocked.internalDescription',

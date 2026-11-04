@@ -125,12 +125,28 @@ describe('createTransactionConfirmStore $isMultisigExists', () => {
     await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(true);
   });
 
-  it('blocks signing on a multisig route when the call hash cannot be computed', async () => {
+  it('detects a pending duplicate of a plain multisig call wrapped in asMulti', async () => {
+    const coreCall = getExtrinsic[coreTx.type](coreTx.args, api);
+    const tx: Transaction = {
+      type: TransactionType.MULTISIG_AS_MULTI,
+      chainId: polkadotChain.chainId,
+      accountId: MULTISIG_ACCOUNT_ID,
+      args: { call: coreCall.method.toHex(), callHash: coreCallHash() },
+    };
+
+    const meta = createMeta(tx, [multisig, signatory]);
+
+    await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(true);
+  });
+
+  it('does not report a duplicate on a multisig route when the call hash cannot be computed', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const brokenTx: Transaction = { ...coreTx, type: TransactionType.ASSET_TRANSFER, args: {} };
 
     const meta = createMeta(brokenTx, [multisig, signatory], brokenTx);
 
-    await expect(getIsMultisigExists(meta, [])).resolves.toBe(true);
+    // An unknown hash is not a duplicate: the sign step blocks it with the
+    // `call-hash-unavailable` reason instead of the "operation exists" alert.
+    await expect(getIsMultisigExists(meta, [createPendingOperation(coreCallHash())])).resolves.toBe(false);
   });
 });

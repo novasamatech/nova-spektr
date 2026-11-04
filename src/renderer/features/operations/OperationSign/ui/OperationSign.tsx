@@ -25,8 +25,8 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   const blocked = useUnit(signModel.$blocked);
 
   if (blocked) {
-    // Nothing to retry: the call itself is too heavy, so the only way out is back
-    // to the step that built it.
+    // Nothing to retry: the call itself is unusable (cannot be encoded, or too
+    // heavy to sign), so the only way out is back to the step that built it.
     return (
       <div className="px-4 pb-4">
         <OperationBlocked reason={blocked.reason} chain={blocked.chain} onRetry={onGoBack} onClose={onGoBack} />
