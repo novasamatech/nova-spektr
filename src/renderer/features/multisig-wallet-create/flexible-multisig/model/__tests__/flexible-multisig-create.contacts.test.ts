@@ -48,4 +48,42 @@ describe('flexible multisig flow signatory contacts', () => {
     ]);
     expect(updateContacts).not.toHaveBeenCalled();
   });
+
+  it('SP-08: does not create contacts again while the previous creation is still pending', async () => {
+    let finishFirstCreate: (contacts: never[]) => void = () => {};
+    const createContacts = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise<never[]>(resolve => (finishFirstCreate = resolve)))
+      .mockResolvedValue([]);
+    const scope = fork({
+      values: [[accounts.__test.$list, [ownAccount]]],
+      handlers: [
+        [contactModel.effects.createContactsFx, createContacts],
+        [contactModel.effects.updateContactsFx, vi.fn().mockResolvedValue([])],
+      ],
+    });
+
+    const rows = [
+      { index: 0, name: 'Me', address: toAddress(signerId), walletId: '1' },
+      { index: 1, name: 'Alice', address: toAddress(externalId) },
+    ];
+    for (const row of rows) {
+      await allSettled(signatoryModel.events.changeSignatory, { scope, params: row });
+    }
+
+    // First creation stays in flight; `allSettled` only resolves once the handler does.
+    const firstFlow = allSettled(signModel.signed, { scope, params: [] as never });
+    expect(createContacts).toHaveBeenCalledTimes(1);
+
+    // Second creation with the same signatories while the first is pending.
+    const secondFlow = allSettled(signModel.signed, { scope, params: [] as never });
+    expect(createContacts).toHaveBeenCalledTimes(1);
+
+    finishFirstCreate([]);
+    await Promise.all([firstFlow, secondFlow]);
+
+    // Once the first creation is settled, a further creation writes contacts again.
+    await allSettled(signModel.signed, { scope, params: [] as never });
+    expect(createContacts).toHaveBeenCalledTimes(2);
+  });
 });

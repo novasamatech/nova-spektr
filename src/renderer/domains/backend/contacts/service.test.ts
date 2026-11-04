@@ -4,7 +4,9 @@ const { authFetchMock } = vi.hoisted(() => ({ authFetchMock: vi.fn() }));
 
 vi.mock('@/shared/api/backend-fetch', () => ({ authFetch: authFetchMock }));
 
-import { isBackendContact } from '@/shared/core';
+import { AccountNameType, CryptoType, SigningType, isBackendContact } from '@/shared/core';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { type AnyAccount, accountService } from '@/domains/network';
 
 import { HttpError, backendContactsService } from './service';
 
@@ -353,5 +355,44 @@ describe('backendContactsService.fetchAllContacts display names', () => {
     const [contact] = await backendContactsService.fetchAllContacts('https://backend.test');
 
     expect(contact!.name).toBe('José');
+  });
+
+  it('SP-30: a name wrapped in an RTL override and a zero-width space resolves and searches as the clean name', async () => {
+    authFetchMock.mockResolvedValueOnce(jsonResponse({ data: [rawContact({ name: '\u202EAlice\u200B' })], total: 1 }));
+
+    const contacts = await backendContactsService.fetchAllContacts('https://backend.test');
+    const [contact] = contacts;
+    expect(contact!.name).toBe('Alice');
+
+    // A watch-only style account for the same address, named by its short address like a synced one.
+    const account: AnyAccount = {
+      id: 'alice',
+      type: 'universal',
+      accountId: contact!.accountId,
+      name: toShortAddress(toAddress(contact!.accountId), 5),
+      nameType: AccountNameType.GENERATED,
+      walletId: 1,
+      signingType: SigningType.WATCH_ONLY,
+      cryptoType: CryptoType.SR25519,
+      createdAt: 0,
+    };
+
+    const displayedName = accountService.resolveAccountName({
+      accountId: account.accountId,
+      accounts: [account],
+      contacts,
+      identities: {},
+      chains: {},
+    });
+    expect(displayedName).toBe('Alice');
+
+    const found = accountService.searchAccounts({
+      accounts: [account],
+      query: 'Alice',
+      resolvedAccounts: [{ id: account.id, name: displayedName }],
+      resolvedWallets: [],
+      addressPrefix: 0,
+    });
+    expect(found).toEqual([account]);
   });
 });
