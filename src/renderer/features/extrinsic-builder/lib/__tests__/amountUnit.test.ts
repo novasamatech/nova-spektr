@@ -1,5 +1,6 @@
 import { type Chain } from '@/shared/core';
-import { fromBaseUnits, resolveAmountUnit, toBaseUnits } from '../amountUnit';
+import { clearAmountsOnUnitChange, fromBaseUnits, resolveAmountUnit, toBaseUnits } from '../amountUnit';
+import { type CallArgDef } from '../types';
 
 const assetHub = {
   assets: [
@@ -53,6 +54,51 @@ describe('features/extrinsic-builder/lib/amountUnit', () => {
     it('returns null without a chain or call', () => {
       expect(resolveAmountUnit({ chain: null, pallet: 'balances', method: 'transfer', args: {} })).toBeNull();
       expect(resolveAmountUnit({ chain: assetHub, pallet: 'balances', method: null, args: {} })).toBeNull();
+    });
+
+    it('falls back to base units on a chain without assets instead of throwing', () => {
+      const bareChain = { assets: [] } as unknown as Chain;
+
+      expect(resolveAmountUnit({ chain: bareChain, pallet: 'balances', method: 'transfer', args: {} })).toBeNull();
+    });
+  });
+
+  describe('clearAmountsOnUnitChange', () => {
+    const balance = (name: string): CallArgDef => ({ name, typeDef: { kind: 'balance', typeName: 'T::Balance' } });
+    const argDefs: CallArgDef[] = [
+      { name: 'id', typeDef: { kind: 'primitive', typeName: 'u32', primitiveType: 'u32' } },
+      { name: 'target', typeDef: { kind: 'accountId', typeName: 'MultiAddress' } },
+      balance('amount'),
+      {
+        name: 'limits',
+        typeDef: {
+          kind: 'struct',
+          typeName: 'Limits',
+          fields: [
+            { name: 'min', typeDef: { kind: 'compact', typeName: 'Compact<Balance>', inner: balance('min').typeDef } },
+          ],
+        },
+      },
+    ];
+    const call = { chain: assetHub, pallet: 'assets', method: 'transfer', argDefs };
+
+    it('drops every amount argument, nested ones included, when the unit changes', () => {
+      const prev = { id: '', target: 'alice', amount: '1500000', limits: { min: '1' } };
+
+      expect(clearAmountsOnUnitChange(prev, { ...prev, id: '1984' }, call)).toEqual({ id: '1984', target: 'alice' });
+    });
+
+    it('drops the amount when the unit changes between two assets', () => {
+      const prev = { id: '1984', amount: '1.5' };
+
+      expect(clearAmountsOnUnitChange(prev, { ...prev, id: '42' }, call)).toEqual({ id: '42' });
+    });
+
+    it('returns the next values untouched while the unit stays the same', () => {
+      const prev = { id: '1984', amount: '1.5' };
+      const next = { ...prev, target: 'alice' };
+
+      expect(clearAmountsOnUnitChange(prev, next, call)).toBe(next);
     });
   });
 

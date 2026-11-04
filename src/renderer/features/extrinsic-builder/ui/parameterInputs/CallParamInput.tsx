@@ -6,6 +6,7 @@ import { FootnoteText } from '@/shared/ui';
 import { Box, Combobox, Input } from '@/shared/ui-kit';
 import { useComboboxFilter } from '../../hooks/useComboboxFilter';
 import {
+  clearAmountsOnUnitChange,
   encodeCallData,
   getCallMeta,
   getCallNames,
@@ -100,7 +101,11 @@ const NestedBuilder = memo(({ api, value: hexValue, depth, onChange }: NestedBui
   const handleParamChange = useCallback(
     (name: string, paramValue: unknown) => {
       setParamValues((prev) => {
-        const updated = { ...prev, [name]: paramValue };
+        const updated = clearAmountsOnUnitChange(
+          prev,
+          { ...prev, [name]: paramValue },
+          { chain, pallet, method: call, argDefs: callMeta?.args ?? [] },
+        );
 
         if (api && pallet && call && callMeta) {
           const args = callMeta.args.map((def) => updated[def.name]);

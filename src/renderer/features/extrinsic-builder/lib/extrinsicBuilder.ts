@@ -14,4 +14,4 @@ export { getCallMeta, getCallNames, getPalletNames } from './palletIntrospection
 export { type ParsedCallData, parseCallData } from './callDataParser';
 export { encodeCallData } from './callDataEncoder';
 export { resolveTypeDef } from './typeResolver';
-export { type AmountUnit, resolveAmountUnit } from './amountUnit';
+export { type AmountUnit, clearAmountsOnUnitChange, resolveAmountUnit } from './amountUnit';

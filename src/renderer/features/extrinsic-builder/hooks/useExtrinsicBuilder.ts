@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Chain } from '@/shared/core';
 import { useDebouncedCallback } from '@/shared/lib/hooks';
 import {
+  clearAmountsOnUnitChange,
   encodeCallData,
   getCallMeta,
   getCallNames,
@@ -120,9 +121,17 @@ export function useExtrinsicBuilder({ api, chain, onCallDataChange, initialCallD
     lastOutputRef.current = null;
   }, []);
 
-  const handleParamChange = useCallback((name: string, value: unknown) => {
-    setParamValues((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  // Only a user edit can move the unit: a prefill from hex sets the asset id and the amounts together
+  const handleParamChange = useCallback(
+    (name: string, value: unknown) => {
+      setParamValues((prev) => {
+        const next = { ...prev, [name]: value };
+
+        return clearAmountsOnUnitChange(prev, next, { chain, pallet, method: call, argDefs: callMeta?.args ?? [] });
+      });
+    },
+    [chain, pallet, call, callMeta],
+  );
 
   const reset = useCallback(() => {
     setPallet(null);
