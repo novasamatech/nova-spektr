@@ -380,7 +380,7 @@ describe('createDraftModel · unknown recipient gate', () => {
     const scope = forkConnected(true);
     await open(scope, seed);
 
-    expect(scope.getState(createDraftModel.$destinationAccountId)).toBe(STRANGER);
+    expect(scope.getState(createDraftModel.$destinationAccountIds)).toEqual([STRANGER]);
     expect(scope.getState(createDraftModel.$recipientWarning)).toBe('unknown');
     expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(false);
 
@@ -388,11 +388,28 @@ describe('createDraftModel · unknown recipient gate', () => {
     expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
   });
 
+  it('finds an unknown recipient inside a batch', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue({
+      type: TransactionType.BATCH_ALL,
+      section: 'utility',
+      method: 'batchAll',
+      chainId: CHAIN_A,
+      address: '',
+      args: { transactions: [transferToStranger] },
+    } as unknown as DecodedTransaction);
+    const scope = forkConnected(true);
+    await open(scope, seed);
+
+    expect(scope.getState(createDraftModel.$destinationAccountIds)).toEqual([STRANGER]);
+    expect(scope.getState(createDraftModel.$recipientWarning)).toBe('unknown');
+    expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(false);
+  });
+
   it('accepts a draft with no recipient to check', async () => {
     const scope = forkConnected(true);
     await open(scope, seed);
 
-    expect(scope.getState(createDraftModel.$destinationAccountId)).toBeNull();
+    expect(scope.getState(createDraftModel.$destinationAccountIds)).toEqual([]);
     expect(scope.getState(createDraftModel.$recipientWarning)).toBe('none');
     expect(scope.getState(createDraftModel.$recipientRiskAccepted)).toBe(true);
   });

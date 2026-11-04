@@ -1,116 +1,146 @@
-import { convertLocationToUrlJson } from '@paraspell/xcm-analyser';
-import { z } from 'zod';
-
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
+import { toAccountId, validateAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type JsonObject = Record<string, unknown>;
-const isRecord = (value: unknown): value is JsonObject => value !== null && typeof value === 'object';
-
-/**
- * Capitalizes first letter and normalizes id suffixes (accountId32 ->
- * AccountId32)
- */
-const capitalizeKey = (key: string): string => key.charAt(0).toUpperCase() + key.slice(1).replace(/id(\d+)/i, 'Id$1');
-
-const transformInteriorElement = (element: JsonObject): JsonObject =>
-  Object.fromEntries(Object.entries(element).map(([key, value]) => [capitalizeKey(key), value]));
+const isRecord = (value: unknown): value is JsonObject =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
 
 /** Matches XCM junction keys like x1, x2, X3, etc. */
 const isJunctionKey = (key: string): boolean => /^x\d+$/i.test(key);
 
-const transformInterior = (interior: JsonObject): JsonObject => {
-  const result: JsonObject = {};
+/** Matches a VersionedLocation / VersionedXcm wrapper key like v3, V4. */
+const isVersionKey = (key: string): boolean => /^v\d+$/i.test(key);
 
-  for (const [key, value] of Object.entries(interior)) {
-    if (!isJunctionKey(key) || !Array.isArray(value) || value.length === 0) {
-      result[key] = value;
+/** Junctions that name an account, and the field holding its key. */
+const ACCOUNT_JUNCTION_FIELDS: Record<string, string> = {
+  accountid32: 'id',
+  accountkey20: 'key',
+};
+
+/**
+ * Accepts either a decoded JSON object or its string form (the call data
+ * decoder stringifies every arg). Anything that isn't valid JSON is
+ * `undefined`.
+ */
+const parseXcmValue = (value: unknown): unknown => {
+  if (typeof value !== 'string') return value;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+};
+
+/** `{ v4: inner }` → `inner`; anything else is returned as is. */
+const unwrapVersioned = (value: unknown): unknown => {
+  if (!isRecord(value)) return value;
+
+  const keys = Object.keys(value);
+
+  return keys.length === 1 && isVersionKey(keys[0]!) ? value[keys[0]!] : value;
+};
+
+const getJunctionAccountId = (junction: unknown): AccountId | undefined => {
+  if (!isRecord(junction)) return undefined;
+
+  for (const [name, body] of Object.entries(junction)) {
+    const field = ACCOUNT_JUNCTION_FIELDS[name.toLowerCase()];
+    if (!field || !isRecord(body)) continue;
+
+    const key = body[field];
+
+    return typeof key === 'string' && validateAddress(key) ? toAccountId(key) : undefined;
+  }
+
+  return undefined;
+};
+
+/**
+ * Account named by a location's interior (`AccountId32` / `AccountKey20`
+ * junction). Takes a location object, a `{ vN: location }` wrapper, or the JSON
+ * string of either, in any XCM version (v3 `X1` is a single junction, v4+ an
+ * array). `undefined` when there is no readable account.
+ */
+export const extractAccountIdFromLocation = (value: unknown): AccountId | undefined => {
+  const location = unwrapVersioned(parseXcmValue(value));
+  if (!isRecord(location) || !isRecord(location.interior)) return undefined;
+
+  for (const [key, junctions] of Object.entries(location.interior)) {
+    if (!isJunctionKey(key)) continue;
+
+    for (const junction of Array.isArray(junctions) ? junctions : [junctions]) {
+      const accountId = getJunctionAccountId(junction);
+      if (accountId) return accountId;
+    }
+  }
+
+  return undefined;
+};
+
+/** Instructions whose body is a nested program (`[Instruction]`). */
+const NESTED_PROGRAM_INSTRUCTIONS = new Set(['setappendix', 'seterrorhandler']);
+/** Instruction fields holding a program to run on another chain. */
+const NESTED_PROGRAM_FIELDS = ['xcm', 'remoteXcm'];
+/** Instructions that run an opaque call on the destination: unreadable. */
+const OPAQUE_INSTRUCTIONS = new Set(['transact']);
+
+type Beneficiaries = { accountIds: AccountId[]; unresolved: boolean };
+
+const collectProgramBeneficiaries = (program: unknown, into: Beneficiaries): void => {
+  if (!Array.isArray(program)) {
+    into.unresolved = true;
+
+    return;
+  }
+
+  // Direct deposits first, nested programs (appendix, remote chain) after —
+  // the first result is the recipient worth showing.
+  const nested: unknown[] = [];
+
+  for (const instruction of program) {
+    if (!isRecord(instruction)) {
+      into.unresolved = true;
       continue;
     }
 
-    const firstElement = value[0];
-    if (typeof firstElement === 'object' && nonNullable(firstElement)) {
-      result[key.toUpperCase()] = transformInteriorElement(firstElement);
+    for (const [name, body] of Object.entries(instruction)) {
+      const instructionName = name.toLowerCase();
+
+      if (OPAQUE_INSTRUCTIONS.has(instructionName)) into.unresolved = true;
+      if (NESTED_PROGRAM_INSTRUCTIONS.has(instructionName)) nested.push(body);
+      if (!isRecord(body)) continue;
+
+      if ('beneficiary' in body) {
+        const accountId = extractAccountIdFromLocation(body.beneficiary);
+        if (accountId) into.accountIds.push(accountId);
+        else into.unresolved = true;
+      }
+
+      for (const field of NESTED_PROGRAM_FIELDS) {
+        if (field in body) nested.push(body[field]);
+      }
     }
   }
 
-  return result;
-};
-
-/**
- * Transforms the internal XCM location object format to the format expected by
- * ParaSpell library. Converts lowercase keys (x1, accountId32) to uppercase
- * (X1, AccountId32) and array format to object format.
- */
-export const transformLocationToLibraryFormat = (location: JsonObject): unknown => {
-  if (!isRecord(location.interior)) return location;
-
-  try {
-    return {
-      ...('parents' in location && { parents: location.parents }),
-      interior: transformInterior(location.interior),
-    };
-  } catch {
-    return location;
+  for (const nestedProgram of nested) {
+    collectProgramBeneficiaries(nestedProgram, into);
   }
 };
 
 /**
- * Extracts AccountId32 from a location object using ParaSpell library.
+ * Every account an XCM program deposits into: each `DepositAsset` /
+ * `TransferAsset` beneficiary, including those inside `SetAppendix`,
+ * `SetErrorHandler` and the programs forwarded to another chain by
+ * `DepositReserveAsset`, `InitiateTeleport`, `InitiateTransfer` and friends.
+ * Takes a `{ vN: [Instruction] }` program or its JSON string. `null` when the
+ * program can't be read or any of its beneficiaries can't — or it runs an
+ * opaque `Transact`.
  */
-export const extractAccountIdFromLocation = (location: unknown): AccountId | undefined => {
-  if (!isRecord(location)) return undefined;
+export const extractBeneficiariesFromXcmInstructions = (value: unknown): AccountId[] | null => {
+  const result: Beneficiaries = { accountIds: [], unresolved: false };
 
-  try {
-    const transformedLocation = transformLocationToLibraryFormat(location);
-    const transformedLocationJson = JSON.stringify(transformedLocation);
+  collectProgramBeneficiaries(unwrapVersioned(parseXcmValue(value)), result);
 
-    const locationUrl = convertLocationToUrlJson(transformedLocationJson);
-
-    const accountIdMatch = locationUrl.match(/AccountId32\([^,]*,\s*([^)]+)\)/);
-    if (accountIdMatch && accountIdMatch[1]) {
-      return toAccountId(accountIdMatch[1].trim());
-    }
-  } catch {
-    console.error('Error extracting account ID from location', location);
-  }
-
-  return undefined;
-};
-
-const xcmInstructionSchema = z.object({
-  depositAsset: z.object({ beneficiary: z.unknown() }).optional(),
-});
-
-const xcmInstructionsSchema = z.object({
-  v4: z.array(xcmInstructionSchema),
-});
-
-const jsonStringSchema = z.string().transform((str, ctx) => {
-  try {
-    return JSON.parse(str);
-  } catch {
-    ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
-
-    return z.NEVER;
-  }
-});
-
-/**
- * Extracts beneficiary account ID from XCM instructions in customXcmOnDest.
- * Prioritizes direct DepositAsset instructions over SetAppendix ones.
- */
-export const extractBeneficiaryFromXcmInstructions = (customXcmOnDest: string): AccountId | undefined => {
-  const result = jsonStringSchema.pipe(xcmInstructionsSchema).safeParse(customXcmOnDest);
-  if (!result.success) return undefined;
-
-  for (const instruction of result.data.v4) {
-    const beneficiary = instruction.depositAsset?.beneficiary;
-    if (!beneficiary) continue;
-
-    const accountId = extractAccountIdFromLocation(beneficiary);
-    if (accountId) return accountId;
-  }
-
-  return undefined;
+  return result.unresolved ? null : result.accountIds;
 };

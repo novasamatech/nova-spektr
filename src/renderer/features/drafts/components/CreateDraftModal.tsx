@@ -53,7 +53,7 @@ export const CreateDraftModal = () => {
   const canSkip = useUnit(createDraftModel.$canSkip);
   const isRiskAcknowledged = useUnit(createDraftModel.$isRiskAcknowledged);
   const decodedTransaction = useUnit(createDraftModel.$decodedTransaction);
-  const destinationAccountId = useUnit(createDraftModel.$destinationAccountId);
+  const destinationAccountIds = useUnit(createDraftModel.$destinationAccountIds);
   const recipientWarning = useUnit(createDraftModel.$recipientWarning);
   const isRecipientCheckable = useUnit(createDraftModel.$isRecipientCheckable);
   const isRecipientRiskAccepted = useUnit(createDraftModel.$recipientRiskAccepted);
@@ -276,7 +276,7 @@ export const CreateDraftModal = () => {
                 decodedCallData={decodedCallData as object | null}
                 titleData={titleData}
                 operationIcon={operationIcon ?? null}
-                destinationAccountId={destinationAccountId}
+                destinationAccountIds={destinationAccountIds}
                 recipientWarning={recipientWarning}
                 recipientCheckPending={!isRecipientCheckable}
                 riskAcknowledged={isRiskAcknowledged}

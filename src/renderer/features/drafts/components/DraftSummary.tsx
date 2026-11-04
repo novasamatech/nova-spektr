@@ -18,7 +18,7 @@ type DraftSummaryProps = {
   chain: Chain | null;
   walletType?: WalletType;
   titleData?: OperationTitle | null;
-  destinationAccountId?: AccountId | null;
+  destinationAccountIds?: AccountId[];
   callData?: string;
   jsonArgs?: object | null;
 };
@@ -32,7 +32,7 @@ export const DraftSummary = ({
   chain,
   walletType,
   titleData,
-  destinationAccountId,
+  destinationAccountIds = [],
   callData,
   jsonArgs,
 }: DraftSummaryProps) => {
@@ -82,9 +82,13 @@ export const DraftSummary = ({
           <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} className="text-footnote" />
         </DetailRow>
       )}
-      {destinationAccountId && chain && (
+      {destinationAccountIds.length > 0 && chain && (
         <DetailRow label={t('operation.details.recipient')}>
-          <NamedAccount accountId={destinationAccountId} variant="short" chain={chain} />
+          <div className="flex flex-col items-end gap-y-1">
+            {destinationAccountIds.map((accountId) => (
+              <NamedAccount key={accountId} accountId={accountId} variant="short" chain={chain} />
+            ))}
+          </div>
         </DetailRow>
       )}
       {callData && (

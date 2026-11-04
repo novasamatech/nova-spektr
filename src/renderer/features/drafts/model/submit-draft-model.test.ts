@@ -16,6 +16,8 @@ import { type Draft } from '@/domains/backend';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { authModel, backendConfigurationModel, connectionHistoryModel } from '@/aggregates/backend';
+import type * as DecodeCallData from '../lib/decode-call-data';
+import { createRoundTrippedCall } from '../lib/decode-call-data';
 import type * as DecodeDraft from '../lib/decode-draft-transaction';
 import { decodeDraftTransaction } from '../lib/decode-draft-transaction';
 
@@ -24,6 +26,13 @@ import { submitDraftModel } from './submit-draft-model';
 vi.mock('../lib/decode-draft-transaction', async (importOriginal) => ({
   ...(await importOriginal<typeof DecodeDraft>()),
   decodeDraftTransaction: vi.fn(() => null),
+}));
+
+// The api double can't build a `Call`; call data is treated as round-tripping
+// unless a test says otherwise.
+vi.mock('../lib/decode-call-data', async (importOriginal) => ({
+  ...(await importOriginal<typeof DecodeCallData>()),
+  createRoundTrippedCall: vi.fn(() => ({})),
 }));
 
 const CHAIN_ID = `0x${'11'.repeat(32)}` as ChainId;
@@ -234,6 +243,56 @@ describe('submitDraftModel · unknown recipient gate', () => {
   beforeEach(() => {
     vi.mocked(decodeDraftTransaction).mockReset();
     vi.mocked(decodeDraftTransaction).mockReturnValue(null);
+    vi.mocked(createRoundTrippedCall).mockReturnValue({} as ReturnType<typeof createRoundTrippedCall>);
+  });
+
+  it('warns about an unknown recipient inside a batch and refuses to sign until acknowledged', async () => {
+    vi.mocked(decodeDraftTransaction).mockReturnValue({
+      type: TransactionType.BATCH_ALL,
+      section: 'utility',
+      method: 'batchAll',
+      chainId: CHAIN_ID,
+      address: '',
+      args: { transactions: [transferTo(OWN_ID), transferTo(STRANGER)] },
+    } as unknown as DecodedTransaction);
+    const scope = await setupVerifiedScope([
+      makeMultisigAccount(MULTISIG_ID),
+      makeAccount(SIGNER_ID),
+      makeAccount(OWN_ID),
+    ]);
+    await startFlow(scope);
+
+    expect(scope.getState(submitDraftModel.$destinationAccountIds)).toEqual([OWN_ID, STRANGER]);
+    expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
+
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.CONFIRM);
+
+    await allSettled(submitDraftModel.riskAcknowledgedToggled, { scope, params: true });
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).toBe(submitDraftModel.Step.SIGN);
+  });
+
+  it('treats call data whose recipient cannot be read as an unknown recipient', async () => {
+    const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope);
+
+    expect(scope.getState(submitDraftModel.$destinationAccountIds)).toEqual([]);
+    expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
+    expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
+
+    await allSettled(submitDraftModel.confirmModel.startSigning, { scope });
+    expect(scope.getState(submitDraftModel.$step)).not.toBe(submitDraftModel.Step.SIGN);
+  });
+
+  it('never hands call data that does not round-trip to the signer', async () => {
+    vi.mocked(createRoundTrippedCall).mockReturnValue(null);
+    const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
+    await startFlow(scope);
+
+    expect(scope.getState(submitDraftModel.$wrappedTxErrorKind)).toBe('extrinsic');
+    expect(scope.getState(submitDraftModel.$wrappedTx)).toBeNull();
+    expect(scope.getState(submitDraftModel.confirmModel.$confirms)).toEqual([]);
   });
 
   it('computes the warning from the transfer inside the draft, not from the multisig', async () => {
@@ -241,7 +300,7 @@ describe('submitDraftModel · unknown recipient gate', () => {
     const scope = await setupVerifiedScope([makeMultisigAccount(MULTISIG_ID), makeAccount(SIGNER_ID)]);
     await startFlow(scope);
 
-    expect(scope.getState(submitDraftModel.$destinationAccountId)).toBe(STRANGER);
+    expect(scope.getState(submitDraftModel.$destinationAccountIds)).toEqual([STRANGER]);
     expect(scope.getState(submitDraftModel.$recipientWarning)).toBe('unknown');
     expect(scope.getState(submitDraftModel.$recipientRiskAccepted)).toBe(false);
   });

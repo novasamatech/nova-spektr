@@ -5,6 +5,7 @@ import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   Alert,
   Button,
@@ -202,7 +203,7 @@ const ConfirmStep = () => {
   const validationErrors = useUnit(submitDraftModel.$validationErrors);
   const validationValid = useUnit(submitDraftModel.$validationValid);
   const validationPending = useUnit(submitDraftModel.$validationPending);
-  const destinationAccountId = useUnit(submitDraftModel.$destinationAccountId);
+  const destinationAccountIds = useUnit(submitDraftModel.$destinationAccountIds);
   const recipientWarning = useUnit(submitDraftModel.$recipientWarning);
   const isRiskAcknowledged = useUnit(submitDraftModel.$isRiskAcknowledged);
   const isRecipientRiskAccepted = useUnit(submitDraftModel.$recipientRiskAccepted);
@@ -344,8 +345,11 @@ const ConfirmStep = () => {
 
   const signingPath = draft?.signingPath ?? [];
   // A recipient that is one of the user's own accounts resolves to its wallet name.
-  const destinationAccount = allAccounts.find((account) => account.accountId === destinationAccountId);
-  const destinationWallet = destinationAccount ? walletUtils.getWalletById(wallets, destinationAccount.walletId) : null;
+  const getDestinationWallet = (accountId: AccountId) => {
+    const destinationAccount = allAccounts.find((account) => account.accountId === accountId);
+
+    return destinationAccount ? walletUtils.getWalletById(wallets, destinationAccount.walletId) : null;
+  };
 
   return (
     <>
@@ -391,9 +395,19 @@ const ConfirmStep = () => {
               <NamedAccount variant="short" accountId={initiator.accountId} chain={chain} />
             )}
           </DetailRow>
-          {destinationAccountId && (
+          {destinationAccountIds.length > 0 && (
             <DetailRow label={t('operation.details.recipient')}>
-              <NamedAccount variant="short" accountId={destinationAccountId} chain={chain} wallet={destinationWallet} />
+              <div className="flex flex-col items-end gap-y-1">
+                {destinationAccountIds.map((accountId) => (
+                  <NamedAccount
+                    key={accountId}
+                    variant="short"
+                    accountId={accountId}
+                    chain={chain}
+                    wallet={getDestinationWallet(accountId)}
+                  />
+                ))}
+              </div>
             </DetailRow>
           )}
           <Separator className="border-filter-border" />
