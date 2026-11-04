@@ -43,10 +43,9 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { default: tailwindcss } = await import('@tailwindcss/vite');
 
-  // Vitest also runs with `serve`; the dev-server-only plugins (mkcert fetches
-  // the latest release from the GitHub API at start-up and hits the unauthenticated
-  // rate limit on CI runners) must stay out of test runs.
-  const isDevServer = command === 'serve' && !process.env.VITEST;
+  const isDevServer = command === 'serve';
+  // Vitest also runs with `serve`.
+  const isVitest = Boolean(process.env.VITEST);
   const isDev = mode === 'development';
   const isProd = mode === 'production';
   const isStage = mode === 'staging';
@@ -115,7 +114,9 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
       isDevServer && stripCspMetaInDev(),
 
-      isDevServer && mkcert(),
+      // mkcert fetches the latest release from the GitHub API at start-up and
+      // hits the unauthenticated rate limit on CI runners; keep it out of test runs.
+      isDevServer && !isVitest && mkcert(),
 
       tailwindcss(),
 
