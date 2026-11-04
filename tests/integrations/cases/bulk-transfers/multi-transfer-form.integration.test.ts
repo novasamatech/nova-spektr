@@ -17,6 +17,8 @@ vi.mock('graphql-request', async (importOriginal) => {
 
 import { ConnectionStatus, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { createAccountId } from '@/shared/mocks';
+import { type PathNode } from '@/domains/backend';
 import { type Extrinsic, accounts, transactionService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { MultiTransferCsvError, MultiTransferFieldError, MultiTransferFieldWarning } from '@/entities/multi-transfer';
@@ -31,7 +33,12 @@ import {
   senderBalance,
   vaultWallet,
 } from '../../fixtures/index';
-import { type FeatureTestEnvironment, FeatureTestBuilder, allureMetadata } from '../../utils/index';
+import {
+  type FeatureTestEnvironment,
+  FeatureTestBuilder,
+  allureMetadata,
+  seedAccountHandlers,
+} from '../../utils/index';
 
 // Same valid/invalid SS58 fixtures as src/renderer/features/multi-transfer/utils.test.ts
 const ADDRESS_1 = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9';
@@ -364,7 +371,7 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
 
     // Only the seams the weight check crosses are stubbed: wrapping (needs a
     // live chain), extrinsic construction and the weight RPC itself.
-    const fakeApi = {} as unknown as ApiPromise;
+    const fakeApi = { genesisHash: { toHex: () => polkadotChainId } } as unknown as ApiPromise;
 
     async function createWeightEnv(): Promise<FeatureTestEnvironment> {
       vi.spyOn(transactionService, 'wrapLegacyTransaction').mockImplementation(async (tx) => tx);
@@ -399,6 +406,64 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
       expect(capacity).toHaveBeenLastCalledWith(expect.anything(), fakeApi, 2);
     });
 
+    // `$canSubmit` also waits for the tx validator: its fee quote and call
+    // encoding need a live chain, and its signer check reads DI handlers that
+    // a forked scope starts without. Stub those seams on top of the weight env.
+    const stubSubmitSeams = async (testEnv: FeatureTestEnvironment) => {
+      vi.spyOn(transactionService, 'getTransactionFee').mockResolvedValue(new BN(1));
+      vi.spyOn(getExtrinsic, TransactionType.BATCH_ALL).mockReturnValue({
+        method: { toHex: () => '0x00' },
+      } as unknown as Extrinsic);
+      await seedAccountHandlers(testEnv.scope);
+    };
+
+    it('SP-53: signs a file that fits as one batch and keeps Continue available', async () => {
+      vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(1000);
+      env = await createWeightEnv();
+      await stubSubmitSeams(env);
+
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+      await env.waitForState(formModel.$canSubmit, (canSubmit) => canSubmit);
+
+      const coreTx = env.getState(formModel.$coreTx);
+      expect(coreTx?.type).toBe(TransactionType.BATCH_ALL);
+      expect(coreTx?.args.transactions).toHaveLength(2);
+      expect(env.getState(formModel.$maxRowsPerTransaction)).toBeNull();
+      expect(env.getState(formModel.$batchCapacityCheckFailed)).toBe(false);
+    });
+
+    it('SP-54: blocks Continue with the number of rows that fit until the file is trimmed to it', async () => {
+      const capacity = vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(1);
+      env = await createWeightEnv();
+      await stubSubmitSeams(env);
+
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+      await env.waitForState(formModel.$maxRowsPerTransaction, (maxRows) => maxRows === 1);
+      // Only the batch verdict holds Continue back: the form and the transaction are valid.
+      await env.waitForState(formModel.$isTxValid, (valid) => valid);
+      expect(env.getState(formModel.form.$isValid)).toBe(true);
+      expect(env.getState(formModel.$canSubmit)).toBe(false);
+
+      // Trimmed to the reported row count: the error is gone and the flow proceeds.
+      capacity.mockResolvedValue(1000);
+      await env.executeEvent(formModel.fileUploaded, csvFile(`recipient,amount\n${ADDRESS_1},1000000000000\n`));
+      await env.waitForState(formModel.$canSubmit, (canSubmit) => canSubmit);
+      expect(env.getState(formModel.$maxRowsPerTransaction)).toBeNull();
+    });
+
+    it('SP-54: reports that not even one row fits', async () => {
+      vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(0);
+      env = await createWeightEnv();
+      await stubSubmitSeams(env);
+
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+      await env.waitForState(formModel.$maxRowsPerTransaction, (maxRows) => maxRows === 0);
+      // Only the batch verdict holds Continue back: the form and the transaction are valid.
+      await env.waitForState(formModel.$isTxValid, (valid) => valid);
+      expect(env.getState(formModel.form.$isValid)).toBe(true);
+      expect(env.getState(formModel.$canSubmit)).toBe(false);
+    });
+
     it('should drop a failed check once the network changes', async () => {
       vi.spyOn(transactionService, 'getBatchCapacity').mockRejectedValue(new Error('rpc down'));
       env = await createWeightEnv();
@@ -410,6 +475,100 @@ describe('Multi-transfer Form - CSV Model Wiring', () => {
 
       expect(env.getState(formModel.$batchCapacityCheckFailed)).toBe(false);
       expect(env.getState(formModel.$maxRowsPerTransaction)).toBeNull();
+    });
+  });
+
+  describe('Draft mode weight check', () => {
+    beforeEach(async () => {
+      await allureMetadata({
+        epic: 'Operations',
+        feature: 'MultiTransfer',
+        story: 'Draft mode weight check',
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const fakeApi = { genesisHash: { toHex: () => polkadotChainId } } as unknown as ApiPromise;
+
+    // A draft is authored along an address-book path, from a source account the
+    // wallet does not hold — no initiator, no signatory, so the signing-side
+    // transaction never exists and the weight check can only be fed the draft call.
+    const draftPath: PathNode[] = [
+      { kind: 'multisig', accountId: createAccountId('draft-contact-multisig') },
+      { kind: 'signer', accountId: createAccountId('draft-contact-signer') },
+    ];
+
+    async function createDraftWeightEnv(): Promise<FeatureTestEnvironment> {
+      // The draft's call data is read off the same extrinsic the weight check
+      // builds; `method.toHex` is all the form asks of it.
+      vi.spyOn(getExtrinsic, TransactionType.BATCH_ALL).mockReturnValue({
+        method: { toHex: () => '0xabcd' },
+      } as unknown as Extrinsic);
+
+      const testEnv = await new FeatureTestBuilder({ autoPopulate: false })
+        .withChain(polkadotChain)
+        .withChain(kusamaChain)
+        .withConnectionStatus(polkadotChainId, ConnectionStatus.CONNECTED)
+        .withApi(polkadotChainId, fakeApi)
+        .withStoreValue(balanceModel.__test.$balanceMap, { [senderBalance.id]: senderBalance })
+        .withStoreValue(walletModel.__test.$rawWallets, [vaultWallet])
+        .withStoreValue(accounts.__test.$list, [senderAccount])
+        .build();
+
+      await allSettled(formModel.form.fields.chain.change, { scope: testEnv.scope, params: polkadotChain });
+
+      return testEnv;
+    }
+
+    it('SP-58: weighs the draft call once the draft path is complete, and lets a fitting file be saved', async () => {
+      const capacity = vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(1000);
+      env = await createDraftWeightEnv();
+
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+
+      // Outside draft mode nothing is weighed: without a signatory there is no
+      // signing transaction, and the draft call is not built either.
+      expect(env.getState(formModel.$coreTx)).toBeNull();
+      expect(env.getState(formModel.$canSaveAsDraft)).toBe(false);
+      expect(capacity).not.toHaveBeenCalled();
+
+      await env.executeEvent(formModel.events.toggleDraftMode, true);
+      await env.executeEvent(formModel.events.draftPathCommitted, draftPath);
+      expect(env.getState(formModel.$isDraftPathComplete)).toBe(true);
+
+      await env.waitForState(formModel.$canSaveAsDraft, (canSave) => canSave);
+
+      // The check ran on the whole file — both valid rows — while the
+      // signing-side transaction still does not exist.
+      expect(capacity).toHaveBeenCalledWith(expect.anything(), fakeApi, 2);
+      expect(env.getState(formModel.$coreTx)).toBeNull();
+      expect(env.getState(formModel.$maxRowsPerTransaction)).toBeNull();
+
+      const weighedArgs = vi.mocked(getExtrinsic[TransactionType.BATCH_ALL]).mock.calls.at(-1)?.[0];
+      expect(weighedArgs?.transactions).toHaveLength(2);
+      expect(weighedArgs?.transactions[0].args.dest).toBe(toAccountId(ADDRESS_1));
+      expect(weighedArgs?.transactions[1].args.dest).toBe(toAccountId(ADDRESS_2));
+    });
+
+    it('SP-58: a file too heavy for one extrinsic reports how many rows fit and withholds Save as draft', async () => {
+      vi.spyOn(transactionService, 'getBatchCapacity').mockResolvedValue(1);
+      env = await createDraftWeightEnv();
+
+      await env.executeEvent(formModel.events.toggleDraftMode, true);
+      await env.executeEvent(formModel.events.draftPathCommitted, draftPath);
+      await env.executeEvent(formModel.fileUploaded, csvFile(VALID_CSV));
+
+      // `$maxRowsPerTransaction` is what the upload step renders as the
+      // too-heavy verdict (`multiTransfer.errors.csv.tooHeavyDescription`).
+      await env.waitForState(formModel.$maxRowsPerTransaction, (maxRows) => maxRows === 1);
+
+      expect(env.getState(formModel.$isDraftPathComplete)).toBe(true);
+      expect(env.getState(formModel.$csvError)).toBeNull();
+      expect(hasBlockingCsvState()).toBe(false);
+      expect(env.getState(formModel.$canSaveAsDraft)).toBe(false);
     });
   });
 

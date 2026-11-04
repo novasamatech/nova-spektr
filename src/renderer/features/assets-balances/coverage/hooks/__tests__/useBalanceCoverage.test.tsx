@@ -109,4 +109,93 @@ describe('useBalanceCoverage', () => {
     });
     expect(hook.result.current).toEqual({ complete: false, awaitingCount: 2, timedOut: true });
   });
+
+  describe('a contact in the selection', () => {
+    test('SP-27: keeps waiting for a contact (no wallet account) that fits a chain by address scheme', async () => {
+      vi.spyOn(accountService, 'isAccountAvailableOnChain').mockReturnValue(true);
+      const scope = fork({
+        values: [
+          [balanceModel.__test.$balanceMap, toMap([record(ACCOUNT_A)])],
+          // A is a wallet account; B is known only by its id — a contact.
+          [accounts.__test.$list, [walletAccount(ACCOUNT_A)]],
+          [networkModel.$chains, { [CHAIN.chainId]: CHAIN }],
+          [networkModel.$connections, {}],
+        ],
+      });
+      const wrapper = ({ children }: PropsWithChildren) => <Provider value={scope}>{children}</Provider>;
+      const hook = renderHook(() => useBalanceCoverage([ACCOUNT_A, ACCOUNT_B]), { wrapper });
+
+      // The funded wallet account answered; the contact has not — not complete.
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 1, timedOut: false });
+
+      await land(scope, [record(ACCOUNT_A), record(ACCOUNT_B)]);
+      expect(hook.result.current).toEqual({ complete: true, awaitingCount: 0, timedOut: false });
+    });
+  });
+
+  describe('after the timeout', () => {
+    test('SP-28: reports a single missing account after the timeout', () => {
+      const { hook } = setup([record(ACCOUNT_A), record(ACCOUNT_B)]);
+
+      act(() => {
+        vi.advanceTimersByTime(BALANCE_COVERAGE_TIMEOUT_MS);
+      });
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 1, timedOut: true });
+    });
+
+    test('SP-28: reports every missing account after the timeout', () => {
+      const { hook } = setup([record(ACCOUNT_A)]);
+
+      act(() => {
+        vi.advanceTimersByTime(BALANCE_COVERAGE_TIMEOUT_MS);
+      });
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 2, timedOut: true });
+    });
+
+    test('SP-28: changing the selection re-arms the wait', () => {
+      const scope = fork({
+        values: [
+          [balanceModel.__test.$balanceMap, toMap([record(ACCOUNT_A)])],
+          [networkModel.$chains, { [CHAIN.chainId]: CHAIN }],
+          [networkModel.$connections, {}],
+        ],
+      });
+      const wrapper = ({ children }: PropsWithChildren) => <Provider value={scope}>{children}</Provider>;
+      const hook = renderHook(({ selection }: { selection: string[] }) => useBalanceCoverage(selection), {
+        wrapper,
+        initialProps: { selection: [ACCOUNT_A, ACCOUNT_B] },
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(BALANCE_COVERAGE_TIMEOUT_MS);
+      });
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 1, timedOut: true });
+
+      // A new selection is a new question: back to waiting, with a fresh timer.
+      hook.rerender({ selection: [ACCOUNT_A, ACCOUNT_C] });
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 1, timedOut: false });
+
+      act(() => {
+        vi.advanceTimersByTime(BALANCE_COVERAGE_TIMEOUT_MS - 1);
+      });
+      expect(hook.result.current.timedOut).toBe(false);
+
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(hook.result.current).toEqual({ complete: false, awaitingCount: 1, timedOut: true });
+    });
+
+    test('SP-28: the same selection re-rendered does not restart the wait', () => {
+      const { hook } = setup([record(ACCOUNT_A)]);
+
+      act(() => {
+        vi.advanceTimersByTime(BALANCE_COVERAGE_TIMEOUT_MS);
+      });
+      expect(hook.result.current.timedOut).toBe(true);
+
+      hook.rerender();
+      expect(hook.result.current.timedOut).toBe(true);
+    });
+  });
 });

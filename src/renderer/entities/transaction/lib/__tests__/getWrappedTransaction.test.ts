@@ -37,6 +37,13 @@ describe('transactionService.getWrappedTransaction', () => {
     });
   });
 
+  it('SP-62: leaves a shard transaction as its own core call when there is nothing to wrap', () => {
+    const { wrappedTx, coreTx } = transactionService.getWrappedTransaction({ api, transaction, txWrappers: [] });
+
+    expect(coreTx).toBe(transaction);
+    expect(wrappedTx).toBe(transaction);
+  });
+
   it('rejects multisig wrappers instead of building an incomplete asMulti call', () => {
     const signer = createVaultBaseAccount('signer', { walletId: 1 });
     const multisigAccount = { accountId: createAccountId('multisig'), threshold: 2 } as unknown as MultisigAccount;

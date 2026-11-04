@@ -2,11 +2,17 @@ import { allSettled, createEvent, fork, sample } from 'effector';
 import { describe, expect, it } from 'vitest';
 
 import { type ChainId, type HexString, AccountType } from '@/shared/core';
-import { getCallHash } from '@/shared/lib/utils';
+import { formatSectionAndMethod, getCallHash, validateCallData } from '@/shared/lib/utils';
+import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '../account/store';
 
-import { $completionEvents, fetchOffchainResource, initialOnChainFetch } from './resource';
+import {
+  $completionEvents,
+  $onChainOperationsByCallhash,
+  fetchOffchainResource,
+  initialOnChainFetch,
+} from './resource';
 import { multisigOperation } from './store';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
@@ -403,6 +409,90 @@ describe('multisigOperation store', () => {
 
       const [derived] = scope.getState(multisigOperation.__test.$completedLiveOperations);
       expect(derived?.events.map(e => e.id).sort()).toEqual(['e-approve', 'e-storage']);
+    });
+  });
+
+  describe('user-added call data', () => {
+    const MULTI_ID = createAccountId('multisig without call data');
+    // balances.transferKeepAlive(dest: Id(<recipient>), value: 1000) — pallet 5, call 3 on Polkadot.
+    const transferKeepAliveCallData = `0x050300${createAccountId('recipient').slice(2)}a10f` as HexString;
+    const callHash = getCallHash(transferKeepAliveCallData);
+
+    // What the indexer and on-chain storage know about an operation created outside Spektr.
+    const unknownOperation = {
+      id: 'op-unknown',
+      status: 'pending',
+      multisigAccountId: MULTI_ID,
+      chainId: mockChainId1,
+      callHash,
+      callData: null,
+      transaction: null,
+      section: null,
+      method: null,
+      events: [],
+      blockCreated: 1,
+      indexCreated: 0,
+      timestamp: 0,
+      depositor: MULTI_ID,
+    } as unknown as MultisigOperation;
+
+    const forkWithOnChainOperation = () =>
+      fork({
+        values: new Map<any, any>([
+          [$onChainOperationsByCallhash, { [mockChainId1]: { [MULTI_ID]: { [callHash]: unknownOperation } } }],
+          [multisigOperation.__test.$expectedChainIds, [mockChainId1]],
+          [multisigOperation.__test.$fetchedChainIds, [mockChainId1]],
+        ]),
+      });
+
+    it('SP-19: lists an operation without call data with no section or method, so the row falls back to the unknown title', () => {
+      const scope = forkWithOnChainOperation();
+
+      const [operation] = scope.getState(multisigOperation.$list);
+
+      // `Operation.tsx` renders `operations.titles.unknown` ("Unknown Operation") when both are null.
+      expect(operation).toMatchObject({
+        id: 'op-unknown',
+        callData: null,
+        transaction: null,
+        section: null,
+        method: null,
+      });
+    });
+
+    it('SP-19: re-titles the operation once the user adds call data that matches the call hash', async () => {
+      const scope = forkWithOnChainOperation();
+
+      expect(validateCallData(transferKeepAliveCallData, callHash)).toBe(true);
+
+      // Same payload `CallDataModal.handleAdd` sends after decoding the pasted hex.
+      await allSettled(multisigOperation.updateCallData, {
+        scope,
+        params: {
+          chainId: mockChainId1,
+          multisigAccountId: MULTI_ID,
+          callHash,
+          callData: transferKeepAliveCallData,
+          transaction: {
+            chainId: mockChainId1,
+            accountId: MULTI_ID,
+            section: 'balances',
+            method: 'transferKeepAlive',
+            args: {},
+          },
+        },
+      });
+
+      const [operation] = scope.getState(multisigOperation.$list);
+
+      expect(operation).toMatchObject({
+        id: 'op-unknown',
+        callData: transferKeepAliveCallData,
+        section: 'balances',
+        method: 'transferKeepAlive',
+        transaction: { section: 'balances', method: 'transferKeepAlive' },
+      });
+      expect(formatSectionAndMethod(operation!.section!, operation!.method!)).toBe('Balances: Transfer keep alive');
     });
   });
 });
