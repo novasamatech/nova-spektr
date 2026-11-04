@@ -9,25 +9,20 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { ConfirmModal, Modal, Tooltip, useNotification } from '@/shared/ui-kit';
-import { draftsResource, draftsService } from '@/domains/backend';
 import { contactModel } from '@/entities/contact';
 import { networkModel, useApi } from '@/entities/network';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
-import { backendConfigurationModel } from '@/aggregates/backend';
 import { operationIconTransformer, operationTitleTransformer } from '@/features/multisig-operations';
 import {
   type PathNextOption,
   type PathSource,
   StepPath,
-  deriveInitiatorAccountId,
   deriveMultisigAccountId,
   graphModel,
-  isUsablePath,
-  isValidPath,
   pathModel,
 } from '@/features/signing-path';
 import { tryDecodeCallData } from '../lib/decode-call-data';
-import { createDraftModel } from '../model/create-draft-model';
+import { DraftNotCreatedError, createDraftModel } from '../model/create-draft-model';
 import { StepReview } from '../steps/StepReview';
 import { StepTransaction } from '../steps/StepTransaction';
 
@@ -36,7 +31,6 @@ import { StepIndicator } from './StepIndicator';
 export const CreateDraftModal = () => {
   const { t } = useI18n();
   const { toast } = useNotification();
-  const backendUrl = useUnit(backendConfigurationModel.$backendUrl);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardCreate, setShowDiscardCreate] = useState(false);
@@ -56,7 +50,6 @@ export const CreateDraftModal = () => {
   const destinationAccountIds = useUnit(createDraftModel.$destinationAccountIds);
   const recipientWarning = useUnit(createDraftModel.$recipientWarning);
   const isRecipientCheckable = useUnit(createDraftModel.$isRecipientCheckable);
-  const isRecipientRiskAccepted = useUnit(createDraftModel.$recipientRiskAccepted);
 
   const path = useUnit(pathModel.$path);
   const resolveName = useUnit(graphModel.$nameResolver);
@@ -171,39 +164,25 @@ export const CreateDraftModal = () => {
   };
 
   const handleCreateDraft = async () => {
-    if (!backendUrl || !selectedChain || !isRecipientRiskAccepted) return;
-
-    // A lone `signer` is grammatically valid, but a draft along it could never
-    // be submitted — the signing path needs at least one delegation hop.
-    const validation = isValidPath(path);
-    if (!validation.ok || !isUsablePath(path)) {
-      toast.error(t('operations.drafts.internalPathError'), {
-        description: validation.ok ? undefined : validation.reason,
-      });
-
-      return;
-    }
-
-    const multisigAccountId = deriveMultisigAccountId(path) ?? undefined;
-    const initiatorAccountId = deriveInitiatorAccountId(path) ?? undefined;
-    const proxyAccountId = path[0]?.kind === 'proxied' ? path[0].accountId : undefined;
-
     setIsSubmitting(true);
     try {
-      const response = await draftsService.createDraft(backendUrl, {
-        chainId: selectedChain.chainId,
-        multisigAccountId,
-        proxyAccountId,
-        signingPath: path,
-        initiatorAccountId,
-        callData: callData || undefined,
-        description: description || undefined,
-      });
-      draftsResource.draftCreated(response);
-      createDraftModel.draftCreated();
+      // The model holds the gate: a confirm that is not ready creates nothing
+      // and says why.
+      await createDraftModel.createDraftFx();
+
       toast.success(t('operations.drafts.createSuccess'));
       createDraftModel.modalClosed();
     } catch (e) {
+      if (e instanceof DraftNotCreatedError) {
+        if (e.reason === 'invalid-path') {
+          toast.error(t('operations.drafts.internalPathError'), { description: e.detail });
+        } else {
+          toast.error(t('operations.drafts.createError'));
+        }
+
+        return;
+      }
+
       let description: string | ReactElement;
 
       if (e instanceof Error) {
@@ -312,7 +291,7 @@ export const CreateDraftModal = () => {
               </Tooltip>
             )}
             <Button
-              disabled={!canAdvanceCallData || (activeStep === 'confirm' && !isRecipientRiskAccepted)}
+              disabled={!canAdvanceCallData}
               isLoading={isSubmitting}
               onClick={activeStep === 'confirm' ? handleCreateDraft : () => createDraftModel.stepAdvanced()}
             >

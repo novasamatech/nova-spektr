@@ -200,8 +200,13 @@ sample({
   target: confirmModel.init,
 });
 
+// The button is disabled while `$canSign` is false, and the model refuses
+// too: a gate that closed after the click (a re-priced route, a validation
+// that turned) must not be bypassable.
 sample({
   clock: confirmModel.startSigning,
+  source: $canSign,
+  filter: (canSign) => canSign,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
@@ -210,8 +215,9 @@ const $confirms = confirmModel.$confirms;
 
 const sign = sample({
   clock: confirmModel.startSigning,
-  source: $confirms,
-  fn: (confirms) => ({
+  source: { confirms: $confirms, canSign: $canSign },
+  filter: ({ canSign }) => canSign,
+  fn: ({ confirms }) => ({
     signingPayloads: confirms.map((confirm) => ({
       chain: confirm.meta.chain,
       account: confirm.meta.initiator,

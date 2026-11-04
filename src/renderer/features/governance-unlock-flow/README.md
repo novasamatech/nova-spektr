@@ -1,6 +1,6 @@
 # Governance unlock flow
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-04
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -101,6 +101,10 @@ re-derives both the claimable actions and the initiator against the live head at
 referendum that ended since the last snapshot adds a required `removeVote`, and that call is origin-bound: a
 permissionless payer good enough for the snapshot is no longer allowed to send it. From then on this flow signs exactly
 what it was handed. Nothing here follows the chain, so a block tick cannot disturb a signature in progress.
+
+**The Sign button's gate is the model's gate.** `Sign` pressed while the confirm is not ready — a round trip still in
+flight, a validation that failed, the wrapped transaction gone after a route change — moves the flow nowhere and hands
+nothing to the signer; the disabled button is not the only thing standing in the way.
 
 **Only a flow at the sign step may claim a signature.** Signing and submission are app-wide singletons: every operation
 in the app goes through the same events. A flow parked on Confirm — or abandoned there while a hardware-wallet request

@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -33,16 +33,16 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 
 ## States / scenarios
 
-| State      | When                                             | What the user sees                                                                                                                               |
-| ---------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                                                                                            |
-| Invalid    | The shared validator rejects the operation       | The standard "This operation cannot be completed" alert, a red frame on the amount when the amount itself is the problem, and `Continue` refuses |
-| No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses                                                                                    |
-| Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account                                                                             |
-| Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit                                                                              |
-| Sign       | `Sign` on the confirm                            | The standard signing step                                                                                                                        |
-| Submit     | The signature is in                              | The standard submit step                                                                                                                         |
-| Draft      | Draft mode is on                                 | `Continue` waits for a complete draft path, an amount and a valid destination; the picker's submit reads "Save as draft" and saves the operation |
+| State      | When                                             | What the user sees                                                                                                                                                                                          |
+| ---------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Form       | The flow opens                                   | Network, stake from, amount, rewards destination, fee                                                                                                                                                       |
+| Invalid    | The shared validator rejects the operation       | The standard "This operation cannot be completed" alert, a red frame on the amount when the amount itself is the problem, and `Continue` refuses                                                            |
+| No signer  | The picked account's route ends without a signer | A red "No account to sign with" alert, and `Continue` refuses                                                                                                                                               |
+| Validators | `Continue` on a valid form                       | The shared validator picker, scoped to this flow's chain and account                                                                                                                                        |
+| Confirm    | A validator set is submitted                     | Amount, rewards destination, validator count, fee, multisig deposit                                                                                                                                         |
+| Sign       | `Sign` on the confirm                            | The standard signing step. Its gate is the model's own: pressed while the call is missing, rejected, still being checked, in draft mode or nobody on the route can sign, it moves nothing and signs nothing |
+| Submit     | The signature is in                              | The standard submit step                                                                                                                                                                                    |
+| Draft      | Draft mode is on                                 | `Continue` waits for a complete draft path, an amount and a valid destination; the picker's submit reads "Save as draft" and saves the operation                                                            |
 
 **Validation is the same pipeline the transfer flow runs**, not a private set of checks. From the first keystroke the
 form validates through `bondNominateValidator` — fee, existential deposit, multisig deposit, proxy permissions, "can the

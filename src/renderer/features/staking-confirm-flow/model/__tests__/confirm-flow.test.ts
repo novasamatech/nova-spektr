@@ -1,4 +1,4 @@
-import { type Store, type StoreWritable, allSettled, createWatch, fork } from 'effector';
+import { type StoreWritable, allSettled, createWatch, fork } from 'effector';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -13,76 +13,20 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { type TransactionStoresMock } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type StakingPosition } from '@/domains/staking';
 import { DEFAULT_SLASHING_SPANS } from '../../lib/slashing-spans';
 import { Step } from '../../types';
 
-/**
- * The node is out of scope here.
- *
- * `createComplexTxStore` and `createTxValidationStore` both cost a round trip
- * to a real api, and neither has anything to say about the decisions this model
- * makes — which call is built, whether signing is allowed, which branch a draft
- * takes. They are replaced with the smallest stand-ins that keep the graph
- * honest: the tx store passes the core transaction straight through, so every
- * assertion below is made against the call this model actually built.
- *
- * Each stand-in is recorded so a test can drive it. The model under test is the
- * last thing imported, so the last recorded bag is always its own.
- */
-const { stubs } = vi.hoisted(() => ({
-  stubs: {
-    complex: [] as Record<string, StoreWritable<never>>[],
-    validation: [] as Record<string, StoreWritable<never>>[],
-  },
-}));
+// The node is out of scope here: see `mockTransactionStores`.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
 
 vi.mock('@/shared/transactions', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  const { createStore, sample } = await import('effector');
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal());
 
-  // Every store is writable: other models in the import graph reset the ones
-  // they get back from this factory, and a derived store would refuse.
-  return {
-    ...actual,
-    createComplexTxStore: ({ transaction, initiator }: { transaction: Store<unknown>; initiator: Store<unknown> }) => {
-      const $tx = createStore<unknown>(null);
-      sample({ clock: transaction, target: $tx });
-
-      const bag = {
-        // The self-route a plain account gets from the real store — keeps the
-        // route-signer guard honest without the BFS over the account graph.
-        $route: initiator.map((account) => (account ? [account] : [])),
-        $tx,
-        $feeTx: createStore<unknown>(null),
-        $pendingWrapping: createStore(false),
-        $fee: createStore<unknown>(null),
-        $pendingFee: createStore(false),
-      };
-      stubs.complex.push(bag as never);
-
-      return bag;
-    },
-    // The real one asks the DI permission registry, which is empty in a unit
-    // fork — every account would read as unsignable. The permission check has
-    // its own tests; here the terminal hop simply signs.
-    createRouteSignerStore: ($route: Store<unknown[]>) => $route.map((route) => route.at(-1) ?? null),
-    createTxValidationStore: () => {
-      const bag = {
-        $errors: createStore<unknown[]>([]),
-        $balanceValidationResults: createStore<unknown[]>([]),
-        $pending: createStore(false),
-        $validationDone: createStore(true),
-        $valid: createStore(true),
-        $failed: createStore(false),
-        $available: createStore<unknown[]>([]),
-      };
-      stubs.validation.push(bag as never);
-
-      return bag;
-    },
-  };
+  return txStores.current.module;
 });
 
 const { slashingSpansMock } = vi.hoisted(() => ({ slashingSpansMock: vi.fn() }));
@@ -139,9 +83,9 @@ const { signModel } = await import('@/features/operations/OperationSign');
 const { confirmFlowModel } = await import('../confirm-flow');
 const { confirmModel } = await import('../confirm');
 
-/** The last bag each factory handed out belongs to the model imported last. */
-const complexStub = () => stubs.complex.at(-1)!;
-const validationStub = () => stubs.validation.at(-1)!;
+/** The last bag the tx factory handed out belongs to the model imported last. */
+const complexStub = () => txStores.current!.complexStores.at(-1)!;
+const $txValid = () => txStores.current!.$valid;
 
 // --- fixtures ----------------------------------------------------------------
 
@@ -379,7 +323,7 @@ describe('staking-confirm-flow · sign gate', () => {
   });
 
   it('holds Sign while the validation has not passed', async () => {
-    const scope = fork({ values: withLiveRedeem(connected(new Map().set(validationStub()['$valid'], false))) });
+    const scope = fork({ values: withLiveRedeem(connected(new Map().set($txValid(), false))) });
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
 
     expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
@@ -445,13 +389,35 @@ describe('staking-confirm-flow · sign gate', () => {
     expect(scope.getState(confirmFlowModel.$nothingLeftToRedeem)).toBe(false);
   });
 
-  it('moves to the sign step when Sign is pressed outside draft mode', async () => {
-    const scope = fork();
+  it('moves to the sign step when Sign is pressed while the confirm is ready', async () => {
+    const scope = fork({ values: withLiveRedeem(connected()) });
 
     await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(true);
+
     await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(confirmFlowModel.$step)).toBe(Step.SIGN);
+  });
+
+  it('refuses to sign past a closed gate, even from the confirm', async () => {
+    // The ledger emptied under the open confirm: the button is disabled, and a
+    // stale click must not walk on either.
+    const scope = fork({ values: withLiveRedeem(connected(), '0') });
+    const signSpy = vi.fn();
+
+    await allSettled(confirmFlowModel.redeemRequested, { scope, params: redeemTarget() });
+    expect(scope.getState(confirmFlowModel.$canSign)).toBe(false);
+
+    const unsubscribe = createWatch({ unit: signModel.events.formInitiated, fn: signSpy, scope });
+    try {
+      await allSettled(confirmModel.startSigning, { scope });
+
+      expect(scope.getState(confirmFlowModel.$step)).toBe(Step.CONFIRM);
+      expect(signSpy).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 });
 

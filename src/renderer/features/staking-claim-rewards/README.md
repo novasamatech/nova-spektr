@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -91,7 +91,9 @@ the first transaction, so a session abandoned halfway still claimed the ones wit
 **The confirm opens on the click, not on the data.** Everything it leads with — the amount, the accounts, the chain,
 what is being covered — is in hand the moment the button is pressed. The wrapped transaction, the fee and the validation
 each cost a round trip, so they are not awaited: the modal opens immediately, they stream in behind their own loaders,
-and Sign stays disabled until they land. Changing the signing route re-runs them in place.
+and Sign stays disabled until they land. Changing the signing route re-runs them in place. That gate is the model's own,
+not only the button's: Sign pressed while anything is still in flight, an extra is unpriced, the payer cannot sign or
+draft mode is on moves the flow nowhere and hands nothing to the signer.
 
 **A payer nobody can sign for blocks, and says why.** The route behind the payer is checked for an actual signer at its
 end; when there is none — a watch-only payer — Sign is blocked behind a red **"No account to sign with"** alert rather

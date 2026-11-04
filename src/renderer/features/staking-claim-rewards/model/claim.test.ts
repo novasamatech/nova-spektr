@@ -1,10 +1,12 @@
 import { allSettled, createWatch, fork } from 'effector';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Asset, type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, type Wallet, ConnectionStatus } from '@/shared/core';
+import { type TransactionStoresMock } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { type UnclaimedPayout } from '@/domains/staking';
+import { networkModel } from '@/entities/network';
 import { MAX_PAYOUT_CALLS_PER_BATCH } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign';
@@ -13,6 +15,27 @@ import { type ClaimRequest, type ClaimRewardsConfirm, Step } from '../types';
 
 import { claimRewardsModel } from './claim';
 import { confirmModel } from './confirm';
+
+// The node is out of scope here: see `mockTransactionStores`. The verdict starts
+// empty — exactly the state the confirm opens in — and a test turns it on.
+const { txStores } = vi.hoisted(() => ({ txStores: { current: null as TransactionStoresMock | null } }));
+
+vi.mock('@/shared/transactions', async (importOriginal) => {
+  const { mockTransactionStores } = await import('@/shared/mocks');
+  txStores.current = mockTransactionStores(await importOriginal(), { valid: false });
+
+  return txStores.current.module;
+});
+
+/** The validator's verdict on the primary transaction. */
+const $valid = () => txStores.current!.$valid;
+
+/**
+ * The primary call is only built on a connected chain; the verdict is seeded
+ * with it.
+ */
+const readyToSign = () =>
+  new Map().set(networkModel.$connectionStatuses, { [chainId(1)]: ConnectionStatus.CONNECTED }).set($valid(), true);
 
 const accountId = (n: number): AccountId => `0x${n.toString(16).padStart(64, '0')}` as AccountId;
 const chainId = (n: number): ChainId => `0x${n.toString(16).padStart(64, '0')}` as ChainId;
@@ -54,9 +77,9 @@ const confirm = (n: number): ClaimRewardsConfirm => ({
  * `walletModel.$wallets` is derived, so it cannot be seeded through fork
  * values. Filling it through the populate effect is the supported route.
  */
-const withWallets = async (accountList: AnyAccount[] = []) => {
+const withWallets = async (accountList: AnyAccount[] = [], values = new Map()) => {
   const scope = fork({
-    values: new Map().set(accounts.__test.$list, accountList),
+    values: values.set(accounts.__test.$list, accountList),
     handlers: new Map().set(walletModel.populate, () => [wallet(1), wallet(2)]),
   });
   await allSettled(walletModel.populate, { scope });
@@ -204,23 +227,41 @@ describe('claimRewardsModel · signing gate', () => {
 
     await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
 
-    // No api in scope, so there is no wrapped transaction, no fee and no
-    // validation — exactly the state the confirm opens in.
+    // The validator has no verdict yet — exactly the state the confirm opens in.
     expect(scope.getState(claimRewardsModel.$canSign)).toBe(false);
   });
 
-  it('sends one signing payload per confirm', async () => {
-    const scope = await withWallets();
+  it('sends one signing payload per confirm once the gate is open', async () => {
+    const scope = await withWallets([], readyToSign());
     const payloads: unknown[] = [];
     createWatch({ unit: signModel.events.formInitiated, scope, fn: (payload) => payloads.push(payload) });
 
     await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
+    expect(scope.getState(claimRewardsModel.$canSign)).toBe(true);
+
     await allSettled(confirmModel.init, { scope, params: [confirm(1), confirm(2)] });
     await allSettled(confirmModel.startSigning, { scope });
 
     expect(payloads).toHaveLength(1);
     expect(payloads[0]).toMatchObject({ signingPayloads: [{}, {}] });
     expect(scope.getState(claimRewardsModel.$step)).toBe(Step.SIGN);
+  });
+
+  it('refuses to sign past a closed gate, even from the confirm', async () => {
+    // No verdict: the button is disabled, and a stale click must not walk on
+    // either.
+    const scope = await withWallets();
+    const payloads: unknown[] = [];
+    createWatch({ unit: signModel.events.formInitiated, scope, fn: (payload) => payloads.push(payload) });
+
+    await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
+    expect(scope.getState(claimRewardsModel.$canSign)).toBe(false);
+
+    await allSettled(confirmModel.init, { scope, params: [confirm(1)] });
+    await allSettled(confirmModel.startSigning, { scope });
+
+    expect(payloads).toEqual([]);
+    expect(scope.getState(claimRewardsModel.$step)).toBe(Step.CONFIRM);
   });
 });
 

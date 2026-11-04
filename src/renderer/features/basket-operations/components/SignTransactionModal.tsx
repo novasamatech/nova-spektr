@@ -18,15 +18,10 @@ export const SignTransactionModal = () => {
   const transactions = useUnit(signOperations.$transactions);
   const step = useUnit(signOperations.$step);
   const isModalOpen = useUnit(signOperations.$isModalOpen);
+  const canSign = useUnit(signOperations.$canSign);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
   const transaction = transactions.at(0);
-
-  const validationResult = useStoreMap({
-    store: validation.$validatingResults,
-    keys: [transaction?.id],
-    fn: (results, [id]) => (nonNullable(id) ? (results[id] ?? null) : null),
-  });
 
   const pending = useStoreMap({
     store: validation.$pending,
@@ -39,8 +34,6 @@ export const SignTransactionModal = () => {
   if (signOperationsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={() => signOperations.finishFlow()} />;
   }
-
-  const canSign = validationResult && validationResult.length === 0;
 
   return (
     <Modal size="md" isOpen={isModalOpen} onToggle={() => signOperations.finishFlow()}>
@@ -61,7 +54,7 @@ export const SignTransactionModal = () => {
       {signOperationsUtils.isConfirmStep(step) && (
         <Modal.Footer>
           {pending && <Loader color="primary" size={24} />}
-          <SignButton isDefault type={wallet?.type} disabled={!canSign || pending} onClick={signOperations.confirm} />
+          <SignButton isDefault type={wallet?.type} disabled={!canSign} onClick={signOperations.confirm} />
         </Modal.Footer>
       )}
     </Modal>

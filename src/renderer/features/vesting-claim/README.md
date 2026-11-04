@@ -1,6 +1,6 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-20
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -117,8 +117,10 @@ flowchart TD
 keeps vesting, the account, the chain — is already in hand when the button is pressed. The wrapped transaction, the fee
 and the validation each cost a round trip to the node, so they are _not_ awaited: the modal opens immediately and they
 stream in behind their own loaders, with the sign button disabled until they land. Changing the signing route re-runs
-them in place. On submit the on-chain vesting lock drops and the freed amount becomes transferable (unless a larger
-staking/vote lock still dominates `frozen`).
+them in place. That gate is the model's own, not only the button's: Sign pressed while anything is still in flight, the
+validation failed or the wrapped transaction is gone moves the flow nowhere and hands nothing to the signer. On submit
+the on-chain vesting lock drops and the freed amount becomes transferable (unless a larger staking/vote lock still
+dominates `frozen`).
 
 ### Can the claim actually be paid for?
 

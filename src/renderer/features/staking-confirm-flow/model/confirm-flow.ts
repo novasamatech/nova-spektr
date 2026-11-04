@@ -564,18 +564,21 @@ export const createConfirmFlowModel = () => {
     target: confirmModel.init,
   });
 
+  // The button is disabled while `$canSign` is false, and the model refuses
+  // too: a gate that closed after the click (draft mode, a dropped route, a
+  // live ledger with nothing left) must not be bypassable.
   sample({
     clock: confirmModel.startSigning,
-    source: draftMode.$isDraftMode,
-    filter: (isDraftMode) => !isDraftMode,
+    source: $canSign,
+    filter: (canSign) => canSign,
     fn: () => Step.SIGN,
     target: stepChanged,
   });
 
   const sign = sample({
     clock: confirmModel.startSigning,
-    source: { confirms: confirmModel.$confirms, isDraftMode: draftMode.$isDraftMode },
-    filter: ({ isDraftMode }) => !isDraftMode,
+    source: { confirms: confirmModel.$confirms, canSign: $canSign },
+    filter: ({ canSign }) => canSign,
     fn: ({ confirms }) => ({
       signingPayloads: confirms.map((confirm) => ({
         chain: confirm.meta.chain,

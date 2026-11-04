@@ -573,6 +573,16 @@ export const createAmountFlowModel = () => {
     target: stepChanged,
   });
 
+  /**
+   * Sign gate for the confirm step.
+   *
+   * The confirm asks nothing the amount step did not, so the gate is the same
+   * store under the name the sign step reads. Both `startSigning` consumers
+   * below refuse on it, so the Sign button's `disabled` is not the only thing
+   * standing in the way of a stale click.
+   */
+  const $canSign = $canContinue;
+
   // --- basket ---------------------------------------------------------------
   //
   // The same "sign later" affordance every old staking flow carries. The basket
@@ -663,16 +673,21 @@ export const createAmountFlowModel = () => {
     target: confirmModel.init,
   });
 
+  // The button is disabled while `$canSign` is false, and the model refuses
+  // too: a gate that closed after the click must not be bypassable.
   sample({
     clock: confirmModel.startSigning,
+    source: $canSign,
+    filter: (canSign) => canSign,
     fn: () => Step.SIGN,
     target: stepChanged,
   });
 
   const sign = sample({
     clock: confirmModel.startSigning,
-    source: confirmModel.$confirms,
-    fn: (confirms) => ({
+    source: { confirms: confirmModel.$confirms, canSign: $canSign },
+    filter: ({ canSign }) => canSign,
+    fn: ({ confirms }) => ({
       signingPayloads: confirms.map((confirm) => ({
         chain: confirm.meta.chain,
         account: confirm.meta.initiator,
@@ -763,6 +778,7 @@ export const createAmountFlowModel = () => {
     $preparing,
     $noRouteSigner,
     $canContinue,
+    $canSign,
     $canUseBasket,
     $confirms: confirmModel.$confirms,
 

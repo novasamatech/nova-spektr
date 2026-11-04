@@ -22,6 +22,23 @@ const $transactions = createStore<BasketTransaction[]>([]).reset(finishFlow);
 
 const $isModalOpen = combine($step, step => !signOperationsUtils.isNoneStep(step));
 
+/**
+ * Every selected transaction has been checked, none is still being checked and
+ * none failed. The button is disabled while this is false, and the model
+ * refuses too: a verdict that turned after the click must not be signed past. A
+ * transaction without a verdict yet reads as pending, never as clean.
+ */
+const $canSign = combine(
+  { transactions: $transactions, results: validation.$validatingResults, pending: validation.$pending },
+  ({ transactions, results, pending }) =>
+    transactions.length > 0 &&
+    transactions.every(transaction => {
+      const result = results[transaction.id];
+
+      return !(pending[transaction.id] ?? true) && nonNullable(result) && result.length === 0;
+    }),
+);
+
 sample({
   clock: startFlow,
   fn: () => Step.CONFIRM,
@@ -49,8 +66,9 @@ sample({
     transactions: $transactions,
     chains: networkModel.$chains,
     accounts: accounts.$list,
+    canSign: $canSign,
   },
-  filter: ({ transactions }) => nonNullable(transactions) && transactions.length > 0,
+  filter: ({ canSign }) => canSign,
   fn: ({ transactions, accounts, chains }) => {
     // TODO implement wrapping in basket context. Now basket only supports PV so it's not necessary.
     const signingPayloads = transactions
@@ -134,6 +152,7 @@ export const signOperations = {
   $step,
   $transactions,
   $isModalOpen,
+  $canSign,
 
   startFlow,
   finishFlow,

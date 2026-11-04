@@ -45,7 +45,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(amountFlowModel.$multisigDeposit);
   const preparing = useUnit(amountFlowModel.$preparing);
   const noRouteSigner = useUnit(amountFlowModel.$noRouteSigner);
-  const canSign = useUnit(amountFlowModel.$canContinue);
+  const canSign = useUnit(amountFlowModel.$canSign);
   const canUseBasket = useUnit(amountFlowModel.$canUseBasket);
 
   if (!mode || !chain || !asset || !initiator) return null;

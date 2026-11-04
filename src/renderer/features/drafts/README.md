@@ -1,6 +1,6 @@
 # Operation Drafts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
 
 ## Overview
 
@@ -227,10 +227,13 @@ them is unknown. Proxy-only drafts (a proxied source with no multisig hop) are c
 
 - **Create → Confirm.** When the decoded recipient is not known (`unknown`) or cannot be checked (`unverifiable`), an
   amber acknowledgement box appears below the transaction card, above the "This does not sign yet" note. **Create
-  draft** stays disabled until its checkbox is ticked. The tick is cleared by anything that can change the recipient —
-  new call data, another chain, closing the modal, or opening a new one — so it never carries over to a different
-  address. This is where the transfer form's _draft mode_ hands off: the form skips its own gate when saving as a draft
-  and relies on this step instead.
+  draft** stays disabled until its checkbox is ticked, and the create action itself refuses: the model creates nothing
+  while the confirm is not ready — the tick, a description within the limit, a usable path and a connected address book
+  all included. A press that slips past a gate that closed after the click is not silent either: it ends in an error
+  toast naming an invalid signing path, or a generic "Failed to create draft". The tick is cleared by anything that can
+  change the recipient — new call data, another chain, closing the modal, or opening a new one — so it never carries
+  over to a different address. This is where the transfer form's _draft mode_ hands off: the form skips its own gate
+  when saving as a draft and relies on this step instead.
 - **"Can't check" is not "nothing to check".** While the chain's api is not connected the call data can't be decoded, so
   the recipient is unknown-unknown: **Create draft** stays disabled with a "waiting for the network connection" note
   until the api is up. (With the address book never connected there is nothing to check, and the api is not required.)

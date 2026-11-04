@@ -580,13 +580,16 @@ const $noRouteSigner = combine(
 
 const $canSign = combine(
   {
+    isDraftMode: draftMode.$isDraftMode,
     tx: $tx,
     valid: $isTxValid,
     preparing: $preparing,
     noRouteSigner: $noRouteSigner,
     extraValidation: $extraValidation,
   },
-  ({ tx, valid, preparing, noRouteSigner, extraValidation }) =>
+  ({ isDraftMode, tx, valid, preparing, noRouteSigner, extraValidation }) =>
+    // A draft is "somebody else signs later": nothing local may sign it.
+    !isDraftMode &&
     nonNullable(tx) &&
     valid &&
     !preparing &&
@@ -776,10 +779,13 @@ draftMode.connectSave({
 // Sign → submit
 // ---------------------------------------------------------------------------
 
+// The button is disabled while `$canSign` is false, and the model refuses
+// too: a gate that closed after the click (draft mode, a dropped route, an
+// extra still unpriced) must not be bypassable.
 sample({
   clock: confirmModel.startSigning,
-  source: draftMode.$isDraftMode,
-  filter: (isDraftMode) => !isDraftMode,
+  source: $canSign,
+  filter: (canSign) => canSign,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
@@ -792,8 +798,8 @@ sample({
  */
 const sign = sample({
   clock: confirmModel.startSigning,
-  source: { confirms: confirmModel.$confirms, isDraftMode: draftMode.$isDraftMode },
-  filter: ({ isDraftMode }) => !isDraftMode,
+  source: { confirms: confirmModel.$confirms, canSign: $canSign },
+  filter: ({ canSign }) => canSign,
   fn: ({ confirms }) => ({
     signingPayloads: confirms.map((confirm) => ({
       chain: confirm.meta.chain,

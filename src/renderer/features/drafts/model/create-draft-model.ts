@@ -1,12 +1,20 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { isHex } from '@/shared/lib/utils';
-import { type PathNode } from '@/domains/backend';
+import { type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
+import { backendConfigurationModel } from '@/aggregates/backend';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
-import { graphModel, pathModel } from '@/features/signing-path';
+import {
+  deriveInitiatorAccountId,
+  deriveMultisigAccountId,
+  graphModel,
+  isUsablePath,
+  isValidPath,
+  pathModel,
+} from '@/features/signing-path';
 import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
 import { getRecipientAccountIds, getRecipientCheck } from '../lib/recipient-check';
 
@@ -206,16 +214,108 @@ const $canContinue = combine(
     errorKey: $callDataErrorKey,
     pathComplete: pathModel.$isComplete,
     description: $description,
+    riskAccepted: $recipientRiskAccepted,
   },
-  ({ step, chain, callData, errorKey, pathComplete, description }) => {
+  ({ step, chain, callData, errorKey, pathComplete, description, riskAccepted }) => {
     if (step === 'call-data') return !!chain && callData.length > 0 && errorKey === null;
     if (step === 'select-path') return pathComplete;
 
-    return step === 'confirm' && description.trim().length > 0 && description.length <= DESCRIPTION_MAX_LENGTH;
+    return (
+      step === 'confirm' &&
+      description.trim().length > 0 &&
+      description.length <= DESCRIPTION_MAX_LENGTH &&
+      // The unknown-recipient acknowledgement is part of the confirm gate, not
+      // only of the button: a draft is never created past an unticked box.
+      riskAccepted
+    );
   },
 );
 
 const $canSkip = combine($activeStep, $selectedChain, (step, chain) => step === 'call-data' && !!chain);
+
+export type DraftNotCreatedReason = 'not-ready' | 'invalid-path';
+
+/**
+ * The create action refused: the gate in front of the backend call was closed
+ * when it ran. `reason` says which part of it — the confirm as a whole, or the
+ * signing path in particular — so the caller can tell the user why nothing
+ * happened.
+ */
+export class DraftNotCreatedError extends Error {
+  constructor(
+    readonly reason: DraftNotCreatedReason,
+    /** What exactly is wrong with the path, when the validator says. */
+    readonly detail?: string,
+  ) {
+    super(`Draft not created: ${reason}`);
+    this.name = 'DraftNotCreatedError';
+  }
+}
+
+type CreateRequest =
+  | { ok: true; backendUrl: string; params: Parameters<typeof draftsService.createDraft>[1] }
+  | { ok: false; reason: DraftNotCreatedReason; detail?: string };
+
+/**
+ * Everything the create call needs, or why it cannot be made — the confirm gate
+ * included, so the backend is never asked for a draft the modal would not let
+ * the user create.
+ */
+const $createRequest = combine(
+  {
+    canContinue: $canContinue,
+    backendUrl: backendConfigurationModel.$backendUrl,
+    chain: $selectedChain,
+    path: pathModel.$path,
+    callData: $callData,
+    description: $description,
+  },
+  ({ canContinue, backendUrl, chain, path, callData, description }): CreateRequest => {
+    if (!canContinue || !backendUrl || !chain) return { ok: false, reason: 'not-ready' };
+
+    // A lone `signer` is grammatically valid, but a draft along it could never
+    // be submitted — the signing path needs at least one delegation hop.
+    const validation = isValidPath(path);
+    if (!validation.ok || !isUsablePath(path)) {
+      return { ok: false, reason: 'invalid-path', detail: validation.ok ? undefined : validation.reason };
+    }
+
+    return {
+      ok: true,
+      backendUrl,
+      params: {
+        chainId: chain.chainId,
+        multisigAccountId: deriveMultisigAccountId(path) ?? undefined,
+        proxyAccountId: path[0]?.kind === 'proxied' ? path[0].accountId : undefined,
+        signingPath: path,
+        initiatorAccountId: deriveInitiatorAccountId(path) ?? undefined,
+        callData: callData || undefined,
+        description: description || undefined,
+      },
+    };
+  },
+);
+
+/**
+ * The create action. An effect so the modal can await it for its toasts; the
+ * gate lives inside, so a call while the confirm is not ready creates nothing
+ * and fails with a {@link DraftNotCreatedError} — the button's `disabled` is not
+ * the only thing standing in the way, and a gate that closed after the click
+ * still says why.
+ */
+const createDraftFx = attach({
+  source: $createRequest,
+  effect: async (request) => {
+    if (!request.ok) throw new DraftNotCreatedError(request.reason, request.detail);
+
+    return draftsService.createDraft(request.backendUrl, request.params);
+  },
+});
+
+sample({
+  clock: createDraftFx.doneData,
+  target: [draftsResource.draftCreated, draftCreated],
+});
 
 export const createDraftModel = {
   createDraftRequested,
@@ -246,4 +346,5 @@ export const createDraftModel = {
   $isDirty,
   $canContinue,
   $canSkip,
+  createDraftFx,
 };
