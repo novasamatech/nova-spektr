@@ -44,9 +44,10 @@ zero balances included, so an account with no record at all has not been read ye
 
 | Situation                                                               | Result                                                                  |
 | ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Some selected account that lives on a known chain has no record yet     | Not complete; the account counts as awaiting                            |
+| Some selected account that lives on an enabled chain has no record yet  | Not complete; the account counts as awaiting                            |
 | Every such account has at least one record                              | Complete                                                                |
-| An account fits no chain (no availability / no matching address scheme) | Not waited for — it is never requested                                  |
+| An account fits no enabled chain (no availability / no matching scheme) | Not waited for — it is never requested                                  |
+| An account's only chains have a disabled connection                     | Not waited for — a disabled chain never connects, so nothing is fetched |
 | No selected account has any record (e.g. chains not loaded yet)         | Not complete                                                            |
 | 30s pass since the selection was set and it is still not complete       | Timed out — the view renders what it has; awaiting count stays reported |
 

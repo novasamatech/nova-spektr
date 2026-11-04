@@ -1,6 +1,6 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -63,10 +63,11 @@ flowchart TD
 
 The **skeleton vs. empty** distinction follows the same rule as `dashboard-portfolio-overview`: the balance subscription
 writes a record for every (account, chain, asset) it queries, zero balances included, so an account with no record at
-all has not been read yet. The table waits until **every** selected account that can hold balances on at least one known
-chain (wallet accounts: chains they are available on; contacts: chains of a matching address scheme) has a record — one
-fast account does not stand in for the rest (`useBalanceCoverage` from `features/assets-balances`). Until then the
-widget shows its skeleton, never an empty table, a row of zeros or a partial list presented as final.
+all has not been read yet. The table waits until **every** selected account that can hold balances on at least one
+enabled chain (wallet accounts: chains they are available on; contacts: chains of a matching address scheme; chains
+whose connection is disabled are never fetched, so they do not count) has a record — one fast account does not stand in
+for the rest (`useBalanceCoverage` from `features/assets-balances`). Until then the widget shows its skeleton, never an
+empty table, a row of zeros or a partial list presented as final.
 
 The wait is bounded at **30s per selection**, because a chain whose RPC is down keeps retrying for the life of the app
 and an account that lives only there never gets a record. After that the table renders what has arrived and the footer

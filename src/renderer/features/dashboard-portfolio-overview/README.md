@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -64,10 +64,10 @@ Zero holdings is not evidence on its own. A balance of **zero** produces no hold
 balance that has not been read yet, so the rendered emptiness is identical in both cases. What separates them is the
 **presence of a balance record**: the subscription writes one for every (account, chain, asset) pair it queries, zero
 balances included, so an account with no record has not been read yet. "Nothing to show" becomes a statement about the
-accounts only once **every** selected account that can hold balances on at least one known chain has a record — one
-account read as empty says nothing about the others (`useBalanceCoverage` from `features/assets-balances`). Until then
-the card shows its skeleton — the same rule the Portfolio page shimmers on, where a row with no record renders a
-skeleton and never a zero.
+accounts only once **every** selected account that can hold balances on at least one enabled chain (a chain whose
+connection is disabled is never fetched, so it does not count) has a record — one account read as empty says nothing
+about the others (`useBalanceCoverage` from `features/assets-balances`). Until then the card shows its skeleton — the
+same rule the Portfolio page shimmers on, where a row with no record renders a skeleton and never a zero.
 
 This replaced a short wall-clock grace measured from mount, which on a cold start expired long before balances arrived
 and told users with substantial holdings that they had none, while the Portfolio page was still shimmering for the very
