@@ -6,7 +6,13 @@ import { type ChainId } from '@/shared/core';
 import { getRelaychainAsset, getRoundedValue, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
-import { type RewardsMap, AssetHubChains, useStakingRewards } from '@/domains/staking';
+import {
+  type DataCompleteness,
+  type RewardsMap,
+  AssetHubChains,
+  combineCompleteness,
+  useStakingRewards,
+} from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 
@@ -25,6 +31,12 @@ export type TotalRewardsData = {
   chains: ChainRewardsSummary[];
   rewardsMapByChain: Record<ChainId, RewardsMap>;
   totalFiat: string | null;
+  /**
+   * How far the totals can be trusted across the configured networks. Only
+   * `complete` makes them totals: `partial` is a lower bound and `unavailable`
+   * could not be loaded, which is not "no rewards".
+   */
+  completeness: DataCompleteness;
   pending: boolean;
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
@@ -61,18 +73,22 @@ export const useTotalRewards = (accountIds: string[], since?: number): TotalRewa
   const polkadotChain = chains[POLKADOT_AH_CHAIN_ID] ?? null;
   const kusamaChain = chains[KUSAMA_AH_CHAIN_ID] ?? null;
 
-  const { data: polkadotRewards, pending: polkadotPending } = useStakingRewards(
-    typedAccountIds,
-    polkadotChain,
-    chains,
-    since,
-  );
-  const { data: kusamaRewards, pending: kusamaPending } = useStakingRewards(
-    typedAccountIds,
-    kusamaChain,
-    chains,
-    since,
-  );
+  const {
+    data: polkadotRewards,
+    completeness: polkadotCompleteness,
+    pending: polkadotPending,
+  } = useStakingRewards(typedAccountIds, polkadotChain, chains, since);
+  const {
+    data: kusamaRewards,
+    completeness: kusamaCompleteness,
+    pending: kusamaPending,
+  } = useStakingRewards(typedAccountIds, kusamaChain, chains, since);
+
+  // A network this build does not configure has nothing to answer for.
+  const completeness = combineCompleteness([
+    ...(polkadotChain ? [polkadotCompleteness] : []),
+    ...(kusamaChain ? [kusamaCompleteness] : []),
+  ]);
 
   const result = useMemo(() => {
     const rewardsMapByChain: Record<ChainId, RewardsMap> = {
@@ -126,6 +142,7 @@ export const useTotalRewards = (accountIds: string[], since?: number): TotalRewa
     chains: result.chains,
     rewardsMapByChain: result.rewardsMapByChain,
     totalFiat: result.totalFiat,
+    completeness,
     pending: accountIds.length > 0 && (polkadotPending || kusamaPending),
     fiatFlag,
     currency,

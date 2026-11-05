@@ -15,6 +15,7 @@ import { useUnclaimedRewards } from '../hooks/useUnclaimedRewards';
 import {
   type PositionRow,
   getBlockedReasonKey,
+  getClaimBlockedReasonKey,
   getCountdownParts,
   getExpiryLabelKey,
   getUnbondingCountdown,
@@ -101,7 +102,9 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
   // not an answer. Reading it as one made the drawer open with "Nothing to claim
   // on this position" over a position that turned out to have rewards.
   const unclaimedPending = unclaimed.pending;
-  const hasUnclaimed = !unclaimedPending && !new BN(unclaimed.total).isZero();
+  // `null` exactly when the scan has found a payout - see `getClaimBlockedReasonKey`.
+  const claimBlockedReasonKey = getClaimBlockedReasonKey(unclaimed);
+  const hasUnclaimed = claimBlockedReasonKey === null;
 
   // The chip names the amount it will claim, so the user does not have to look
   // back up at the grid to know what they are about to sign for.
@@ -133,15 +136,16 @@ export const PositionDetailDrawer = ({ row, onClose }: Props) => {
     : null;
 
   // "No signer" wins over "nothing to claim": a chain nobody here can sign on
-  // stays blocked no matter what the scan finds. Below that, a scan still in
-  // flight — or one that could not look everywhere — leaves the chip enabled:
-  // it asserts nothing about payouts it has not checked; only a complete scan
-  // that found nothing disables it.
+  // stays blocked no matter what the scan finds. Below that the chip is live
+  // only when the scan has found a payout to claim - the request it fires is
+  // built from those payouts and is dropped without any, so an enabled chip
+  // over an empty or still-running scan would be a dead click. The hint says
+  // which it is: still checking, could not check everywhere, or truly nothing.
   const claimBlockedHint = !chainHasSigner
     ? t('dashboard.staking.positions.detail.actions.noSigner', { network: row?.chain.name ?? '' })
-    : hasUnclaimed || unclaimedPending || !unclaimed.complete
+    : claimBlockedReasonKey === null
       ? undefined
-      : t('dashboard.staking.positions.detail.actions.nothingToClaim');
+      : t(claimBlockedReasonKey);
 
   // Two frames, not one: the first paints the spinner, the second runs once it
   // is actually on screen — only then mount the flow. Dispatching straight from

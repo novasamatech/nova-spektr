@@ -56,7 +56,11 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
 
   const chain = selected?.chain ?? null;
   const eraAnchor = useRewardsEraAnchor(chain);
-  const { buckets, total, hasData, pending } = useRewardsChart({ accountIds, chain, range });
+  const { buckets, total, hasData, completeness, pending } = useRewardsChart({ accountIds, chain, range });
+  // Nothing could be loaded: there is no total to print, and a `0 DOT` would
+  // state that nothing was earned.
+  const unavailable = completeness === 'unavailable';
+  const incomplete = completeness !== 'complete';
 
   const assetOptions = useMemo<SegmentedOption<ChainId>[]>(
     () => assets.map((asset) => ({ value: asset.chainId, label: asset.symbol, dotColor: asset.color })),
@@ -110,9 +114,13 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
           />
         </div>
 
-        <div className="mt-2 flex items-baseline gap-2">
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
           {pending ? (
             <Skeleton width="180px" height="22px" />
+          ) : unavailable ? (
+            <SmallTitleText className="text-text-tertiary">
+              {t('dashboard.staking.rewardsChart.unavailable.total')}
+            </SmallTitleText>
           ) : (
             <>
               <SmallTitleText>{formatAsset(total, selected.asset)}</SmallTitleText>
@@ -130,6 +138,12 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
                   {t(`dashboard.staking.rewardsChart.rangeSummary.${range}`)}
                 </FootnoteText>
               </div>
+              {/* A source that did not answer leaves the total a lower bound. */}
+              {incomplete ? (
+                <FootnoteText className="text-text-warning">
+                  {t('dashboard.staking.rewardsChart.incomplete.note')}
+                </FootnoteText>
+              ) : null}
             </>
           )}
         </div>
@@ -148,6 +162,19 @@ export const RewardsChartWidget = ({ accountIds }: Props) => {
                 formatDate={formatDate}
                 onHoverChange={handleHoverChange}
               />
+            ) : incomplete ? (
+              // "No rewards yet" is a statement about the whole history; one
+              // that did not load in full cannot make it.
+              <div className="flex h-full flex-col items-center justify-center gap-y-1 text-center">
+                <BodyText className="text-text-tertiary">
+                  {unavailable
+                    ? t('dashboard.staking.rewardsChart.unavailable.title')
+                    : t('dashboard.staking.rewardsChart.incomplete.title')}
+                </BodyText>
+                <FootnoteText className="text-text-tertiary">
+                  {t('dashboard.staking.rewardsChart.incomplete.description')}
+                </FootnoteText>
+              </div>
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-y-1">
                 <BodyText className="text-text-tertiary">{t('dashboard.staking.rewardsChart.empty.title')}</BodyText>

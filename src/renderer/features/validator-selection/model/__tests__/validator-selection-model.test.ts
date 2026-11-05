@@ -546,6 +546,37 @@ describe('validatorSelectionModel selection', () => {
   });
 });
 
+describe('validatorSelectionModel era rollover', () => {
+  it('SP-40: keeps the picked validators while the next era set is loading and after it lands', async () => {
+    const scope = forkWith(SCENARIO);
+
+    await initiate(scope, {});
+    await allSettled(validatorSelectionModel.events.validatorToggled, { scope, params: SCENARIO.validators[0]! });
+    await allSettled(validatorSelectionModel.events.validatorToggled, { scope, params: SCENARIO.validators[1]! });
+
+    expect(scope.getState(validatorSelectionModel.$selected)).toEqual([accountId(1), accountId(2)]);
+
+    // The era moves on: the cached set belongs to the previous era, so the list
+    // reads as loading and shows nothing.
+    await allSettled($eraCache, { scope, params: { [CHAIN_ID]: ERA + 1 } });
+
+    expect(visibleIds(scope)).toEqual([]);
+    expect(scope.getState(validatorSelectionModel.$selected)).toEqual([accountId(1), accountId(2)]);
+
+    // The new era's set lands: the pick is untouched and shown again.
+    const nextSet = [SCENARIO.validators[0]!, SCENARIO.validators[1]!, makeValidator(5, { apy: 1 })];
+    await allSettled($validatorsCache, {
+      scope,
+      params: { [CHAIN_ID]: { era: ERA + 1, value: Object.fromEntries(nextSet.map((v) => [v.accountId, v])) } },
+    });
+
+    // The anonymous newcomer is hidden by the default identity filter; the picked two are back.
+    expect(visibleIds(scope)).toEqual(expect.arrayContaining([accountId(1), accountId(2)]));
+    expect(scope.getState(validatorSelectionModel.$selected)).toEqual([accountId(1), accountId(2)]);
+    expect(scope.getState(validatorSelectionModel.$selectedShownCount)).toBe(2);
+  });
+});
+
 describe('validatorSelectionModel detail', () => {
   it('opens and closes the detail with its score breakdown', async () => {
     const scope = forkWith(SCENARIO);

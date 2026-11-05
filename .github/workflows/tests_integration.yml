@@ -32,84 +32,166 @@ env:
   ALLURE_RESULTS: allure-results
 
 jobs:
+  # Runs the project's code and dependencies. The job holds no secrets and a read-only
+  # token; it only hands the result files over to `publish-results`.
   integration-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+    outputs:
+      outcome: ${{ steps.vitest_tests.outcome }}
+      timed_out: ${{ steps.vitest_tests.outputs.timed_out }}
+
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 🧪 Run integration tests
+        id: vitest_tests
+        run: |
+          set +e
+          timeout 43m pnpm test:integration
+          EXIT_CODE=$?
+          set -e
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "timed_out=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit $EXIT_CODE
+
+      - name: ⬆️ Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: integration-test-results
+          path: |
+            junit.xml
+            allure-results
+          retention-days: 1
+
+  # Holds the write-scoped token and the Allure and Telegram secrets. It never installs
+  # the project's dependencies and never runs a project script: the files and outputs of
+  # the test job are only read as data.
+  publish-results:
+    needs: integration-tests
+    # Runs after a passed or a failed test job, not after a cancelled or skipped one.
+    if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), needs.integration-tests.result) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write
       checks: write
 
     steps:
-      - name: ⚙️Checkout
+      # Local actions resolve from the job workspace; only their directories are checked out.
+      - name: ⚙️Checkout local actions
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          sparse-checkout: |
+            .github/workflows/install-allurectl
+            .github/workflows/notify-telegram
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
 
-      - name: ⚙️Install dependencies
-        uses: ./.github/workflows/install-pnpm
-
-      - name: Install allurectl
-        uses: ./.github/workflows/install-allurectl
-
-      - name: 🧪 Run integration tests
-        id: vitest_tests
-        env:
-          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
-        run: |
-          set +e
-          # The token stays with allurectl; the test process and its dependencies never see it.
-          timeout 43m allurectl watch -- env -u ALLURE_TOKEN pnpm test:integration
-          EXIT_CODE=$?
-          set -e
-          if [ $EXIT_CODE -eq 124 ]; then
-            echo "TEST_TIMED_OUT=true" >> $GITHUB_ENV
-          fi
-          exit $EXIT_CODE
-
-      - name: Create Allure testplan if missing
-        if: always()
-        run: |
-          mkdir -p .allure
-          echo '{}' > .allure/testplan.json
+      # The artifact is missing when the test job stopped before producing any result
+      # file; the remaining steps still report that run.
+      - name: ⬇️ Download test results
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: integration-test-results
+          path: test-results
 
       - name: 📄 Post results
-        if: always()
+        if: ${{ !cancelled() }}
         uses: EnricoMi/publish-unit-test-result-action/linux@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
-          files: ./junit.xml
+          files: test-results/junit.xml
           check_name: 'Integration Test Results'
           comment_mode: 'changes'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare Telegram notification
-        if: always()
-        shell: bash
+      - name: Install allurectl
+        if: ${{ !cancelled() }}
+        uses: ./.github/workflows/install-allurectl
+
+      # The results directory is uploaded as it is. `allurectl job-run env` prints the
+      # launch and job run of this workflow run; its output is parsed, never evaluated.
+      - name: ⬆️ Upload results to Allure
+        id: allure
+        if: ${{ !cancelled() }}
         env:
           ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+          ALLURE_RESULTS: test-results/allure-results
+          # allurectl names the job run after the job it runs in; keep the name it had
+          # while it ran inside the test job.
+          ALLURE_JOB_RUN_NAME: 'integration-tests #${{ github.run_number }}'
         run: |
-          allurectl job-run env >> $GITHUB_ENV
-          COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
-          echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
-          echo "$COMMIT_INFO" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          if [ "${{ steps.vitest_tests.outcome }}" == "failure" ] && [ "${{ env.TEST_TIMED_OUT }}" == "true" ]; then
-            echo "TEST_STATUS=❌ Failed (timeout reached)" >> $GITHUB_ENV
-          elif [ "${{ steps.vitest_tests.outcome }}" == "failure" ]; then
-            echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
-          else
-            echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
+          if [ ! -d "$ALLURE_RESULTS" ]; then
+            echo "::warning::The test job produced no Allure results, nothing to upload"
+            exit 0
           fi
 
+          allurectl upload "$ALLURE_RESULTS"
+          # `allurectl watch` stopped the job run when the tests finished; do the same
+          # once everything is uploaded. It is not an error if it is stopped already.
+          allurectl job-run stop || true
+
+          # The single-job workflow created an empty test plan before asking for the
+          # job run variables; keep doing so.
+          mkdir -p .allure
+          [ -f .allure/testplan.json ] || echo '{}' > .allure/testplan.json
+
+          job_run_env="$RUNNER_TEMP/allure-job-run.env"
+          allurectl job-run env > "$job_run_env" || true
+          job_run_url=$(sed -n 's/^ALLURE_TESTOPS_JOB_RUN_URL=//p' "$job_run_env" | head -n 1)
+          url_pattern='^https://[A-Za-z0-9._/-]+$'
+          if [[ "$job_run_url" =~ $url_pattern ]]; then
+            echo "job_run_url=$job_run_url" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::allurectl did not report a job run URL"
+          fi
+
+      # The outcome and the timed-out flag come from the test job, so they are compared
+      # as plain strings. The Allure URL goes into an HTML message; escape it.
+      - name: Prepare Telegram notification
+        id: telegram
+        if: ${{ !cancelled() }}
+        env:
+          TEST_OUTCOME: ${{ needs.integration-tests.outputs.outcome }}
+          TEST_TIMED_OUT: ${{ needs.integration-tests.outputs.timed_out }}
+          ALLURE_URL: ${{ steps.allure.outputs.job_run_url }}
+        run: |
+          if [ "$TEST_OUTCOME" = "success" ]; then
+            test_status="✅ Passed"
+          elif [ "$TEST_TIMED_OUT" = "true" ]; then
+            test_status="❌ Failed (timeout reached)"
+          else
+            test_status="❌ Failed"
+          fi
+          echo "test_status=$test_status" >> "$GITHUB_OUTPUT"
+
+          escaped=$(printf '%s' "$ALLURE_URL" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')
+          echo "allure_url=$escaped" >> "$GITHUB_OUTPUT"
+
       - name: Notify Telegram channel
-        if: always()
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
+          format: html
           message: |
             📋 Integration Test Report Published
-            ${{ env.COMMIT_INFO }}
-            ${{ env.TEST_STATUS }}
+            Commit: <a href="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}">${{ github.sha }}</a>
+            ${{ steps.telegram.outputs.test_status }}
 
-            URL: ${{ env.ALLURE_JOB_RUN_URL }}
+            URL: ${{ steps.telegram.outputs.allure_url }}
             Test group: tests/integrations/cases

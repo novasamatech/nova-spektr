@@ -78,7 +78,11 @@ export const Staking = () => {
   const { api: timelineApi } = useNetworkData(timelineChainId);
 
   const chains = useUnit(networkModel.$chains);
-  const { data: rewards, pending: isRewardsLoading } = useStakingRewards(accountIds, chain, chains);
+  const {
+    data: rewards,
+    completeness: rewardsCompleteness,
+    pending: isRewardsLoading,
+  } = useStakingRewards(accountIds, chain, chains);
 
   // Subscribe to active era
   useEffect(() => {
@@ -147,6 +151,7 @@ export const Staking = () => {
       isSelected: selectedNominators.includes(account.accountId),
       totalStake: isStakingLoading ? undefined : (staking[account.accountId]?.total ?? '0'),
       totalReward: isRewardsLoading ? undefined : rewards[account.accountId],
+      rewardsCompleteness: isRewardsLoading ? undefined : rewardsCompleteness,
       unlocking: staking[account.accountId]?.unlocking,
     });
 
@@ -161,7 +166,7 @@ export const Staking = () => {
 
       return acc;
     }, []);
-  }, [groupedAccounts, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
+  }, [groupedAccounts, isStakingLoading, isRewardsLoading, rewards, rewardsCompleteness, staking, selectedNominators]);
 
   const selectedStakes = selectedNominators.reduce<Stake[]>((acc, accountId) => {
     const stake = staking[accountId];
@@ -248,6 +253,7 @@ export const Staking = () => {
             <NetworkInfo
               chain={chain}
               rewards={Object.values(rewards)}
+              rewardsCompleteness={rewardsCompleteness}
               isRewardsLoading={isRewardsLoading}
               isStakingLoading={isStakingLoading}
               totalStakes={totalStakes}

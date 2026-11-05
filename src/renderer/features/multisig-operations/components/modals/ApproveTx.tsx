@@ -42,13 +42,11 @@ type SubmitData = {
   description: string;
 };
 
+// Signing is not a local step: the model decides when it may start.
 const enum Step {
   FORM,
   CONFIRMATION,
-  SIGNING,
 }
-
-const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING];
 
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
   const { t } = useI18n();
@@ -76,6 +74,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const description = useUnit(approveModel.$description);
   const recipientWarning = useUnit(approveModel.$recipientWarning);
   const riskAcknowledged = useUnit(approveModel.$isRiskAcknowledged);
+  const isSigning = useUnit(approveModel.$isSigning);
 
   const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
@@ -87,7 +86,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     if (open) {
       approveModel.flow.open({ chain, operation, account });
       setIsModalOpen(true);
-    } else if (activeStep === Step.SIGNING) {
+    } else if (isSigning) {
       setShowConfirm(true);
     } else {
       approveModel.flow.close({ chain, operation, account });
@@ -103,10 +102,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     setActiveStep(Step.FORM);
     setIsModalOpen(false);
     setShowConfirm(false);
-  };
-
-  const goBack = () => {
-    setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
 
   const onSignResult = (signature: HexString[], payload: Uint8Array[]) => {
@@ -129,7 +124,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   const handleConfirm = () => {
     if (valid) {
-      setActiveStep(Step.SIGNING);
+      approveModel.startSigning();
     } else {
       toggleFeeModal();
     }
@@ -169,7 +164,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
               onSubmit={onFormSubmit}
             />
           )}
-          {activeStep === Step.CONFIRMATION && (
+          {activeStep === Step.CONFIRMATION && !isSigning && (
             <Confirmation
               operation={operation}
               multisigAccount={account}
@@ -191,11 +186,11 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             />
           )}
 
-          {activeStep === Step.SIGNING && signingPayloads && signAccount && (
+          {isSigning && signingPayloads && signAccount && (
             <SigningSwitch
               signerWallet={wallets.find(w => w.id === signAccount.walletId)}
               signingPayloads={signingPayloads}
-              onGoBack={goBack}
+              onGoBack={() => approveModel.cancelSigning()}
               onResult={onSignResult}
             />
           )}

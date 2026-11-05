@@ -115,9 +115,9 @@ export const VerifyProxyConfirmation = ({ id = 0, secondaryActionButton, hideSig
         )}
 
         <div className="flex gap-4">
-          {secondaryActionButton}
+          {!isMultisigExists && secondaryActionButton}
 
-          {!hideSignButton && (
+          {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={nonNullable(secondaryActionButton)}
               type={signatoryWalletType}

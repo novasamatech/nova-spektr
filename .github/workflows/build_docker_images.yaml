@@ -68,8 +68,8 @@ jobs:
           wallet_connect_project_id: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
           set_version_from_tag_commit: 'true'
 
-  build-release-and-pr-images:
-    if: ${{ (github.event_name == 'push' && github.ref_type == 'tag' && !startsWith(github.ref_name, 'stage-2-')) || (github.event_name == 'pull_request' && contains(github.event.label.name, 'internal-build')) }}
+  build-release-image:
+    if: ${{ github.event_name == 'push' && github.ref_type == 'tag' && !startsWith(github.ref_name, 'stage-2-') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -85,6 +85,30 @@ jobs:
           registry: ${{ env.REGISTRY }}
           image_name: ${{ env.IMAGE_NAME }}
           node_js_image_version: ${{ matrix.node-js-image-version }}
-          image_label: ${{ github.event_name == 'pull_request' && 'stage' || github.ref_name }}
+          image_label: ${{ github.ref_name }}
+          build_type: production
+          wallet_connect_project_id: ${{ vars.WALLET_CONNECT_PROJECT_ID }}
+
+  # A labelled pull request builds its own Dockerfile and replaces the shared `stage`
+  # image, so the job waits for an approval in the `internal-build` environment.
+  build-pr-image:
+    if: ${{ github.event_name == 'pull_request' && contains(github.event.label.name, 'internal-build') }}
+    runs-on: ubuntu-latest
+    environment: internal-build
+    permissions:
+      contents: read
+      packages: write
+    strategy: *node_js_strategy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Build and push Docker image
+        uses: ./.github/workflows/build-and-push-docker
+        with:
+          registry: ${{ env.REGISTRY }}
+          image_name: ${{ env.IMAGE_NAME }}
+          node_js_image_version: ${{ matrix.node-js-image-version }}
+          image_label: stage
           build_type: production
           wallet_connect_project_id: ${{ vars.WALLET_CONNECT_PROJECT_ID }}

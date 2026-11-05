@@ -7,7 +7,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { getColorByPriceId } from '@/shared/ui/chart-constants';
 import { accounts } from '@/domains/network';
 import { type CurrencyItem } from '@/domains/price';
-import { type StakingPosition } from '@/domains/staking';
+import { type DataCompleteness, type StakingPosition } from '@/domains/staking';
 import { walletModel } from '@/entities/wallet';
 import {
   type StakingSummary,
@@ -21,6 +21,7 @@ import { type AssetAmount, sumFiat, sumPlanck } from '../lib/amounts';
 import { type NetworkAvgBlend } from '../lib/apy';
 import { daysUntilExpiry, erasUntilExpiry, oldestPayoutEra } from '../lib/expiry';
 import { type UnbondingFooter, type UnclaimedFooter, getUnbondingFooter, getUnclaimedFooter } from '../lib/footer';
+import { getRewardsScan } from '../lib/rewards-scan';
 import { filterPositionsByAccounts, withdrawablePositions } from '../lib/summary';
 import { type BreakdownRow, type ClaimRow, type PositionRow } from '../lib/types';
 
@@ -55,6 +56,17 @@ export type StakingKpiData = {
   rewardsWindowDays: number;
   rewardsFiat: string;
   rewardAmounts: AssetAmount[];
+  /**
+   * How far the reward figures can be trusted. Only `complete` makes them a
+   * total: `partial` is a lower bound — a network did not answer in full — and
+   * `unavailable` means nothing could be loaded, which is not "earned
+   * nothing".
+   */
+  rewardsCompleteness: DataCompleteness;
+  /** Names of the networks whose reward window did not answer in full. */
+  rewardsIncompleteNetworks: string[];
+  /** A network's reward window has not answered yet — the figure is loading. */
+  rewardsPending: boolean;
   unclaimedFooter: UnclaimedFooter | null;
   /** Re-runs every payout scan whose answer is not complete. */
   retryUnclaimed: () => Promise<void>;
@@ -104,7 +116,11 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
 
   const { weightedApy, networkAvg, apyByChain, avgRateByChain } = useApyKpi(positions, chainIds, toFiat);
   const rewardsSince = useRewardsWindowStart();
-  const { byChain: rewardsByChain } = useRewardsWindow(chainIds, stakingAccountIds, rewardsSince);
+  const { byChain: rewardsByChain, completeness: rewardsCompletenessByChain } = useRewardsWindow(
+    chainIds,
+    stakingAccountIds,
+    rewardsSince,
+  );
   const { byPosition: unclaimed, retry: retryUnclaimed } = useUnclaimedPayoutsByPosition(positions);
 
   const accountByAccountId = useMemo(() => {
@@ -207,6 +223,21 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
 
     return { rewardsFiat: sumFiat(fiatParts), rewardAmounts: amounts };
   }, [chainIds, assets, rewardsByChain, toFiat]);
+
+  const rewardsScan = useMemo(() => {
+    const networks: { chainName: string; completeness: DataCompleteness | undefined }[] = [];
+
+    for (const chainId of chainIds) {
+      const asset = assets[chainId];
+      // A chain without a staking asset contributes nothing to the figure, so
+      // it has no say in how complete the figure is.
+      if (!asset) continue;
+
+      networks.push({ chainName: asset.chainName, completeness: rewardsCompletenessByChain[chainId] });
+    }
+
+    return getRewardsScan(networks);
+  }, [chainIds, assets, rewardsCompletenessByChain]);
 
   // --- Drill-down rows ----------------------------------------------------
 
@@ -351,6 +382,9 @@ export const useStakingKpi = (accountIds: string[]): StakingKpiData => {
     rewardsWindowDays: REWARDS_WINDOW_DAYS,
     rewardsFiat,
     rewardAmounts,
+    rewardsCompleteness: rewardsScan.completeness,
+    rewardsIncompleteNetworks: rewardsScan.incompleteNetworks,
+    rewardsPending: rewardsScan.pending,
     unclaimedFooter,
     retryUnclaimed,
 

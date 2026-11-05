@@ -1,3 +1,4 @@
+export { getRecipientCheck } from './getRecipientCheck';
 export {
   type RecipientCheck,
   type RecipientVerificationMode,

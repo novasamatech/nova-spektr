@@ -20,6 +20,7 @@ vi.mock('../../../lib/extrinsicBuilder', () => ({
   parseCallData: () => ({ pallet: 'system', call: 'remark', args: { nonce: '1' } }),
   encodeCallData: (...args: unknown[]) => encodeCallData(...args),
   resolveAmountUnit: () => null,
+  clearAmountsOnUnitChange: (_prev: unknown, next: unknown) => next,
 }));
 
 const api = { registry: { chainDecimals: [10], chainTokens: ['DOT'] } } as unknown as ApiPromise;

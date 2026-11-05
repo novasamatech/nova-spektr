@@ -1,5 +1,5 @@
 name: Setup s3cmd
-description: That action will setup s3cmd
+description: Install a fixed s3cmd release with hash-checked dependencies and configure it for Scaleway object storage
 inputs:
   s3_access_key:
     description: 'Access key to s3'
@@ -14,10 +14,120 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up S3cmd cli tool
-      uses: s3-actions/s3cmd@702f629ce32a0c60522075f4bc211aa02989adea # v1.9.0
-      with:
-        provider: scaleway
-        region: ${{ inputs.s3_region }}
-        secret_key: ${{ inputs.s3_secret_key }}
-        access_key: ${{ inputs.s3_access_key }}
+    # s3cmd and every dependency come from requirements.txt next to this file: fixed
+    # versions, checked against their SHA-256 hashes, wheels only (no setup.py runs) and
+    # nothing resolved at install time. The virtual environment keeps them away from the
+    # runner's system Python packages.
+    - name: Install s3cmd
+      shell: bash
+      run: |
+        venv_dir="$RUNNER_TEMP/s3cmd-venv"
+        python3 -m venv "$venv_dir"
+        "$venv_dir/bin/python" -m pip install --disable-pip-version-check --no-cache-dir \
+          --require-hashes --no-deps --only-binary :all: \
+          --requirement "$GITHUB_ACTION_PATH/requirements.txt"
+        echo "$venv_dir/bin" >> "$GITHUB_PATH"
+        "$venv_dir/bin/s3cmd" --version
+
+    # The same settings s3-actions/s3cmd v1.9.0 generated for `provider: scaleway`:
+    # s3cmd defaults plus the Scaleway endpoints for the region and the key pair.
+    - name: Write s3cmd configuration
+      shell: bash
+      env:
+        S3_ACCESS_KEY: ${{ inputs.s3_access_key }}
+        S3_SECRET_KEY: ${{ inputs.s3_secret_key }}
+        S3_REGION: ${{ inputs.s3_region }}
+      run: |
+        if [ -z "$S3_REGION" ] || [ -z "$S3_ACCESS_KEY" ] || [ -z "$S3_SECRET_KEY" ]; then
+          echo "::error::s3_region, s3_access_key and s3_secret_key are required"
+          exit 1
+        fi
+
+        config_file="$HOME/.s3cfg"
+        umask 077
+        rm -f "$config_file"
+        cat > "$config_file" <<EOF
+        access_key = ${S3_ACCESS_KEY}
+        access_token =
+        add_encoding_exts =
+        add_headers =
+        bucket_location = ${S3_REGION}
+        ca_certs_file =
+        cache_file =
+        check_ssl_certificate = True
+        check_ssl_hostname = True
+        cloudfront_host = cloudfront.amazonaws.com
+        connection_pooling = True
+        content_disposition =
+        content_type =
+        default_mime_type = binary/octet-stream
+        delay_updates = False
+        delete_after = False
+        delete_after_fetch = False
+        delete_removed = False
+        dry_run = False
+        enable_multipart = True
+        encoding = UTF-8
+        encrypt = False
+        expiry_date =
+        expiry_days =
+        expiry_prefix =
+        follow_symlinks = False
+        force = False
+        get_continue = False
+        gpg_command = /usr/bin/gpg
+        gpg_decrypt = %(gpg_command)s -d --verbose --no-use-agent --batch --yes --passphrase-fd %(passphrase_fd)s -o %(output_file)s %(input_file)s
+        gpg_encrypt = %(gpg_command)s -c --verbose --no-use-agent --batch --yes --passphrase-fd %(passphrase_fd)s -o %(output_file)s %(input_file)s
+        gpg_passphrase =
+        guess_mime_type = True
+        host_base = s3.${S3_REGION}.scw.cloud
+        host_bucket = %(bucket)s.s3.${S3_REGION}.scw.cloud
+        human_readable_sizes = False
+        invalidate_default_index_on_cf = False
+        invalidate_default_index_root_on_cf = True
+        invalidate_on_cf = False
+        kms_key =
+        limit = -1
+        limitrate = 0
+        list_md5 = False
+        log_target_prefix =
+        long_listing = False
+        max_delete = -1
+        mime_type =
+        multipart_chunk_size_mb = 15
+        multipart_max_chunks = 10000
+        preserve_attrs = True
+        progress_meter = True
+        proxy_host =
+        proxy_port = 0
+        public_url_use_https = False
+        put_continue = False
+        recursive = False
+        recv_chunk = 65536
+        reduced_redundancy = False
+        requester_pays = False
+        restore_days = 1
+        restore_priority = Standard
+        secret_key = ${S3_SECRET_KEY}
+        send_chunk = 65536
+        server_side_encryption = False
+        signature_v2 = False
+        signurl_use_https = False
+        simpledb_host = sdb.amazonaws.com
+        skip_existing = False
+        socket_timeout = 300
+        stats = False
+        stop_on_error = False
+        storage_class =
+        throttle_max = 100
+        upload_id =
+        urlencoding_mode = normal
+        use_http_expect = False
+        use_https = True
+        use_mime_magic = True
+        verbosity = WARNING
+        website_endpoint = https://%(bucket)s.s3-website.${S3_REGION}.scw.cloud/
+        website_error =
+        website_index = index.html
+        EOF
+        chmod 600 "$config_file"

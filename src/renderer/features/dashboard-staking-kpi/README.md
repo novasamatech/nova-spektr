@@ -1,6 +1,6 @@
 # Staking KPI Cards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -48,15 +48,17 @@ flowchart TD
     EMPTY -- "yes" --> DATA["Three cards, footers where there is something to do"]
 ```
 
-| State           | When it appears                                | What the user sees                                                     |
-| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
-| No selection    | The dashboard account picker is empty          | Three cards, each a grey em dash, none clickable                       |
-| Loading         | The positions aggregate is still resolving     | Card titles in place, values and sub-lines shimmering, no layout shift |
-| Empty           | Loaded, the selection stakes nothing           | `$0`, a grey `—` for APY, `$0` rewards — **not** skeletons             |
-| Populated       | At least one position                          | Three figures with sub-lines                                           |
-| Unbonding       | Something is unbonding or already withdrawable | A footer on Total staked with the amounts and a Redeem link            |
-| Unclaimed       | Something is unclaimed                         | A footer on Rewards with the amount and a Claim link                   |
-| Drill-down open | A card or a footer link is clicked             | The matching modal                                                     |
+| State               | When it appears                                                           | What the user sees                                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| No selection        | The dashboard account picker is empty                                     | Three cards, each a grey em dash, none clickable                                                                                             |
+| Loading             | The positions aggregate, or a network's reward window, is still resolving | Card titles in place, values and sub-lines shimmering, no layout shift; the Rewards figure keeps shimmering until every network has answered |
+| Empty               | Loaded, the selection stakes nothing                                      | `$0`, a grey `—` for APY, `$0` rewards — **not** skeletons                                                                                   |
+| Populated           | At least one position                                                     | Three figures with sub-lines                                                                                                                 |
+| Rewards incomplete  | A network's reward history did not answer from all sources                | The Rewards figure, with "Incomplete — rewards on … couldn't be loaded completely" in place of the sub-line                                  |
+| Rewards unavailable | No network's reward history could be loaded                               | A grey "Couldn't load" in place of the Rewards figure — never `$0`                                                                           |
+| Unbonding           | Something is unbonding or already withdrawable                            | A footer on Total staked with the amounts and a Redeem link                                                                                  |
+| Unclaimed           | Something is unclaimed                                                    | A footer on Rewards with the amount and a Claim link                                                                                         |
+| Drill-down open     | A card or a footer link is clicked                                        | The matching modal                                                                                                                           |
 
 **Empty is an answer, not a wait.** Once the aggregate reports it is done, zero positions produce zeroes. Showing
 skeletons there would tell a user who genuinely stakes nothing that the app is still thinking, forever.
@@ -91,6 +93,20 @@ to the bottom, so a footer appearing — or a shimmer resolving — never moves 
 
 - **Rewards** — what the selection earned over the last 30 days, plus an unclaimed footer. The window is anchored to UTC
   midnight rather than to "now", so re-opening the tab does not refetch the same 30 days under a new key.
+
+  The figure is a sum over networks, and each network's history is itself merged from several indexers (the relay
+  chain's for the time before staking moved, Asset Hub's for the time after). It is therefore only a **total** when
+  every one of them answered. If an indexer did not answer, the network's figure is a lower bound: the card still shows
+  what was found, but the sub-line gives way to _"Incomplete — rewards on Kusama Asset Hub couldn't be loaded
+  completely"_, naming every network concerned, and the screen-reader label says the same. If nothing could be loaded at
+  all, the card shows a grey _"Couldn't load"_ instead of a number — `$0` would claim the selection earned nothing. An
+  answer that is not complete is kept for 30 seconds instead of ten minutes, so the next visit asks again.
+
+  Until every network has answered, the figure shimmers rather than showing a sum — `$0` before anything arrived, or a
+  partial sum while one network is still loading, would both read as the total. A staking network with no reward indexer
+  configured is never asked and counts as one that could not be loaded, so the figure is never called complete without
+  it. An indexer counts as answering in full only when it has paged through every row (the indexer's own list cap is
+  never relied on), the row count did not move under the scan, and it reports having processed the chain up to its head.
 
 ### Filters on the rewards drill-down
 
@@ -139,6 +155,18 @@ screen shows each column's own state rather than one global spinner:
   next to the outstanding amount when something was — and offers **Retry**, which re-runs just the incomplete scans. An
   Unclaimed cell with nothing found on such a network reads _"Couldn't check"_, never `0 DOT`.
 - An incomplete answer is cached for 30 seconds instead of five minutes, so the next visit asks again.
+- The era replay behind **Earned** can fall short in the same ways: an indexer fails halfway through its pages, stops
+  short of the window, runs into the page limit on a large selection, or two indexers disagree about the same (era,
+  validator) row — a row they disagree on is dropped rather than one of them winning. Each indexer's answer is used
+  whole or not at all, so a half-read one contributes nothing. What such a replay did work out is real and stays on
+  screen, with _"Earned figures on … are incomplete — some era data couldn't be loaded."_ under the donut, and the
+  donut's centre total carries an _"Incomplete"_ mark of its own; when no network on screen could be attributed at all
+  the centre reads _"Couldn't load"_ instead of a figure. A validator row or an account in the rail with nothing
+  attributed on such a network reads _"Couldn't load"_, never `0 DOT`, and an empty table shows the same sentence
+  instead of _"No rewards attributed in this window."_ — that one is said only when the replay is `complete`. A replay
+  that is not complete is cached for 30 seconds instead of thirty minutes.
+- **Retry** re-runs everything on the screen that did not answer in full — payout scans, era replays and the payout
+  history behind the export — and leaves the complete answers alone.
 - Once an answer arrives and it is empty, the shimmer stops and a sentence takes over. Shimmering at a user who
   genuinely earned nothing tells them the app is still thinking, forever.
 
@@ -264,7 +292,10 @@ differ only by a network or a window nobody wrote down.
   block number, UTC timestamp, address, type and amount. The table answers "who earns for me and what is outstanding";
   the file answers "what was paid, and when", and only per-payout rows with a block can be reconciled against the chain.
   A sum cannot. The rows are fetched when the modal opens, over a year of history, so nobody pays for them until they
-  ask.
+  ask. The file is only offered when it is whole: while the payout history of a network on screen has not arrived yet,
+  is missing an indexer's rows, or has no indexer to ask at all, **Export CSV** is disabled (with the tooltip naming the
+  network in the last two cases) — a reconciliation file with rows silently absent is worse than no file. Narrowing the
+  network filter to one that did load brings the export back, and **Retry** asks the missing source again.
 - **Total staked** exports where the stake actually sits: one line per account → validator pair with the amount the era
   put behind it, read from the exposure pages, plus the account's bonded total for context. `13.5M staked` says nothing
   about the concentration underneath it. The split is the election's, not the nomination list's — an account nominating

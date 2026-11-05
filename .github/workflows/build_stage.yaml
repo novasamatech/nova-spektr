@@ -16,8 +16,11 @@
 #                         electron-builder.js, package.json scripts) is reviewed
 #                         code. It downloads the compiled bundle as plain data
 #                         and signs/notarizes/packages it.
-#   distribute         -> uploads installers to S3 and notifies Telegram. No
-#                         checkout at all; only pinned third-party actions.
+#   distribute         -> uploads installers to S3 and notifies Telegram. Its
+#                         only checkout is the setup-s3cmd and notify-telegram
+#                         actions, taken from the repository default branch
+#                         (never the PR); everything else is pinned
+#                         third-party actions.
 #
 # `package` and `distribute` run in the `internal-build` GitHub environment.
 # The environment must be created in repository settings with required
@@ -185,6 +188,21 @@ jobs:
     permissions:
       contents: read
     steps:
+      # Local actions resolve from the job workspace, so the s3cmd and notify
+      # actions have to be checked out. Only their directories, and from the
+      # default branch, so no PR code lands next to the release credentials. It
+      # runs first on purpose: checkout clears the workspace, so the installers
+      # are downloaded after it.
+      - name: ⚙️Checkout local actions from trusted ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            .github/workflows/setup-s3cmd
+            .github/workflows/notify-telegram
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: Download build artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -204,12 +222,11 @@ jobs:
           done
 
       - name: Set up S3cmd cli tool
-        uses: s3-actions/s3cmd@702f629ce32a0c60522075f4bc211aa02989adea # v1.9.0
+        uses: ./.github/workflows/setup-s3cmd
         with:
-          provider: scaleway
-          region: ${{ env.S3_REGION }}
-          access_key: ${{ secrets.S3_ACCESS_KEY }}
-          secret_key: ${{ secrets.S3_SECRET_KEY }}
+          s3_region: ${{ env.S3_REGION }}
+          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
 
       - name: Interact with object storage
         id: interact_with_storage
@@ -240,6 +257,7 @@ jobs:
           echo "name=$escaped" >> "$GITHUB_OUTPUT"
 
       - name: Notify Telegram channel
+        continue-on-error: true
         uses: ./.github/workflows/notify-telegram
         with:
           to: ${{ secrets.TELEGRAM_TO_DEV }}

@@ -60,6 +60,28 @@ describe('OperationRowBoundary', () => {
     );
   });
 
+  it('SP-10: shows the row-unavailable text and logs the id, chainId and callHash of the broken row', () => {
+    const broken = {
+      id: BROKEN_ID,
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      callHash: '0xdeadbeef',
+    } as unknown as MultisigOperation;
+
+    render(
+      <OperationRowBoundary operation={broken}>
+        <Row operation={broken} />
+      </OperationRowBoundary>,
+    );
+
+    // The i18n mock returns keys; `operations.rowUnavailable` reads "This operation can't be displayed" in en.json.
+    expect(screen.getByText(FALLBACK_KEY)).toBeInTheDocument();
+    expect(consoleError).toHaveBeenCalledWith(
+      '[multisig-operations] operation row failed to render',
+      { id: BROKEN_ID, chainId: broken.chainId, callHash: broken.callHash },
+      expect.any(Error),
+    );
+  });
+
   it('retries rendering when the operation object changes', () => {
     const broken = createOperation(BROKEN_ID);
     const { rerender } = render(

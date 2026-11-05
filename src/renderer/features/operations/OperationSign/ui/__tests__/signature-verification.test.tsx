@@ -6,12 +6,16 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { type ReactNode } from 'react';
 
 import { type HexString } from '@/shared/core';
+import { I18Provider } from '@/shared/i18n';
 import { ValidationErrors } from '@/shared/lib/utils';
 import { createExtrinsicPayload, createPayloadRegistry, signExtrinsicPayload } from '@/shared/mocks';
 import { type ExtrinsicSigningPayload, type SigningProps } from '../../lib/types';
 import { Extension } from '../Extension';
 import { PolkadotVault } from '../PolkadotVault';
 import { WalletConnect } from '../WalletConnect';
+
+const INVALID_SIGNATURE_TEXT = 'Error occurred while decoding QR code. Scan again.';
+const BALANCE_FOR_FEE_TEXT = 'Not enough tokens to pay for the network fee';
 
 const units = vi.hoisted(() => ({ values: new Map<unknown, unknown>() }));
 
@@ -22,26 +26,8 @@ vi.mock('effector-react', () => ({
   useUnit: (unit: unknown) => units.values.get(unit),
 }));
 
-vi.mock('@/shared/i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
-
-vi.mock('@/shared/ui', () => ({
-  Button: ({ children, onClick }: { children: ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  FootnoteText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  SmallTitleText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  Loader: () => null,
-  StatusModal: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div data-testid="status-modal" /> : null),
-}));
-
 vi.mock('@/shared/ui/Animation/Animation', () => ({ Animation: () => null }));
 vi.mock('@/shared/ui-entities', () => ({ WalletIcon: () => null }));
-vi.mock('@/shared/ui-kit', () => ({
-  Box: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  Modal: Object.assign(() => null, { Content: () => null, Footer: () => null }),
-}));
 vi.mock('@/shared/lib/hooks', () => ({ useCountdown: () => [100, () => undefined] }));
 vi.mock('@/features/wallet-connect-wallet-pairing', () => ({ WalletConnectQrCode: () => null }));
 vi.mock('@/entities/wallet', () => ({ accountUtils: { isWcAccount: () => true } }));
@@ -68,7 +54,11 @@ vi.mock('../../model/walletConnectSign', () => ({
   },
 }));
 
-vi.mock('@/entities/transaction', () => ({
+// Only the camera is replaced: the QR payload scanners hand over the prepared
+// payloads, the signature readers the prepared signatures. `QrReaderWrapper`
+// stays real, so the label under the scanner is what the user would read.
+vi.mock('@/entities/transaction', async (importActual) => ({
+  ...(await importActual<Record<string, unknown>>()),
   CameraAccessAlert: () => null,
   useCameraAvailability: () => ({ status: 'ready', retry: () => undefined }),
   ScanMultiframeQr: ({ onResult }: { onResult: (payloads: Uint8Array[]) => void }) => (
@@ -77,19 +67,15 @@ vi.mock('@/entities/transaction', () => ({
   ScanSingleframeQr: ({ onResult }: { onResult: (payload: Uint8Array) => void }) => (
     <button onClick={() => onResult(scanned.payloads[0]!)}>scan-done</button>
   ),
-  QrReaderWrapper: ({
-    validationError,
-    onResult,
-  }: {
-    validationError?: ValidationErrors;
-    onResult: (value: HexString | HexString[]) => void;
-  }) => (
-    <>
-      <button onClick={() => onResult(scanned.signatures.length === 1 ? scanned.signatures[0]! : scanned.signatures)}>
-        signature-scanned
-      </button>
-      {validationError && <div data-testid="qr-error">{validationError}</div>}
-    </>
+}));
+vi.mock('@/entities/transaction/ui/QrCode/QrReader/QrSignatureReader', () => ({
+  QrSignatureReader: ({ onResult }: { onResult: (value: HexString) => void }) => (
+    <button onClick={() => onResult(scanned.signatures[0]!)}>signature-scanned</button>
+  ),
+}));
+vi.mock('@/entities/transaction/ui/QrCode/QrReader/QrMultiframeSignatureReader', () => ({
+  QrMultiframeSignatureReader: ({ onResult }: { onResult: (value: HexString[]) => void }) => (
+    <button onClick={() => onResult(scanned.signatures)}>signature-scanned</button>
   ),
 }));
 
@@ -117,7 +103,20 @@ const createProps = (count: number, balanceError?: ValidationErrors) => ({
   onResult: vi.fn<SigningProps['onResult']>(),
 });
 
+const renderWithI18n = (ui: ReactNode) => render(<I18Provider>{ui}</I18Provider>);
+
 const flush = () => act(async () => {});
+
+const expectNothingForwarded = (props: ReturnType<typeof createProps>) => {
+  expect(props.onResult).not.toHaveBeenCalled();
+  expect(props.onGoBack).not.toHaveBeenCalled();
+};
+
+const expectNoErrorShown = () => {
+  expect(screen.queryByTestId('StatusModal')).not.toBeInTheDocument();
+  expect(screen.queryByText(INVALID_SIGNATURE_TEXT)).not.toBeInTheDocument();
+  expect(screen.queryByText(BALANCE_FOR_FEE_TEXT)).not.toBeInTheDocument();
+};
 
 beforeAll(async () => {
   await cryptoWaitReady();
@@ -138,7 +137,7 @@ describe('Extension signature verification', () => {
       signed.map(({ payload, signature }) => ({ signature, txPayload: { payload } })),
     );
 
-    return render(<Extension {...props} />);
+    return renderWithI18n(<Extension {...props} />);
   };
 
   it('passes valid signatures on', async () => {
@@ -154,6 +153,22 @@ describe('Extension signature verification', () => {
     );
   });
 
+  it('SP-49: forwards valid extension signatures without an error modal', async () => {
+    const signed = [createSigned(alice, 40, 0), createSigned(alice, 20_000, 1)];
+    const props = createProps(2);
+
+    renderExtension(signed, props);
+    await flush();
+
+    expect(props.onResult).toHaveBeenCalledTimes(1);
+    expect(props.onResult).toHaveBeenCalledWith(
+      signed.map((s) => s.signature),
+      signed.map((s) => s.payload),
+    );
+    expect(props.onGoBack).not.toHaveBeenCalled();
+    expectNoErrorShown();
+  });
+
   it('stops when one signature of a batch is invalid', async () => {
     const signed = [createSigned(alice, 40, 0), createSigned(bob, 40, 1)];
     const props = createProps(2);
@@ -162,7 +177,20 @@ describe('Extension signature verification', () => {
     await flush();
 
     expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('status-modal')).toBeInTheDocument();
+    expect(screen.getByTestId('StatusModal')).toBeInTheDocument();
+  });
+
+  it('SP-49: shows the invalid-signature modal for a signature made by another key and forwards nothing', async () => {
+    const payload = createExtrinsicPayload(registry, { methodLength: 40, nonce: 0 });
+    const forged = signExtrinsicPayload(payload, bob);
+    const props = createProps(1);
+
+    renderExtension([forged], props);
+    await flush();
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).not.toHaveBeenCalled();
+    expect(screen.getByTestId('StatusModal')).toHaveTextContent(INVALID_SIGNATURE_TEXT);
   });
 
   it('shows the balance error for valid signatures', async () => {
@@ -172,7 +200,19 @@ describe('Extension signature verification', () => {
     await flush();
 
     expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('status-modal')).toBeInTheDocument();
+    expect(screen.getByTestId('StatusModal')).toBeInTheDocument();
+  });
+
+  it('SP-51: shows the network fee balance error for valid extension signatures and forwards nothing', async () => {
+    const props = createProps(1, ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
+
+    renderExtension([createSigned(alice, 40, 0)], props);
+    await flush();
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('StatusModal')).toHaveTextContent(BALANCE_FOR_FEE_TEXT);
+    expect(screen.queryByText(INVALID_SIGNATURE_TEXT)).not.toBeInTheDocument();
   });
 });
 
@@ -195,7 +235,7 @@ describe('WalletConnect signature verification', () => {
       signatures.map((signature) => ({ signature })),
     );
 
-    return render(<WalletConnect {...props} />);
+    return renderWithI18n(<WalletConnect {...props} />);
   };
 
   it('passes valid signatures on', async () => {
@@ -211,6 +251,22 @@ describe('WalletConnect signature verification', () => {
     );
   });
 
+  it('SP-49: forwards valid WalletConnect signatures without an error modal', async () => {
+    const signed = [createSigned(alice, 40, 0), createSigned(alice, 20_000, 1)];
+    const props = createProps(2);
+
+    renderWalletConnect(signed, props);
+    await flush();
+
+    expect(props.onResult).toHaveBeenCalledTimes(1);
+    expect(props.onResult).toHaveBeenCalledWith(
+      signed.map((s) => s.signature),
+      signed.map((s) => s.payload),
+    );
+    expect(props.onGoBack).not.toHaveBeenCalled();
+    expectNoErrorShown();
+  });
+
   it('stops when one signature of a batch is invalid', async () => {
     const signed = [createSigned(alice, 40, 0), createSigned(alice, 40, 1)];
     const props = createProps(2);
@@ -219,7 +275,20 @@ describe('WalletConnect signature verification', () => {
     await flush();
 
     expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('status-modal')).toBeInTheDocument();
+    expect(screen.getByTestId('StatusModal')).toBeInTheDocument();
+  });
+
+  it('SP-49: shows the invalid-signature modal for a signature over another transaction and forwards nothing', async () => {
+    const signed = createSigned(alice, 40, 0);
+    const other = createSigned(alice, 40, 1);
+    const props = createProps(1);
+
+    renderWalletConnect([signed], props, [other.signature]);
+    await flush();
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).not.toHaveBeenCalled();
+    expect(screen.getByTestId('StatusModal')).toHaveTextContent(INVALID_SIGNATURE_TEXT);
   });
 
   it('shows the balance error for valid signatures', async () => {
@@ -229,13 +298,25 @@ describe('WalletConnect signature verification', () => {
     await flush();
 
     expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('status-modal')).toBeInTheDocument();
+    expect(screen.getByTestId('StatusModal')).toBeInTheDocument();
+  });
+
+  it('SP-51: shows the network fee balance error for valid WalletConnect signatures and forwards nothing', async () => {
+    const props = createProps(1, ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE);
+
+    renderWalletConnect([createSigned(alice, 40, 0)], props);
+    await flush();
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('StatusModal')).toHaveTextContent(BALANCE_FOR_FEE_TEXT);
+    expect(screen.queryByText(INVALID_SIGNATURE_TEXT)).not.toBeInTheDocument();
   });
 });
 
 describe('PolkadotVault signature verification', () => {
   const scanAndSign = async (props: ReturnType<typeof createProps>) => {
-    render(<PolkadotVault {...props} />);
+    renderWithI18n(<PolkadotVault {...props} />);
 
     fireEvent.click(screen.getByText('scan-done'));
     fireEvent.click(screen.getByText('signature-scanned'));
@@ -253,6 +334,21 @@ describe('PolkadotVault signature verification', () => {
     expect(props.onResult).toHaveBeenCalledWith([signed.signature], [signed.payload]);
   });
 
+  it('SP-47: forwards a valid single signature with no error under the scanner', async () => {
+    const signed = createSigned(alice, 300, 0);
+    scanned.payloads = [signed.payload];
+    scanned.signatures = [signed.signature];
+    const props = createProps(1);
+
+    await scanAndSign(props);
+
+    expect(props.onResult).toHaveBeenCalledTimes(1);
+    expect(props.onResult).toHaveBeenCalledWith([signed.signature], [signed.payload]);
+    expect(props.onGoBack).not.toHaveBeenCalled();
+    expect(props.validateBalance).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(INVALID_SIGNATURE_TEXT)).not.toBeInTheDocument();
+  });
+
   it('passes a valid multi-frame batch of type-prefixed signatures on', async () => {
     const signed = [
       createSigned(alice, 40, 0, true),
@@ -268,6 +364,30 @@ describe('PolkadotVault signature verification', () => {
     expect(props.onResult).toHaveBeenCalledWith(scanned.signatures, scanned.payloads);
   });
 
+  it('SP-48: forwards one signature per part of a multi-frame batch with no error under the scanner', async () => {
+    const signed = [
+      createSigned(alice, 40, 0, true),
+      createSigned(alice, 20_000, 1, true),
+      createSigned(alice, 300, 2, true),
+    ];
+    scanned.payloads = signed.map((s) => s.payload);
+    scanned.signatures = signed.map((s) => s.signature);
+    const props = createProps(3);
+
+    await scanAndSign(props);
+
+    expect(props.onResult).toHaveBeenCalledTimes(1);
+    const [signatures, payloads] = props.onResult.mock.calls[0]!;
+    expect(signatures).toHaveLength(3);
+    expect(payloads).toHaveLength(3);
+    signed.forEach((part, index) => {
+      expect(signatures[index]).toBe(part.signature);
+      expect(payloads[index]).toBe(part.payload);
+    });
+    expect(props.onGoBack).not.toHaveBeenCalled();
+    expect(screen.queryByText(INVALID_SIGNATURE_TEXT)).not.toBeInTheDocument();
+  });
+
   it('stops when one signature of a multi-signature batch is invalid', async () => {
     const signed = [createSigned(alice, 40, 0), createSigned(alice, 40, 1)];
     scanned.payloads = signed.map((s) => s.payload);
@@ -277,6 +397,47 @@ describe('PolkadotVault signature verification', () => {
     await scanAndSign(props);
 
     expect(props.onResult).not.toHaveBeenCalled();
-    expect(screen.getByTestId('qr-error')).toHaveTextContent(String(ValidationErrors.INVALID_SIGNATURE));
+    expect(screen.getByText(INVALID_SIGNATURE_TEXT)).toBeInTheDocument();
+  });
+
+  it('SP-50: refuses a signature QR produced for another transaction', async () => {
+    const transactionA = createSigned(alice, 300, 0);
+    const transactionB = createSigned(alice, 300, 1);
+    scanned.payloads = [transactionA.payload];
+    scanned.signatures = [transactionB.signature];
+    const props = createProps(1);
+
+    await scanAndSign(props);
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).not.toHaveBeenCalled();
+    expect(screen.getByText(INVALID_SIGNATURE_TEXT)).toBeInTheDocument();
+  });
+
+  it('SP-50: refuses a signature made by another Vault key', async () => {
+    const payload = createExtrinsicPayload(registry, { methodLength: 300, nonce: 0 });
+    const signedByOther = signExtrinsicPayload(payload, bob);
+    scanned.payloads = [signedByOther.payload];
+    scanned.signatures = [signedByOther.signature];
+    const props = createProps(1);
+
+    await scanAndSign(props);
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).not.toHaveBeenCalled();
+    expect(screen.getByText(INVALID_SIGNATURE_TEXT)).toBeInTheDocument();
+  });
+
+  it('SP-50: refuses a multi-frame result with fewer signatures than payloads', async () => {
+    const signed = [createSigned(alice, 40, 0, true), createSigned(alice, 40, 1, true)];
+    scanned.payloads = signed.map((s) => s.payload);
+    scanned.signatures = [signed[0]!.signature];
+    const props = createProps(2);
+
+    await scanAndSign(props);
+
+    expectNothingForwarded(props);
+    expect(props.validateBalance).not.toHaveBeenCalled();
+    expect(screen.getByText(INVALID_SIGNATURE_TEXT)).toBeInTheDocument();
   });
 });

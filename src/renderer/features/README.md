@@ -176,10 +176,8 @@ notes.
 ## Basket
 
 - `basket-navigation` (no spec planned)
-- `basket-operations`
 - [`basket-operations`](../aggregates/basket-operations/README.md) (aggregate)
 - [`basket-operations`](./basket-operations/README.md)
-- `basket-operations` (aggregate)
 
 > See also: domain basket flows live with their domains — [`staking-basket`](#staking), [`transfer-basket`](#transfers),
 > [`proxy-basket`](#proxy), [`governance-basket`](#governance), [`fellowship-basket`](#fellowship).
@@ -206,7 +204,7 @@ notes.
 
 - [`contacts`](./contacts/README.md)
 - `contacts-navigation` (no spec planned)
-- `notifications`
+- [`notifications`](./notifications/README.md)
 - `notifications-navigation` (no spec planned)
 - [`recipient-verification`](../aggregates/recipient-verification/README.md) (aggregate)
 

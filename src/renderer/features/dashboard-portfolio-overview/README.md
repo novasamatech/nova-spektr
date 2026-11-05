@@ -1,6 +1,6 @@
 # Portfolio Overview
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -42,17 +42,18 @@ them. A 400ms flourish is not worth a chart that can crash under a mouse gesture
 
 ## States / scenarios
 
-| State                | When it appears                                                                                                              | What the user sees                                                                                         |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Fiat off             | Global "show fiat" toggle is off                                                                                             | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings                 |
-| No selection         | No accounts selected                                                                                                         | Title + "Select accounts above to view your balance"                                                       |
-| Loading              | Prices/currency not resolved, or the selection holds nothing yet and some selected account has no balance record (under 30s) | Skeleton mirroring the final layout                                                                        |
-| No tokens            | Prices resolved, selection holds nothing priced and no vesting                                                               | Title + `$0` + vesting slot + a centered "No tokens to show" message                                       |
-| Overview             | Data ready                                                                                                                   | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list                   |
-| Balance-type filter  | A bar segment or chip clicked                                                                                                | Donut, list and detail modals re-scope to that balance type; scope label + color follow; "Show all" clears |
-| Donut hover          | Pointer over a donut segment                                                                                                 | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring              |
-| Asset / chain detail | A holdings row is clicked                                                                                                    | Modal with a per-address (asset view) or per-asset (chain view) breakdown                                  |
-| Syncing              | Any chain is still connecting, or some selected account has no balance record yet (under 30s)                                | A small spinner beside the distribution label; the numbers keep updating as balances arrive                |
+| State                | When it appears                                                                                                                                                                                                                                                                            | What the user sees                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Fiat off             | Global "show fiat" toggle is off                                                                                                                                                                                                                                                           | Title + "fiat disabled" hint + the injected vesting block only; no total, bars or holdings                 |
+| No selection         | No accounts selected                                                                                                                                                                                                                                                                       | Title + "Select accounts above to view your balance"                                                       |
+| Loading              | Prices/currency not resolved, or the selection holds nothing yet, "No tokens" has not been shown for it, less than 30s passed, and some selected account has no balance record on a connected chain — or no account has any record at all, e.g. no chain of the selection is connected yet | Skeleton mirroring the final layout                                                                        |
+| No tokens            | Prices resolved, selection holds nothing priced and no vesting                                                                                                                                                                                                                             | Title + `$0` + vesting slot + a centered "No tokens to show" message                                       |
+| Overview             | Data ready                                                                                                                                                                                                                                                                                 | Fiat total, Assets/Networks toggle, distribution bar + chips, vesting slot, donut + list                   |
+| Balance-type filter  | A bar segment or chip clicked                                                                                                                                                                                                                                                              | Donut, list and detail modals re-scope to that balance type; scope label + color follow; "Show all" clears |
+| Donut hover          | Pointer over a donut segment                                                                                                                                                                                                                                                               | Center swaps to the hovered slice's value, name and share; a single holding renders as a ring              |
+| Asset / chain detail | A holdings row is clicked                                                                                                                                                                                                                                                                  | Modal with a per-address (asset view) or per-asset (chain view) breakdown                                  |
+| Syncing              | A chain of the selection is connecting, or some selected account has no balance record on a connected chain yet and less than 30s passed since that chain connected                                                                                                                        | A small spinner beside the distribution label; the numbers keep updating as balances arrive                |
+| Partial total        | 30s passed since the connected chains of the selection last changed, and some selected accounts still have no balance record on a connected chain                                                                                                                                          | "Balances of N accounts have not loaded yet" under the total — the figure is only what has arrived         |
 
 The card has **no error state**: missing prices degrade into the loading / suppressed states above. The injected vesting
 callout brings its own error boundary precisely because this slot offers none.
@@ -63,21 +64,36 @@ not a lie flashed while balances are still arriving.
 Zero holdings is not evidence on its own. A balance of **zero** produces no holding and no allocation, exactly like a
 balance that has not been read yet, so the rendered emptiness is identical in both cases. What separates them is the
 **presence of a balance record**: the subscription writes one for every (account, chain, asset) pair it queries, zero
-balances included, so an account with no record has not been read yet. "Nothing to show" becomes a statement about the
-accounts only once **every** selected account that can hold balances on at least one known chain has a record — one
-account read as empty says nothing about the others (`useBalanceCoverage` from `features/assets-balances`). Until then
-the card shows its skeleton — the same rule the Portfolio page shimmers on, where a row with no record renders a
-skeleton and never a zero.
+balances included, so an account with no record on a chain has not been read there yet. "Nothing to show" becomes a
+statement about the accounts only once **every** selected account has a record on **every connected chain** it can hold
+balances on (a key's wallet accounts — every one of them in a visible wallet, exactly the accounts the card fetches — on
+the chains they are available on; a chain whose connection is disabled is never fetched, so it does not count) — one
+account or one chain read as empty says nothing about the others (`useBalanceCoverage` from `features/assets-balances`).
+Until then the card shows its skeleton — the same rule the Portfolio page shimmers on, where a row with no record
+renders a skeleton and never a zero.
+
+A chain that is still connecting is not waited for; while one exists the card counts as **syncing**, so what it shows is
+not presented as final. A chain that is disconnected or failing is neither waited for nor counted as syncing — it may
+stay down indefinitely — and a chain without assets is never waited for, since no balance record can exist for it.
+
+Once the **No tokens** answer has been given for a selection it stays until the selection changes. A chain that connects
+afterwards does not bring the skeleton back: the message stays, with the "Syncing balances…" spinner on it until that
+chain answers or its own 30s run out. Changing the selection starts over, and so does coming back to an earlier one.
 
 This replaced a short wall-clock grace measured from mount, which on a cold start expired long before balances arrived
 and told users with substantial holdings that they had none, while the Portfolio page was still shimmering for the very
 same accounts.
 
-A **backstop** remains, at 30s per selection, because a chain whose RPC is down keeps retrying for the life of the app
-and its records never arrive; without a bound the skeleton would never resolve. It bounds the wait rather than deciding
-the answer. Once the empty message is shown, a small "Syncing balances…" spinner stays on it while any chain is still
-connecting, so a late-arriving balance reads as expected rather than as the message having been wrong. The vesting slot
-stays mounted in this state, since token-denominated vesting can exist with a zero fiat total.
+A **backstop** remains, at 30s from the moment the selection was made or the set of connected chains it lives on last
+changed, because a chain whose RPC is down keeps retrying for the life of the app and its records never arrive; without
+a bound the skeleton would never resolve. It bounds the wait rather than deciding the answer. Once the empty message is
+shown, a small "Syncing balances…" spinner stays on it while the card is syncing, so a late-arriving balance reads as
+expected rather than as the message having been wrong. The vesting slot stays mounted in this state, since
+token-denominated vesting can exist with a zero fiat total.
+
+When the 30s run out with a connected chain still unanswered for some accounts, the total is a **partial sum**. The card
+says so under the figure — "Balances of N accounts have not loaded yet", the same sentence the accounts table puts in
+its footer — in both the overview and the "No tokens" state, and the note goes away once those balances arrive.
 
 ### Distribution by balance type
 

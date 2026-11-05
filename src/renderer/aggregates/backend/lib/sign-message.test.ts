@@ -19,4 +19,10 @@ describe('buildSignMessage', () => {
       `<Bytes>ADDRESS_BOOK_AUTH:${NONCE}</Bytes>`,
     );
   });
+
+  it('falls back to the v1 message for a version this client does not know', () => {
+    expect(buildSignMessage({ backendUrl: 'https://ab.example.com', nonce: NONCE, messageVersion: 3 })).toBe(
+      `<Bytes>ADDRESS_BOOK_AUTH:${NONCE}</Bytes>`,
+    );
+  });
 });

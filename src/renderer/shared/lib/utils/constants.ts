@@ -15,6 +15,8 @@ export const ETHEREUM_PUBLIC_KEY_LENGTH_BYTES = 20;
 export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
 export const SS58_DEFAULT_PREFIX = 0;
+/** The chain-agnostic substrate prefix (`5...` addresses). */
+export const SS58_GENERIC_SUBSTRATE_PREFIX = 42;
 export const SS58_PUBLIC_KEY_PREFIX = 1;
 
 export const TEST_ACCOUNTS: [AccountId, AccountId, AccountId, AccountId] = [
@@ -59,6 +61,20 @@ export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
 export const MONTH = 30 * 24 * 60 * 60 * 1000;
 
 export const MORTALITY_PERIOD_MS = 5 * 60 * 1000;
+
+/**
+ * How long a chain is given to answer before a view stops waiting for it: a
+ * chain whose RPC is down keeps retrying for the life of the app, so waits on
+ * per-chain data (balances, vesting schedules) are bounded by this instead of
+ * open-ended.
+ */
+export const CHAIN_ANSWER_DEADLINE_MS = 30_000;
+
+/**
+ * Signers hash payloads longer than this with blake2 and sign the hash instead
+ * of the raw bytes.
+ */
+export const SIGNED_PAYLOAD_HASH_THRESHOLD = 256;
 
 const CHAINS_CONFIG_VERSION = 'v2';
 const TOKENS_CONFIG_VERSION = 'v1';

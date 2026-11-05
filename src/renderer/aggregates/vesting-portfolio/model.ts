@@ -3,7 +3,7 @@ import { combine, createEffect, createEvent, createStore, merge, sample, scopeBi
 import { debounce } from 'patronum';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { getTimelineChainId, nonNullable } from '@/shared/lib/utils';
+import { CHAIN_ANSWER_DEADLINE_MS, getTimelineChainId, nonNullable } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, block } from '@/domains/network';
 import { type VestingChainRequest, vestingSchedulesResource } from '@/domains/vesting';
@@ -218,20 +218,18 @@ sample({
 // Readiness
 
 /**
- * How long a chain is given to report before we stop counting it as a chain
- * that might still surface vesting.
+ * A chain is given `CHAIN_ANSWER_DEADLINE_MS` to report before we stop counting
+ * it as a chain that might still surface vesting.
  *
  * Generous on purpose: the cost of being too eager is a false "no vesting", the
  * very thing this model exists to prevent. The cost of being too patient is
  * only a loader that lingers.
  */
-const GRACE_MS = 30_000;
-
 const graceElapsed = debounce({
   // Restarts on a new account set, and on every activation: each is a fresh
   // question, and the chains get their full grace to answer it.
   source: merge([activated, $accountIds]),
-  timeout: GRACE_MS,
+  timeout: CHAIN_ANSWER_DEADLINE_MS,
 });
 
 /**

@@ -50,5 +50,5 @@ export default defineConfig({
   ],
 
   timeout: 60000,
-  globalSetup: './scripts/updateTestData.js',
+  globalSetup: './tests/system/warmup.ts',
 });

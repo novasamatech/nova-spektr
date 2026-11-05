@@ -92,11 +92,12 @@ export function setupProxy() {
       return failure(PROXY_BLOCKED_STATUS_TEXT);
     }
 
-    const requestHeaders = new Headers(init?.headers);
-    requestHeaders.set(CLIENT_HEADER, DESKTOP_CLIENT_ID);
-
     let response: Response;
     try {
+      // `Headers` rejects malformed values (e.g. a newline), which is a request failure like any other.
+      const requestHeaders = new Headers(init?.headers);
+      requestHeaders.set(CLIENT_HEADER, DESKTOP_CLIENT_ID);
+
       // A pinned origin must not bounce main elsewhere: a redirect is a failure, not a follow.
       response = await session.fromPartition(AUTH_PARTITION).fetch(url, {
         method: init?.method,

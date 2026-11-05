@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Address, type ContactField, WalletType } from '@/shared/core';
+import { type Address, type ContactField, AccountType, WalletType } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 import {
   applyPresetFilter,
   buildMergedEntries,
+  getEntryAccounts,
   matchPreset,
   migratePreset,
   migrateStoredPresets,
@@ -515,5 +517,30 @@ describe('buildMergedEntries', () => {
     });
 
     expect(result[0]!.id).toBe('w-id');
+  });
+});
+
+describe('getEntryAccounts', () => {
+  const KEY = '0xaaaa';
+  const OTHER_KEY = '0xbbbb';
+  const account = (fields: Record<string, unknown>): AnyAccount => fields as unknown as AnyAccount;
+
+  it('returns every account of a selected key, whatever its chain scope', () => {
+    const polkadot = account({ id: 'a1', accountId: KEY, chainId: '0x01' });
+    const kusama = account({ id: 'a2', accountId: KEY, chainId: '0x02' });
+    const other = account({ id: 'b1', accountId: OTHER_KEY });
+
+    expect(getEntryAccounts([KEY], [polkadot, other, kusama])).toEqual([polkadot, kusama]);
+  });
+
+  it('leaves out a multisig signatory placeholder of a selected key', () => {
+    const own = account({ id: 'a1', accountId: KEY });
+    const signatory = account({ id: 'a2', accountId: KEY, accountType: AccountType.MULTISIG_SIGNATORY });
+
+    expect(getEntryAccounts([KEY], [own, signatory])).toEqual([own]);
+  });
+
+  it('returns nothing for a key with no account (a contact)', () => {
+    expect(getEntryAccounts([KEY], [account({ id: 'b1', accountId: OTHER_KEY })])).toEqual([]);
   });
 });

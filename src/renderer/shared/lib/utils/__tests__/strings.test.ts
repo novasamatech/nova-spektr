@@ -17,12 +17,22 @@ describe('sanitizeDisplayName', () => {
     expect(sanitizeDisplayName('Alice\u200BBob')).toBe('AliceBob');
   });
 
-  it('removes zero-width non-joiner \\u200C', () => {
-    expect(sanitizeDisplayName('Alice\u200CBob')).toBe('AliceBob');
-  });
-
-  it('removes zero-width joiner \\u200D', () => {
-    expect(sanitizeDisplayName('Alice\u200DBob')).toBe('AliceBob');
+  it.each([
+    [
+      'Persian ZWNJ kept',
+      '\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645',
+      '\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645',
+    ],
+    [
+      'ZWJ emoji kept',
+      '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67',
+      '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67',
+    ],
+    ['Devanagari conjunct kept', '\u0915\u094D\u200D\u0937', '\u0915\u094D\u200D\u0937'],
+    ['bare joiners \u2192 empty', '\u200C\u200D', ''],
+    ['edge joiners trimmed', '\u200D Alice \u200C', 'Alice'],
+  ])('%s', (_, input, expected) => {
+    expect(sanitizeDisplayName(input)).toBe(expected);
   });
 
   it('removes word joiner \\u2060', () => {

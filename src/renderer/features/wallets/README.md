@@ -1,6 +1,6 @@
 # Wallets
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-14
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -115,8 +115,10 @@ back to their requests to become real accounts.
 
 ### Rename
 
-Available on every wallet type, inline in the details header or via a modal. The name must be non-empty and unique
-across wallets, case-insensitively; re-submitting the wallet's own current name is a no-op. Renaming also **updates the
+Available on every wallet type, inline in the details header or via a modal. The submitted name is normalised the way
+contact names are (hidden characters removed, NFC, trimmed; zero-width joiners kept) before it is validated or saved, so
+a name made only of invisible characters is "required", not accepted. The name must be non-empty and unique across
+wallets, case-insensitively; re-submitting the wallet's own current name is a no-op. Renaming also **updates the
 matching address-book contact** (creating a local one if none exists) — the UI states this. Polkadot Vault account names
 are deliberately left untouched; other wallet types have their accounts renamed with the wallet.
 

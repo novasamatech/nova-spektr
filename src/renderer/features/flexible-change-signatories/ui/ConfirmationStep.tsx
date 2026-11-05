@@ -8,6 +8,7 @@ import { TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/widgets/transaction-fee';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
@@ -40,6 +41,7 @@ export const ConfirmationStep = ({ banner }: Props) => {
   const errors = useUnit(changeSignatoriesModel.$errors);
   const isTheSameMultisig = useUnit(changeSignatoriesModel.$isTheSameMultisig);
   const isEditOperationAlreadyExists = useUnit(changeSignatoriesModel.$isEditOperationAlreadyExists);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const signerWallet = wallets.find((wallet) => wallet.id === signer?.walletId);
 
@@ -48,6 +50,7 @@ export const ConfirmationStep = ({ banner }: Props) => {
   const asset = getNativeAsset(chain.assets);
 
   const disabledReason = (() => {
+    if (isMultisigExists) return t('flexibleMultisig.editProxy.confirm.signDisabled.pendingOperation');
     if (canSubmit) return null;
     if (isLoading) return t('flexibleMultisig.editProxy.confirm.signDisabled.loading');
     if (validationPending) return t('flexibleMultisig.editProxy.confirm.signDisabled.validating');
@@ -70,6 +73,8 @@ export const ConfirmationStep = ({ banner }: Props) => {
             {banner ? <div className="-mx-1">{banner}</div> : null}
 
             {banner ? <Separator className="border-filter-border" /> : null}
+
+            <MultisigExistsAlert active={isMultisigExists} />
 
             <DetailRow label={t('flexibleMultisig.editProxy.confirm.submitterWallet')}>
               <div className="flex w-full items-center justify-end gap-x-2">
@@ -134,7 +139,7 @@ export const ConfirmationStep = ({ banner }: Props) => {
               <div>
                 <SignButton
                   type={signerWallet.type}
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isMultisigExists}
                   isLoading={isLoading || validationPending}
                   onClick={confirmModel.startSigning}
                 />

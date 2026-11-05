@@ -6,6 +6,7 @@ import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a } from '@polkadot/util-crypto';
 
 import { type HexString } from '@/shared/core';
+import { SIGNED_PAYLOAD_HASH_THRESHOLD } from '@/shared/lib/utils';
 
 const ZERO_HASH = u8aToHex(new Uint8Array(32));
 
@@ -82,7 +83,7 @@ export const createExtrinsicPayload = (
  */
 export const signExtrinsicPayload = (payload: ExtrinsicPayload, pair: KeyringPair, withType = false) => {
   const signedBytes = payload.toU8a({ method: true });
-  const message = signedBytes.length > 256 ? blake2AsU8a(signedBytes) : signedBytes;
+  const message = signedBytes.length > SIGNED_PAYLOAD_HASH_THRESHOLD ? blake2AsU8a(signedBytes) : signedBytes;
 
   return {
     payload: hexToU8a(payload.toHex()),

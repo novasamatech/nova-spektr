@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { findCoreBatchAll, isEditDelegationTransaction } from '@/domains/network';
-import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
+import { voteTransactionService } from '@/entities/governance';
 
 import {
   CONTROLLER_ARG_NAME,
@@ -164,6 +165,20 @@ export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTrans
   return tx;
 };
 
+// Sums integer amounts that may carry thousands separators; null when any part is not an integer
+const sumIntegerStrings = (values: unknown[]): string | null => {
+  let total = new BN(0);
+
+  for (const value of values) {
+    const digits = typeof value === 'string' ? value.replaceAll(',', '') : '';
+    if (!/^\d+$/.test(digits)) return null;
+
+    total = total.add(new BN(digits));
+  }
+
+  return total.toString();
+};
+
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
   const txType = tx?.type;
   if (!txType) return null;
@@ -220,14 +235,19 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   }
 
   if (txType === TransactionType.VOTE) {
-    const transaction = tx as unknown as VoteTransaction;
-    const vote = transaction.args.vote;
+    const vote = tx.args?.vote;
 
     if (voteTransactionService.isStandardVote(vote)) {
       return vote.Standard.balance.replaceAll(',', '');
-    } else {
-      return vote.SplitAbstain.abstain.replaceAll(',', '');
     }
+    if (voteTransactionService.isSplitVote(vote)) {
+      return sumIntegerStrings([vote.Split.aye, vote.Split.nay]);
+    }
+    if (voteTransactionService.isSplitAbstainVote(vote)) {
+      return sumIntegerStrings([vote.SplitAbstain.aye, vote.SplitAbstain.nay, vote.SplitAbstain.abstain]);
+    }
+
+    return null;
   }
 
   if (txType === TransactionType.VESTED_TRANSFER) {

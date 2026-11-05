@@ -1,6 +1,6 @@
 # Dashboard Accounts Table
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -41,7 +41,7 @@ proportions with a fixed-width Total.
 flowchart TD
     START["Overview tab opens"] --> Q1{"Any accounts selected?"}
     Q1 -- "no" --> NOSEL["No accounts selected"]
-    Q1 -- "yes" --> Q2{"Every selected account has a\nbalance record, or 30s passed?"}
+    Q1 -- "yes" --> Q2{"Since this selection was made: has every\nselected account had a balance record on\nevery connected chain, or have 30s passed?"}
     Q2 -- "no" --> SKEL["Skeleton: 4 group headers × 3 rows"]
     Q2 -- "yes" --> Q3{"Any non-zero balances\nfor the selection?"}
     Q3 -- "no" --> NOBAL["No balances to show"]
@@ -50,27 +50,42 @@ flowchart TD
     Q4 -- "no" --> TABLE["Grouped table"]
 ```
 
-| State                     | When it appears                                                                                                           | What the user sees                                                                                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| No selection              | The dashboard's account picker has nothing selected                                                                       | Centered "no accounts selected" message; header chrome and footer are hidden                                                                                             |
-| Loading                   | Accounts selected, but at least one of them (that lives on any chain) has no balance record yet, and less than 30s passed | Skeleton mirroring the real layout: 4 group headers, 3 stub rows each                                                                                                    |
-| Loaded                    | Every selected account that lives on any chain has at least one balance record                                            | Grouped table: header row, per-account groups with subtotals, data rows; the footer states how many rows over how many accounts — the only place the table counts itself |
-| Loaded, incomplete        | 30s passed and some selected accounts still have no record (their chain never answered)                                   | The same table with what has arrived; the footer adds "Balances of N accounts have not loaded yet"                                                                       |
-| Zero balances             | Selection resolved, but every (account, chain, asset) balance is zero                                                     | "No balances to show" empty state — a real answer, not a loading artifact                                                                                                |
-| Empty after filter/search | Filters and/or the search box are active and nothing matches                                                              | "No rows match your filters" + explainer + "Clear filters" button; chips row stays visible                                                                               |
-| Filters/search active     | At least one filter or a non-empty search query is set                                                                    | Chips row under the header (one chip per active filter, ×), a count on the Filters button, filtered table                                                                |
-| Fiat off                  | Global "show fiat" toggle is off                                                                                          | Same rows and controls, minus every group's fiat subtotal                                                                                                                |
+| State                     | When it appears                                                                                                                                                                                                                                              | What the user sees                                                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No selection              | The dashboard's account picker has nothing selected                                                                                                                                                                                                          | Centered "no accounts selected" message; header chrome and footer are hidden                                                                                             |
+| Loading                   | Accounts selected, the table has not been shown for this selection yet, less than 30s passed, and some account has no balance record on a connected chain it lives on — or no account has any record at all, e.g. no chain of the selection is connected yet | Skeleton mirroring the real layout: 4 group headers, 3 stub rows each                                                                                                    |
+| Loaded                    | Every selected account has at least one balance record on every connected chain it lives on                                                                                                                                                                  | Grouped table: header row, per-account groups with subtotals, data rows; the footer states how many rows over how many accounts — the only place the table counts itself |
+| Loaded, syncing           | The table is shown, and a chain of the selection is connecting, or a connected chain has not answered yet and less than 30s passed since it connected                                                                                                        | The same table; the footer adds a spinner and "Syncing balances..."                                                                                                      |
+| Loaded, incomplete        | 30s passed since the connected chains of the selection last changed, and some selected accounts still have no record on a connected chain                                                                                                                    | The same table with what has arrived; the footer adds "Balances of N accounts have not loaded yet"                                                                       |
+| Zero balances             | Selection resolved, but every (account, chain, asset) balance is zero                                                                                                                                                                                        | "No balances to show" empty state — a real answer, not a loading artifact                                                                                                |
+| Empty after filter/search | Filters and/or the search box are active and nothing matches                                                                                                                                                                                                 | "No rows match your filters" + explainer + "Clear filters" button; chips row stays visible                                                                               |
+| Filters/search active     | At least one filter or a non-empty search query is set                                                                                                                                                                                                       | Chips row under the header (one chip per active filter, ×), a count on the Filters button, filtered table                                                                |
+| Fiat off                  | Global "show fiat" toggle is off                                                                                                                                                                                                                             | Same rows and controls, minus every group's fiat subtotal                                                                                                                |
 
 The **skeleton vs. empty** distinction follows the same rule as `dashboard-portfolio-overview`: the balance subscription
-writes a record for every (account, chain, asset) it queries, zero balances included, so an account with no record at
-all has not been read yet. The table waits until **every** selected account that can hold balances on at least one known
-chain (wallet accounts: chains they are available on; contacts: chains of a matching address scheme) has a record — one
-fast account does not stand in for the rest (`useBalanceCoverage` from `features/assets-balances`). Until then the
-widget shows its skeleton, never an empty table, a row of zeros or a partial list presented as final.
+writes a record for every (account, chain, asset) it queries, zero balances included, so an account with no record on a
+chain has not been read there yet. The table waits until **every** selected account has a record on **every connected
+chain** it can hold balances on (a key's wallet accounts — every one of them in a visible wallet, exactly the accounts
+the dashboard fetches — on the chains they are available on; contacts on the chains of a matching address scheme; chains
+whose connection is disabled are never fetched, so they do not count) — one fast account does not stand in for the rest,
+and one fast chain does not stand in for the other chains (`useBalanceCoverage` from `features/assets-balances`). Until
+then the widget shows its skeleton, never an empty table, a row of zeros or a partial list presented as final.
 
-The wait is bounded at **30s per selection**, because a chain whose RPC is down keeps retrying for the life of the app
-and an account that lives only there never gets a record. After that the table renders what has arrived and the footer
-says how many accounts are still missing.
+A chain that is still **connecting** is not waited for — it may take long to connect, and the balances of the connected
+chains are already a useful answer. The table is shown, and its footer says "Syncing balances..." while such a chain
+exists, so the rows do not read as the final picture. A chain that is **disconnected or failing** is neither waited for
+nor announced: it may stay down indefinitely, and a hint that never goes away says nothing. A chain **without assets**
+is never waited for either — no balance record can exist for it.
+
+**Once shown, the table stays shown** for as long as the selection stays the same. A chain that connects after that does
+not bring the skeleton back: its balances are awaited with the table on screen, the footer saying "Syncing balances..."
+until they arrive. Changing the selection starts over — skeleton, new wait — and so does coming back to an earlier one.
+
+The wait is bounded at **30s**, because a chain whose RPC is down keeps retrying for the life of the app and an account
+that lives only there never gets a record. It is counted from the moment the selection was made **or the set of
+connected chains it lives on last changed**: a chain that connects late is only just being asked, so it gets its own
+30s. After that the table renders what has arrived, and the "Syncing balances..." hint gives way to a footer note saying
+how many accounts are still missing balances on a connected chain.
 
 ## The purpose split
 

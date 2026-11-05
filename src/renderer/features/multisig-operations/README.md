@@ -1,6 +1,6 @@
 # Multisig Operations
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -403,17 +403,25 @@ multisig is absent from the external address book.
 Gated by [`recipient-verification`](../../aggregates/recipient-verification/README.md) (in turn gated on the external
 address book connection — invisible until it has been connected at least once), a transfer-family operation whose
 destination is not a known address (address-book contact or one of the user's own accounts) is flagged in two places,
-both purely informational — neither blocks viewing or approving from the list:
+both purely informational — neither blocks viewing or approving from the list — and the Approve dialog adds a gate:
 
 - **Row pill.** An **UNKNOWN RECIPIENT** badge sits at the end of the row's Description cell, for any operation that
   exposes a single destination (the transfer/XCM family; other operation types never show it).
 - **Confirmation badge.** The same warning surfaces as an **UNKNOWN ADDRESS** badge next to the Recipient label in the
   shared Details panel of the confirmation step — informational only, so it appears in **both** the Approve and the
   Reject dialogs (the Details panel is shared between them).
-- **Approve dialog gate.** Below the badge, an amber acknowledgement box ("I have verified this address…") gates the
-  **Sign** button — it stays disabled until the checkbox is ticked. The acknowledgement resets whenever the approve
-  dialog opens or closes, so it never carries across operations. The **gate** is approve-only: the Reject flow shows the
-  informational badge but never the acknowledgement box — rejecting is always the safe action.
+- **Approve dialog gate.** The Approve dialog looks at **every** account the operation's call pays, not only the single
+  destination the badge points at — the same call → recipients check as
+  [Drafts](../drafts/README.md#unknown-recipient-warnings): each transfer inside `utility.batch` / `batchAll` /
+  `forceBatch` and `proxy.proxy` wrappers, a vested transfer's target, a reward destination set to an `Account`, a proxy
+  delegate, a governance delegation target and every beneficiary of an XCM transfer. When any of them is not a known
+  address — or the call can't be read (call data that is present but did not decode, a call the check doesn't
+  understand, an XCM program that names no recipient) — an amber acknowledgement box ("I have verified the recipient
+  address…") appears above the **Sign** button. The button stays disabled until the checkbox is ticked, and the signing
+  step itself refuses to start without the tick. An operation whose call data is not known yet has nothing to check (and
+  nothing to sign from this dialog either). The acknowledgement resets whenever the approve dialog opens or closes, so
+  it never carries across operations. The **gate** is approve-only: the Reject flow shows the informational badge but
+  never the acknowledgement box — rejecting is always the safe action.
 
 The expanded row's Details column (from
 [`transfer-operation-details`](../transfer-operation-details/README.md#unknown-recipient-warnings)) additionally shows a
@@ -585,6 +593,6 @@ operation, cancelling it.
 - **Wallet pairing** — for a tracked external multisig, the per-operation action is an **Add wallet** prompt that pairs
   a wallet holding an actual signatory key, turning the read-only row into an actionable one.
 - [`recipient-verification`](../../aggregates/recipient-verification/README.md) — decides whether an operation's
-  destination is "known"; drives the row pill and the Approve dialog's badge and acknowledgement gate.
+  recipients are "known"; drives the row pill and the Approve dialog's badge and acknowledgement gate.
 - [`transfer-operation-details`](../transfer-operation-details/README.md) — contributes the row/Details title, amount,
   and the unknown-recipient review alert for the transfer/XCM family.

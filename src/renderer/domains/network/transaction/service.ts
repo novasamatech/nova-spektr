@@ -7,7 +7,7 @@ import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import { type HexString, type Transaction as DeprecatedTransaction } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
-import { assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { SIGNED_PAYLOAD_HASH_THRESHOLD, assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
@@ -537,12 +537,6 @@ const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, regi
 
   return errorInfo;
 };
-
-/**
- * Signers hash payloads longer than this with blake2 and sign the hash instead
- * of the raw bytes.
- */
-const SIGNED_PAYLOAD_HASH_THRESHOLD = 256;
 
 /**
  * Bytes a signer actually signs for an encoded `ExtrinsicPayload`: the same

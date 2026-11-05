@@ -35,12 +35,24 @@ export const RewardsWidget = ({ accountIds }: Props) => {
   const rewardTokens = formatAssetAmounts(kpi.rewardAmounts, { sign: '+', fallback: EM_DASH });
   const showFiat = kpi.fiatFlag !== false;
 
-  const subline = showFiat
-    ? t('dashboard.staking.kpi.rewards.subline', {
-        amounts: rewardTokens,
-        days: kpi.rewardsWindowDays,
-      })
-    : t('dashboard.staking.kpi.rewards.sublineNoFiat', { days: kpi.rewardsWindowDays });
+  // Nothing could be loaded: there is no figure to show, and a `$0` would state
+  // that the selection earned nothing.
+  const unavailable = kpi.rewardsCompleteness === 'unavailable';
+  const unavailableLabel = t('dashboard.staking.kpi.rewards.unavailable');
+
+  const windowLabel = t('dashboard.staking.kpi.rewards.sublineNoFiat', { days: kpi.rewardsWindowDays });
+  const totalsSubline = showFiat
+    ? t('dashboard.staking.kpi.rewards.subline', { amounts: rewardTokens, days: kpi.rewardsWindowDays })
+    : windowLabel;
+
+  // A network that did not answer in full leaves the figure a lower bound. The
+  // note replaces the sub-line rather than joining it: the line is one row of a
+  // quarter-width card, and the warning must not be the part that is cut off.
+  const subline = unavailable
+    ? windowLabel
+    : kpi.rewardsCompleteness === 'partial'
+      ? t('dashboard.staking.kpi.rewards.incomplete', { networks: kpi.rewardsIncompleteNetworks.join(', ') })
+      : totalsSubline;
   // An explicit aria-label replaces the card's inner text for screen readers,
   // so it must carry what the card shows. The system tests anchor on the title
   // prefix of this label.
@@ -49,16 +61,22 @@ export const RewardsWidget = ({ accountIds }: Props) => {
     : null;
   // The token amounts always ride along: with fiat off the subline drops them,
   // and a label without any value announces nothing.
-  const ariaLabel = [title, rewardTokens, subline, unclaimedLabel].filter(Boolean).join(', ');
+  const ariaLabel = [title, unavailable ? unavailableLabel : rewardTokens, subline, unclaimedLabel]
+    .filter(Boolean)
+    .join(', ');
+
+  const figure = showFiat ? <Price amount={kpi.rewardsFiat} currency={kpi.currency} /> : rewardTokens;
 
   return (
     <KpiWidgetFrame>
       <KpiCard
         title={title}
         ariaLabel={ariaLabel}
-        loading={kpi.pending}
-        valueClass="text-text-positive"
-        value={showFiat ? <Price amount={kpi.rewardsFiat} currency={kpi.currency} /> : rewardTokens}
+        // A figure missing a network that has not answered yet is neither a
+        // total nor a lower bound.
+        loading={kpi.pending || kpi.rewardsPending}
+        valueClass={unavailable ? 'text-text-tertiary' : 'text-text-positive'}
+        value={unavailable ? unavailableLabel : figure}
         subline={subline}
         footer={
           kpi.unclaimedFooter ? (

@@ -4,10 +4,11 @@ import { z } from 'zod';
 import { type EraIndex } from '@/shared/core';
 import { nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type DataCompleteness } from '../completeness';
 import { exposureKey } from '../exposure-key';
 import { type RewardSource } from '../types';
 
-import { type DataCompleteness, type EraValidatorExposure } from './types';
+import { type EraValidatorExposure } from './types';
 
 /** Page size of a single indexer request. */
 const PAGE_SIZE = 500;
@@ -100,6 +101,7 @@ async function fetchSource(
 
     const exposures: EraValidatorExposure[] = [];
     let indexedTo = -1;
+    let expectedCount: number | null = null;
     let paged = false;
     let offset = 0;
 
@@ -120,14 +122,23 @@ async function fetchSource(
       }
 
       const { nodes, totalCount } = parsed.data.eraValidatorInfos;
-      indexedTo = Math.max(indexedTo, parsed.data.indexedTo.nodes[0]?.era ?? -1);
+
+      // Coverage and size are fixed by the first page. A row indexed mid-scan
+      // lands on a page already read and shifts the later ones, so a count that
+      // moves means the pages no longer add up to one consistent set.
+      if (expectedCount === null) {
+        expectedCount = totalCount;
+        indexedTo = parsed.data.indexedTo.nodes[0]?.era ?? -1;
+      } else if (totalCount !== expectedCount) {
+        break;
+      }
 
       for (const node of nodes) {
         exposures.push({ era: node.era, validator: toAccountId(node.address), total: node.total, own: node.own });
       }
 
       offset += nodes.length;
-      if (offset >= totalCount) {
+      if (offset >= expectedCount) {
         paged = true;
         break;
       }

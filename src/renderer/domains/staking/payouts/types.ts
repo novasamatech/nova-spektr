@@ -1,5 +1,6 @@
 import { type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type DataCompleteness } from '../completeness';
 
 /**
  * Where the exposures of a scan came from — provenance only. Whether the answer
@@ -10,16 +11,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
  * - `unavailable` — neither path could produce data.
  */
 export type PayoutSource = 'subquery' | 'chain' | 'unavailable';
-
-/**
- * - `complete` — every read of the scan answered and the history covers the whole
- *   claim window: an empty result really means "nothing to claim";
- * - `partial` — the payouts found are real, but something may be missing (a read
- *   failed, an indexer lags behind, or only the bounded on-chain scan ran): the
- *   total is a lower bound;
- * - `unavailable` — nothing could be checked; the result says nothing.
- */
-export type DataCompleteness = 'complete' | 'partial' | 'unavailable';
 
 export type UnclaimedPayout = {
   era: EraIndex;
@@ -33,6 +24,13 @@ export type UnclaimedPayouts = {
   total: string;
   payouts: UnclaimedPayout[];
   source: PayoutSource;
+  /**
+   * `complete` — every read of the scan answered and the history covers the
+   * whole claim window: an empty result really means "nothing to claim".
+   * `partial` — the payouts found are real, but a read failed, an indexer lags
+   * behind, or only the bounded on-chain scan ran. `unavailable` — nothing
+   * could be checked.
+   */
   completeness: DataCompleteness;
 };
 

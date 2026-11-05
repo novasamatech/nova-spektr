@@ -60,8 +60,8 @@ export type SignBlocked = {
 
 /**
  * Why the payloads cannot be signed at all; `null` while signing can proceed.
- * Set instead of `$signStore` when a call is too heavy to fit into one
- * extrinsic and cannot be split.
+ * Set instead of `$signStore` when a call cannot be encoded at all, or is too
+ * heavy to fit into one extrinsic and cannot be split.
  */
 const $blocked = createStore<SignBlocked | null>(null).reset([init, flow.close]);
 
@@ -96,14 +96,27 @@ const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams) =>
 });
 
 /**
+ * Encodes every payload into an extrinsic. Kept apart from the split so an
+ * encoding failure (the call itself is unusable) is not mistaken for a split
+ * failure (the node did not answer).
+ */
+const encodeExtrinsicsFx = createEffect((input: TransactionSigningPayload[]): ExtrinsicSigningPayload[] => {
+  return input.map(({ api, chain, signatory, transaction }) => ({
+    api,
+    chain,
+    signatory,
+    extrinsic: transactionService.createExtrinsic(transaction, api),
+  }));
+});
+
+/**
  * Some batch extrinsics can be too large for network. in this case we're
  * splitting them into multiple chunks.
  */
-const splitExtrinsicsFx = createEffect(async (input: TransactionSigningPayload[]) => {
+const splitExtrinsicsFx = createEffect(async (input: ExtrinsicSigningPayload[]) => {
   let splitted: ExtrinsicSigningPayload[] = [];
 
-  for (const { api, chain, signatory, transaction } of input) {
-    const extrinsic = transactionService.createExtrinsic(transaction, api);
+  for (const { api, chain, signatory, extrinsic } of input) {
     const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
 
     splitted = splitted.concat(
@@ -160,12 +173,37 @@ sample({
 sample({
   clock: init,
   filter: (payloads) => payloads.length > 0,
+  target: encodeExtrinsicsFx,
+});
+
+sample({
+  clock: encodeExtrinsicsFx.doneData,
   target: splitExtrinsicsFx,
 });
 
 sample({
   clock: splitExtrinsicsFx.doneData,
   target: $signStore,
+});
+
+// A call that cannot be encoded has no hash either, so the confirm step could
+// not check it against pending multisig operations (see
+// `createTransactionConfirmStore`) — signing is where it is refused. Both
+// encoding paths land here: the deprecated form conversion and the extrinsic
+// encoding of the current one.
+sample({
+  clock: [
+    convertOldFormatToNewFx.fail.map(({ params, error }) => ({
+      chain: params.input.signingPayloads.at(0)?.chain ?? null,
+      error,
+    })),
+    encodeExtrinsicsFx.fail.map(({ params, error }) => ({ chain: params.at(0)?.chain ?? null, error })),
+  ],
+  fn: ({ chain, error }): SignBlocked => ({
+    reason: { kind: 'call-hash-unavailable', detail: error.message },
+    chain,
+  }),
+  target: $blocked,
 });
 
 sample({

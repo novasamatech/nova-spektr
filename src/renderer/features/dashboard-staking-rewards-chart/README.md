@@ -1,6 +1,6 @@
 # Staking Rewards Chart
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-25
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -30,13 +30,15 @@ recent payout is visible as a day rather than being averaged into a month.
 
 ## States / scenarios
 
-| State     | When it appears                               | What the user sees                                                        |
-| --------- | --------------------------------------------- | ------------------------------------------------------------------------- |
-| Loading   | Reward history for the selection is in flight | Header and controls, with a shimmer occupying exactly the plot's box      |
-| Empty     | The selection earned nothing in the window    | Header and controls, and "No rewards yet — start staking to see your…"    |
-| Chart     | At least one bar in the window is non-zero    | Total line, bars, gridlines, x labels                                     |
-| Bar hover | Pointer over a bar                            | A floating card: bucket title, per-account rows, a Total footer with fiat |
-| Fiat off  | Global "show fiat" toggle is off              | The same card without the "≈ …" part of the total line                    |
+| State       | When it appears                                      | What the user sees                                                                                                                                                      |
+| ----------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading     | Reward history for the selection is in flight        | Header and controls, with a shimmer occupying exactly the plot's box                                                                                                    |
+| Empty       | Every indexer answered, nothing earned in the window | Header and controls, and "No rewards yet — start staking to see your…"                                                                                                  |
+| Chart       | At least one bar in the window is non-zero           | Total line, bars, gridlines, x labels                                                                                                                                   |
+| Incomplete  | An indexer of the asset's history did not answer     | The bars and total that did load, with "incomplete — some history couldn't be loaded" on the total line; with no bar at all, "Reward history is incomplete" in the plot |
+| Unavailable | No indexer of the asset's history answered           | "Couldn't load" in place of the total and "Couldn't load reward history" in the plot — never `0 DOT`, never "No rewards yet"                                            |
+| Bar hover   | Pointer over a bar                                   | A floating card: bucket title, per-account rows, a Total footer with fiat                                                                                               |
+| Fiat off    | Global "show fiat" toggle is off                     | The same card without the "≈ …" part of the total line                                                                                                                  |
 
 The loading shimmer, the empty message and the plot all occupy the same box, so data arriving — or the user switching
 range or asset — never moves anything below the card. That box is whatever height the widget's cell leaves over: the
@@ -103,8 +105,17 @@ back to the first configured one), fetches a year of reward records for the sele
 the last 30 days. From there everything is local: switching asset refetches for the other chain, switching range
 re-buckets what is already loaded, and hovering opens the breakdown. The card never navigates anywhere.
 
-Failures degrade quietly: an indexer that does not answer contributes no records, so the affected period reads as empty
-rather than as an error — the same behaviour the total-rewards figures elsewhere on the dashboard have.
+A failure is said, not absorbed. The history is merged from several indexers — the relay chain's for the time before
+staking moved to Asset Hub, Asset Hub's for the time after — and each is read on its own. One that does not answer
+contributes no records, and the card then marks what it shows as **incomplete**: the bars and the total that did load
+are real, but they are a lower bound, and the total line says so. When none of them answers there is nothing to draw and
+nothing to total, so the card says the history **couldn't be loaded** rather than printing `0` or "No rewards yet" —
+both would claim the selection earned nothing. "No rewards yet" is shown only when every indexer answered. An indexer
+counts as answering in full only when it paged through every payout of the year (a stash paid daily has far more rows
+than one page), its row count did not move under the scan, and it has processed its chain up to the head; a payout two
+indexers both hold is drawn once, and one they disagree about is left out and the history marked incomplete. A history
+that is not complete is kept for 30 seconds instead of ten minutes: the card is re-requested on the next visit after
+that.
 
 ## Related
 

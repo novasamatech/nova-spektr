@@ -15,5 +15,6 @@ export {
   INDEXED_WALLET_TYPES,
   buildMergedEntries,
   computeSourceBreakdown,
+  getEntryAccounts,
   isIndexedWallet,
 } from './lib';

@@ -1,9 +1,21 @@
 import { type Stake, type Validator } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
+import { type DataCompleteness } from './completeness';
+
 export type StakingMap = Record<AccountId, Stake | undefined>;
 export type ValidatorMap = Record<AccountId, Validator>;
 export type RewardsMap = Record<AccountId, string>;
+
+/**
+ * Reward totals per account, and how far they can be trusted: a `partial` total
+ * is a lower bound (a source did not answer), and an `unavailable` one is
+ * "could not be loaded", never "earned nothing".
+ */
+export type StakingRewards = {
+  rewards: RewardsMap;
+  completeness: DataCompleteness;
+};
 
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
 export type ApyValidator = Pick<Validator, 'accountId' | 'totalStake' | 'commission'>;
@@ -28,4 +40,14 @@ export type MonthlyRewardRecord = {
   timestamp: number;
   blockNumber: number;
   type: string;
+};
+
+/**
+ * The payout records of a period, and whether every source contributed its
+ * share — a `partial` list is missing the rows of a source that did not
+ * answer.
+ */
+export type MonthlyRewards = {
+  records: MonthlyRewardRecord[];
+  completeness: DataCompleteness;
 };

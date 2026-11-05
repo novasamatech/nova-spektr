@@ -52,7 +52,10 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
     }
     return sinceCache.current[timeRange];
   })();
-  const { chains, rewardsMapByChain, totalFiat, pending, fiatFlag, currency } = useTotalRewards(accountIds, since);
+  const { chains, rewardsMapByChain, totalFiat, completeness, pending, fiatFlag, currency } = useTotalRewards(
+    accountIds,
+    since,
+  );
   const [selectedChainId, setSelectedChainId] = useState<ChainId | null>(null);
 
   const handleSetTimeRange = useCallback((range: RewardsTimeRange) => setTimeRange(range), []);
@@ -102,8 +105,20 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <TitleText className="mt-1">
-            {pending ? <Skeleton width={30} height={7} /> : <Price amount={totalFiat ?? '0'} currency={currency} />}
+            {pending ? (
+              <Skeleton width={30} height={7} />
+            ) : completeness === 'unavailable' ? (
+              // Nothing could be loaded: a `$0` would state that nothing was earned.
+              t('dashboard.staking.rewardsChart.unavailable.total')
+            ) : (
+              <Price amount={totalFiat ?? '0'} currency={currency} />
+            )}
           </TitleText>
+          {!pending && completeness === 'partial' ? (
+            <FootnoteText className="text-text-warning">
+              {t('dashboard.staking.rewardsChart.incomplete.note')}
+            </FootnoteText>
+          ) : null}
         </div>
       </div>
 
@@ -144,7 +159,9 @@ export const TotalRewardsWidget = ({ accountIds, allEntries }: Props) => {
         </>
       )}
 
-      {!pending && chains.length === 0 && (
+      {/* "No rewards found" is a statement about every source; an answer that
+          is missing one cannot make it. */}
+      {!pending && chains.length === 0 && completeness === 'complete' && (
         <div className="flex flex-col items-center gap-y-1 py-6">
           <BodyText className="text-text-tertiary">{t('dashboard.totalRewards.noRewards')}</BodyText>
         </div>

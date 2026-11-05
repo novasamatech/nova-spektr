@@ -609,4 +609,26 @@ describe('transfer-amount-extractor', () => {
       expect(results.get('op-2')).toBeNull(); // No chain found
     });
   });
+
+  describe('split votes', () => {
+    const createVoteOperation = (vote: Record<string, unknown>) =>
+      createMockOperation({
+        transaction: mockDecodedTransaction({
+          type: TransactionType.VOTE,
+          section: 'convictionVoting',
+          method: 'vote',
+          args: { track: 0, referendum: 1, vote },
+        }),
+      });
+
+    test('should extract the sum of a split vote without throwing', () => {
+      const operation = createVoteOperation({ Split: { aye: '10,000,000,000', nay: '20,000,000,000' } });
+
+      expect(extractTransferAmount(operation, createMockChain())?.rawAmount).toBe('30000000000');
+    });
+
+    test('should return null for a vote of an unknown shape', () => {
+      expect(extractTransferAmount(createVoteOperation({ Other: {} }), createMockChain())).toBeNull();
+    });
+  });
 });

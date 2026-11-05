@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { notificationUtils } from '@/entities/notification';
 
+import { NotificationRowBoundary } from './NotificationRowBoundary';
 import { FlexibleMultisigNotification } from './notifies/FlexibleMultisigNotification';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
 import { MultisigEventNotificationComponent } from './notifies/MultisigEventNotification';
@@ -54,7 +55,9 @@ export const NotificationRow = memo(({ notification, chains, wallets }: Props) =
 
   return (
     <li className="flex justify-between rounded-sm bg-block-background-default p-4">
-      <NotificationContent notification={notification} chains={chains} wallets={wallets} />
+      <NotificationRowBoundary notification={notification}>
+        <NotificationContent notification={notification} chains={chains} wallets={wallets} />
+      </NotificationRowBoundary>
       <FootnoteText className="text-text-tertiary">{formatDate(new Date(notification.dateCreated), 'p')}</FootnoteText>
     </li>
   );

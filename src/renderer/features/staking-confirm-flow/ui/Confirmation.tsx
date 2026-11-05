@@ -10,6 +10,7 @@ import { SignButton } from '@/entities/operations';
 import { SelectedValidatorsModal } from '@/entities/staking';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { DraftFormBody, DraftModeCard, DraftSigningPath } from '@/features/drafts';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
@@ -54,6 +55,7 @@ export const Confirmation = ({ onGoBack }: Props) => {
   const nothingLeftToRedeem = useUnit(confirmFlowModel.$nothingLeftToRedeem);
   const canSign = useUnit(confirmFlowModel.$canSign);
   const canUseBasket = useUnit(confirmFlowModel.$canUseBasket);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const isDraftMode = useUnit(confirmFlowModel.$isDraftMode);
   const canSaveAsDraft = useUnit(confirmFlowModel.$canSaveAsDraft);
@@ -186,6 +188,12 @@ export const Confirmation = ({ onGoBack }: Props) => {
 
           {!isDraftMode && <TransactionValidationError errors={errors} wallets={wallets} />}
 
+          {!isDraftMode && isMultisigExists && (
+            <Box padding={[2, 5]}>
+              <MultisigExistsAlert active />
+            </Box>
+          )}
+
           {/* `$noRouteSigner` is already false in draft mode. */}
           {noRouteSigner && (
             <Box padding={[2, 5]}>
@@ -229,18 +237,20 @@ export const Confirmation = ({ onGoBack }: Props) => {
           </Button>
         ) : (
           <div className="flex gap-4">
-            {canUseBasket && (
+            {canUseBasket && !isMultisigExists && (
               <Button pallet="secondary" onClick={() => confirmFlowModel.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )}
-            <SignButton
-              isDefault={canUseBasket}
-              type={signatoryWallet?.type}
-              disabled={!canSign}
-              isLoading={preparing}
-              onClick={confirmModel.startSigning}
-            />
+            {!isMultisigExists && (
+              <SignButton
+                isDefault={canUseBasket}
+                type={signatoryWallet?.type}
+                disabled={!canSign}
+                isLoading={preparing}
+                onClick={confirmModel.startSigning}
+              />
+            )}
           </div>
         )}
       </Modal.Footer>

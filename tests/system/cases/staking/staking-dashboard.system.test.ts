@@ -83,10 +83,16 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
     await expect(row).toContainText(elements.viewOnlyLabel);
   });
 
-  test('S2: position row opens the detail drawer with no actions for watch-only', async ({ stakingDashboardPage }) => {
+  test('S2: position row opens the detail drawer with every action disabled for watch-only', async ({
+    stakingDashboardPage,
+  }) => {
     test.setTimeout(TEST_TIMEOUT);
 
-    await expect(stakingDashboardPage.getPositionRows().first()).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
+    // The skeleton rows are excluded by the locator; the amount proves the
+    // ledger has landed, so the click lands on a row with a drawer behind it.
+    const row = stakingDashboardPage.getPositionRows().first();
+    await expect(row).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
+    await expect(row).toContainText(elements.amountPattern, { timeout: LIVE_DATA_TIMEOUT });
 
     const drawer = await stakingDashboardPage.openPositionRow(0);
 
@@ -99,11 +105,18 @@ test.describe('Staking dashboard — populated (watch-only nominator)', { tag: '
 
     // --- watch-only is stated, not implied
     await expect(drawer.getByText(elements.viewOnlyLabel, { exact: true })).toBeVisible();
-    await expect(drawer.getByText(elements.watchOnlyNote)).toBeVisible();
 
-    // --- and carries NO action chips at all. This is the design requirement:
-    // actions are absent by design, never rendered disabled.
-    await expect(drawer.getByRole('button', { name: elements.actionChipPattern })).toHaveCount(0);
+    // --- the action strip stays, every chip disabled, and the chip says why.
+    // This is the design requirement: a blocked position keeps its chips and
+    // explains the block in a tooltip rather than dropping the strip.
+    const chips = stakingDashboardPage.getActionChips(drawer);
+    await expect(chips).not.toHaveCount(0);
+    for (const chip of await chips.all()) {
+      await expect(chip).toBeDisabled();
+    }
+    const tooltip = await stakingDashboardPage.hoverActionChip(drawer, elements.watchOnlyHoverChipLabel);
+    await expect(tooltip).toHaveText(elements.watchOnlyNote);
+    await stakingDashboardPage.dismissTooltip(tooltip);
 
     // --- nominations table
     await expect(drawer.getByText(elements.nominationsSectionTitle, { exact: true })).toBeVisible();
@@ -182,17 +195,16 @@ test.describe('Staking dashboard — matured unbonding chunk (watch-only)', { ta
     await setupTestMetadata('Staking dashboard', 'Unbonding');
   });
 
-  test('S5: Total staked footer surfaces the withdrawable chunk and its drill-down', async ({
-    stakingDashboardPage,
-  }) => {
+  test('S5: Total staked footer surfaces the unbonding amount and its drill-down', async ({ stakingDashboardPage }) => {
     test.setTimeout(TEST_TIMEOUT);
 
+    // The footer reads "Unbonding {amount} Redeem →" — no chunk count, no
+    // maturity on the card itself; that detail lives in the drill-down.
     const footer = stakingDashboardPage.getKpiFooter('totalStaked');
 
     await expect(footer).toBeVisible({ timeout: LIVE_DATA_TIMEOUT });
     await expect(footer).toContainText(elements.unbondingFooterLabel);
     await expect(footer).toContainText(elements.amountPattern);
-    await expect(footer).toContainText(elements.withdrawableChipPattern);
     await expect(footer.getByRole('button', { name: elements.redeemLinkLabel })).toBeVisible();
 
     await stakingDashboardPage.clickRedeemLink();
@@ -202,9 +214,10 @@ test.describe('Staking dashboard — matured unbonding chunk (watch-only)', { ta
     await expect(modal).toContainText(elements.positionsModalTitle);
     await expect(modal).toContainText(elements.unbondingFooterLabel); // "Unbonding" column
     await expect(modal.locator(elements.donutSelector)).toBeVisible();
-    await expect(modal.locator(elements.tableRowSelector).first()).toBeVisible();
-    // The matured chunk shows up as a "ready" chip rather than a countdown.
-    await expect(modal).toContainText(elements.readyChipPattern);
+    // The matured chunk shows up as a "{amount} ready" chip rather than a
+    // countdown — on whichever row holds it, the table order is not under test.
+    const readyRows = modal.locator(elements.tableRowSelector).filter({ hasText: elements.readyChipPattern });
+    await expect(readyRows.first()).toBeVisible();
 
     await stakingDashboardPage.closeOverlay(modal);
   });

@@ -14,6 +14,7 @@ import { AssetFiatBalance } from '@/widgets/price';
 import { type NominatorInfo } from '../lib/types';
 
 import { NominatorsItem } from './NominatorItem';
+import { RewardAmount } from './RewardAmount';
 
 type Props = {
   shardsStake: NominatorInfo<VaultShardAccount>[];
@@ -114,17 +115,13 @@ export const ShardedList = ({
               </div>
             )}
 
-            {!shardsStake[0]?.totalReward || !asset ? (
-              <div className="flex flex-col items-end gap-y-1.5 pb-1">
-                <Skeleton width={20} height={4} />
-                <Skeleton width={14} height={3} />
-              </div>
-            ) : (
-              <div className="flex flex-col items-end justify-self-end">
-                <AssetBalance value={shardsStats.totalReward.toString()} asset={asset} />
-                <AssetFiatBalance amount={shardsStats.totalReward.toString()} asset={asset} />
-              </div>
-            )}
+            {/* Every shard is answered by the same request, so the first one
+                speaks for the group. */}
+            <RewardAmount
+              amount={shardsStake[0]?.totalReward === undefined ? undefined : shardsStats.totalReward.toString()}
+              asset={asset}
+              completeness={shardsStake[0]?.rewardsCompleteness}
+            />
           </div>
         </div>
       </CardStack.Trigger>

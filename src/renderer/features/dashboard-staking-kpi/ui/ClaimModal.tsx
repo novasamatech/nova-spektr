@@ -132,8 +132,20 @@ export const ClaimModal = memo(
     const hoveredId = hovered?.id ?? null;
     const listRef = useRef<HTMLDivElement>(null);
 
-    const { rewards, pendingChains } = useValidatorRewards(positions, rewardWindow);
+    const {
+      rewards,
+      pendingChains,
+      incompleteChains: earnedIncompleteChains,
+      unavailableChains: earnedUnavailableChains,
+      retry: retryEarned,
+    } = useValidatorRewards(positions, rewardWindow);
     const pendingChainSet = useMemo(() => new Set(pendingChains), [pendingChains]);
+    /**
+     * Chains whose era attribution answered only in part. What it found is real
+     * and stays on screen; what it did not find is unknown, so a row with
+     * nothing attributed there reads "couldn't load" rather than `0 DOT`.
+     */
+    const earnedIncomplete = useMemo(() => new Set(earnedIncompleteChains), [earnedIncompleteChains]);
 
     /**
      * Chains whose payout scan has not answered yet, and chains whose scan
@@ -147,11 +159,6 @@ export const ClaimModal = memo(
       [rows],
     );
     const [retrying, setRetrying] = useState(false);
-
-    const handleRetryUnclaimed = useCallback(() => {
-      setRetrying(true);
-      onRetryUnclaimed().finally(() => setRetrying(false));
-    }, [onRetryUnclaimed]);
 
     const incompleteNetworks = useMemo(
       () =>
@@ -168,6 +175,40 @@ export const ClaimModal = memo(
 
       return [...byChain.entries()].map(([chainId, chainName]) => ({ chainId, chainName }));
     }, [rows]);
+
+    /**
+     * The names of the given chains that the network filter leaves on screen —
+     * a note about Kusama has no place over a table filtered to Polkadot.
+     */
+    const scopedNetworkNames = useCallback(
+      (chainIds: ReadonlySet<ChainId>) =>
+        networks
+          .filter((network) => chainIds.has(network.chainId))
+          .filter((network) => chainFilter === null || network.chainId === chainFilter)
+          .map((network) => network.chainName)
+          .join(', '),
+      [networks, chainFilter],
+    );
+
+    const earnedIncompleteNetworks = useMemo(
+      () => scopedNetworkNames(earnedIncomplete),
+      [scopedNetworkNames, earnedIncomplete],
+    );
+
+    /**
+     * How far the donut's centre total can be trusted: not at all when every
+     * network on screen could not be attributed (a `$0` there would say nothing
+     * was earned), a lower bound when any of them answered only in part.
+     */
+    const accruedTotalState = useMemo(() => {
+      const onScreen = networks.filter((network) => chainFilter === null || network.chainId === chainFilter);
+      const unavailable = new Set(earnedUnavailableChains);
+
+      if (onScreen.length > 0 && onScreen.every((network) => unavailable.has(network.chainId))) return 'unavailable';
+      if (onScreen.some((network) => earnedIncomplete.has(network.chainId))) return 'partial';
+
+      return 'complete';
+    }, [networks, chainFilter, earnedUnavailableChains, earnedIncomplete]);
 
     /**
      * The claim window the "nothing outstanding" footer is allowed to promise.
@@ -228,12 +269,25 @@ export const ClaimModal = memo(
      * data: a filter that hides its own alternatives is a trap.
      */
     const nominators = useMemo(() => {
-      const byAccount = new Map<AccountId, { accountId: AccountId; chainId: ChainId; fiat: string }>();
+      const byAccount = new Map<
+        AccountId,
+        { accountId: AccountId; chainId: ChainId; fiat: string; earnedUnknown: boolean }
+      >();
+      const attributed = new Set<AccountId>();
 
       for (const row of rows) {
         if (chainFilter !== null && row.chainId !== chainFilter) continue;
-        if (!byAccount.has(row.accountId)) {
-          byAccount.set(row.accountId, { accountId: row.accountId, chainId: row.chainId, fiat: '0' });
+
+        const entry = byAccount.get(row.accountId);
+        if (entry) {
+          entry.earnedUnknown ||= earnedIncomplete.has(row.chainId);
+        } else {
+          byAccount.set(row.accountId, {
+            accountId: row.accountId,
+            chainId: row.chainId,
+            fiat: '0',
+            earnedUnknown: earnedIncomplete.has(row.chainId),
+          });
         }
       }
 
@@ -242,11 +296,18 @@ export const ClaimModal = memo(
         const entry = byAccount.get(reward.accountId);
         if (!entry) continue;
 
+        attributed.add(reward.accountId);
         entry.fiat = sumFiat([entry.fiat, toFiat(reward.chainId, reward.amount)]);
       }
 
+      // Unknown only while nothing was attributed: a figure a partial answer
+      // did produce is real and is shown.
+      for (const entry of byAccount.values()) {
+        entry.earnedUnknown &&= !attributed.has(entry.accountId);
+      }
+
       return [...byAccount.values()].sort((a, b) => Number(b.fiat) - Number(a.fiat));
-    }, [rows, rewards, chainFilter, toFiat]);
+    }, [rows, rewards, chainFilter, toFiat, earnedIncomplete]);
 
     /**
      * Fiat is resolved **once per row** here and read from the row everywhere
@@ -378,7 +439,41 @@ export const ClaimModal = memo(
       return [...byChain.entries()].map(([chainId, accountIds]) => ({ chainId, accountIds: accountIds.sort() }));
     }, [rows]);
 
-    const rawPayouts = useRawRewardPayouts(payoutRequests);
+    const {
+      rows: rawPayouts,
+      incompleteChains: historyIncompleteChains,
+      pendingChains: historyPendingChains,
+      retry: retryHistory,
+    } = useRawRewardPayouts(payoutRequests);
+
+    /**
+     * Networks on screen whose payout history is missing a source's rows. The
+     * export is a reconciliation file, so it is withheld rather than written
+     * with rows silently absent.
+     */
+    const historyIncompleteNetworks = useMemo(
+      () => scopedNetworkNames(new Set(historyIncompleteChains)),
+      [scopedNetworkNames, historyIncompleteChains],
+    );
+    /**
+     * Networks on screen whose payout history has not arrived — an export now
+     * would miss them whole.
+     */
+    const historyPendingNetworks = useMemo(
+      () => scopedNetworkNames(new Set(historyPendingChains)),
+      [scopedNetworkNames, historyPendingChains],
+    );
+
+    /** One button re-runs everything on this screen that did not answer in full. */
+    const handleRetry = useCallback(() => {
+      setRetrying(true);
+      Promise.all([onRetryUnclaimed(), retryEarned(), retryHistory()]).finally(() => setRetrying(false));
+    }, [onRetryUnclaimed, retryEarned, retryHistory]);
+
+    const canRetry =
+      (unclaimedPending.size === 0 && unclaimedIncomplete.size > 0) ||
+      earnedIncompleteChains.length > 0 ||
+      historyIncompleteChains.length > 0;
 
     const bounds = windowBounds(rewardWindow);
     const windowedPayouts = useMemo(() => {
@@ -548,6 +643,12 @@ export const ClaimModal = memo(
                 <Skeleton width="72px" height="14px" />
                 <Skeleton width="48px" height="10px" />
               </div>
+            ) : earnedIncomplete.has(item.chainId) && !(Number(item.accrued) > 0) ? (
+              // The attribution could not look everywhere: a `0 DOT` here would
+              // be a guess presented as a fact.
+              <FootnoteText className="text-text-tertiary">
+                {t('dashboard.staking.kpi.rewards.unavailable')}
+              </FootnoteText>
             ) : (
               <div>
                 <FootnoteText className="tabular-nums">
@@ -625,6 +726,7 @@ export const ClaimModal = memo(
         currency,
         claimEnabled,
         pendingChainSet,
+        earnedIncomplete,
         unclaimedPending,
         unclaimedIncomplete,
         signableChains,
@@ -698,7 +800,19 @@ export const ClaimModal = memo(
                           </>
                         ) : (
                           <>
-                            <SmallTitleText>{formatFiat(accruedTotalFiat, currency)}</SmallTitleText>
+                            {accruedTotalState === 'unavailable' ? (
+                              <SmallTitleText className="text-text-tertiary">
+                                {t('dashboard.staking.kpi.rewards.unavailable')}
+                              </SmallTitleText>
+                            ) : (
+                              <SmallTitleText>{formatFiat(accruedTotalFiat, currency)}</SmallTitleText>
+                            )}
+                            {/* Real, but a lower bound: never shown as a plain total. */}
+                            {accruedTotalState === 'partial' ? (
+                              <HelpText className="text-text-warning">
+                                {t('staking.overview.rewardsIncomplete')}
+                              </HelpText>
+                            ) : null}
                             <HelpText className="text-text-tertiary">
                               {t('dashboard.staking.kpi.rewards.validatorCount', { count: displayRows.length })}
                             </HelpText>
@@ -710,6 +824,13 @@ export const ClaimModal = memo(
                     <HelpText className="text-center text-text-tertiary">
                       {t('dashboard.staking.kpi.rewards.donutCaption')}
                     </HelpText>
+                    {/* The figures above are real but not the whole of it. With
+                      no row at all the table says so instead. */}
+                    {earnedIncompleteNetworks && displayRows.length > 0 ? (
+                      <HelpText className="text-center text-text-warning">
+                        {t('dashboard.staking.kpi.rewards.earnedIncomplete', { networks: earnedIncompleteNetworks })}
+                      </HelpText>
+                    ) : null}
 
                     {/* The accounts behind the donut, and the filter over them —
                       the space under a 180px ring is exactly one list wide. */}
@@ -756,6 +877,10 @@ export const ClaimModal = memo(
                             ) : null}
                             {windowPending ? null : pendingChainSet.has(nominator.chainId) ? (
                               <Skeleton width="56px" height="12px" />
+                            ) : nominator.earnedUnknown ? (
+                              <HelpText className="shrink-0 text-text-tertiary">
+                                {t('dashboard.staking.kpi.rewards.unavailable')}
+                              </HelpText>
                             ) : (
                               <HelpText className="shrink-0 text-text-tertiary tabular-nums">
                                 {formatFiat(nominator.fiat, currency)}
@@ -776,8 +901,15 @@ export const ClaimModal = memo(
                       loading ? (
                         <RewardsTableSkeleton titles={columnTitles} />
                       ) : (
+                        // "Nothing attributed" is a statement about the whole
+                        // window; an attribution that answered in part cannot
+                        // make it.
                         <FootnoteText className="px-3 py-6 text-text-tertiary">
-                          {t('dashboard.staking.kpi.rewards.nothingInPeriod')}
+                          {earnedIncompleteNetworks
+                            ? t('dashboard.staking.kpi.rewards.earnedIncomplete', {
+                                networks: earnedIncompleteNetworks,
+                              })
+                            : t('dashboard.staking.kpi.rewards.nothingInPeriod')}
                         </FootnoteText>
                       )
                     ) : (
@@ -835,20 +967,30 @@ export const ClaimModal = memo(
                         .join(' · ')}
             </FootnoteText>
             <div className="flex items-center gap-2">
-              {unclaimedPending.size === 0 && unclaimedIncomplete.size > 0 ? (
-                <Button
-                  variant="text"
-                  size="sm"
-                  isLoading={retrying}
-                  disabled={retrying}
-                  onClick={handleRetryUnclaimed}
-                >
+              {canRetry ? (
+                <Button variant="text" size="sm" isLoading={retrying} disabled={retrying} onClick={handleRetry}>
                   {t('dashboard.staking.kpi.rewards.retryScan')}
                 </Button>
               ) : null}
-              <Button variant="text" size="sm" disabled={windowPending} onClick={handleExport}>
-                {t('dashboard.staking.kpi.exportCsv')}
-              </Button>
+              <Tooltip open={historyIncompleteNetworks ? undefined : false}>
+                <Tooltip.Trigger>
+                  <div>
+                    <Button
+                      variant="text"
+                      size="sm"
+                      disabled={
+                        windowPending || historyPendingNetworks.length > 0 || historyIncompleteNetworks.length > 0
+                      }
+                      onClick={handleExport}
+                    >
+                      {t('dashboard.staking.kpi.exportCsv')}
+                    </Button>
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  {t('dashboard.staking.kpi.rewards.exportIncomplete', { networks: historyIncompleteNetworks })}
+                </Tooltip.Content>
+              </Tooltip>
               <Tooltip open={claimEnabled ? false : undefined}>
                 <Tooltip.Trigger>
                   <div>

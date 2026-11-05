@@ -1,6 +1,6 @@
 # Contacts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
 
 ## Overview
 
@@ -18,10 +18,11 @@ the list, and connecting to an external (backend) address book whose contacts ar
 
 ## Name normalisation
 
-Contact names are normalised before they are saved, compared or imported: invisible formatting characters are removed,
-control and line/paragraph separator characters are replaced with spaces, surrounding whitespace is trimmed, and the
-text is normalised to a single Unicode form. A name that is empty after normalisation is rejected. Uniqueness checks
-compare normalised names, so two names that look the same are treated as the same name.
+Contact names are normalised before they are saved, compared or imported: invisible formatting characters are removed
+(zero-width joiners that shape Persian/Indic text and emoji sequences are kept), control and line/paragraph separator
+characters are replaced with spaces, surrounding whitespace is trimmed, and the text is normalised to a single Unicode
+form. A name that is empty after normalisation is rejected. Uniqueness checks compare normalised names, so two names
+that look the same are treated as the same name.
 
 ## Related
 

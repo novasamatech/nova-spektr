@@ -93,8 +93,19 @@ export class StakingDashboardPage extends BasePage<StakingDashboardPageElements>
 
   // --- Positions widget ----------------------------------------------------
 
+  /**
+   * Loaded rows only: `PositionsTableSkeleton` renders the same ui-kit `Table`
+   * with shimmer cells, and a click on one of those rows opens nothing.
+   *
+   * The same `:not(:has(skeleton))` guard also skips a loaded row whose status
+   * pill is still a skeleton (`PositionStatusPill` renders one while the status
+   * is `unknown`) — intended, so the drawer opens on a fully resolved
+   * position.
+   */
   public getPositionRows(): Locator {
-    return this.getPanel().locator(this.pageElements.tableRowSelector);
+    const { tableRowSelector, skeletonSelector } = this.pageElements;
+
+    return this.getPanel().locator(`${tableRowSelector}:not(:has(${skeletonSelector}))`);
   }
 
   public async openPositionRow(index = 0): Promise<Locator> {
@@ -144,6 +155,37 @@ export class StakingDashboardPage extends BasePage<StakingDashboardPageElements>
 
   public getDrawer(): Locator {
     return this.page.getByTestId(this.pageElements.drawerTestId);
+  }
+
+  public getActionChips(drawer: Locator): Locator {
+    return drawer.getByRole('button', { name: this.pageElements.actionChipPattern });
+  }
+
+  /**
+   * Hovers an action chip and returns the Radix tooltip. A disabled button
+   * swallows pointer events, so the hover targets the `Tooltip.Trigger` wrapper
+   * around it.
+   */
+  public async hoverActionChip(drawer: Locator, label: string): Promise<Locator> {
+    return await step(`Hover the "${label}" action chip`, async () => {
+      await this.getActionChips(drawer).filter({ hasText: label }).locator('..').hover();
+
+      return this.page.getByRole('tooltip');
+    });
+  }
+
+  /**
+   * Moves the pointer off the chip and waits for its tooltip to unmount. Escape
+   * reaches only the topmost Radix layer, so an open tooltip would swallow the
+   * keypress meant for the drawer behind it.
+   */
+  public async dismissTooltip(tooltip: Locator): Promise<this> {
+    await step('Dismiss the action chip tooltip', async () => {
+      await this.page.mouse.move(0, 0);
+      await tooltip.waitFor({ state: 'hidden' });
+    });
+
+    return this;
   }
 
   /**
