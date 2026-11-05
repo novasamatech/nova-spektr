@@ -1,4 +1,15 @@
-export type { MonthlyRewardRecord, Payee, RewardSource, RewardsMap, StakingMap, ValidatorMap } from './types';
+export type {
+  MonthlyRewardRecord,
+  MonthlyRewards,
+  Payee,
+  RewardSource,
+  RewardsMap,
+  StakingMap,
+  StakingRewards,
+  ValidatorMap,
+} from './types';
+export type { DataCompleteness } from './completeness';
+export { combineCompleteness } from './completeness';
 export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './constants';
 export { stakingUtils } from './helpers';
 export type { EraScoped, EraScopedCache } from './era-scoped';
@@ -77,13 +88,13 @@ export type {
 } from './positions/types';
 export { positionsService } from './positions/service';
 
-export type { EraExposureShares, EraValidatorReward } from './era-rewards/types';
+export type { EraExposureShares, EraValidatorReward, EraValidatorRewards } from './era-rewards/types';
 export type { EraRewardsParams } from './era-rewards/resource';
 export { eraRewardsCacheKey } from './era-rewards/resource';
 export { eraRewards } from './era-rewards/store';
 export { eraRewardsService } from './era-rewards/service';
 
-export type { DataCompleteness, PayoutSource, UnclaimedPayout, UnclaimedPayouts } from './payouts/types';
+export type { PayoutSource, UnclaimedPayout, UnclaimedPayouts } from './payouts/types';
 export type { PayoutsResourceParams } from './payouts/resource';
 export { payouts } from './payouts/store';
 export { payoutsCacheKey } from './payouts/resource';

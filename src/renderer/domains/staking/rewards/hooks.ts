@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { type Chain, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
-import { type MonthlyRewardRecord, type RewardSource, type RewardsMap } from '../types';
+import { type DataCompleteness } from '../completeness';
+import { type MonthlyRewards, type RewardSource, type RewardsMap, type StakingRewards } from '../types';
 
 import {
   type MonthlyRewardsParams,
@@ -15,8 +16,17 @@ import {
 } from './resource';
 import { collectChainRewardSources } from './service';
 
-const EMPTY_MAP: RewardsMap = {};
-const EMPTY_RECORDS: MonthlyRewardRecord[] = [];
+const EMPTY_REWARDS: StakingRewards = { rewards: {}, completeness: 'unavailable' };
+const EMPTY_MONTHLY: MonthlyRewards = { records: [], completeness: 'unavailable' };
+
+/**
+ * What can be said while nothing is requested: with no account there is nothing
+ * to ask and "no rewards" is true; with accounts but no chain or no source to
+ * ask, their rewards are simply unknown.
+ */
+function idleCompleteness(accounts: AccountId[]): DataCompleteness {
+  return accounts.length === 0 ? 'complete' : 'unavailable';
+}
 
 /**
  * The subquery endpoints a chain's rewards can be read from — an Asset Hub also
@@ -45,10 +55,10 @@ export const useStakingRewards = (
     return { chainId: chain.chainId, accounts, rewardSources, since };
   }, [chain, accounts, rewardSources, since]);
 
-  const { data: rewards, pending: isRewardsLoading } = useResource(stakingRewardsResource, {
+  const { data, pending } = useResource(stakingRewardsResource, {
     params,
-    defaultValue: EMPTY_MAP,
-    map: (cache: Record<string, RewardsMap>, p: StakingRewardsParams) => {
+    defaultValue: EMPTY_REWARDS,
+    map: (cache: Record<string, StakingRewards>, p: StakingRewardsParams) => {
       // The key covers the account set, so a hit answers for exactly these
       // accounts - `?? '0'` is now only the service's own "nothing earned".
       const cached = cache[rewardsCacheKey(p.chainId, p.accounts, p.since)];
@@ -56,14 +66,22 @@ export const useStakingRewards = (
 
       const merged: RewardsMap = {};
       for (const account of p.accounts) {
-        merged[account] = cached[account] ?? '0';
+        merged[account] = cached.rewards[account] ?? '0';
       }
 
-      return merged;
+      return { rewards: merged, completeness: cached.completeness };
     },
   });
 
-  return { data: rewards, pending: isRewardsLoading };
+  return {
+    data: data.rewards,
+    /**
+     * Only `complete` makes a `'0'` mean "earned nothing": a `partial` figure
+     * is a lower bound and an `unavailable` one could not be loaded at all.
+     */
+    completeness: params ? data.completeness : idleCompleteness(accounts),
+    pending,
+  };
 };
 
 export const useMonthlyRewards = (accounts: AccountId[], chain: Chain | null, chainsMap: Record<ChainId, Chain>) => {
@@ -84,13 +102,21 @@ export const useMonthlyRewards = (accounts: AccountId[], chain: Chain | null, ch
     return { chainId: chain.chainId, accounts, rewardSources, since };
   }, [chain, accounts, rewardSources, since]);
 
-  const { data: records, pending } = useResource(monthlyRewardsResource, {
+  const { data, pending } = useResource(monthlyRewardsResource, {
     params,
-    defaultValue: EMPTY_RECORDS,
-    map: (cache: Record<string, MonthlyRewardRecord[]>, p: MonthlyRewardsParams) => {
+    defaultValue: EMPTY_MONTHLY,
+    map: (cache: Record<string, MonthlyRewards>, p: MonthlyRewardsParams) => {
       return cache[monthlyCacheKey(p.chainId, p.accounts)];
     },
   });
 
-  return { data: records, pending };
+  return {
+    data: data.records,
+    /**
+     * Only `complete` makes an empty list mean "nothing was paid": a `partial`
+     * list is missing a source's rows and an `unavailable` one says nothing.
+     */
+    completeness: params ? data.completeness : idleCompleteness(accounts),
+    pending,
+  };
 };

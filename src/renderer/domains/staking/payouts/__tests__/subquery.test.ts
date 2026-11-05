@@ -128,6 +128,25 @@ describe('domains/staking/payouts/subquery', () => {
     expect(result.exposures.map(exposure => exposure.era).sort()).toEqual([150, 151]);
   });
 
+  test('should be partial when the set grows while it is being paged', async () => {
+    // A row indexed mid-scan lands on a page already read: the count moves and
+    // the later pages no longer line up with the earlier ones.
+    serve(ASSET_HUB, ({ offset }) => page([node(150 + offset)], offset === 0 ? 2 : 3, ERA_TO));
+
+    const result = await fetchExposures([ASSET_HUB]);
+
+    expect(result.completeness).toEqual('partial');
+  });
+
+  test('should judge coverage by the first page, not by a later one', async () => {
+    serve(ASSET_HUB, ({ offset }) => page([node(150 + offset)], 2, offset === 0 ? ERA_TO - 1 : ERA_TO));
+
+    const result = await fetchExposures([ASSET_HUB]);
+
+    expect(result.completeness).toEqual('partial');
+    expect(result.exposures).toHaveLength(2);
+  });
+
   test('should be partial when paging stops at the page limit before totalCount', async () => {
     serve(ASSET_HUB, ({ offset, first }) => page([node(offset)], first * 100, ERA_TO));
 

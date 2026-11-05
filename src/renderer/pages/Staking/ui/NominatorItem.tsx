@@ -13,6 +13,8 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { AssetFiatBalance } from '@/widgets/price';
 import { type NominatorInfo } from '../lib/types';
 
+import { RewardAmount } from './RewardAmount';
+
 type Props = {
   nominatorsLength: number;
   asset?: Asset;
@@ -66,17 +68,7 @@ export const NominatorsItem = ({
         </div>
       )}
 
-      {!stake.totalReward || !asset ? (
-        <div className="flex flex-col items-end gap-y-1.5 pb-1">
-          <Skeleton width={20} height={4} />
-          <Skeleton width={14} height={3} />
-        </div>
-      ) : (
-        <div className="flex flex-col items-end justify-self-end">
-          <AssetBalance value={stake.totalReward} asset={asset} />
-          <AssetFiatBalance amount={stake.totalReward} asset={asset} />
-        </div>
-      )}
+      <RewardAmount amount={stake.totalReward} asset={asset} completeness={stake.rewardsCompleteness} />
 
       <AccountExplorers accountId={stake.account.accountId} chain={chain}>
         {nonNullable(stake.stash) && (

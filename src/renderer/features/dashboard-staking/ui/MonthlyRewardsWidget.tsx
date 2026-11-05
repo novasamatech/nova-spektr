@@ -151,13 +151,12 @@ const SKELETON_HEIGHTS = [15, 22, 30, 19, 35, 28, 21, 24, 32, 25, 29, 26];
 export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
   const { t } = useI18n();
   const [mode, setMode] = useState<ChainMode>('dot');
-  const { dotBars, ksmBars, dotTotal, ksmTotal, pending, fiatFlag, currency } = useMonthlyRewardsChart(
-    accountIds,
-    allEntries,
-  );
+  const { dotBars, ksmBars, dotTotal, ksmTotal, dotCompleteness, ksmCompleteness, pending, fiatFlag, currency } =
+    useMonthlyRewardsChart(accountIds, allEntries);
 
   const bars = mode === 'dot' ? dotBars : ksmBars;
   const total = mode === 'dot' ? dotTotal : ksmTotal;
+  const completeness = mode === 'dot' ? dotCompleteness : ksmCompleteness;
 
   const handleSetDot = useCallback(() => setMode('dot'), []);
   const handleSetKsm = useCallback(() => setMode('ksm'), []);
@@ -200,12 +199,22 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
           <div className="mt-1 flex items-baseline gap-2">
             {pending ? (
               <Skeleton width={40} height={7} />
+            ) : completeness === 'unavailable' ? (
+              // Nothing could be loaded: a `0 DOT` would state that nothing was earned.
+              <SmallTitleText className="text-text-tertiary">
+                {t('dashboard.staking.rewardsChart.unavailable.total')}
+              </SmallTitleText>
             ) : (
               <>
                 <SmallTitleText>
                   {total.token} {total.symbol}
                 </SmallTitleText>
                 <FootnoteText className="text-text-tertiary">≈ {fiatTotal}</FootnoteText>
+                {completeness === 'partial' ? (
+                  <FootnoteText className="text-text-warning">
+                    {t('dashboard.staking.rewardsChart.incomplete.note')}
+                  </FootnoteText>
+                ) : null}
               </>
             )}
           </div>
@@ -273,7 +282,13 @@ export const MonthlyRewardsWidget = ({ accountIds, allEntries }: Props) => {
           </ResponsiveContainer>
         ) : (
           <div className="flex flex-col items-center gap-y-1 py-6">
-            <BodyText className="text-text-tertiary">{t('dashboard.monthlyRewards.noData')}</BodyText>
+            <BodyText className="text-text-tertiary">
+              {completeness === 'complete'
+                ? t('dashboard.monthlyRewards.noData')
+                : completeness === 'unavailable'
+                  ? t('dashboard.staking.rewardsChart.unavailable.title')
+                  : t('dashboard.staking.rewardsChart.incomplete.title')}
+            </BodyText>
           </div>
         )}
       </div>

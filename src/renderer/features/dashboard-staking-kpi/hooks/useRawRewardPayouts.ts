@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -26,6 +26,21 @@ export type RawPayoutRow = MonthlyRewardRecord & {
 };
 
 type Request = { chainId: ChainId; accountIds: AccountId[] };
+
+export type RawRewardPayouts = {
+  rows: RawPayoutRow[];
+  /**
+   * Chains whose payout history answered, but not from every source — the rows
+   * are real, the ones a silent source holds are missing — and chains with no
+   * source to ask at all. A file exported from them could not be reconciled
+   * against the chain.
+   */
+  incompleteChains: ChainId[];
+  /** Chains whose payout history has not answered yet. */
+  pendingChains: ChainId[];
+  /** Re-runs every history request whose answer is not complete. */
+  retry: () => Promise<void>;
+};
 
 /**
  * Anchored to the first of the month twelve months back, matching the chart, so
@@ -54,12 +69,13 @@ export function useRawPayoutsSince(now = Date.now()): number {
  * only safe while both ask the same endpoints — one more reason the source set
  * is taken from `collectChainRewardSources` rather than assembled here.
  */
-export const useRawRewardPayouts = (requests: Request[]): RawPayoutRow[] => {
+export const useRawRewardPayouts = (requests: Request[]): RawRewardPayouts => {
   const chains = useUnit(networkModel.$chains);
   const since = useRawPayoutsSince();
 
-  const params = useMemo(() => {
+  const { params, sourcelessChains } = useMemo(() => {
     const result: MonthlyRewardsParams[] = [];
+    const sourceless: ChainId[] = [];
 
     for (const { chainId, accountIds } of requests) {
       const chain = chains[chainId];
@@ -72,33 +88,69 @@ export const useRawRewardPayouts = (requests: Request[]): RawPayoutRow[] => {
       // date while the rewards chart, which does read the relay, kept showing
       // the years before it.
       const rewardSources = rewardsService.collectChainRewardSources(chain, chains, 'staking-chain');
-      if (rewardSources.length === 0) continue;
+      // Never requested: its history is unknown, which is not "no payouts".
+      if (rewardSources.length === 0) {
+        sourceless.push(chainId);
+        continue;
+      }
 
       result.push({ chainId, accounts: accountIds, rewardSources, since });
     }
 
-    return result;
+    return { params: result, sourcelessChains: sourceless };
   }, [requests, chains, since]);
 
   useResourcePool(monthlyRewardsResource, params);
 
   const cache = useUnit(monthlyRewardsResource.$cache);
+  const { invalidate, fetch } = useUnit({
+    invalidate: monthlyRewardsResource.invalidate,
+    fetch: monthlyRewardsResource.fetch,
+  });
+
+  const retry = useCallback(async () => {
+    const incomplete = params.filter(({ chainId, accounts }) => {
+      const entry = cache[monthlyCacheKey(chainId, accounts)];
+
+      return entry !== undefined && entry.completeness !== 'complete';
+    });
+
+    await Promise.all(
+      incomplete.map(async (request) => {
+        // Dropped first: a refetch inside the cache window would be answered
+        // with the very result being retried.
+        await invalidate(request);
+        await fetch(request).catch(() => null);
+      }),
+    );
+  }, [params, cache, invalidate, fetch]);
 
   return useMemo(() => {
     const rows: RawPayoutRow[] = [];
+    const incompleteChains: ChainId[] = [...sourcelessChains];
+    const pendingChains: ChainId[] = [];
 
     for (const { chainId, accounts } of params) {
-      const records = cache[monthlyCacheKey(chainId, accounts)];
-      if (!records) continue;
+      const entry = cache[monthlyCacheKey(chainId, accounts)];
+      if (!entry) {
+        pendingChains.push(chainId);
+        continue;
+      }
+
+      if (entry.completeness !== 'complete') {
+        incompleteChains.push(chainId);
+      }
 
       const chainName = chains[chainId]?.name ?? '';
-      for (const record of records) {
+      for (const record of entry.records) {
         rows.push({ ...record, chainId, chainName });
       }
     }
 
     // Newest first: an export is read top-down, and the last payout is the one
     // people look for.
-    return rows.sort((a, b) => b.timestamp - a.timestamp);
-  }, [params, cache, chains]);
+    rows.sort((a, b) => b.timestamp - a.timestamp);
+
+    return { rows, incompleteChains, pendingChains, retry };
+  }, [params, sourcelessChains, cache, chains, retry]);
 };

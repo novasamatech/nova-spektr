@@ -6,7 +6,7 @@ import { type ChainId } from '@/shared/core';
 import { formatBalance, formatFiatBalance, getRelaychainAsset, getRoundedValue, toAccountId } from '@/shared/lib/utils';
 import { FALLBACK_COLORS } from '@/shared/ui/chart-constants';
 import { type CurrencyItem, useAssetsPrices } from '@/domains/price';
-import { type MonthlyRewardRecord, AssetHubChains, useMonthlyRewards } from '@/domains/staking';
+import { type DataCompleteness, type MonthlyRewardRecord, AssetHubChains, useMonthlyRewards } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { currencySelect } from '@/aggregates/currency-select';
 
@@ -58,6 +58,12 @@ export type MonthlyRewardsChartData = {
   ksmAccounts: AccountInfo[];
   dotTotal: { token: string; fiat: string; symbol: string; precision: number };
   ksmTotal: { token: string; fiat: string; symbol: string; precision: number };
+  /**
+   * How far each network's history can be trusted. Only `complete` makes its
+   * total a total and an empty chart "no rewards".
+   */
+  dotCompleteness: DataCompleteness;
+  ksmCompleteness: DataCompleteness;
   pending: boolean;
   fiatFlag: boolean | null;
   currency: CurrencyItem | null;
@@ -211,8 +217,16 @@ export const useMonthlyRewardsChart = (
   const polkadotChain = chains[POLKADOT_AH_CHAIN_ID] ?? null;
   const kusamaChain = chains[KUSAMA_AH_CHAIN_ID] ?? null;
 
-  const { data: dotRecords, pending: dotPending } = useMonthlyRewards(typedAccountIds, polkadotChain, chains);
-  const { data: ksmRecords, pending: ksmPending } = useMonthlyRewards(typedAccountIds, kusamaChain, chains);
+  const {
+    data: dotRecords,
+    completeness: dotCompleteness,
+    pending: dotPending,
+  } = useMonthlyRewards(typedAccountIds, polkadotChain, chains);
+  const {
+    data: ksmRecords,
+    completeness: ksmCompleteness,
+    pending: ksmPending,
+  } = useMonthlyRewards(typedAccountIds, kusamaChain, chains);
 
   const boundaries = useMemo(() => generateMonthBoundaries(), []);
 
@@ -297,6 +311,8 @@ export const useMonthlyRewardsChart = (
 
   return {
     ...result,
+    dotCompleteness,
+    ksmCompleteness,
     pending: accountIds.length > 0 && (dotPending || ksmPending),
     fiatFlag,
     currency,

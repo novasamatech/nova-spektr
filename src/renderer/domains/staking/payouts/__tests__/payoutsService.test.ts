@@ -3,10 +3,11 @@ import { BN } from '@polkadot/util';
 
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type DataCompleteness } from '../../completeness';
 import { type RewardSource } from '../../types';
 import { PERBILL } from '../calculator';
 import { getUnclaimedPayouts } from '../service';
-import { type DataCompleteness, type EraValidatorExposure } from '../types';
+import { type EraValidatorExposure } from '../types';
 
 vi.mock('@/shared/pallet/staking', () => ({
   stakingPallet: {

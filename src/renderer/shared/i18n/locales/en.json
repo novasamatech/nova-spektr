@@ -991,6 +991,10 @@
           "scanIncompleteShort": "some payouts on {networks} couldn't be checked",
           "unclaimedUnknown": "Couldn't check",
           "retryScan": "Retry",
+          "unavailable": "Couldn't load",
+          "incomplete": "Incomplete — rewards on {networks} couldn't be loaded completely",
+          "earnedIncomplete": "Earned figures on {networks} are incomplete — some era data couldn't be loaded.",
+          "exportIncomplete": "Payout history on {networks} couldn't be fully loaded, so the export would be missing rows.",
           "period": {
             "7d": "7d",
             "30d": "30d",
@@ -1030,6 +1034,15 @@
         "empty": {
           "title": "No rewards yet",
           "description": "Start staking to see your reward history"
+        },
+        "incomplete": {
+          "note": "incomplete — some history couldn't be loaded",
+          "title": "Reward history is incomplete",
+          "description": "It is requested again on the next visit after 30 seconds"
+        },
+        "unavailable": {
+          "total": "Couldn't load",
+          "title": "Couldn't load reward history"
         },
         "tooltip": {
           "dayWithEra": "{date} · era {era}",
@@ -3972,7 +3985,11 @@
       "noResultsDescription": "Please try another filter parameters",
       "noResultsLabel": "No staking found",
       "noValidatorsLabel": "No validators nominated",
+      "rewardsIncomplete": "Incomplete",
+      "rewardsIncompleteHint": "Part of the reward history couldn't be loaded, so this total may be too low.",
       "rewardsTableHeader": "Rewards",
+      "rewardsUnavailable": "Couldn't load",
+      "rewardsUnavailableHint": "The reward history for this account couldn't be loaded.",
       "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
       "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
