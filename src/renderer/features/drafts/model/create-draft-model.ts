@@ -1,6 +1,7 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type ChainId } from '@/shared/core';
+import { getRecipientCheck } from '@/shared/lib/recipient-verification';
 import { isHex } from '@/shared/lib/utils';
 import { type PathNode, draftsResource, draftsService } from '@/domains/backend';
 import { AssetHubChains } from '@/domains/staking';
@@ -16,7 +17,7 @@ import {
   pathModel,
 } from '@/features/signing-path';
 import { decodeDraftTransaction, getPathOriginAccountId } from '../lib/decode-draft-transaction';
-import { getRecipientAccountIds, getRecipientCheck } from '../lib/recipient-check';
+import { getRecipientAccountIds } from '../lib/recipient-check';
 
 export type Step = 'call-data' | 'select-path' | 'confirm';
 

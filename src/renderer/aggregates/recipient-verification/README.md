@@ -1,6 +1,6 @@
 # Recipient Verification
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -51,9 +51,10 @@ of warning about a since-added contact is lower than the cost of silencing every
   `features/transfer-operation-details`) — a row pill and a review alert, both informational only. See
   [Multisig Operations](../../features/multisig-operations/README.md#unknown-recipient-warnings) and
   [Transfer Operation Details](../../features/transfer-operation-details/README.md#unknown-recipient-warnings).
-- **Multisig approve dialog** (`features/multisig-operations`) — a badge plus an acknowledgement gate on Sign. The
-  informational badge also shows in the shared Reject dialog, but the acknowledgement gate is approve-only (rejecting is
-  always the safe action).
+- **Multisig approve dialog** (`features/multisig-operations`) — a badge plus an acknowledgement gate on Sign. The gate
+  checks every recipient of the operation's call (batch and proxy wrappers included; an unreadable call warns like an
+  unknown recipient). The informational badge also shows in the shared Reject dialog, but the acknowledgement gate is
+  approve-only (rejecting is always the safe action).
 - **Draft create + submit confirms** (`features/drafts`) — an acknowledgement gate on both confirm steps (Create and
   Sign), plus a Recipient row on the submit confirm. See
   [Drafts' "Unknown recipient warnings"](../../features/drafts/README.md#unknown-recipient-warnings).

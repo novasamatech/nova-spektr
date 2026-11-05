@@ -80,4 +80,14 @@ describe('getXcmTransactionBeneficiaries', () => {
       getXcmTransactionBeneficiaries(callOf(TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN, {})),
     ).toBeNull();
   });
+
+  it('is unreadable (null) for a type-and-then program that names no recipient', () => {
+    expect(
+      getXcmTransactionBeneficiaries(
+        callOf(TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN, {
+          customXcmOnDest: JSON.stringify({ v4: [] }),
+        }),
+      ),
+    ).toBeNull();
+  });
 });

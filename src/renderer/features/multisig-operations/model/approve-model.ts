@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { toast } from 'sonner';
 
 import { type Chain, type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type RecipientCheck, getRecipientCheck } from '@/shared/lib/recipient-verification';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -25,7 +26,6 @@ import {
 } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { authModel, backendConfigurationModel } from '@/aggregates/backend';
 import { recipientVerificationModel } from '@/aggregates/recipient-verification';
@@ -44,7 +44,8 @@ const flow = createGate<GetMultisigType>({
 const selectInitiator = createEvent<AnyAccount | null>();
 const $initiator = restore<AnyAccount | null>(selectInitiator, null).reset(flow.open);
 
-const $weight = createStore<Weight | null>(null);
+// The weight belongs to the open operation: a fresh flow never inherits one.
+const $weight = createStore<Weight | null>(null).reset([flow.open, flow.close]);
 
 const selectSignatory = createEvent<AnyAccount | null>();
 const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.open);
@@ -57,15 +58,51 @@ const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
 const $multisigAccount = flow.state.map(state => state.account);
 
+// --- Unknown recipient gate ---
+
+// Every account the operation's call pays, through batch and proxy wrappers.
+// Call data that is there but did not decode can't be read, which warns like an
+// unknown recipient. Without call data there is nothing to check yet — and no
+// transaction to sign either.
+const $recipientCheck = $operation.map((operation): RecipientCheck => {
+  if (operation?.transaction) return getRecipientCheck(operation.transaction);
+
+  return operation?.callData ? { kind: 'unresolved' } : { kind: 'no-recipient' };
+});
+
+const $recipientWarning = combine(
+  recipientVerificationModel.$resolveCheckWarning,
+  $recipientCheck,
+  (resolveWarning, recipientCheck) => resolveWarning(recipientCheck),
+);
+
 const riskAcknowledgedToggled = createEvent<boolean>();
 
 const $isRiskAcknowledged = createStore(false)
   .on(riskAcknowledgedToggled, (_, checked) => checked)
   .reset([flow.open, flow.close]);
 
-const $recipientWarning = combine(recipientVerificationModel.$resolveWarning, $operation, (resolveWarning, operation) =>
-  resolveWarning(operation ? (operationDetailsUtils.getDestinationAccountId(operation) ?? null) : null),
+const $recipientRiskAccepted = combine(
+  $recipientWarning,
+  $isRiskAcknowledged,
+  (warning, acknowledged) => warning === 'none' || acknowledged,
 );
+
+// --- Signing step ---
+
+const startSigning = createEvent();
+const cancelSigning = createEvent();
+
+const $isSigning = createStore(false).reset([cancelSigning, flow.open, flow.close]);
+
+// Gated on the recipient acknowledgement, so the Sign button's `disabled` is
+// not the only thing standing in the way.
+sample({
+  clock: startSigning,
+  filter: $recipientRiskAccepted,
+  fn: () => true,
+  target: $isSigning,
+});
 
 const $api = combine(
   {
@@ -150,16 +187,21 @@ const getWeightFx = createEffect(async ({ operation, api }: ExtrinsicSigningPayl
   }
 });
 
+// Every open fetches the weight again — `$weight` was just reset.
 sample({
-  clock: $operation,
+  clock: flow.open,
   source: $api,
-  filter: (api, operation) => nonNullable(api) && nonNullable(operation),
-  fn: (api, operation) => ({ operation: operation!, api: api! }),
+  filter: (api, { operation }) => nonNullable(api) && nonNullable(operation),
+  fn: (api, { operation }) => ({ operation: operation!, api: api! }),
   target: getWeightFx,
 });
 
+// A result that arrives for an operation other than the open one is dropped.
 sample({
-  clock: getWeightFx.doneData,
+  clock: getWeightFx.done,
+  source: $operation,
+  filter: (operation, { params }) => operation === params.operation,
+  fn: (_, { result }) => result,
   target: $weight,
 });
 
@@ -339,10 +381,13 @@ export const approveModel = {
   $description,
   $recipientWarning,
   $isRiskAcknowledged,
+  $isSigning,
   selectSignatory,
   selectInitiator,
   setDescription,
   postDescription,
   signingPathChanged,
   riskAcknowledgedToggled,
+  startSigning,
+  cancelSigning,
 };
