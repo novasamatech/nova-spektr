@@ -9,7 +9,6 @@ import { ALLOCATION_COLORS } from '@/shared/ui/chart-constants';
 import { useBalanceCoverage } from '@/features/assets-balances';
 import { DashboardWidget } from '@/pages/Dashboard';
 import { useBalanceAllocation } from '../hooks/useBalanceAllocation';
-import { useBalancesSyncing } from '../hooks/useBalancesSyncing';
 import { type ChainHolding, useChainHoldings } from '../hooks/useChainHoldings';
 import { type Holding, useHoldings } from '../hooks/useHoldings';
 import { type BalanceType } from '../lib/balanceTypes';
@@ -52,11 +51,10 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
   const { holdings, totalFiat, fiatFlag, currency } = useHoldings(accountIds);
   const { chainHoldings } = useChainHoldings(accountIds);
   const allocation = useBalanceAllocation(accountIds);
-  const networksSyncing = useBalancesSyncing();
+  // `syncing`: the total is a partial sum that is about to grow. `missingCount`:
+  // the wait ran out with a connected network still silent for some accounts —
+  // the total is only what has arrived, and has to say so.
   const coverage = useBalanceCoverage(accountIds);
-  // Still waiting on some selected account: the total is a partial sum that is
-  // about to grow, which reads the same as a chain still connecting.
-  const isSyncing = networksSyncing || (!coverage.complete && !coverage.timedOut);
   const [viewMode, setViewMode] = useState<ViewMode>('asset');
   const [balanceTypeFilter, setBalanceTypeFilter] = useState<BalanceType | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
@@ -156,19 +154,31 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
     );
   }
 
+  // Same wording as the accounts table's footer, so both widgets name the gap
+  // the same way.
+  const partialNote =
+    coverage.missingCount > 0 ? (
+      <HelpText className="mt-1 text-text-tertiary">
+        {t('dashboard.accountsTable.footer.incomplete', { count: coverage.missingCount })}
+      </HelpText>
+    ) : null;
+
   // Prices resolved, but the selected accounts hold nothing priced and there is
   // no vesting to surface either — a real, empty answer (see `useHoldings` /
   // `useBalanceAllocation`). Distinct from a balance-type filter that scopes to
   // zero, which reads off the raw `holdings`, not the filtered rows.
   const isEmpty = holdings.length === 0 && !allocation;
   if (isEmpty) {
-    // Not every selected account has been read yet, so there is nothing to be
-    // empty about — shimmer, exactly as the Portfolio page does for a row whose
-    // balance has not landed. Zero holdings is not evidence on its own: a
-    // balance of zero produces none either, and one account read as empty says
-    // nothing about the others. The wait is bounded (`useBalanceCoverage`), so
-    // an account whose chain never answers cannot pin the skeleton.
-    if (!coverage.complete && !coverage.timedOut) {
+    // Not every selected account has been read on every connected chain yet,
+    // so there is nothing to be empty about — shimmer, exactly as the Portfolio
+    // page does for a row whose balance has not landed. Zero holdings is not
+    // evidence on its own: a balance of zero produces none either, and one
+    // account or chain read as empty says nothing about the others. The wait is
+    // bounded (`useBalanceCoverage`), so an account whose chain never answers
+    // cannot pin the skeleton — and once the answer has been given for this
+    // selection it stays: a chain that connects later shows as syncing, it does
+    // not bring the skeleton back.
+    if (!coverage.ready) {
       return (
         <DashboardWidget>
           <PortfolioOverviewSkeleton />
@@ -182,6 +192,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
         <TitleText className="mt-1">
           <Price amount={totalFiat} currency={currency} />
         </TitleText>
+        {partialNote}
 
         <Slot id={portfolioVestingSlot} />
 
@@ -192,7 +203,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           <BodyText className="text-center text-text-tertiary">
             {t('dashboard.portfolioOverview.noTokens.description')}
           </BodyText>
-          {isSyncing && (
+          {coverage.syncing && (
             <span className="mt-2 flex items-center gap-1.5">
               <Loader size={12} color="primary" />
               <HelpText className="text-text-tertiary">{t('dashboard.portfolioOverview.syncing')}</HelpText>
@@ -218,6 +229,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           <TitleText className="mt-1">
             <Price amount={totalFiat} currency={currency} />
           </TitleText>
+          {partialNote}
         </div>
         <div className="flex shrink-0 rounded-md bg-tab-background p-0.5">
           <button
@@ -240,7 +252,7 @@ export const PortfolioOverviewWidget = ({ accountIds, allEntries }: Props) => {
           <BalanceTypeBar
             allocation={allocation}
             currency={currency}
-            syncing={isSyncing}
+            syncing={coverage.syncing}
             selectedType={balanceTypeFilter}
             onToggleType={toggleBalanceType}
             onClear={clearBalanceTypeFilter}

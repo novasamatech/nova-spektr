@@ -1,6 +1,6 @@
 # Account presets
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -14,6 +14,11 @@ current account list, so new accounts matching the criteria join the preset auto
 Always available on the Dashboard and Operations pages. The account pool a preset draws from merges three sources, one
 row per `accountId`: wallet accounts, local (My) contacts, and backend (External) contacts from the external address
 book. Filter criteria based on address-book metadata only ever match accounts known to the external address book.
+
+Only accounts of visible wallets make a row, and a multisig signatory placeholder never does. A row stands for its key,
+not for one account of it: when the same key exists as several wallet accounts (per-chain accounts, the same key in two
+wallets), `getEntryAccounts` returns every one of them, and the dashboard both fetches and waits for balances on the
+chains of all of them.
 
 ## States / scenarios
 

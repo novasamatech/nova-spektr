@@ -51,7 +51,8 @@ const makeState = (overrides: Partial<AccountsTableState> = {}): AccountsTableSt
   visibleRows: [],
   groups: [],
   ready: true,
-  awaitingCount: 0,
+  missingCount: 0,
+  syncing: false,
   hasSelection: true,
   fiatVisible: false,
   activeCurrency: null,
@@ -119,22 +120,46 @@ describe('features/dashboard-accounts-table/ui/AccountsTableView', () => {
 
   describe('footer after the wait timed out', () => {
     it('SP-28: footer says one account has not loaded yet', () => {
-      renderView(makeState({ ready: true, awaitingCount: 1, rows: [row], visibleRows: [row], groups: [group] }));
+      renderView(makeState({ ready: true, missingCount: 1, rows: [row], visibleRows: [row], groups: [group] }));
 
       expect(screen.getByText('Balances of 1 account have not loaded yet')).toBeInTheDocument();
     });
 
     it('SP-28: footer pluralises for several accounts that have not loaded yet', () => {
-      renderView(makeState({ ready: true, awaitingCount: 2, rows: [row], visibleRows: [row], groups: [group] }));
+      renderView(makeState({ ready: true, missingCount: 2, rows: [row], visibleRows: [row], groups: [group] }));
 
       expect(screen.getByText('Balances of 2 accounts have not loaded yet')).toBeInTheDocument();
     });
 
     it('SP-28: footer has no "not loaded" note when every account answered', () => {
-      renderView(makeState({ ready: true, awaitingCount: 0, rows: [row], visibleRows: [row], groups: [group] }));
+      renderView(makeState({ ready: true, missingCount: 0, rows: [row], visibleRows: [row], groups: [group] }));
 
       expect(screen.getByText('Showing 1 of 1 rows in 1 accounts')).toBeInTheDocument();
       expect(screen.queryByText(/have not loaded yet/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('footer while networks are still connecting', () => {
+    it('says balances are syncing on a ready table', () => {
+      renderView(makeState({ ready: true, syncing: true, rows: [row], visibleRows: [row], groups: [group] }));
+
+      expect(screen.getByText('Showing 1 of 1 rows in 1 accounts')).toBeInTheDocument();
+      expect(screen.getByText('Syncing balances...')).toBeInTheDocument();
+    });
+
+    it('has no syncing note once every network is connected', () => {
+      renderView(makeState({ ready: true, syncing: false, rows: [row], visibleRows: [row], groups: [group] }));
+
+      expect(screen.queryByText('Syncing balances...')).not.toBeInTheDocument();
+    });
+
+    it('keeps the "not loaded" note next to the syncing note', () => {
+      renderView(
+        makeState({ ready: true, syncing: true, missingCount: 1, rows: [row], visibleRows: [row], groups: [group] }),
+      );
+
+      expect(screen.getByText('Syncing balances...')).toBeInTheDocument();
+      expect(screen.getByText('Balances of 1 account have not loaded yet')).toBeInTheDocument();
     });
   });
 

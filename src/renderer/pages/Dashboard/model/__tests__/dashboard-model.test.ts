@@ -1,6 +1,9 @@
 import { allSettled, fork } from 'effector';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { type Wallet } from '@/shared/core';
+import { type AnyAccount, accounts } from '@/domains/network';
+import { walletModel } from '@/entities/wallet';
 import { dashboardModel } from '../dashboard-model';
 
 afterEach(() => localStorage.clear());
@@ -89,5 +92,28 @@ describe('dashboardModel.$hiddenWidgets', () => {
     await allSettled(dashboardModel.layoutReset, { scope, params: { tab: 'staking' } });
 
     expect(scope.getState(dashboardModel.$hiddenWidgets)).toBe(initial);
+  });
+});
+
+describe('dashboardModel.$selectedAccounts', () => {
+  const KEY = `0x${'a'.repeat(64)}`;
+  const VISIBLE_WALLET = { id: 1, name: 'Visible', hiddenReason: null } as unknown as Wallet;
+  const HIDDEN_WALLET = { id: 2, name: 'Hidden', hiddenReason: 'manual' } as unknown as Wallet;
+  const account = (id: string, walletId: number, chainId: string): AnyAccount =>
+    ({ id, accountId: KEY, walletId, chainId, type: 'chain', name: id }) as unknown as AnyAccount;
+
+  it('requests every visible account of a selected key, and no account of a hidden wallet', async () => {
+    const polkadot = account('polkadot', VISIBLE_WALLET.id, '0x01');
+    const kusama = account('kusama', VISIBLE_WALLET.id, '0x02');
+    const hidden = account('hidden', HIDDEN_WALLET.id, '0x03');
+    const scope = fork();
+
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: [VISIBLE_WALLET, HIDDEN_WALLET] });
+    await allSettled(accounts.__test.$list, { scope, params: [polkadot, kusama, hidden] });
+
+    // One entry stands for the key, named after its first account — the request
+    // still covers the chains of both visible accounts.
+    expect(scope.getState(dashboardModel.$allEntries).map((entry) => entry.id)).toEqual(['polkadot']);
+    expect(scope.getState(dashboardModel.$selectedAccounts)).toEqual([polkadot, kusama]);
   });
 });

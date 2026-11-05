@@ -1,5 +1,7 @@
 import { type Address, type ID, WalletType } from '@/shared/core';
 import { type ContactField } from '@/shared/core/types/contact';
+import { type AnyAccount } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 import { type AccountEntry, type AccountPreset, type AccountSource, type PresetFilterCriteria } from './types';
 
@@ -132,6 +134,32 @@ export function matchPreset(preset: AccountPreset | null, entries: AccountEntry[
 
   return applyPresetFilter(preset.filters, entries);
 }
+
+// -------- entry accounts --------
+
+/**
+ * Whether a wallet account makes an entry of its own. A multisig signatory is a
+ * placeholder for a key of the multisig, not an account the user keeps, so it
+ * never does.
+ */
+export const isEntryAccount = (account: AnyAccount): boolean => !accountUtils.isMultisigSignatoryAccount(account);
+
+/**
+ * The wallet accounts behind a set of entry account ids — every one of them.
+ * One key can exist as several accounts with a different chain scope
+ * (WalletConnect accounts per chain, Vault chain accounts of one key on two
+ * networks, the same key in two wallets); an entry stands for all of them, so
+ * all of them are returned. Pass the accounts of visible wallets
+ * (`walletModel.$availableAccounts`): a hidden wallet makes no entry, and its
+ * accounts are not returned.
+ *
+ * An id with no such account is a contact.
+ */
+export const getEntryAccounts = (accountIds: Iterable<string>, accounts: AnyAccount[]): AnyAccount[] => {
+  const selected = new Set(accountIds);
+
+  return accounts.filter(account => selected.has(account.accountId) && isEntryAccount(account));
+};
 
 // -------- merge --------
 

@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Button, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, IconButton, Loader, SmallTitleText } from '@/shared/ui';
 import { SearchInput } from '@/shared/ui-kit';
 import { type AccountsTableState } from '../hooks/useAccountsTable';
 
@@ -148,9 +148,17 @@ export const AccountsTableView = ({ table, className, leadingAction }: Props) =>
               accounts: table.groups.length,
             })}
           </FootnoteText>
-          {table.awaitingCount > 0 ? (
+          {/* More balances are on their way: the rows are not the final
+              picture yet. Same wording and spinner as the portfolio card. */}
+          {table.syncing ? (
+            <span className="flex shrink-0 items-center gap-1.5">
+              <Loader size={12} color="primary" />
+              <FootnoteText className="text-text-tertiary">{t('dashboard.portfolioOverview.syncing')}</FootnoteText>
+            </span>
+          ) : null}
+          {table.missingCount > 0 ? (
             <FootnoteText className="truncate text-text-tertiary">
-              {t('dashboard.accountsTable.footer.incomplete', { count: table.awaitingCount })}
+              {t('dashboard.accountsTable.footer.incomplete', { count: table.missingCount })}
             </FootnoteText>
           ) : null}
         </div>
