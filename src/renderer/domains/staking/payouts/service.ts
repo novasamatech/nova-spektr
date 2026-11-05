@@ -6,19 +6,14 @@ import { type EraIndex } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type DataCompleteness } from '../completeness';
 import { type EraStorage } from '../era-storage';
 import { exposureKey } from '../exposure-key';
 import { type RewardSource } from '../types';
 
 import { calculateNominatorPayout, calculateValidatorPayout } from './calculator';
 import { fetchNominatorEraValidators } from './subquery';
-import {
-  type DataCompleteness,
-  type EraValidatorExposure,
-  type PayoutSource,
-  type UnclaimedPayout,
-  type UnclaimedPayouts,
-} from './types';
+import { type EraValidatorExposure, type PayoutSource, type UnclaimedPayout, type UnclaimedPayouts } from './types';
 
 /** How deep the on-chain fallback is allowed to scan without an indexer. */
 export const PAYOUTS_CHAIN_SCAN_ERAS = 8;

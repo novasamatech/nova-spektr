@@ -1,5 +1,6 @@
 import { type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type DataCompleteness } from '../completeness';
 
 /**
  * One stash's share of one validator's payout in one era.
@@ -34,4 +35,23 @@ export type EraExposureShares = {
   own: string;
   /** Planck each of our stashes had behind it, keyed by stash. */
   shares: Record<AccountId, string>;
+};
+
+/**
+ * The exposures an indexer scan found, and how far the scan can be trusted.
+ * Only a `complete` scan makes an empty list mean "exposed nowhere".
+ */
+export type IndexedExposureShares = {
+  exposures: EraExposureShares[];
+  completeness: DataCompleteness;
+};
+
+/**
+ * What the stashes earned over an era range, and how far the figure can be
+ * trusted: `partial` rewards are real but add up to a lower bound, and an
+ * `unavailable` answer is "could not be worked out", never "earned nothing".
+ */
+export type EraValidatorRewards = {
+  rewards: EraValidatorReward[];
+  completeness: DataCompleteness;
 };

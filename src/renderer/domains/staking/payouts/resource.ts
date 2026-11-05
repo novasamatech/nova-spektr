@@ -4,6 +4,7 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { INCOMPLETE_STALE_AFTER } from '../completeness';
 import { getEraStorage } from '../era-storage';
 import { type RewardSource } from '../types';
 
@@ -27,8 +28,6 @@ const $payoutsCache = createStore<Record<string, UnclaimedPayouts>>({});
 
 /** How long a complete answer is reused — a landed payout still disappears soon. */
 export const PAYOUTS_STALE_AFTER = 5 * 60 * 1000;
-/** A partial or unavailable answer is retried on the next request after this. */
-export const PAYOUTS_INCOMPLETE_STALE_AFTER = 30 * 1000;
 
 /**
  * Not cached forever — a landed payout has to disappear from the list without
@@ -55,6 +54,6 @@ export const payoutsResource = createQueryResource<PayoutsResourceParams>({
       ...state,
       [payoutsCacheKey(chainId, stash, activeEra)]: payouts,
     }),
-    staleAfter: payouts => (payouts.completeness === 'complete' ? PAYOUTS_STALE_AFTER : PAYOUTS_INCOMPLETE_STALE_AFTER),
+    staleAfter: payouts => (payouts.completeness === 'complete' ? PAYOUTS_STALE_AFTER : INCOMPLETE_STALE_AFTER),
   })
   .build();

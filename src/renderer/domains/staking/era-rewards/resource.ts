@@ -4,10 +4,11 @@ import { createStore } from 'effector';
 import { type ChainId, type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createQueryResource } from '@/shared/query';
+import { INCOMPLETE_STALE_AFTER } from '../completeness';
 import { type RewardSource } from '../types';
 
 import { getEraValidatorRewards } from './service';
-import { type EraValidatorReward } from './types';
+import { type EraValidatorRewards } from './types';
 
 export type EraRewardsParams = {
   chainId: ChainId;
@@ -27,17 +28,22 @@ export function eraRewardsCacheKey(chainId: ChainId, stashes: AccountId[], eraFr
   return `${chainId}-${[...stashes].sort().join('_')}-${eraFrom}-${eraTo}`;
 }
 
-const $eraRewardsCache = createStore<Record<string, EraValidatorReward[]>>({});
+const $eraRewardsCache = createStore<Record<string, EraValidatorRewards>>({});
+
+/** How long a complete answer is reused. */
+export const ERA_REWARDS_STALE_AFTER = 30 * 60 * 1000;
 
 /**
- * A closed era never changes its arithmetic, so the window is long — the range
- * moves with the active era, which changes the key anyway.
+ * A closed era never changes its arithmetic, so the window of a complete answer
+ * is long — the range moves with the active era, which changes the key anyway.
+ * An answer that is not complete is kept only briefly, so the next request asks
+ * again instead of repeating a failed read for half an hour.
  */
 export const eraRewardsResource = createQueryResource<EraRewardsParams>({
   key: ({ chainId, stashes, eraFrom, eraTo }) => [chainId, eraFrom, eraTo, ...stashes],
 })
   .name('era-validator-rewards')
-  .request<EraValidatorReward[]>(({ api, stashes, eraFrom, eraTo, rewardSources }) => {
+  .request<EraValidatorRewards>(({ api, stashes, eraFrom, eraTo, rewardSources }) => {
     return getEraValidatorRewards({ api, stashes, eraFrom, eraTo, rewardSources });
   })
   .cache({
@@ -46,6 +52,6 @@ export const eraRewardsResource = createQueryResource<EraRewardsParams>({
       ...state,
       [eraRewardsCacheKey(chainId, stashes, eraFrom, eraTo)]: rewards,
     }),
-    staleAfter: 30 * 60 * 1000,
+    staleAfter: rewards => (rewards.completeness === 'complete' ? ERA_REWARDS_STALE_AFTER : INCOMPLETE_STALE_AFTER),
   })
   .build();

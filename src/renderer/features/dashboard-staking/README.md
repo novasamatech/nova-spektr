@@ -1,6 +1,6 @@
 # Dashboard Staking Summary
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-04
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -18,6 +18,11 @@ position, per validator and per month.
 monthly rewards — and their detail modals are still in the folder, marked `@deprecated`, injected nowhere, and kept only
 as the reference for behaviour the rework has not reproduced yet (per-chain allocation, the nominated-validator list).
 They ship no UI. When that debt is settled they go.
+
+Because they read the same reward history as the live widgets, the two retired reward widgets follow the same rule about
+it: a history one of its indexers did not answer for is marked incomplete next to the total, and one that could not be
+loaded at all reads "Couldn't load" instead of a zero or a "no rewards" message — so they stay a faithful reference
+rather than one that prints a partial sum as a total.
 
 ## Who can use it / when it applies
 

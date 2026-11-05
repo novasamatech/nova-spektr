@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { stakingPallet } from '@/shared/pallet/staking';
@@ -32,6 +32,19 @@ export type ValidatorRewardsResult = {
    * showing a hole.
    */
   pendingChains: ChainId[];
+  /**
+   * Chains whose attribution answered, but not completely — what it found is
+   * real and adds up to a lower bound, what it did not find is unknown. "Earned
+   * nothing" is never true of them.
+   */
+  incompleteChains: ChainId[];
+  /**
+   * Chains whose attribution could not be loaded at all — a subset of
+   * `incompleteChains`.
+   */
+  unavailableChains: ChainId[];
+  /** Re-runs every attribution whose answer is not complete. */
+  retry: () => Promise<void>;
 };
 
 /**
@@ -105,20 +118,47 @@ export const useValidatorRewards = (
   useResourcePool(eraRewardsResource, requests);
 
   const cache = useUnit(eraRewardsResource.$cache);
+  const { invalidate, fetch } = useUnit({ invalidate: eraRewardsResource.invalidate, fetch: eraRewardsResource.fetch });
+
+  const retry = useCallback(async () => {
+    const incomplete = requests.filter(({ chainId, stashes, eraFrom, eraTo }) => {
+      const entry = cache[eraRewardsCacheKey(chainId, stashes, eraFrom, eraTo)];
+
+      return entry !== undefined && entry.completeness !== 'complete';
+    });
+
+    await Promise.all(
+      incomplete.map(async (request) => {
+        // Dropped first: a refetch inside the cache window would be answered
+        // with the very result being retried.
+        await invalidate(request);
+        await fetch(request).catch(() => null);
+      }),
+    );
+  }, [requests, cache, invalidate, fetch]);
 
   return useMemo(() => {
     const rewards: ChainEraReward[] = [];
     const pendingChains: ChainId[] = [];
+    const incompleteChains: ChainId[] = [];
+    const unavailableChains: ChainId[] = [];
 
     for (const { chainId, stashes, eraFrom, eraTo } of requests) {
       const entry = cache[eraRewardsCacheKey(chainId, stashes, eraFrom, eraTo)];
-      if (entry) {
-        rewards.push(...entry.map((reward) => ({ ...reward, chainId })));
-      } else {
+      if (!entry) {
         pendingChains.push(chainId);
+        continue;
+      }
+
+      rewards.push(...entry.rewards.map((reward) => ({ ...reward, chainId })));
+      if (entry.completeness !== 'complete') {
+        incompleteChains.push(chainId);
+      }
+      if (entry.completeness === 'unavailable') {
+        unavailableChains.push(chainId);
       }
     }
 
-    return { rewards, pendingChains };
-  }, [requests, cache]);
+    return { rewards, pendingChains, incompleteChains, unavailableChains, retry };
+  }, [requests, cache, retry]);
 };

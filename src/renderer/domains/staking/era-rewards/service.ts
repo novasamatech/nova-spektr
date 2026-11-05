@@ -10,7 +10,7 @@ import { calculateNominatorPayout, calculateValidatorPayout } from '../payouts/c
 import { type RewardSource } from '../types';
 
 import { fetchEraExposureShares } from './subquery';
-import { type EraExposureShares, type EraValidatorReward } from './types';
+import { type EraExposureShares, type EraValidatorReward, type EraValidatorRewards } from './types';
 
 type Params = {
   api: ApiPromise;
@@ -69,26 +69,16 @@ function computeRewards(
   return rewards.sort((a, b) => b.era - a.era);
 }
 
-/**
- * What each stash earned from each validator, era by era.
- *
- * Reconstructed rather than read: the reward indexer records an amount and an
- * address, never the validator behind it, so the only route to "who earns for
- * me" is to replay the era's own formula over the exposures. Costs one indexer
- * page walk plus a handful of storage reads per era, which is why the caller
- * decides the era range instead of always asking for the full history.
- */
-export async function getEraValidatorRewards({
-  api,
-  stashes,
-  eraFrom,
-  eraTo,
-  rewardSources,
-}: Params): Promise<EraValidatorReward[]> {
-  if (eraTo < eraFrom || stashes.length === 0) return [];
+const UNAVAILABLE_REWARDS: EraValidatorRewards = { rewards: [], completeness: 'unavailable' };
 
-  const exposures = await fetchEraExposureShares({ rewardSources, stashes, eraFrom, eraTo });
-  if (!exposures || exposures.length === 0) return [];
+async function replayEraRewards({ api, stashes, eraFrom, eraTo, rewardSources }: Params): Promise<EraValidatorRewards> {
+  // No closed era in the range, or nobody to ask about: nothing was earned, and
+  // that is known without asking anyone.
+  if (eraTo < eraFrom || stashes.length === 0) return { rewards: [], completeness: 'complete' };
+
+  const { exposures, completeness } = await fetchEraExposureShares({ rewardSources, stashes, eraFrom, eraTo });
+  if (completeness === 'unavailable') return UNAVAILABLE_REWARDS;
+  if (exposures.length === 0) return { rewards: [], completeness };
 
   const eras = uniq(exposures.map(exposure => exposure.era));
 
@@ -115,7 +105,33 @@ export async function getEraValidatorRewards({
     eraPrefs.map(({ era, validator, prefs }) => [exposureKey(era, validator), prefs.commission]),
   );
 
-  return computeRewards(exposures, rewardByEra, pointsByEra, commissionByKey);
+  return { rewards: computeRewards(exposures, rewardByEra, pointsByEra, commissionByKey), completeness };
+}
+
+/**
+ * What each stash earned from each validator, era by era, and how far that
+ * figure can be trusted.
+ *
+ * Reconstructed rather than read: the reward indexer records an amount and an
+ * address, never the validator behind it, so the only route to "who earns for
+ * me" is to replay the era's own formula over the exposures. Costs one indexer
+ * page walk plus a handful of storage reads per era, which is why the caller
+ * decides the era range instead of always asking for the full history.
+ *
+ * The answer is as complete as the exposure scan behind it: rewards replayed
+ * over a `partial` scan are real but add up to a lower bound.
+ *
+ * Never rejects: a read that fails outright turns the whole answer
+ * `unavailable`, which the UI shows as "could not load" rather than as zero.
+ */
+export async function getEraValidatorRewards(params: Params): Promise<EraValidatorRewards> {
+  try {
+    return await replayEraRewards(params);
+  } catch (error) {
+    console.warn('Staking era rewards: replay failed for eras', params.eraFrom, params.eraTo, error);
+
+    return UNAVAILABLE_REWARDS;
+  }
 }
 
 export const eraRewardsService = {
