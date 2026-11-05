@@ -325,4 +325,34 @@ describe('entities/transaction/lib/onChainUtils', () => {
       expect(getTransactionAmount(createBatch([undelegate, delegate, nested]))).toBeNull();
     });
   });
+
+  describe('getTransactionAmount of votes', () => {
+    const createVote = (vote: unknown) =>
+      ({ type: TransactionType.VOTE, args: { track: 0, referendum: 1, vote } }) as unknown as Transaction;
+
+    test('should return the balance of a standard vote', () => {
+      const vote = { Standard: { balance: '1,500', vote: { aye: true, conviction: 'None' } } };
+
+      expect(getTransactionAmount(createVote(vote))).toBe('1500');
+    });
+
+    test('should return aye plus nay of a split vote', () => {
+      expect(getTransactionAmount(createVote({ Split: { aye: '1,000', nay: '2,000' } }))).toBe('3000');
+    });
+
+    test('should return aye plus nay plus abstain of a split abstain vote', () => {
+      const vote = { SplitAbstain: { aye: '1,000', nay: '2,000', abstain: '4,000' } };
+
+      expect(getTransactionAmount(createVote(vote))).toBe('7000');
+    });
+
+    test('should return null for an unknown vote shape', () => {
+      expect(getTransactionAmount(createVote({ Other: {} }))).toBeNull();
+      expect(getTransactionAmount(createVote(undefined))).toBeNull();
+    });
+
+    test('should return null for a malformed amount', () => {
+      expect(getTransactionAmount(createVote({ Split: { aye: 'abc', nay: '1' } }))).toBeNull();
+    });
+  });
 });

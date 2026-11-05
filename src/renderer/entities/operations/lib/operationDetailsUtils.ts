@@ -96,7 +96,7 @@ export const getPayee = (tx: MultisigOperation): { Account: Address } | string |
   if (!coreTx) return undefined;
 
   if (coreTx.type === TransactionType.BATCH_ALL) {
-    return coreTx.args.transactions.at(0).args.payee;
+    return coreTx.args.transactions?.at(0)?.args?.payee;
   }
 
   return coreTx.args.payee;
