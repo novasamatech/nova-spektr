@@ -4,13 +4,13 @@ import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { TransactionType } from '@/shared/core';
+import { getRecipientCheck } from '@/shared/lib/recipient-verification';
 import { TEST_ACCOUNTS, TEST_ADDRESS, getNativeAssetId, toAccountId } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { decodeCallData } from '@/entities/transaction';
 // eslint-disable-next-line boundaries/entry-point
 import { metadata } from '@/entities/transaction/lib/__tests__/metadata';
-
-import { getRecipientCheck } from './recipient-check';
 
 const ORIGIN = toAccountId(TEST_ADDRESS);
 const STRANGER = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
@@ -71,5 +71,30 @@ describe('getRecipientCheck on decoded call data', () => {
       kind: 'recipients',
       accountIds: [toAccountId(STRANGER)],
     });
+  });
+
+  it('never reports a type-and-then xcm transfer as paying no one', () => {
+    const id = `0x${'33'.repeat(32)}`;
+    const chain = { parents: 0, interior: { X1: { Parachain: 1000 } } };
+    // The decoder keeps the program arg as the JSON string of its versioned codec.
+    const checkOfProgram = (instructions: unknown[]) => {
+      const program = api.tx.xcmPallet!.execute!({ V3: instructions }, 0).method.args[0]!;
+
+      return getRecipientCheck({
+        type: TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
+        section: 'polkadotXcm',
+        method: 'transferAssetsUsingTypeAndThen',
+        chainId: polkadotChain.chainId,
+        accountId: ORIGIN,
+        args: { customXcmOnDest: program.toString() },
+      });
+    };
+    const forwardTo = (dest: unknown) => ({ DepositReserveAsset: { assets: { Wild: 'All' }, dest, xcm: [] } });
+
+    expect(checkOfProgram([])).toEqual({ kind: 'unresolved' });
+    expect(checkOfProgram([forwardTo(chain)])).toEqual({ kind: 'unresolved' });
+    expect(
+      checkOfProgram([forwardTo({ parents: 0, interior: { X1: { AccountId32: { network: null, id } } } })]),
+    ).toEqual({ kind: 'recipients', accountIds: [id] });
   });
 });

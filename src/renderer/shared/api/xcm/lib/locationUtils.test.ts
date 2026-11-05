@@ -5,6 +5,7 @@ import { extractAccountIdFromLocation, extractBeneficiariesFromXcmInstructions }
 const ALICE = `0x${'11'.repeat(32)}`;
 const BOB = `0x${'22'.repeat(32)}`;
 const EVM = `0x${'33'.repeat(20)}`;
+const EVM_OWNER = `0x${'44'.repeat(32)}`;
 
 const accountId32 = (id: string, network: unknown = null) => ({ accountId32: { network, id } });
 const v3Location = (id: string) => ({ parents: 0, interior: { x1: accountId32(id) } });
@@ -121,7 +122,96 @@ describe('extractBeneficiariesFromXcmInstructions', () => {
     expect(extractBeneficiariesFromXcmInstructions(undefined)).toBeNull();
   });
 
-  it('is empty for a program that deposits nowhere', () => {
-    expect(extractBeneficiariesFromXcmInstructions({ v4: [{ clearOrigin: null }] })).toEqual([]);
+  it('reads the account named by the location an instruction forwards assets to', () => {
+    const chainLocation = { parents: 1, interior: { x1: [{ parachain: 2000 }] } };
+
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [{ depositReserveAsset: { assets: { wild: { all: null } }, dest: v4Location(ALICE), xcm: [] } }],
+      }),
+    ).toEqual([ALICE]);
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        V5: [
+          { TransferReserveAsset: { assets: [], dest: v4Location(ALICE), xcm: [] } },
+          { InitiateTeleport: { assets: {}, dest: v4Location(BOB), xcm: [] } },
+          { InitiateReserveWithdraw: { assets: {}, reserve: v4Location(ALICE), xcm: [] } },
+          { InitiateTransfer: { destination: v4Location(BOB), assets: [], remoteXcm: [] } },
+        ],
+      }),
+    ).toEqual([ALICE, BOB, ALICE, BOB]);
+    // A forward to a chain pays whoever the forwarded program names.
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [
+          depositAsset(v4Location(ALICE)),
+          { depositReserveAsset: { assets: {}, dest: chainLocation, xcm: [] } },
+          { depositReserveAsset: { assets: {}, dest: v4Location(BOB), xcm: [] } },
+        ],
+      }),
+    ).toEqual([ALICE, BOB]);
+  });
+
+  it('lists accounts of forwarding locations after direct and nested deposits', () => {
+    const dest = { parents: 1, interior: { x2: [{ parachain: 2000 }, accountId32(ALICE)] } };
+
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [{ depositReserveAsset: { assets: {}, dest, xcm: [depositAsset(v4Location(BOB))] } }],
+      }),
+    ).toEqual([BOB, ALICE]);
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [
+          { depositReserveAsset: { assets: {}, dest, xcm: [] } },
+          { setAppendix: [depositAsset(v4Location(EVM_OWNER))] },
+          depositAsset(v4Location(BOB)),
+        ],
+      }),
+    ).toEqual([BOB, EVM_OWNER, ALICE]);
+  });
+
+  it('is unreadable when a forwarding location names an account that can not be read', () => {
+    const forwardTo = (junction: unknown) => ({
+      depositReserveAsset: {
+        assets: {},
+        dest: { parents: 1, interior: { x2: [{ parachain: 2000 }, junction] } },
+        xcm: [],
+      },
+    });
+
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [depositAsset(v4Location(ALICE)), forwardTo(accountId32('0x1234'))],
+      }),
+    ).toBeNull();
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [depositAsset(v4Location(ALICE)), forwardTo({ accountIndex64: { network: null, index: 7 } })],
+      }),
+    ).toBeNull();
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        V4: [depositAsset(v4Location(ALICE)), forwardTo({ AccountKey20: { network: null, key: '0x12' } })],
+      }),
+    ).toBeNull();
+  });
+
+  it('is unreadable for a program that names no recipient', () => {
+    expect(extractBeneficiariesFromXcmInstructions({ v4: [] })).toBeNull();
+    expect(extractBeneficiariesFromXcmInstructions({ v4: [{ clearOrigin: null }] })).toBeNull();
+    expect(
+      extractBeneficiariesFromXcmInstructions({
+        v4: [
+          {
+            depositReserveAsset: {
+              assets: { wild: { all: null } },
+              dest: { parents: 1, interior: { x1: [{ parachain: 2000 }] } },
+              xcm: [],
+            },
+          },
+        ],
+      }),
+    ).toBeNull();
   });
 });

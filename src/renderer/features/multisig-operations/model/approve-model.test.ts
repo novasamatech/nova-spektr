@@ -2,7 +2,13 @@ import { BN } from '@polkadot/util';
 import { type Scope, allSettled, fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { type Chain, type MultisigAccount, TransactionType } from '@/shared/core';
+import {
+  type Chain,
+  type Contact,
+  type DecodedTransaction,
+  type MultisigAccount,
+  TransactionType,
+} from '@/shared/core';
 import { getCallHash } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -12,7 +18,9 @@ import {
   accounts,
   transactionService,
 } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
+import { authModel, connectionHistoryModel } from '@/aggregates/backend';
 
 import { approveModel } from './approve-model';
 import {
@@ -34,6 +42,7 @@ type OperationParams = {
   approvers?: AccountId[];
   callData?: string | null;
   callHash?: string;
+  transaction?: DecodedTransaction | null;
 };
 
 const createOperation = ({
@@ -41,11 +50,12 @@ const createOperation = ({
   approvers = [],
   callData = null,
   callHash = '0xabc123',
+  transaction = null,
 }: OperationParams): MultisigOperation =>
   ({
     id: `${TEST_CHAIN_ID}-${callHash}-${multisigAccountId}-100-1`,
     status: 'pending',
-    transaction: null,
+    transaction,
     method: null,
     section: null,
     callHash,
@@ -253,6 +263,91 @@ describe('approve model', () => {
     });
   });
 
+  describe('weight of the open operation', () => {
+    it('ignores a weight that arrives for an operation opened earlier', async () => {
+      let resolveWeight: (weight: typeof fakeWeight) => void = () => {};
+      vi.spyOn(transactionService, 'getTransactionWeight').mockReturnValue(
+        new Promise(resolve => {
+          resolveWeight = resolve;
+        }),
+      );
+      vi.spyOn(transactionService, 'getSplitExtrinsicFee').mockResolvedValue(new BN(0));
+      vi.spyOn(transactionService, 'wrapLegacyTransaction').mockImplementation(async transaction => ({
+        ...transaction,
+      }));
+
+      const ownedSignatory = vaultAccount(aId(1));
+      const multisigAccount = createMultisigAccount(aId(9), [aId(1), aId(2)]);
+      const callData = '0x0400';
+      const withCallData = createOperation({
+        multisigAccountId: multisigAccount.accountId,
+        callData,
+        callHash: getCallHash(callData),
+      });
+      const withoutCallData = createOperation({
+        multisigAccountId: multisigAccount.accountId,
+        callData: null,
+        callHash: '0xdef456',
+      });
+
+      const scope = await createScope({ accountList: [ownedSignatory, multisigAccount], withApi: true });
+
+      // The first operation's weight is still pending when the second one opens.
+      const settled = [
+        openFlow(scope, withCallData, multisigAccount),
+        allSettled(approveModel.flow.close, {
+          scope,
+          params: { chain: testChain, operation: withCallData, account: multisigAccount },
+        }),
+        openFlow(scope, withoutCallData, multisigAccount),
+      ];
+      resolveWeight(fakeWeight);
+      await Promise.all(settled);
+
+      expect(scope.getState(approveModel.$transaction)).toBeNull();
+      expect(scope.getState(approveModel.$signingPayloads)).toBeNull();
+    });
+
+    it('builds no transaction for a newly opened operation until its own weight arrives', async () => {
+      let resolveWeight: (weight: typeof fakeWeight) => void = () => {};
+      vi.spyOn(transactionService, 'getTransactionWeight')
+        .mockResolvedValueOnce(fakeWeight)
+        .mockReturnValueOnce(
+          new Promise(resolve => {
+            resolveWeight = resolve;
+          }),
+        );
+      vi.spyOn(transactionService, 'getSplitExtrinsicFee').mockResolvedValue(new BN(0));
+      vi.spyOn(transactionService, 'wrapLegacyTransaction').mockImplementation(async transaction => ({
+        ...transaction,
+      }));
+
+      const ownedSignatory = vaultAccount(aId(1));
+      const multisigAccount = createMultisigAccount(aId(9), [aId(1), aId(2)]);
+      const operationOf = (callData: `0x${string}`) =>
+        createOperation({ multisigAccountId: multisigAccount.accountId, callData, callHash: getCallHash(callData) });
+      const first = operationOf('0x0400');
+      const second = operationOf('0x0401');
+
+      const scope = await createScope({ accountList: [ownedSignatory, multisigAccount], withApi: true });
+      await openFlow(scope, first, multisigAccount);
+      expect(scope.getState(approveModel.$transaction)).not.toBeNull();
+
+      await allSettled(approveModel.flow.close, {
+        scope,
+        params: { chain: testChain, operation: first, account: multisigAccount },
+      });
+
+      const opened = openFlow(scope, second, multisigAccount);
+      await new Promise(resolve => setTimeout(resolve));
+      expect(scope.getState(approveModel.$transaction)).toBeNull();
+
+      resolveWeight(fakeWeight);
+      await opened;
+      expect(scope.getState(approveModel.$transaction)?.args.call).toBe('0x0401');
+    });
+  });
+
   describe('risk acknowledgement gate', () => {
     it('starts unacknowledged and follows the toggle', async () => {
       const multisigAccount = createMultisigAccount(aId(9), [aId(1)]);
@@ -296,6 +391,166 @@ describe('approve model', () => {
         params: { chain: testChain, operation, account: multisigAccount },
       });
       expect(scope.getState(approveModel.$isRiskAcknowledged)).toBe(false);
+    });
+  });
+
+  describe('unknown recipient gate', () => {
+    const STRANGER = aId(77);
+    const CONTACT = aId(55);
+    const CALL_DATA = '0x0400';
+
+    const callOf = (type: TransactionType | undefined, args: Record<string, unknown>) =>
+      ({
+        type,
+        section: 'any',
+        method: 'any',
+        chainId: TEST_CHAIN_ID,
+        address: '',
+        args,
+      }) as unknown as DecodedTransaction;
+    const transferTo = (dest: AccountId) => callOf(TransactionType.TRANSFER, { dest, value: '1' });
+    const batchOf = (...transactions: DecodedTransaction[]) => callOf(TransactionType.BATCH_ALL, { transactions });
+
+    const ownedSignatory = vaultAccount(aId(1));
+    const multisigAccount = createMultisigAccount(aId(9), [aId(1), aId(2)]);
+
+    const operationOf = (transaction: DecodedTransaction | null, callData: string | null = CALL_DATA) =>
+      createOperation({ multisigAccountId: multisigAccount.accountId, callData, transaction });
+
+    // `active` — address book connected and healthy, the only situation in
+    // which a recipient can actually be checked; `unverifiable` — connected
+    // before, signed out now; `off` — never connected.
+    const createScopeIn = async (mode: 'active' | 'unverifiable' | 'off') => {
+      const scope = fork({
+        values: new Map<any, any>([
+          [accounts.__test.$list, [ownedSignatory, multisigAccount]],
+          [contactModel.$backendContacts, [{ accountId: CONTACT, name: 'Known contact' } as unknown as Contact]],
+          [connectionHistoryModel.$hasEverConnected, mode !== 'off'],
+          [
+            authModel.$authState,
+            mode === 'active' ? { accountId: aId(8), accountName: 'Backend user', permissions: [] } : null,
+          ],
+        ]),
+      });
+      await seedDiHandlers(scope);
+
+      return scope;
+    };
+    const createVerifiedScope = () => createScopeIn('active');
+
+    const warningOf = async (operation: MultisigOperation) => {
+      const scope = await createVerifiedScope();
+      await openFlow(scope, operation, multisigAccount);
+
+      return scope.getState(approveModel.$recipientWarning);
+    };
+
+    it('warns when a batch pays an account that is neither own nor a contact', async () => {
+      expect(await warningOf(operationOf(batchOf(transferTo(CONTACT), transferTo(STRANGER))))).toBe('unknown');
+    });
+
+    it('warns when a transfer to an unknown account is wrapped in a proxy call', async () => {
+      const proxied = callOf(TransactionType.PROXY, { transaction: transferTo(STRANGER) });
+
+      expect(await warningOf(operationOf(proxied))).toBe('unknown');
+    });
+
+    it('warns when the reward destination is set to an unknown account', async () => {
+      const setPayee = callOf(TransactionType.DESTINATION, { payee: { Account: STRANGER } });
+
+      expect(await warningOf(operationOf(setPayee))).toBe('unknown');
+      expect(await warningOf(operationOf(callOf(TransactionType.DESTINATION, { payee: 'Staked' })))).toBe('none');
+    });
+
+    it('warns about a vested transfer to an unknown account', async () => {
+      expect(await warningOf(operationOf(callOf(TransactionType.VESTED_TRANSFER, { target: STRANGER })))).toBe(
+        'unknown',
+      );
+    });
+
+    it('does not warn when every recipient is a contact or an own account', async () => {
+      expect(await warningOf(operationOf(transferTo(CONTACT)))).toBe('none');
+      expect(await warningOf(operationOf(batchOf(transferTo(CONTACT), transferTo(ownedSignatory.accountId))))).toBe(
+        'none',
+      );
+    });
+
+    it('warns when the recipient of the call can not be read', async () => {
+      expect(await warningOf(operationOf(callOf(undefined, {})))).toBe('unknown');
+      expect(await warningOf(operationOf(batchOf(transferTo(CONTACT), transferTo('garbage' as AccountId))))).toBe(
+        'unknown',
+      );
+      // Call data that is there but did not decode.
+      expect(await warningOf(operationOf(null))).toBe('unknown');
+    });
+
+    it('does not warn while the call data of the operation is not known', async () => {
+      expect(await warningOf(operationOf(null, null))).toBe('none');
+    });
+
+    it('does not start signing until the warning is acknowledged', async () => {
+      const scope = await createVerifiedScope();
+      await openFlow(scope, operationOf(batchOf(transferTo(STRANGER))), multisigAccount);
+
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(false);
+
+      await allSettled(approveModel.riskAcknowledgedToggled, { scope, params: true });
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(true);
+    });
+
+    it('starts signing right away when there is nothing to acknowledge', async () => {
+      const scope = await createVerifiedScope();
+      await openFlow(scope, operationOf(transferTo(CONTACT)), multisigAccount);
+
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(true);
+    });
+
+    it('holds the gate for every recipient while the address book can not vouch for them', async () => {
+      const scope = await createScopeIn('unverifiable');
+      await openFlow(scope, operationOf(transferTo(CONTACT)), multisigAccount);
+
+      expect(scope.getState(approveModel.$recipientWarning)).toBe('unverifiable');
+
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(false);
+
+      await allSettled(approveModel.riskAcknowledgedToggled, { scope, params: true });
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(true);
+    });
+
+    it('stays silent and starts signing when the address book was never connected', async () => {
+      const scope = await createScopeIn('off');
+      await openFlow(scope, operationOf(batchOf(transferTo(STRANGER))), multisigAccount);
+
+      expect(scope.getState(approveModel.$recipientWarning)).toBe('none');
+
+      await allSettled(approveModel.startSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(true);
+    });
+
+    it('leaves the signing step on cancel and when the flow reopens or closes', async () => {
+      const scope = await createVerifiedScope();
+      const operation = operationOf(transferTo(CONTACT));
+      await openFlow(scope, operation, multisigAccount);
+
+      await allSettled(approveModel.startSigning, { scope });
+      await allSettled(approveModel.cancelSigning, { scope });
+      expect(scope.getState(approveModel.$isSigning)).toBe(false);
+
+      await allSettled(approveModel.startSigning, { scope });
+      await openFlow(scope, operation, multisigAccount);
+      expect(scope.getState(approveModel.$isSigning)).toBe(false);
+
+      await allSettled(approveModel.startSigning, { scope });
+      await allSettled(approveModel.flow.close, {
+        scope,
+        params: { chain: testChain, operation, account: multisigAccount },
+      });
+      expect(scope.getState(approveModel.$isSigning)).toBe(false);
     });
   });
 
