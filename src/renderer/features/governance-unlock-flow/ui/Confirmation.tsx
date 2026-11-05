@@ -8,6 +8,7 @@ import { AssetBalance, TransactionDetails, TransactionValidationError, getTrackM
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { SigningPathSection } from '@/features/signing-path';
 import { NamedAccount } from '@/widgets/NameResolver';
 import { AssetFiatBalance } from '@/widgets/price';
@@ -42,6 +43,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(unlockFlowModel.$multisigDeposit);
   const preparing = useUnit(unlockFlowModel.$preparing);
   const canSign = useUnit(unlockFlowModel.$canSign);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   // `$signatory` already falls back to the initiator, so it is null only when the request is.
   if (!request || !chain || !initiator || !signatory) return null;
@@ -138,6 +140,12 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             cannot sign here — an account with everything locked hits these. */}
         <TransactionValidationError errors={errors} wallets={wallets} />
 
+        {isMultisigExists && (
+          <Box padding={[2, 5]}>
+            <MultisigExistsAlert active />
+          </Box>
+        )}
+
         {isPermissionless && (
           <div className="mx-5 mt-3 flex items-start gap-2 rounded-md bg-input-background-disabled px-3 py-2">
             <span aria-hidden="true" className="flex pt-0.5">
@@ -164,12 +172,14 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          type={signatoryWallet?.type}
-          disabled={!canSign}
-          isLoading={preparing}
-          onClick={confirmModel.startSigning}
-        />
+        {!isMultisigExists && (
+          <SignButton
+            type={signatoryWallet?.type}
+            disabled={!canSign}
+            isLoading={preparing}
+            onClick={confirmModel.startSigning}
+          />
+        )}
       </Modal.Footer>
     </>
   );

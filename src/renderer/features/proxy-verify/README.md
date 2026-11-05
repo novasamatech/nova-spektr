@@ -1,6 +1,6 @@
 # Proxy verification
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -52,7 +52,8 @@ The on-chain remark is a JSON service payload that lets the app match the execut
 1. User clicks **Verify proxy** on a row in wallet details → modal opens with the signing path, an optional **Remark**
    field, and fee/deposit info.
 2. **Continue** → confirmation screen with proxy details, the remark, fees, and the sign button (content scrolls if it
-   exceeds the modal height).
+   exceeds the modal height). When the same call is already a pending multisig operation on this chain, the confirmation
+   shows the red "Same transaction already exist" alert with an "Open operations" action and the sign button is hidden.
 3. Signing (e.g. Polkadot Vault QR) → submission → the multisig operation is created; the row flips to Pending
    verification.
 4. Once the final approval executes the ping, the row becomes Verified. The operation also appears in the multisig

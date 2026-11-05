@@ -9,10 +9,12 @@ import { Address, AssetBalance, TransactionDetails, TransactionValidationError }
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
+import { confirmModel } from '../model/confirm';
 import { newPositionFlowModel } from '../model/new-position-flow';
 
 type Props = {
@@ -47,6 +49,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const noRouteSigner = useUnit(newPositionFlowModel.$noRouteSigner);
   const canSign = useUnit(newPositionFlowModel.$canSign);
   const canUseBasket = useUnit(newPositionFlowModel.$canUseBasket);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!chain || !asset || !initiator) return null;
 
@@ -106,6 +109,12 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
         <TransactionValidationError errors={errors} wallets={wallets} />
 
+        {isMultisigExists && (
+          <Box padding={[2, 5]}>
+            <MultisigExistsAlert active />
+          </Box>
+        )}
+
         {noRouteSigner && (
           <Box padding={[2, 5]}>
             <Alert active variant="error" title={t('staking.flow.noSignerTitle')}>
@@ -126,18 +135,20 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           </Button>
         )}
         <div className="flex gap-4">
-          {canUseBasket && (
+          {canUseBasket && !isMultisigExists && (
             <Button pallet="secondary" onClick={() => newPositionFlowModel.txSaved()}>
               {t('operation.addToBasket')}
             </Button>
           )}
-          <SignButton
-            isDefault={canUseBasket}
-            type={signatoryWallet?.type}
-            disabled={!canSign}
-            isLoading={preparing}
-            onClick={newPositionFlowModel.startSigning}
-          />
+          {!isMultisigExists && (
+            <SignButton
+              isDefault={canUseBasket}
+              type={signatoryWallet?.type}
+              disabled={!canSign}
+              isLoading={preparing}
+              onClick={newPositionFlowModel.startSigning}
+            />
+          )}
         </div>
       </Modal.Footer>
     </>
