@@ -5,6 +5,7 @@ import { toSerializable } from '@/shared/lib/utils';
 import { isProxyTransaction } from '@/entities/transaction';
 import {
   type TransactionSplitAbstainVote,
+  type TransactionSplitVote,
   type TransactionStandardVote,
   type TransactionVote,
 } from '../types/voteTransaction';
@@ -25,12 +26,20 @@ const getCoreTx = (tx: Transaction): Transaction => {
   return tx;
 };
 
-const isStandardVote = (vote: TransactionVote): vote is TransactionStandardVote => {
-  return 'Standard' in vote;
+const hasVoteKey = (vote: unknown, key: string): boolean => {
+  return typeof vote === 'object' && vote !== null && key in vote;
 };
 
-const isSplitAbstainVote = (vote: TransactionVote): vote is TransactionSplitAbstainVote => {
-  return 'Standard' in vote;
+const isStandardVote = (vote: unknown): vote is TransactionStandardVote => {
+  return hasVoteKey(vote, 'Standard');
+};
+
+const isSplitVote = (vote: unknown): vote is TransactionSplitVote => {
+  return hasVoteKey(vote, 'Split');
+};
+
+const isSplitAbstainVote = (vote: unknown): vote is TransactionSplitAbstainVote => {
+  return hasVoteKey(vote, 'SplitAbstain');
 };
 
 const isVoteTransaction = (t: Transaction): boolean => {
@@ -103,6 +112,7 @@ export const voteTransactionService = {
   isVoteTransaction,
   isRemoveVoteTransaction,
   isStandardVote,
+  isSplitVote,
   isSplitAbstainVote,
   createTransactionVote,
 };

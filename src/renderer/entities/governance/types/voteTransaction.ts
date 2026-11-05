@@ -2,12 +2,14 @@ import {
   type ReferendumId,
   type Serializable,
   type SplitAbstainVote,
+  type SplitVote,
   type StandardVote,
   type TrackId,
   type Transaction,
 } from '@/shared/core';
 
 export type TransactionStandardVote = { Standard: Serializable<StandardVote> };
+export type TransactionSplitVote = { Split: Serializable<SplitVote> };
 export type TransactionSplitAbstainVote = { SplitAbstain: Serializable<SplitAbstainVote> };
 export type TransactionVote = TransactionStandardVote | TransactionSplitAbstainVote;
 

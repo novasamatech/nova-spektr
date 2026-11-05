@@ -2456,6 +2456,7 @@
     "revokeDelegation": {
       "title": "Revoke delegation on"
     },
+    "rowUnavailable": "This notification can't be displayed",
     "searchPlaceholder": "Search",
     "timeline": {
       "status": {
