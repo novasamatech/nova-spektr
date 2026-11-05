@@ -96,9 +96,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <div className="flex gap-4">
-          {!hideSignButton && secondaryActionButton}
+          {!hideSignButton && !isMultisigExists && secondaryActionButton}
 
-          {!hideSignButton && (
+          {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
               type={confirmStore.wallets.signatory.type}

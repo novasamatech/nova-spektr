@@ -1,6 +1,6 @@
 # Flexible Multisig — Change Signatories
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-31
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -62,10 +62,11 @@ A toggle chooses how the old controller is handled, with an info popover explain
 ### Confirm step gating
 
 The Sign button stays disabled — with a tooltip naming the reason — while: fees/deposits are still loading, validation
-is running, an edit operation for this wallet is already pending, the chosen controller equals the current one, or the
-signer's balance can't cover the costs. The review lists the proxy deposit (the total that will be reserved after the
-operation), the multisig deposit, and the network fee; balance validation uses only the **additional** amount this
-operation locks.
+is running, an edit operation for this wallet is already pending, the same call is already a pending multisig operation
+on this chain (the red "Same transaction already exist" alert with an "Open operations" action shows above the review),
+the chosen controller equals the current one, or the signer's balance can't cover the costs. The review lists the proxy
+deposit (the total that will be reserved after the operation), the multisig deposit, and the network fee; balance
+validation uses only the **additional** amount this operation locks.
 
 ### Draft mode
 

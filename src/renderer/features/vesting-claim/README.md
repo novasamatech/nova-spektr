@@ -1,6 +1,6 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
 
 ## Overview
 
@@ -91,6 +91,7 @@ row.
 | Not started               | `now < startingBlock` on a schedule that vests gradually                   | "Vesting starts DATE · in 2h 10m". **Not a cliff** — a gradual schedule that has yet to begin. Its "fully unlocks" date is shown as usual, since it is known                                                     |
 | Claim unavailable         | Vested tokens are ready, but no local account signs for them on this chain | A muted reason where "Claim all" would sit ("Your wallet can't sign on this network"); schedules stay visible                                                                                                    |
 | Confirm                   | "Claim all" pressed                                                        | Signing route, "Unlocks now" + "Keeps vesting", network fee (and multisig deposit), then Sign & submit                                                                                                           |
+| Duplicate pending         | The same call is already a pending multisig operation on this chain        | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                                                                                                    |
 | Claim unaffordable        | The signer cannot cover the fee, or cannot reserve the multisig deposit    | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                    |
 
 ## Lifecycle

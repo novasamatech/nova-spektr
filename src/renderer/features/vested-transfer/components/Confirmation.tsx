@@ -11,6 +11,7 @@ import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { CallDataConfirmSection } from '@/features/operations/OperationsConfirm/common/CallDataConfirmSection';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { MultisigOperationDescriptionField } from '@/features/operations/OperationsConfirm/common/MultisigOperationDescriptionField';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -28,6 +29,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const confirms = useUnit(confirmModel.$confirms);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const confirm = confirms.at(0) ?? null;
 
   if (!confirm) return null;
@@ -63,6 +65,10 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             />
             <AssetFiatBalance asset={asset} amount={amount} className="text-center text-headline" />
           </div>
+        </div>
+
+        <div className="px-5">
+          <MultisigExistsAlert active={isMultisigExists} />
         </div>
 
         <Box padding={[4, 5]}>
@@ -110,7 +116,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
           </Button>
         )}
 
-        <SignButton type={confirm.wallets.signatory.type} onClick={confirmModel.startSigning} />
+        {!isMultisigExists && <SignButton type={confirm.wallets.signatory.type} onClick={confirmModel.startSigning} />}
       </Modal.Footer>
     </>
   );

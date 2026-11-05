@@ -7,6 +7,7 @@ import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { SigningPathSection } from '@/features/signing-path';
 import { AssetFiatBalance } from '@/widgets/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/widgets/transaction-fee';
@@ -39,6 +40,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   const multisigDeposit = useUnit(claimModel.$multisigDeposit);
   const preparing = useUnit(claimModel.$preparing);
   const canSign = useUnit(claimModel.$canSign);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!claim || !chain || !initiator) return null;
 
@@ -107,6 +109,12 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             cannot sign here — a vesting account is exactly the kind that hits these. */}
         <TransactionValidationError errors={errors} wallets={wallets} />
 
+        {isMultisigExists && (
+          <Box padding={[2, 5]}>
+            <MultisigExistsAlert active />
+          </Box>
+        )}
+
         <FootnoteText className="px-5 pt-3 text-text-tertiary">{t('vesting.confirm.hint')}</FootnoteText>
       </ScrollArea>
 
@@ -116,12 +124,14 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          type={signatoryWallet?.type}
-          disabled={!canSign}
-          isLoading={preparing}
-          onClick={confirmModel.startSigning}
-        />
+        {!isMultisigExists && (
+          <SignButton
+            type={signatoryWallet?.type}
+            disabled={!canSign}
+            isLoading={preparing}
+            onClick={confirmModel.startSigning}
+          />
+        )}
       </Modal.Footer>
     </>
   );
