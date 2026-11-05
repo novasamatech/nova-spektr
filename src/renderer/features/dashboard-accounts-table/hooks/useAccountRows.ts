@@ -10,7 +10,7 @@ import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { currencySelect } from '@/aggregates/currency-select';
 import { useStakingPositions } from '@/aggregates/staking-positions';
-import { useBalanceCoverage } from '@/features/assets-balances';
+import { type BalanceCoverageState, useBalanceCoverage } from '@/features/assets-balances';
 import { buildAccountRow } from '../lib/rows';
 import { type AccountRow } from '../lib/types';
 
@@ -20,18 +20,7 @@ type Entry = { accountId: string; name: string };
 
 export type AccountRowsResult = {
   rows: AccountRow[];
-  /**
-   * False until every selected account that can hold balances has at least one
-   * record (or the wait timed out) — render a skeleton, never an empty table /
-   * zeros.
-   */
-  ready: boolean;
-  /**
-   * Selected accounts still without any balance record. Non-zero on a `ready`
-   * table only after the wait timed out: the rows are what has arrived so far.
-   */
-  awaitingCount: number;
-};
+} & BalanceCoverageState;
 
 /**
  * The single join hook of the accounts table: every non-zero balance record of
@@ -174,11 +163,7 @@ export const useAccountRows = (accountIds: string[], allEntries: Entry[]): Accou
   ]);
 
   // Empty selection is an answer, not a pending state.
-  if (accountIds.length === 0) return { rows, ready: true, awaitingCount: 0 };
+  if (accountIds.length === 0) return { rows, ready: true, syncing: false, missingCount: 0 };
 
-  return {
-    rows,
-    ready: coverage.complete || coverage.timedOut,
-    awaitingCount: coverage.awaitingCount,
-  };
+  return { rows, ...coverage };
 };

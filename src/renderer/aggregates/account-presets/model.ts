@@ -4,13 +4,14 @@ import { persist } from 'effector-storage/local';
 import { toAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 
 import {
   type BackendContactSeed,
   type LocalContactSeed,
   type WalletEntrySeed,
   buildMergedEntries,
+  isEntryAccount,
   matchPreset,
   migrateStoredPresets,
 } from './lib';
@@ -176,7 +177,7 @@ const $allEntries = combine(
 
     const walletSeeds: WalletEntrySeed[] = [];
     for (const account of accounts) {
-      if (accountUtils.isMultisigSignatoryAccount(account)) continue;
+      if (!isEntryAccount(account)) continue;
       const addressPrefix = account.type === 'chain' ? chains[account.chainId]?.addressPrefix : undefined;
       walletSeeds.push({
         id: account.id,

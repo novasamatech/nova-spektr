@@ -3,7 +3,7 @@ import { persist } from 'effector-storage/local';
 
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
-import { accountPresetsModel } from '@/aggregates/account-presets';
+import { accountPresetsModel, getEntryAccounts } from '@/aggregates/account-presets';
 import { type Rect, GRID_COLUMNS, clampRect, resolveCollisions } from '../lib/layout-engine';
 
 const tabChanged = createEvent<string>();
@@ -92,18 +92,35 @@ const $validSelectedIdsRaw = combine($matchedEntries, $allEntries, (matchedEntri
   return validIds.sort();
 });
 
-const $validSelectedIds = createStore<string[]>([], {
-  updateFilter: (next, prev) => {
-    if (next.length !== prev.length) return true;
+const isChangedList = (next: string[], prev: string[]) => {
+  if (next.length !== prev.length) return true;
 
-    return next.some((id, i) => id !== prev[i]);
-  },
-});
+  return next.some((id, i) => id !== prev[i]);
+};
+
+const $validSelectedIds = createStore<string[]>([], { updateFilter: isChangedList });
 $validSelectedIds.on($validSelectedIdsRaw, (_, ids) => ids);
 
-const $selectedAccounts = combine($validSelectedIds, walletModel.$availableAccounts, (selectedIds, accounts) => {
+// The account ids behind the selected entries — the keys whose balances the
+// dashboard shows. Kept stable across entry updates that do not change them, so
+// the balance fetch below does not re-run on a rename.
+const $selectedAccountIdsRaw = combine($validSelectedIds, $allEntries, (selectedIds, allEntries) => {
   const idSet = new Set(selectedIds);
-  return accounts.filter((a) => idSet.has(a.id));
+  const accountIds = new Set(allEntries.filter((entry) => idSet.has(entry.id)).map((entry) => entry.accountId));
+
+  return [...accountIds].sort();
+});
+
+const $selectedAccountIds = createStore<string[]>([], { updateFilter: isChangedList });
+$selectedAccountIds.on($selectedAccountIdsRaw, (_, accountIds) => accountIds);
+
+// Every visible wallet account of a selected key, not only the one that named
+// the entry: a key that exists as several accounts (per-chain accounts, the
+// same key in two wallets) is requested on all their chains. The balance
+// readiness hook (`useBalanceCoverage`) waits on exactly these accounts — both
+// go through `getEntryAccounts`.
+const $selectedAccounts = combine($selectedAccountIds, walletModel.$availableAccounts, (accountIds, accounts) => {
+  return getEntryAccounts(accountIds, accounts);
 });
 
 const $selectedContactAccountIds = combine($validSelectedIds, contactModel.$contacts, (selectedIds, contacts) => {
