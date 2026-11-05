@@ -204,7 +204,7 @@ notes.
 
 - [`contacts`](./contacts/README.md)
 - `contacts-navigation` (no spec planned)
-- `notifications`
+- [`notifications`](./notifications/README.md)
 - `notifications-navigation` (no spec planned)
 - [`recipient-verification`](../aggregates/recipient-verification/README.md) (aggregate)
 
