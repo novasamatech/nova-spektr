@@ -220,7 +220,7 @@
     "allure-js-commons": "3.7.0",
     "allure-playwright": "3.7.0",
     "allure-vitest": "3.7.0",
-    "astro": "5.14.3",
+    "astro": "7.4.7",
     "camelcase": "6.3.0",
     "concurrently": "7.6.0",
     "cross-env": "7.0.3",
