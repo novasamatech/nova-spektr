@@ -119,7 +119,7 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.startSigning,
+  clock: removeVoteConfirmModel.confirmed,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -184,15 +184,10 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.startSigning,
-  source: { confirms: removeVoteConfirmModel.$confirmMap },
-  fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    if (!confirms) {
-      return { signingPayloads: [] };
-    }
-
+  clock: removeVoteConfirmModel.confirmed,
+  fn: (confirms): { signingPayloads: SigningPayload[] } => {
     return {
-      signingPayloads: Object.values(confirms).map(({ meta }) => ({
+      signingPayloads: confirms.map((meta) => ({
         account: meta.initiator,
         chain: meta.chain,
         transaction: meta.tx,

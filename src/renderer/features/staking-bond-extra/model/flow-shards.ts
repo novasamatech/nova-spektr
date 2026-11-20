@@ -11,6 +11,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { getNativeAsset, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -236,14 +237,19 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
-    coreTxs: $pureTxs,
+    transactions: $transactions,
   },
-  filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
+  filter: ({ bondData, walletData, transactions }) => {
+    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  },
+  fn: ({ bondData, feeData, walletData, txWrappers, transactions }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
-      event: bondData!.shards.map((shard) => {
+      // One item per shard, each holding the transaction that shard signs and the account signing it.
+      event: transactions!.map(({ wrappedTx, coreTx }, index) => {
+        const shard = bondData!.shards[index]!;
+
         return {
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
@@ -252,9 +258,9 @@ sample({
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
           initiator: shard,
-          signatory: bondData!.signatory!,
-          coreTx: coreTxs[0]!,
-          tx: coreTxs[0]!,
+          signatory: bondData!.signatory ?? wrapper?.proxyAccount ?? shard,
+          coreTx,
+          tx: wrappedTx,
           route: [shard],
           signingPath: [],
         } satisfies BondExtraConfirm;
@@ -269,32 +275,16 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     bondData: $bondExtraData,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
-  },
-  fn: ({ bondData, walletData, transactions, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads:
-          transactions?.map((tx, index) => ({
-            chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index]!,
-            signatory: bondData!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
-      },
-      step: Step.SIGN,
-    };
-  },
+  filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -306,10 +296,10 @@ sample({
   source: {
     bondData: $bondExtraData,
     walletData: $walletData,
-    transactions: $transactions,
+    confirms: confirmModel.$confirmed,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ bondData, walletData, confirms }) => {
+    return Boolean(bondData) && Boolean(walletData) && confirms.length > 0;
   },
   fn: (bondFlowData, signParams) => ({
     event: {
@@ -317,8 +307,8 @@ sample({
       chain: bondFlowData.walletData!.chain,
       account: bondFlowData.bondData!.shards[0]!,
       signatory: bondFlowData.bondData!.signatory,
-      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
+      coreTxs: bondFlowData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: bondFlowData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -336,15 +326,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModelShards.$isMultisig, coreTx: $pureTxs, wrappedTx: $transactions },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModelShards.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx[0]!.chainId,
-      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
-      multisigAccountId: coreTx[0]!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

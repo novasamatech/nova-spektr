@@ -12,6 +12,7 @@ import {
   createRouteSignerStore,
   createTxValidationStore,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -568,7 +569,7 @@ export const createConfirmFlowModel = () => {
   // too: a gate that closed after the click (draft mode, a dropped route, a
   // live ledger with nothing left) must not be bypassable.
   sample({
-    clock: confirmModel.startSigning,
+    clock: confirmModel.confirmed,
     source: $canSign,
     filter: (canSign) => canSign,
     fn: () => Step.SIGN,
@@ -576,17 +577,10 @@ export const createConfirmFlowModel = () => {
   });
 
   const sign = sample({
-    clock: confirmModel.startSigning,
-    source: { confirms: confirmModel.$confirms, canSign: $canSign },
-    filter: ({ canSign }) => canSign,
-    fn: ({ confirms }) => ({
-      signingPayloads: confirms.map((confirm) => ({
-        chain: confirm.meta.chain,
-        account: confirm.meta.initiator,
-        signatory: confirm.meta.signatory,
-        transaction: confirm.meta.tx,
-      })),
-    }),
+    clock: confirmModel.confirmed,
+    source: $canSign,
+    filter: (canSign) => canSign,
+    fn: (_, confirms) => ({ signingPayloads: getSigningPayloads(confirms) }),
   });
 
   sample({

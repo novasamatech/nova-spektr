@@ -1,6 +1,6 @@
 # Vested transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -72,7 +72,7 @@ The flow is **form → confirm → sign → submit**.
 | Weight check failed | Weight RPC rejected                                                 | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds, and clears once the file or network changes  |
 | Preview             | "Preview" clicked                                                   | The schedule table: recipient, locked, start block (with its resolved date), per block, and the cliff column only when some row has one |
 | Confirm             | "Continue" pressed                                                  | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
-| Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                           |
+| Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden and a sign request is refused             |
 | Sign / Submit       | Confirmed                                                           | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |
 
 Changing the network or uploading a new file **discards the parsed CSV and all row errors** — every rule depends on
@@ -104,3 +104,5 @@ signatory is required, and saving the draft redirects to the Operations page.
   message.
 - [`multisig-operations`](../multisig-operations/README.md) — where a vested transfer initiated by a multisig waits for
   its approvals.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

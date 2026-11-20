@@ -1,6 +1,6 @@
 # Nominate
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -57,7 +57,9 @@ be submitted as if they were current.
 2. Opening the picker hands it the chain and asset, the initiator and its wallet, the stash's current targets, and
    whether the session will be signed here or handed over. In draft mode the committed path names the eventual signer.
 3. The picked set comes back, the confirmation is assembled, and the operation can be signed, basketed or saved as a
-   draft.
+   draft. The confirmation holds the nomination of the set picked last — one item per shard in the multishard shape,
+   each with that shard's own transaction and signer. The transaction for a freshly picked set is built a moment after
+   the step opens; the step takes it over as soon as it is ready, and that is what gets signed.
 4. Submitting replaces the whole nomination set — `nominate` is not additive, so whatever is not in the picked set stops
    being backed at the next era.
 
@@ -67,3 +69,5 @@ be submitted as if they were current.
 - [`staking-bond-nominate`](../staking-bond-nominate/README.md) — the same picker when there is no ledger yet.
 - [`signing-path`](../signing-path/README.md) — who can sign and by which route.
 - [`drafts`](../drafts/README.md) — where a saved operation goes.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

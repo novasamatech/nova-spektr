@@ -1,6 +1,6 @@
 # Governance unlock flow
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -71,7 +71,7 @@ flowchart TD
 | Confirm — preparing | The wrapped transaction, the fee or the validation is still in flight   | The figures are already there; fee and deposit sit behind their own loaders and **Sign stays disabled** until all three land                                                                                      |
 | Confirm — multisig  | The route runs through a multisig                                       | An extra multisig-deposit row alongside the fee                                                                                                                                                                   |
 | Confirm — unpayable | The signer cannot cover the fee, or cannot reserve the multisig deposit | The reason is spelled out and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                       |
-| Duplicate pending   | The same call is already a pending multisig operation on this chain     | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                                                                                                     |
+| Duplicate pending   | The same call is already a pending multisig operation on this chain     | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden and a sign request is refused                                                                                       |
 | Sign                | Sign pressed                                                            | The wallet's standard signing screen; going back returns to Confirm with everything intact                                                                                                                        |
 | Submit              | The signature arrived                                                   | The standard submission screen                                                                                                                                                                                    |
 | Released            | The extrinsic landed and the initiator is not a multisig                | Success. Nothing is pushed back to the host — the dashboard's rows update on their own                                                                                                                            |
@@ -130,3 +130,5 @@ approves.
   its network selector. Untouched by this feature; the two do not share state.
 - `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing, submission and
   validation stack.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

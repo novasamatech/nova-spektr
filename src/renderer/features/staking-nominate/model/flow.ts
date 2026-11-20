@@ -5,7 +5,7 @@ import { spread } from 'patronum';
 import { type Chain, type Validator, type Wallet } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { createComplexTxStore } from '@/shared/transactions';
+import { createComplexTxStore, getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount, accounts, multisigOperationService } from '@/domains/network';
 import { nominations, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -229,28 +229,27 @@ sample({
   }),
 });
 
+// The validators are picked right before the confirm step opens, so the step
+// opens on the transaction built for the previous set; it keeps up with the
+// flow's transaction from there (see `follow`).
+confirmModel.follow({
+  clock: $tx,
+  $active: $step.map(nominateUtils.isConfirmStep),
+  $transaction: combine({ tx: $tx, coreTx: $coreTx }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     step: $step,
     nominateForm: $nominateForm,
-    transaction: $tx,
   },
-  filter: ({ step, nominateForm, transaction }) => {
-    return nominateUtils.isConfirmStep(step) && nonNullable(nominateForm) && nonNullable(transaction);
+  filter: ({ step, nominateForm }) => {
+    return nominateUtils.isConfirmStep(step) && nonNullable(nominateForm);
   },
-  fn: ({ nominateForm, transaction }) => {
+  fn: (_, confirms) => {
     return {
-      event: {
-        signingPayloads: [
-          {
-            chain: nominateForm!.chain,
-            account: nominateForm!.initiator,
-            signatory: nominateForm!.signatory,
-            transaction: transaction!,
-          },
-        ],
-      },
+      event: { signingPayloads: getSigningPayloads(confirms) },
       step: Step.SIGN,
     };
   },
@@ -264,28 +263,26 @@ const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     nominateForm: $nominateForm,
-    transaction: $tx,
-    coreTx: $coreTx,
+    confirms: confirmModel.$confirmed,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ coreTx, nominateForm, transaction, signParams }) => {
+}).filterMap(({ confirms, nominateForm, signParams }) => {
   if (
     nonNullable(nominateForm) &&
     nonNullable(nominateForm.initiator) &&
     nonNullable(nominateForm.signatory) &&
-    nonNullable(transaction) &&
-    nonNullable(coreTx)
+    confirms.length > 0
   ) {
     return {
       ...signParams,
       chain: nominateForm.chain,
       account: nominateForm.initiator,
       signatory: nominateForm.signatory,
-      coreTxs: [coreTx],
-      wrappedTxs: [transaction],
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
     };
   }
 });
@@ -312,15 +309,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTx, wrappedTx: $tx },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModel.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

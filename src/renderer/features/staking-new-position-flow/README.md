@@ -1,6 +1,6 @@
 # Staking new position flow (bond + nominate)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -40,7 +40,7 @@ this flow stakes from one account, matching what `staking-amount-flow` and `stak
 | No signer         | The picked account's route ends without a signer                    | A red "No account to sign with" alert, and `Continue` refuses                                                                                                                                               |
 | Validators        | `Continue` on a valid form                                          | The shared validator picker, scoped to this flow's chain and account                                                                                                                                        |
 | Confirm           | A validator set is submitted                                        | Amount, rewards destination, validator count, fee, multisig deposit                                                                                                                                         |
-| Duplicate pending | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" is hidden                                                                                           |
+| Duplicate pending | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" are hidden and a sign request is refused                                                            |
 | Sign              | `Sign` on the confirm                                               | The standard signing step. Its gate is the model's own: pressed while the call is missing, rejected, still being checked, in draft mode or nobody on the route can sign, it moves nothing and signs nothing |
 | Submit            | The signature is in                                                 | The standard submit step                                                                                                                                                                                    |
 | Draft             | Draft mode is on                                                    | `Continue` waits for a complete draft path, an amount and a valid destination; the picker's submit reads "Save as draft" and saves the operation                                                            |
@@ -168,3 +168,5 @@ transaction before it is signed, so a check that fails at this moment must not b
 - `features/staking-dashboard-actions` — the wiring that opens it.
 - `features/validator-selection` — the picker, shared with the Staking page.
 - `features/staking-bond-nominate` — the Staking page's own bond+nominate, still reachable there.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

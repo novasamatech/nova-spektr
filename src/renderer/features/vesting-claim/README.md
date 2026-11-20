@@ -1,6 +1,6 @@
 # Vesting claim
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -91,7 +91,7 @@ row.
 | Not started               | `now < startingBlock` on a schedule that vests gradually                   | "Vesting starts DATE · in 2h 10m". **Not a cliff** — a gradual schedule that has yet to begin. Its "fully unlocks" date is shown as usual, since it is known                                                     |
 | Claim unavailable         | Vested tokens are ready, but no local account signs for them on this chain | A muted reason where "Claim all" would sit ("Your wallet can't sign on this network"); schedules stay visible                                                                                                    |
 | Confirm                   | "Claim all" pressed                                                        | Signing route, "Unlocks now" + "Keeps vesting", network fee (and multisig deposit), then Sign & submit                                                                                                           |
-| Duplicate pending         | The same call is already a pending multisig operation on this chain        | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                                                                                                    |
+| Duplicate pending         | The same call is already a pending multisig operation on this chain        | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden and a sign request is refused                                                                                      |
 | Claim unaffordable        | The signer cannot cover the fee, or cannot reserve the multisig deposit    | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                                                                                    |
 
 ## Lifecycle
@@ -156,3 +156,5 @@ lands, and for changes made from another device. On a failed submit both modals 
 - `dashboard-portfolio-overview` — hosts the callout slot and renders the new "Vested" allocation category.
 - `vested-transfer` — the inverse operation (creating vesting); shares the `vesting` pallet and confirm/sign infra.
 - `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing/submission stack.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
@@ -24,7 +25,6 @@ const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
-const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
@@ -56,20 +56,17 @@ sample({
 sample({
   clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => {
-    const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const coreTxs = transactions.map((tx) => ({
       ...tx.coreTx,
       args: { ...tx.coreTx.args, assetId: formData.asset.assetId },
     }));
 
     return {
-      wrappedTxs,
       coreTxs,
       unlockData: formData,
     };
   },
   target: spread({
-    wrappedTxs: $wrappedTxs,
     coreTxs: $coreTxs,
     unlockData: $unlockData,
   }),
@@ -78,16 +75,19 @@ sample({
 sample({
   clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => ({
-    event: [
-      {
+    // One item per shard, each holding the transaction that shard signs.
+    event: transactions.map(({ wrappedTx, coreTx }, index) => {
+      const shard = formData.shards[index]!;
+
+      return {
         ...formData,
-        initiator: formData.initiator!,
-        signatory: formData.signatory!,
-        coreTx: transactions[0]!.coreTx,
-        route: [formData.initiator!],
-        tx: transactions[0]!.coreTx,
-      } satisfies UnlockConfirm,
-    ],
+        initiator: shard,
+        signatory: formData.signatory ?? shard,
+        coreTx,
+        route: [shard],
+        tx: wrappedTx,
+      } satisfies UnlockConfirm;
+    }),
     step: Step.CONFIRM,
   }),
   target: spread({
@@ -97,24 +97,14 @@ sample({
 });
 
 sample({
-  clock: unlockConfirmModel.startSigning,
+  clock: unlockConfirmModel.confirmed,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    wrappedTxs: $wrappedTxs,
   },
-  filter: ({ unlockData, chain, wrappedTxs }) => {
-    return nonNullable(unlockData) && nonNullable(chain) && nonNullable(wrappedTxs);
-  },
-  fn: ({ unlockData, chain, wrappedTxs }) => ({
-    event: {
-      signingPayloads: wrappedTxs!.map((tx, index) => ({
-        chain: chain!,
-        account: unlockData!.shards[index]!,
-        signatory: unlockData!.signatory,
-        transaction: tx!,
-      })),
-    },
+  filter: ({ unlockData, chain }) => nonNullable(unlockData) && nonNullable(chain),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -128,16 +118,14 @@ sample({
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    coreTxs: $coreTxs,
-    wrappedTxs: $wrappedTxs,
+    confirms: unlockConfirmModel.$confirmed,
     step: $step,
   },
   filter: (unlockData) => {
     return (
       isStep(unlockData.step, Step.SIGN) &&
       !!unlockData.unlockData &&
-      !!unlockData.wrappedTxs &&
-      !!unlockData.coreTxs &&
+      unlockData.confirms.length > 0 &&
       !!unlockData.chain
     );
   },
@@ -148,8 +136,8 @@ sample({
         chain: unlockData.chain!,
         account: unlockData.unlockData!.shards[0]!,
         signatory: unlockData.unlockData!.signatory,
-        coreTxs: unlockData.coreTxs!,
-        wrappedTxs: unlockData.wrappedTxs!,
+        coreTxs: unlockData.confirms.map((confirm) => confirm.coreTx),
+        wrappedTxs: unlockData.confirms.map((confirm) => confirm.tx),
       },
       step: Step.SUBMIT,
     };

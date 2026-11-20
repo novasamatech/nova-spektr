@@ -15,6 +15,7 @@ const confirmStore = createTransactionConfirmStore<MultisigConfirm>({
 export const confirmModel = {
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirmed: confirmStore.$confirmed,
   $confirms: confirmStore.$confirms,
 
   init: confirmStore.init,
@@ -22,6 +23,7 @@ export const confirmModel = {
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,
   startSigning: confirmStore.startSigning,
+  confirmed: confirmStore.confirmed,
 
   submitStarted: submitModel.events.formInitiated,
   submitFinished: submitModel.output.formSubmitted,

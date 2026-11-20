@@ -236,6 +236,12 @@ describe('claimRewardsModel · signing gate', () => {
     const payloads: unknown[] = [];
     createWatch({ unit: signModel.events.formInitiated, scope, fn: (payload) => payloads.push(payload) });
 
+    // Derived stores are created lazily in a fork, and one first touched while
+    // the request is already propagating misses that update. Reading the gate
+    // before the request puts everything behind it in place, as a mounted
+    // confirm screen would.
+    expect(scope.getState(claimRewardsModel.$canSign)).toBe(false);
+
     await allSettled(claimRewardsModel.claimRequested, { scope, params: [request(1, [payout(5)])] });
     expect(scope.getState(claimRewardsModel.$canSign)).toBe(true);
 

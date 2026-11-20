@@ -1,6 +1,6 @@
 # Create Pure Proxy
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-07-07
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -85,3 +85,5 @@ the flow ends with an "added to basket" confirmation.
 - **`multisig-operations`** — hosts the Operations page and the deep link that focuses the pending operation after a
   multisig-initiated creation.
 - **`drafts` / basket** — the deferred-execution targets for draft mode and "Add to basket".
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

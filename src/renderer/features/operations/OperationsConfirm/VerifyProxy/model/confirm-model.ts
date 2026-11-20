@@ -25,10 +25,13 @@ const confirmStore = createTransactionConfirmStore<VerifyProxyConfirm>({
 export const confirmModel = {
   $confirmStore: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirmed: confirmStore.$confirmed,
   $confirms: confirmStore.$confirms,
 
   init: confirmStore.init,
   startSigning: confirmStore.startSigning,
+  confirmed: confirmStore.confirmed,
+  follow: confirmStore.follow,
   addConfirms: confirmStore.addConfirms,
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,

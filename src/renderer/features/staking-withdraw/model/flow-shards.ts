@@ -3,6 +3,7 @@ import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -25,7 +26,6 @@ const $step = restore(stepChanged, Step.NONE);
 const $withdrawData = createStore<WithdrawDataShards | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 
 const $redirectAfterSubmitPath = createStore<string | null>(null).reset(flowStarted);
@@ -57,17 +57,14 @@ sample({
 sample({
   clock: formModelShards.output.formSubmitted,
   fn: ({ transactions, formData }) => {
-    const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const coreTxs = transactions.map((tx) => tx.coreTx);
 
     return {
-      wrappedTxs,
       coreTxs,
       store: formData,
     };
   },
   target: spread({
-    wrappedTxs: $wrappedTxs,
     coreTxs: $coreTxs,
     store: $withdrawData,
   }),
@@ -75,19 +72,22 @@ sample({
 
 sample({
   clock: formModelShards.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs },
-  filter: ({ networkStore }) => nonNullable(networkStore),
-  fn: ({ networkStore, coreTxs }, { formData }) => ({
-    event: formData.shards.map((shard, index) => {
+  source: $networkStore,
+  filter: (networkStore) => nonNullable(networkStore),
+  fn: (networkStore, { formData, transactions }) => ({
+    // One item per shard, each holding the transaction that shard signs.
+    event: transactions.map(({ wrappedTx, coreTx }, index) => {
+      const shard = formData.shards[index]!;
+
       return {
         ...formData,
-        signatory: shard,
+        signatory: formData.signatory ?? shard,
         initiator: shard,
         route: [shard],
-        tx: coreTxs![index]!,
+        tx: wrappedTx,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTxs![index]!,
+        coreTx,
       } satisfies WithdrawConfirm;
     }),
     step: Step.CONFIRM,
@@ -99,24 +99,14 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    wrappedTxs: $wrappedTxs,
   },
-  filter: ({ withdrawData, networkStore, wrappedTxs }) => {
-    return nonNullable(withdrawData) && nonNullable(networkStore) && nonNullable(wrappedTxs);
-  },
-  fn: ({ withdrawData, networkStore, wrappedTxs }) => ({
-    event: {
-      signingPayloads: wrappedTxs!.map((tx, index) => ({
-        chain: networkStore!.chain,
-        account: withdrawData!.shards[index]!,
-        signatory: withdrawData!.signatory,
-        transaction: tx!,
-      })),
-    },
+  filter: ({ withdrawData, networkStore }) => nonNullable(withdrawData) && nonNullable(networkStore),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -130,14 +120,12 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    coreTxs: $coreTxs,
-    wrappedTxs: $wrappedTxs,
+    confirms: confirmModel.$confirmed,
   },
   filter: (withdrawData) => {
     return (
       nonNullable(withdrawData.withdrawData) &&
-      nonNullable(withdrawData.wrappedTxs) &&
-      nonNullable(withdrawData.coreTxs) &&
+      withdrawData.confirms.length > 0 &&
       nonNullable(withdrawData.networkStore)
     );
   },
@@ -147,8 +135,8 @@ sample({
       chain: withdrawData.networkStore!.chain,
       account: withdrawData.withdrawData!.shards[0]!,
       signatory: withdrawData.withdrawData!.signatory,
-      coreTxs: withdrawData.coreTxs!,
-      wrappedTxs: withdrawData.wrappedTxs!,
+      coreTxs: withdrawData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: withdrawData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -166,15 +154,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModelShards.$isMultisig, coreTx: $coreTxs, wrappedTx: $wrappedTxs },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModelShards.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx![0]!.chainId,
-      callHash: wrappedTx![0]!.args.callHash,
-      multisigAccountId: coreTx![0]!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

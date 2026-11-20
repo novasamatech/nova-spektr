@@ -1,6 +1,6 @@
 # Multi-transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -60,7 +60,7 @@ The flow is **form → confirm → sign → submit**.
 | Too heavy           | File doesn't fit into one extrinsic                                 | Inline error naming how many rows fit (or that not even one does); blocks submit and saving a draft                                    |
 | Weight check failed | Weight RPC rejected                                                 | Inline error with a Retry action; blocks submit and saving a draft until a retry succeeds, and clears once the file or network changes |
 | Confirm             | "Continue" pressed                                                  | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data                                                      |
-| Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                          |
+| Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden and a sign request is refused            |
 | Sign / Submit       | Confirmed                                                           | Standard sign and submit screens                                                                                                       |
 
 **Draft mode** turns the form into "compose a draft" instead of "sign now": no signatory is required, the transaction is
@@ -75,3 +75,5 @@ step** — a signature produced by a different operation never pushes multi-tran
 - `features/signing-path` — resolves the multisig/proxy route between initiator and signatory.
 - `features/drafts` — the draft-mode binding and the Operations-page redirect.
 - `features/assets-balances` — recipient and signatory balance subscriptions the validation builds on.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

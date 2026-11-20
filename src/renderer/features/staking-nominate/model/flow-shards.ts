@@ -11,6 +11,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { nominations, validatorsService } from '@/domains/staking';
 import { networkModel } from '@/entities/network';
@@ -297,33 +298,51 @@ sample({
   }),
 });
 
+// The validators are picked right before the confirm step opens, and the
+// transactions for them are built a moment later: the open step is filled
+// again whenever they (or their fee) change, so it never keeps transactions
+// built for the previous set.
+const confirmOutdated = sample({
+  clock: [$pureTxs, $txWrappers, $feeData],
+  source: $step,
+  filter: nominateUtils.isConfirmStep,
+});
+
 sample({
-  clock: validatorSelectionModel.output.formSubmitted,
+  clock: [validatorSelectionModel.output.formSubmitted, confirmOutdated],
   source: {
     nominateData: $nominateData,
     feeData: $feeData,
     walletData: $walletData,
-    coreTxs: $pureTxs,
+    txWrappers: $txWrappers,
+    transactions: $transactions,
     api: $api,
   },
-  filter: ({ nominateData, walletData }) =>
-    nonNullable(nominateData) && nonNullable(walletData) && nonNullable(walletData),
-  fn: ({ nominateData, feeData, walletData, coreTxs, api }) => {
-    return {
-      event: walletData?.shards.map((shard, index) => ({
-        chain: walletData!.chain,
-        asset: getRelaychainAsset(walletData!.chain.assets)!,
-        ...nominateData!,
-        ...feeData,
-        coreTx: coreTxs[index]!,
+  filter: ({ nominateData, walletData, transactions }) =>
+    nonNullable(nominateData) && nonNullable(walletData) && nonNullable(transactions),
+  fn: ({ nominateData, feeData, walletData, txWrappers, transactions, api }) => {
+    const proxyWrapper = txWrappers.find((wrapper): wrapper is ProxyTxWrapper => wrapper.kind === WrapperKind.PROXY);
 
-        api: api!,
-        initiator: shard,
-        signatory: shard,
-        route: [shard],
-        signingPath: [],
-        tx: coreTxs[index]!,
-      })),
+    return {
+      // One item per shard, each holding the transaction that shard signs and the account signing it.
+      event: transactions!.map(({ wrappedTx, coreTx }, index) => {
+        const shard = nominateData!.shards[index]!;
+
+        return {
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
+          ...nominateData!,
+          ...feeData,
+          coreTx,
+
+          api: api!,
+          initiator: shard,
+          signatory: nominateData!.signatory ?? proxyWrapper?.proxyAccount ?? shard,
+          route: [shard],
+          signingPath: [],
+          tx: wrappedTx,
+        };
+      }),
       step: Step.CONFIRM,
     };
   },
@@ -334,32 +353,19 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     step: $step,
     nominateData: $nominateData,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
   },
-  filter: ({ step, nominateData, walletData, transactions }) => {
-    return nominateUtils.isConfirmStep(step) && Boolean(nominateData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ step, nominateData, walletData }) => {
+    return nominateUtils.isConfirmStep(step) && Boolean(nominateData) && Boolean(walletData);
   },
-  fn: ({ nominateData, walletData, transactions, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads: transactions!.map((tx, index) => ({
-          chain: walletData!.chain,
-          account: wrapper ? wrapper.proxyAccount : nominateData!.shards[index]!,
-          signatory: nominateData!.signatory,
-          transaction: tx.wrappedTx,
-        })),
-      },
-      step: Step.SIGN,
-    };
-  },
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -371,10 +377,10 @@ sample({
   source: {
     nominateData: $nominateData,
     walletData: $walletData,
-    transactions: $transactions,
+    confirms: confirmModel.$confirmed,
   },
-  filter: ({ nominateData, walletData, transactions }) => {
-    return Boolean(nominateData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ nominateData, walletData, confirms }) => {
+    return Boolean(nominateData) && Boolean(walletData) && confirms.length > 0;
   },
   fn: (nominateFlowData, signParams) => ({
     event: {
@@ -382,8 +388,8 @@ sample({
       chain: nominateFlowData.walletData!.chain,
       account: nominateFlowData.nominateData!.shards[0]!,
       signatory: nominateFlowData.nominateData!.signatory,
-      coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
+      coreTxs: nominateFlowData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: nominateFlowData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -401,15 +407,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModelShards.$isMultisig, coreTx: $pureTxs, wrappedTx: $transactions },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModelShards.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx[0]!.chainId,
-      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
-      multisigAccountId: coreTx[0]!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

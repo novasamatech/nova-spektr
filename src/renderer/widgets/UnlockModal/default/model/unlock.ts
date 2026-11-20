@@ -3,6 +3,7 @@ import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
@@ -100,24 +101,29 @@ sample({
   }),
 });
 
+// The open confirm step keeps up with the form's transaction (see `follow`).
+unlockConfirmModel.follow({
+  clock: unlockFormAggregate.$tx,
+  $active: $step.map((step) => isStep(step, Step.CONFIRM)),
+  $transaction: combine({
+    tx: unlockFormAggregate.$tx,
+    coreTx: unlockFormAggregate.$coreTx,
+    route: unlockFormAggregate.$route,
+    signingPath: unlockFormAggregate.$signingPath,
+  }),
+});
+
 const startSigning = sample({
-  clock: unlockConfirmModel.startSigning,
+  clock: unlockConfirmModel.confirmed,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    tx: unlockFormAggregate.$tx,
   },
-}).filterMap(({ unlockData, chain, tx }) => {
-  if (nonNullable(unlockData) && nonNullable(chain) && nonNullable(tx)) {
+  fn: (source, confirms) => ({ ...source, confirms }),
+}).filterMap(({ unlockData, chain, confirms }) => {
+  if (nonNullable(unlockData) && nonNullable(chain)) {
     return {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: unlockData!.initiator!,
-          signatory: unlockData!.signatory,
-          transaction: tx!,
-        },
-      ],
+      signingPayloads: getSigningPayloads(confirms),
     };
   }
 });
@@ -141,8 +147,7 @@ const signFormSubmitted = sample({
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    coreTx: unlockFormAggregate.$coreTx,
-    tx: unlockFormAggregate.$tx,
+    confirms: unlockConfirmModel.$confirmed,
     step: $step,
   },
   fn: (source, signParams) => ({ source, signParams }),
@@ -151,8 +156,7 @@ const signFormSubmitted = sample({
     isStep(source.step, Step.SIGN) &&
     nonNullable(source.unlockData?.initiator) &&
     nonNullable(source.unlockData?.signatory) &&
-    nonNullable(source.tx) &&
-    nonNullable(source.coreTx) &&
+    source.confirms.length > 0 &&
     nonNullable(source.chain)
   ) {
     return {
@@ -160,8 +164,8 @@ const signFormSubmitted = sample({
       chain: source.chain,
       account: source.unlockData.initiator,
       signatory: source.unlockData.signatory,
-      coreTxs: [source.coreTx],
-      wrappedTxs: [source.tx],
+      coreTxs: source.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: source.confirms.map((confirm) => confirm.tx),
     };
   }
 });
@@ -213,17 +217,18 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     isMultisig: unlockFormAggregate.$isMultisig,
-    coreTx: unlockFormAggregate.$coreTx,
-    wrappedTx: unlockFormAggregate.$tx,
+    confirms: unlockConfirmModel.$confirmed,
   },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

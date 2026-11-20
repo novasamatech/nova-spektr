@@ -1,6 +1,6 @@
 # Bond & Nominate
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -61,7 +61,10 @@ modal at any point abandons the whole operation rather than half of it.
 3. The picked set comes back and the confirmation is assembled. From here the operation can be signed, dropped into the
    basket, or saved as a draft.
 4. In the multishard shape every shard is bonded with the same amount and the same validators, and each produces its own
-   transaction; the fee shown is the network's quote multiplied by the number of shards.
+   transaction; the fee shown is the network's quote multiplied by the number of shards. The confirmation lists every
+   shard and holds each shard's own transaction and signer.
+5. The transaction for a freshly picked set is built a moment after the confirmation opens; the confirmation takes it
+   over as soon as it is ready, and that is what gets signed.
 
 ## Related
 
@@ -71,3 +74,5 @@ modal at any point abandons the whole operation rather than half of it.
   a path is stopped there, not here.
 - [`drafts`](../drafts/README.md) — where a saved operation goes when it will be signed by someone else.
 - [`staking-nominate`](../staking-nominate/README.md) — the same picker over an already-bonded stash.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

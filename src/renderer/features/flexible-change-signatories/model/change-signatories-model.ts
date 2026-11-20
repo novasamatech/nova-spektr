@@ -16,6 +16,7 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accountSync, accounts, multisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -658,27 +659,17 @@ sample({
   target: stepChanged,
 });
 
+// The open confirm step keeps up with the flow's transaction (see `follow`).
+confirmModel.follow({
+  clock: $tx,
+  $active: $step.map((step) => step === Step.CONFIRM),
+  $transaction: combine({ tx: $tx, coreTx: $coreTx, route: $route }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
-  source: {
-    chain: $chain,
-    tx: $tx,
-    initiator: $flexibleMultisigAccount,
-    signer: $signatory,
-  },
-  filter: ({ chain, tx, initiator, signer }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signer),
-  fn: ({ chain, tx, initiator, signer }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: initiator!,
-          transaction: tx!,
-          signatory: signer,
-        },
-      ],
-    },
+  clock: confirmModel.confirmed,
+  fn: (confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({

@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 import { type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -119,27 +120,29 @@ sample({
   }),
 });
 
+// The open confirm step keeps up with the form's transaction (see `follow`).
+// The form hands its wrapped transaction over as this flow's `coreTx` too, so
+// both slots follow the same store.
+confirmModel.follow({
+  clock: formModel.$tx,
+  $active: $step.map((step) => step === Step.CONFIRM),
+  $transaction: combine({
+    tx: formModel.$tx,
+    coreTx: formModel.$tx,
+    route: formModel.$route,
+    signingPath: formModel.$signingPath,
+  }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
-    transaction: formModel.$tx,
   },
-  filter: ({ unstakeStore, networkStore, transaction }) => {
-    return nonNullable(unstakeStore) && nonNullable(networkStore) && nonNullable(transaction);
-  },
-  fn: ({ unstakeStore, networkStore, transaction }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: networkStore!.chain,
-          account: unstakeStore!.initiator,
-          signatory: unstakeStore!.signatory,
-          transaction: transaction!,
-        },
-      ],
-    },
+  filter: ({ unstakeStore, networkStore }) => nonNullable(unstakeStore) && nonNullable(networkStore),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -153,22 +156,21 @@ const signSubmitted = sample({
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
-    coreTx: $coreTx,
-    tx: formModel.$tx,
+    confirms: confirmModel.$confirmed,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ unstakeStore, coreTx, networkStore, tx, signParams }) => {
-  if (nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(tx) && nonNullable(networkStore)) {
+}).filterMap(({ unstakeStore, confirms, networkStore, signParams }) => {
+  if (nonNullable(unstakeStore) && confirms.length > 0 && nonNullable(networkStore)) {
     return {
       ...signParams,
       chain: networkStore.chain,
       account: unstakeStore.initiator,
       signatory: unstakeStore.signatory,
-      wrappedTxs: [tx],
-      coreTxs: [coreTx],
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
     };
   }
 });
@@ -195,15 +197,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTx, wrappedTx: formModel.$tx },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModel.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

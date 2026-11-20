@@ -1,6 +1,6 @@
 # Proxy verification
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -66,3 +66,5 @@ The on-chain remark is a JSON service payload that lets the app match the execut
 - The executed-side check is deliberately lenient: any executed multisig op via the (delegate, pure) pair proves
   authority, marker or not. The strict marker check applies only to pending ops, so incidental pending operations don't
   hide the Verify button.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

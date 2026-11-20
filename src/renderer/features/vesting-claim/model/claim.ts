@@ -9,6 +9,7 @@ import {
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -204,7 +205,7 @@ sample({
 // too: a gate that closed after the click (a re-priced route, a validation
 // that turned) must not be bypassable.
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: $canSign,
   filter: (canSign) => canSign,
   fn: () => Step.SIGN,
@@ -214,17 +215,10 @@ sample({
 const $confirms = confirmModel.$confirms;
 
 const sign = sample({
-  clock: confirmModel.startSigning,
-  source: { confirms: $confirms, canSign: $canSign },
-  filter: ({ canSign }) => canSign,
-  fn: ({ confirms }) => ({
-    signingPayloads: confirms.map((confirm) => ({
-      chain: confirm.meta.chain,
-      account: confirm.meta.initiator,
-      signatory: confirm.meta.signatory,
-      transaction: confirm.meta.tx,
-    })),
-  }),
+  clock: confirmModel.confirmed,
+  source: $canSign,
+  filter: (canSign) => canSign,
+  fn: (_, confirms) => ({ signingPayloads: getSigningPayloads(confirms) }),
 });
 
 sample({

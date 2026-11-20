@@ -20,10 +20,12 @@ export const createFlowConfirmModel = <Input extends TxConfirmInfo>() => {
   return {
     $confirmStore: confirmStore.$confirmMap,
     $isMultisigExists: confirmStore.$isMultisigExists,
+    $confirmed: confirmStore.$confirmed,
     $confirms: confirmStore.$confirms,
 
     init: confirmStore.init,
     startSigning: confirmStore.startSigning,
+    confirmed: confirmStore.confirmed,
     resetConfirm: confirmStore.resetConfirm,
   };
 };

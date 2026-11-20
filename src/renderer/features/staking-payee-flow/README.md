@@ -1,6 +1,6 @@
 # Staking payee flow (change reward destination)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -115,3 +115,5 @@ only when the initiator's own wallet is one the basket can sign with, never in d
 - `staking-payee` — the Staking page's own form, untouched.
 - `drafts`, `signing-path`, `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the shared
   signing and submission stack; `recipient-verification` — the unknown-address verdict.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

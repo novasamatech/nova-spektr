@@ -83,7 +83,7 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.startSigning,
+  clock: voteConfirmModel.confirmed,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -213,17 +213,10 @@ sample({
 // Data bindings
 
 sample({
-  clock: voteConfirmModel.startSigning,
-  source: {
-    confirms: voteConfirmModel.$confirmMap,
-  },
-  fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    if (!confirms) {
-      return { signingPayloads: [] };
-    }
-
+  clock: voteConfirmModel.confirmed,
+  fn: (confirms): { signingPayloads: SigningPayload[] } => {
     return {
-      signingPayloads: Object.values(confirms).map(({ meta }) => ({
+      signingPayloads: confirms.map((meta) => ({
         account: meta.initiator,
         chain: meta.chain,
         transaction: meta.tx,
@@ -236,11 +229,10 @@ sample({
 
 sample({
   clock: signModel.output.formSubmitted,
-  source: voteConfirmModel.$confirmMap,
-  filter: (stores) => nonNullable(stores[0]),
-  fn: (stores, signParams) => {
-    const store = stores[0]!;
-    const { meta } = store;
+  source: voteConfirmModel.$confirmed,
+  filter: (confirms) => nonNullable(confirms[0]),
+  fn: (confirms, signParams) => {
+    const meta = confirms[0]!;
 
     return {
       signatures: signParams.signatures,

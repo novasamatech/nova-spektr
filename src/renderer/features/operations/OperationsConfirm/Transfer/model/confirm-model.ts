@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { combine, createEvent, sample } from 'effector';
+import { combine } from 'effector';
 
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
@@ -32,14 +32,12 @@ export type TransferConfirmStore = TxConfirmInfo & {
   balancePreservation: BalancePreservation;
 };
 
-const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =
+const { $confirmMap, $confirms, $confirmed, $isMultisigExists, init, startSigning, confirmed } =
   createTransactionConfirmStore<TransferConfirmStore>({
     $apis: networkModel.$apis,
     $wallets: walletModel.$wallets,
     $multisigTransactions: selectedWalletMultisigOperations.$list,
   });
-
-const confirmed = createEvent();
 
 const $currentConfirm = $confirmMap.map((store) => store?.[0]?.meta ?? null);
 
@@ -111,14 +109,10 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
   },
 });
 
-sample({
-  clock: startSigning,
-  target: confirmed,
-});
-
 export const confirmModel = {
   $confirmMap,
   $confirms,
+  $confirmed,
   $isMultisigExists,
   $validationErrors,
   $canSubmit,

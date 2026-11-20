@@ -1,6 +1,6 @@
 # Staking claim rewards
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -77,17 +77,17 @@ the first transaction, so a session abandoned halfway still claimed the ones wit
 
 ## States / scenarios
 
-| State                  | When it appears                                                       | What the user sees                                                                                                |
-| ---------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Confirm                | `claimRequested` with at least one claimable payout                   | Total amount + fiat, signing route, "Covering N validators across M eras", network fee, then Sign                 |
-| Batched claim          | More than one transaction is needed                                   | A "Transactions" row with the count, and a hint explaining the claim is split and signed in turn                  |
-| Multisig               | A multisig sits on the route                                          | The multisig deposit row alongside the fee                                                                        |
-| Other networks skipped | The request spanned more than one chain                               | A warning that rewards on the other network(s) were left out and must be claimed from there                       |
-| Unaffordable           | The signer cannot cover the fee, or cannot reserve the deposit        | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                     |
-| No signer on the route | The chosen payer's route ends without anyone able to sign             | A red "No account to sign with" alert, and **Sign is blocked**. Switching the payer clears it                     |
-| Draft mode             | The claim is exactly one transaction, and the address book is healthy | The standard draft toggle, an address-book signing-path picker, and "Save as draft" instead of Sign               |
-| Duplicate pending      | The same call is already a pending multisig operation on this chain   | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" is hidden |
-| Sign / Submit          | Sign pressed                                                          | The shared `OperationSign` / `OperationSubmit` screens                                                            |
+| State                  | When it appears                                                       | What the user sees                                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Confirm                | `claimRequested` with at least one claimable payout                   | Total amount + fiat, signing route, "Covering N validators across M eras", network fee, then Sign                                                |
+| Batched claim          | More than one transaction is needed                                   | A "Transactions" row with the count, and a hint explaining the claim is split and signed in turn                                                 |
+| Multisig               | A multisig sits on the route                                          | The multisig deposit row alongside the fee                                                                                                       |
+| Other networks skipped | The request spanned more than one chain                               | A warning that rewards on the other network(s) were left out and must be claimed from there                                                      |
+| Unaffordable           | The signer cannot cover the fee, or cannot reserve the deposit        | The confirm explains which, and **Sign is blocked**. Switching the signing route re-checks it                                                    |
+| No signer on the route | The chosen payer's route ends without anyone able to sign             | A red "No account to sign with" alert, and **Sign is blocked**. Switching the payer clears it                                                    |
+| Draft mode             | The claim is exactly one transaction, and the address book is healthy | The standard draft toggle, an address-book signing-path picker, and "Save as draft" instead of Sign                                              |
+| Duplicate pending      | The same call is already a pending multisig operation on this chain   | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" are hidden and a sign request is refused |
+| Sign / Submit          | Sign pressed                                                          | The shared `OperationSign` / `OperationSubmit` screens                                                                                           |
 
 **The confirm opens on the click, not on the data.** Everything it leads with — the amount, the accounts, the chain,
 what is being covered — is in hand the moment the button is pressed. The wrapped transaction, the fee and the validation
@@ -233,6 +233,8 @@ proxy call permission are all built into the base validator.
 - `features/drafts` — `createDraftModeBinding`, the draft signing-path picker and the create-draft modal.
 - `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the reused signing/submission stack.
 - `dashboard-staking-kpi`, `dashboard-staking-positions` — where `claimRequested` originates.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.
 
 ## Deviations
 

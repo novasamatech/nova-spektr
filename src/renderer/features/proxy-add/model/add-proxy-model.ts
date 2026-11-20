@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { accountSync, multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -29,7 +30,6 @@ const txSaved = createEvent();
 const $step = restore(stepChanged, Step.NONE);
 
 const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
-const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<string | null>(null).reset(formModel.flowStarted);
 const $chain = $addProxyStore.map((store) => store?.chain ?? null);
@@ -62,12 +62,10 @@ sample({
 sample({
   clock: formModel.formSubmitted,
   fn: ({ transactions, formData }) => ({
-    wrappedTx: transactions.wrappedTx,
     coreTx: transactions.coreTx,
     store: formData,
   }),
   target: spread({
-    wrappedTx: $wrappedTx,
     coreTx: $coreTx,
     store: $addProxyStore,
   }),
@@ -116,23 +114,11 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
-  source: {
-    addProxyStore: $addProxyStore,
-    wrappedTx: $wrappedTx,
-  },
-  filter: ({ addProxyStore, wrappedTx }) => nonNullable(addProxyStore) && nonNullable(wrappedTx),
-  fn: ({ addProxyStore, wrappedTx }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: addProxyStore!.chain!,
-          account: addProxyStore!.initiator!,
-          signatory: addProxyStore!.signatory,
-          transaction: wrappedTx!,
-        },
-      ],
-    },
+  clock: confirmModel.confirmed,
+  source: $addProxyStore,
+  filter: (addProxyStore) => nonNullable(addProxyStore),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -145,20 +131,17 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     addProxyStore: $addProxyStore,
-    coreTx: $coreTx,
-    wrappedTx: $wrappedTx,
+    confirms: confirmModel.$confirmed,
   },
-  filter: (proxyData) => {
-    return nonNullable(proxyData.addProxyStore) && nonNullable(proxyData.wrappedTx) && nonNullable(proxyData.coreTx);
-  },
+  filter: (proxyData) => nonNullable(proxyData.addProxyStore) && proxyData.confirms.length > 0,
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
       chain: proxyData.addProxyStore!.chain!,
       account: proxyData.addProxyStore!.initiator!,
       signatory: proxyData.addProxyStore!.signatory,
-      coreTxs: [proxyData.coreTx!],
-      wrappedTxs: [proxyData.wrappedTx!],
+      coreTxs: proxyData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: proxyData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -182,15 +165,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTx, wrappedTx: $wrappedTx },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModel.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

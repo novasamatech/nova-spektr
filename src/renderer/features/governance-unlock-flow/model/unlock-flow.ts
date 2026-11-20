@@ -9,6 +9,7 @@ import {
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { accounts, multisigOperationService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -247,27 +248,18 @@ sample({
 // too: a gate that closed after the click (a re-priced route, a validation
 // that turned) must not be bypassable.
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: $canSign,
   filter: (canSign) => canSign,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
 
-const $confirms = confirmModel.$confirms;
-
 const sign = sample({
-  clock: confirmModel.startSigning,
-  source: { confirms: $confirms, canSign: $canSign },
-  filter: ({ canSign }) => canSign,
-  fn: ({ confirms }) => ({
-    signingPayloads: confirms.map((confirm) => ({
-      chain: confirm.meta.chain,
-      account: confirm.meta.initiator,
-      signatory: confirm.meta.signatory,
-      transaction: confirm.meta.tx,
-    })),
-  }),
+  clock: confirmModel.confirmed,
+  source: $canSign,
+  filter: (canSign) => canSign,
+  fn: (_, confirms) => ({ signingPayloads: getSigningPayloads(confirms) }),
 });
 
 sample({
@@ -307,29 +299,27 @@ const findSuccessResult = (results: (SuccessResult | ErrorResult)[]) =>
   results.find((result): result is SuccessResult => result.result === ExtrinsicResult.SUCCESS) ?? null;
 
 /**
- * What the multisig redirect link is built from.
+ * What the multisig redirect link is built from: the transaction that was
+ * handed to signing, not whatever the flow would build now.
  *
  * The multisig isn't necessarily the initiator — a proxied initiator's proxy
- * can itself be a multisig, in which case the multisig sits deeper in `$route`
- * and `$coreTx.accountId` is the proxied account, not the multisig. The
- * multisig account is therefore found in the route rather than assumed to be
- * the initiator, mirroring `remove-proxy-model.ts`'s `submitModel.done`
- * handling.
+ * can itself be a multisig, in which case the multisig sits deeper in the route
+ * and `coreTx.accountId` is the proxied account, not the multisig. The multisig
+ * account is therefore found in the route rather than assumed to be the
+ * initiator, mirroring `remove-proxy-model.ts`'s `submitModel.done` handling.
  */
-const $multisigLinkParams = combine(
-  { route: $route, coreTx: $coreTx, wrappedTx: $tx },
-  ({ route, coreTx, wrappedTx }) => {
-    const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+const $multisigLinkParams = confirmModel.$confirmed.map((confirms) => {
+  const meta = confirms.at(0);
+  const multisigAccount = meta?.route.find(accountUtils.isAnyMultisigAccount);
 
-    if (!multisigAccount || !coreTx || !wrappedTx) return null;
+  if (!meta || !multisigAccount) return null;
 
-    return {
-      chainId: coreTx.chainId,
-      callHash: wrappedTx.args.callHash,
-      multisigAccountId: multisigService.getMultisigAccountId(multisigAccount),
-    };
-  },
-);
+  return {
+    chainId: meta.coreTx.chainId,
+    callHash: meta.tx.args.callHash,
+    multisigAccountId: multisigService.getMultisigAccountId(multisigAccount),
+  };
+});
 
 sample({
   clock: submitModel.done,

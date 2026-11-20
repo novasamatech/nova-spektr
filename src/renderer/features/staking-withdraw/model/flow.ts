@@ -3,6 +3,7 @@ import { spread } from 'patronum';
 
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -93,32 +94,29 @@ sample({
   }),
 });
 
+// The open confirm step keeps up with the form's transaction (see `follow`).
+confirmModel.follow({
+  clock: formModel.$tx,
+  $active: $step.map((step) => step === Step.CONFIRM),
+  $transaction: combine({
+    tx: formModel.$tx,
+    coreTx: formModel.$coreTx,
+    route: formModel.$route,
+    signingPath: formModel.$signingPath,
+  }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    wrappedTx: formModel.$tx,
   },
-  filter: ({ withdrawData, networkStore, wrappedTx }) => {
-    return (
-      nonNullable(withdrawData) &&
-      nonNullable(networkStore) &&
-      nonNullable(wrappedTx) &&
-      nonNullable(withdrawData?.initiator)
-    );
+  filter: ({ withdrawData, networkStore }) => {
+    return nonNullable(withdrawData) && nonNullable(networkStore) && nonNullable(withdrawData?.initiator);
   },
-  fn: ({ withdrawData, networkStore, wrappedTx }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: networkStore!.chain,
-          account: withdrawData!.initiator!,
-          signatory: withdrawData!.signatory,
-          transaction: wrappedTx!,
-        },
-      ],
-    },
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -132,27 +130,25 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    coreTx: formModel.$coreTx,
-    wrappedTx: formModel.$tx,
+    confirms: confirmModel.$confirmed,
   },
-  filter: ({ withdrawData, networkStore, wrappedTx, coreTx }) => {
+  filter: ({ withdrawData, networkStore, confirms }) => {
     return (
       nonNullable(withdrawData) &&
-      nonNullable(wrappedTx) &&
-      nonNullable(coreTx) &&
+      confirms.length > 0 &&
       nonNullable(networkStore) &&
       nonNullable(withdrawData?.initiator) &&
       nonNullable(withdrawData?.signatory)
     );
   },
-  fn: ({ withdrawData, networkStore, coreTx, wrappedTx }, signParams) => ({
+  fn: ({ withdrawData, networkStore, confirms }, signParams) => ({
     event: {
       ...signParams,
       chain: networkStore!.chain,
       account: withdrawData!.initiator!,
       signatory: withdrawData!.signatory,
-      coreTxs: [coreTx!],
-      wrappedTxs: [wrappedTx!],
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -170,15 +166,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModel.$isMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModel.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

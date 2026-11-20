@@ -24,12 +24,15 @@ const confirmStore = createTransactionConfirmStore<WithdrawConfirm>({
 export const confirmModel = {
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirmed: confirmStore.$confirmed,
 
   init: confirmStore.init,
   addConfirms: confirmStore.addConfirms,
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,
   startSigning: confirmStore.startSigning,
+  confirmed: confirmStore.confirmed,
+  follow: confirmStore.follow,
 
   submitStarted: submitModel.events.formInitiated,
   submitFinished: submitModel.output.formSubmitted,
