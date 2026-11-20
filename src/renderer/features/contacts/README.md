@@ -1,6 +1,6 @@
 # Contacts
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-04
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -18,11 +18,14 @@ the list, and connecting to an external (backend) address book whose contacts ar
 
 ## Name normalisation
 
-Contact names are normalised before they are saved, compared or imported: invisible formatting characters are removed
-(zero-width joiners that shape Persian/Indic text and emoji sequences are kept), control and line/paragraph separator
-characters are replaced with spaces, surrounding whitespace is trimmed, and the text is normalised to a single Unicode
-form. A name that is empty after normalisation is rejected. Uniqueness checks compare normalised names, so two names
-that look the same are treated as the same name.
+Contact names are normalised before they are saved, compared or imported: every Unicode format or default-ignorable
+character is removed (zero-width spaces, direction marks and overrides, tag characters, fillers, variation selectors and
+the like), control and line/paragraph separator characters are replaced with spaces, surrounding whitespace is trimmed,
+and the text is normalised to a single Unicode form. Three kinds of such characters stay because removing them changes
+how the name reads: zero-width joiners that shape Persian/Indic text and emoji sequences, the presentation selector
+directly after an emoji (including keycaps), and the variation selector directly after a CJK ideograph. An emoji flag
+built from tag characters is reduced to its base flag. A name that is empty after normalisation is rejected. Uniqueness
+checks compare normalised names, so two names that look the same are treated as the same name.
 
 ## Related
 

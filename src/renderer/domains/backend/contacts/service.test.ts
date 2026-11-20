@@ -357,6 +357,16 @@ describe('backendContactsService.fetchAllContacts display names', () => {
     expect(contact!.name).toBe('José');
   });
 
+  it('removes an Arabic letter mark and tag characters from a name', async () => {
+    authFetchMock.mockResolvedValueOnce(
+      jsonResponse({ data: [rawContact({ name: 'Ali\u061Cce\u{E0041}' })], total: 1 }),
+    );
+
+    const [contact] = await backendContactsService.fetchAllContacts('https://backend.test');
+
+    expect(contact!.name).toBe('Alice');
+  });
+
   it('SP-30: a name wrapped in an RTL override and a zero-width space resolves and searches as the clean name', async () => {
     authFetchMock.mockResolvedValueOnce(jsonResponse({ data: [rawContact({ name: '\u202EAlice\u200B' })], total: 1 }));
 
