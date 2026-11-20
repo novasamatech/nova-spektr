@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -156,22 +157,10 @@ sample({
   source: {
     transferStore: $transferStore,
     networkStore: formModel.$networkStore,
-    wrappedTx: $tx,
   },
-  filter: ({ transferStore, networkStore, wrappedTx }) => {
-    return Boolean(transferStore) && Boolean(networkStore) && Boolean(wrappedTx);
-  },
-  fn: ({ transferStore, networkStore, wrappedTx }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: networkStore!.chain,
-          account: transferStore!.initiator,
-          signatory: transferStore!.signatory,
-          transaction: wrappedTx!,
-        },
-      ],
-    },
+  filter: ({ transferStore, networkStore }) => Boolean(transferStore) && Boolean(networkStore),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -210,15 +199,16 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: { coreTx: $coreTx, wrappedTx: $tx, multisigAccount: formModel.$multisigAccount },
-  filter: ({ multisigAccount }, results) =>
-    nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx, multisigAccount }, results) => {
+  source: { confirms: transferConfirmModel.$confirmed, multisigAccount: formModel.$multisigAccount },
+  filter: ({ confirms, multisigAccount }, results) =>
+    confirms.length > 0 && nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms, multisigAccount }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
       multisigAccountId: multisigService.getMultisigAccountId(multisigAccount!),
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,

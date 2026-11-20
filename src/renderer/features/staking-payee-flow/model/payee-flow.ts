@@ -10,6 +10,7 @@ import {
   createRouteSignerStore,
   createTxValidationStore,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -462,7 +463,7 @@ export const createPayeeFlowModel = () => {
   // The button is disabled while `$canSign` is false, and the model refuses
   // too: the acknowledgement must not be bypassable by a stale click.
   sample({
-    clock: confirmModel.startSigning,
+    clock: confirmModel.confirmed,
     source: $canSign,
     filter: (canSign) => canSign,
     fn: () => Step.SIGN,
@@ -470,17 +471,10 @@ export const createPayeeFlowModel = () => {
   });
 
   const sign = sample({
-    clock: confirmModel.startSigning,
-    source: { confirms: confirmModel.$confirms, canSign: $canSign },
-    filter: ({ canSign }) => canSign,
-    fn: ({ confirms }) => ({
-      signingPayloads: confirms.map((confirm) => ({
-        chain: confirm.meta.chain,
-        account: confirm.meta.initiator,
-        signatory: confirm.meta.signatory,
-        transaction: confirm.meta.tx,
-      })),
-    }),
+    clock: confirmModel.confirmed,
+    source: $canSign,
+    filter: (canSign) => canSign,
+    fn: (_, confirms) => ({ signingPayloads: getSigningPayloads(confirms) }),
   });
 
   sample({

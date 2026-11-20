@@ -13,6 +13,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { getRelaychainAsset, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -267,23 +268,30 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
-    coreTxs: $pureTxs,
+    transactions: $transactions,
   },
-  filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, coreTxs }) => {
+  filter: ({ payeeData, walletData, transactions }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
+  },
+  fn: ({ payeeData, feeData, walletData, txWrappers, transactions }) => {
+    const proxyWrapper = txWrappers.find((wrapper): wrapper is ProxyTxWrapper => wrapper.kind === WrapperKind.PROXY);
+
     return {
-      event: payeeData!.shards.map((shard, index) => {
+      // One item per shard, each holding the transaction that shard signs and the account signing it.
+      event: transactions!.map(({ wrappedTx, coreTx }, index) => {
+        const shard = payeeData!.shards[index]!;
+
         return {
           ...payeeData!,
           ...feeData,
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           initiator: shard,
-          signatory: shard,
+          signatory: payeeData!.signatory ?? proxyWrapper?.proxyAccount ?? shard,
           route: [shard],
           signingPath: [],
-          tx: coreTxs[index]!,
-          coreTx: coreTxs[index]!,
+          tx: wrappedTx,
+          coreTx,
         } satisfies PayeeConfirm;
       }),
       step: Step.CONFIRM,
@@ -296,31 +304,16 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     payeeData: $payeeData,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
   },
-  filter: ({ payeeData, walletData, transactions }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
-  },
-  fn: ({ payeeData, walletData, transactions, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads: transactions!.map((tx, index) => ({
-          chain: walletData!.chain,
-          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index]!,
-          signatory: payeeData!.signatory,
-          transaction: tx.wrappedTx,
-        })),
-      },
-      step: Step.SIGN,
-    };
-  },
+  filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -332,10 +325,10 @@ sample({
   source: {
     payeeData: $payeeData,
     walletData: $walletData,
-    transactions: $transactions,
+    confirms: confirmModel.$confirmed,
   },
-  filter: ({ payeeData, walletData, transactions }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, confirms }) => {
+    return Boolean(payeeData) && Boolean(walletData) && confirms.length > 0;
   },
   fn: (payeeFlowData, signParams) => ({
     event: {
@@ -343,8 +336,8 @@ sample({
       chain: payeeFlowData.walletData!.chain,
       account: payeeFlowData.payeeData!.shards[0]!,
       signatory: payeeFlowData.payeeData!.signatory,
-      coreTxs: payeeFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: payeeFlowData.transactions!.map((tx) => tx.wrappedTx),
+      coreTxs: payeeFlowData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: payeeFlowData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -362,15 +355,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModelShards.$isMultisig, coreTx: $pureTxs, wrappedTx: $transactions },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModelShards.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx[0]!.chainId,
-      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
-      multisigAccountId: coreTx[0]!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

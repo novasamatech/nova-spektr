@@ -57,10 +57,10 @@ notes.
 ## Proxy
 
 - [`proxies`](./proxies/README.md)
-- `proxy-add`
+- [`proxy-add`](./proxy-add/README.md)
 - `proxy-basket`
 - [`proxy-operation-details`](./proxy-operation-details/README.md)
-- `proxy-remove`
+- [`proxy-remove`](./proxy-remove/README.md)
 - [`proxy-verify`](./proxy-verify/README.md)
 - [`proxied-add-pure`](./proxied-add-pure/README.md)
 - [`proxied-wallet`](./proxied-wallet/README.md)
@@ -77,14 +77,14 @@ notes.
 - [`staking-dashboard-actions`](./staking-dashboard-actions/README.md)
 - [`staking-new-position-flow`](./staking-new-position-flow/README.md)
 - [`staking-payee-flow`](./staking-payee-flow/README.md)
-- `staking-bond-extra`
+- [`staking-bond-extra`](./staking-bond-extra/README.md)
 - [`staking-bond-nominate`](./staking-bond-nominate/README.md)
 - [`staking-nominate`](./staking-nominate/README.md)
 - [`staking-operation-details`](./staking-operation-details/README.md)
-- `staking-payee`
-- `staking-restake`
-- `staking-unstake`
-- `staking-withdraw`
+- [`staking-payee`](./staking-payee/README.md)
+- [`staking-restake`](./staking-restake/README.md)
+- [`staking-unstake`](./staking-unstake/README.md)
+- [`staking-withdraw`](./staking-withdraw/README.md)
 - [`validator-selection`](./validator-selection/README.md)
 - [`staking-accounts`](../aggregates/staking-accounts/README.md) (aggregate)
 - `staking-network` (aggregate)

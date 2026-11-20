@@ -26,6 +26,7 @@ const confirmStore = createTransactionConfirmStore<UnlockConfirm>({
 export const unlockConfirmModel = {
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirmed: confirmStore.$confirmed,
   $confirms: confirmStore.$confirms,
 
   init: confirmStore.init,
@@ -33,4 +34,6 @@ export const unlockConfirmModel = {
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,
   startSigning: confirmStore.startSigning,
+  confirmed: confirmStore.confirmed,
+  follow: confirmStore.follow,
 };

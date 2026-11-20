@@ -27,10 +27,13 @@ export const confirmModel = {
   $confirms: confirmStore.$confirms,
   $confirmStore: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirmed: confirmStore.$confirmed,
   $apis: networkModel.$apis,
 
   formInitiated: confirmStore.init,
   startSigning: confirmStore.startSigning,
+  confirmed: confirmStore.confirmed,
+  follow: confirmStore.follow,
   addConfirms: confirmStore.addConfirms,
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,

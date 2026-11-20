@@ -1,6 +1,6 @@
 # Staking confirm flow (change validators / redeem)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -51,18 +51,18 @@ feature is its sibling for the actions that need no amount.
 
 ## States / scenarios
 
-| State                | When it appears                                                     | What the user sees                                                                                                |
-| -------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Confirm — validators | The picker submitted a set                                          | Account, network, signing route, `New validators: N` (opens the list), fee                                        |
-| Confirm — redeem     | A redeem is requested for a position with unlocked funds            | The amount and its fiat value, account, network, signing route, fee                                               |
-| Multisig             | A multisig sits on the route                                        | The multisig deposit row alongside the fee                                                                        |
-| Unpayable            | The signer cannot cover the fee or reserve the deposit              | The error explains which, and **Sign is blocked**                                                                 |
-| No signer            | Nobody on the resolved route can sign (normal mode)                 | A red "No account to sign with" alert; Sign is blocked                                                            |
-| Empty set            | The picked set came back empty                                      | No call is built and Sign stays disabled                                                                          |
-| Nothing to redeem    | The **live** ledger has no unlocked chunk                           | Sign stays disabled; if the confirm opened on a figure, a red alert says why                                      |
-| Draft mode           | The draft toggle is on                                              | An address-book signing-path picker and `Save as draft` instead of Sign                                           |
-| Duplicate pending    | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" is hidden |
-| Sign / Submit        | Sign pressed                                                        | The shared signing and submission screens                                                                         |
+| State                | When it appears                                                     | What the user sees                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Confirm — validators | The picker submitted a set                                          | Account, network, signing route, `New validators: N` (opens the list), fee                                                                       |
+| Confirm — redeem     | A redeem is requested for a position with unlocked funds            | The amount and its fiat value, account, network, signing route, fee                                                                              |
+| Multisig             | A multisig sits on the route                                        | The multisig deposit row alongside the fee                                                                                                       |
+| Unpayable            | The signer cannot cover the fee or reserve the deposit              | The error explains which, and **Sign is blocked**                                                                                                |
+| No signer            | Nobody on the resolved route can sign (normal mode)                 | A red "No account to sign with" alert; Sign is blocked                                                                                           |
+| Empty set            | The picked set came back empty                                      | No call is built and Sign stays disabled                                                                                                         |
+| Nothing to redeem    | The **live** ledger has no unlocked chunk                           | Sign stays disabled; if the confirm opened on a figure, a red alert says why                                                                     |
+| Draft mode           | The draft toggle is on                                              | An address-book signing-path picker and `Save as draft` instead of Sign                                                                          |
+| Duplicate pending    | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign and "Add to basket" are hidden and a sign request is refused |
+| Sign / Submit        | Sign pressed                                                        | The shared signing and submission screens                                                                                                        |
 
 **The confirm opens on the click, not on the node.** Everything it leads with is in hand the moment the button is
 pressed. The wrapped transaction, the fee, the validation and — for a redeem — the slashing-span read each cost a round
@@ -191,3 +191,5 @@ transaction before it is signed, so a check that fails at this moment must not b
   and submission stack.
 - `staking-nominate`, `staking-withdraw` — the Staking page's own forms, untouched. They stay bound to that page's
   slots; this flow exists because neither is reachable from the dashboard.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

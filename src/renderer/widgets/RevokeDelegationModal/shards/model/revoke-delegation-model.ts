@@ -12,6 +12,7 @@ import {
 } from '@/shared/core';
 import { Step, assert, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -249,8 +250,11 @@ sample({
 
 // Steps
 
+// The signatory is picked on the confirm step itself, so the step is filled
+// again whenever the transactions or their wrappers change: it always holds
+// the transactions wrapped for the signatory picked last.
 sample({
-  clock: [flowStarted, $revokeDelegationData.updates],
+  clock: [flowStarted, $revokeDelegationData.updates, $coreTxs, $txWrappers],
   source: {
     balances: balanceModel.$balanceMap,
     feeData: $feeData,
@@ -258,17 +262,25 @@ sample({
     txWrappers: $txWrappers,
     revokeDelegationData: $revokeDelegationData,
     delegations: delegationAggregate.$activeDelegations,
-    coreTxs: $coreTxs,
+    transactions: $transactions,
     signatory: $signatory,
   },
-  filter: ({ walletData, revokeDelegationData }) => {
-    return revokeDelegationData.length > 0 && !!walletData.wallet && !!walletData.chain;
+  filter: ({ walletData, revokeDelegationData, transactions }) => {
+    return (
+      revokeDelegationData.length > 0 &&
+      !!walletData.wallet &&
+      !!walletData.chain &&
+      transactions?.length === revokeDelegationData.length
+    );
   },
-  fn: ({ feeData, balances, walletData, txWrappers, revokeDelegationData, delegations, coreTxs }) => {
+  fn: ({ feeData, balances, walletData, txWrappers, revokeDelegationData, delegations, transactions }) => {
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
+    const proxyWrapper = txWrappers.find((wrapper): wrapper is ProxyTxWrapper => wrapper.kind === WrapperKind.PROXY);
 
     return {
-      event: revokeDelegationData.map((revokeData) => {
+      // One item per account, each holding the transaction that account signs and the account signing it.
+      event: revokeDelegationData.map((revokeData, index) => {
+        const { coreTx, wrappedTx } = transactions![index]!;
         const target = revokeData.target;
         const delegation = delegations[target];
         const delegationData = delegation && Object.values(delegation)[0];
@@ -287,14 +299,14 @@ sample({
           ...revokeData,
           ...feeData,
           initiator: revokeData.account,
-          signatory: revokeData.account,
+          signatory: revokeData.signatory ?? proxyWrapper?.proxyAccount ?? revokeData.account,
           delegate: revokeData.target,
           locks: revokeData.locks[revokeData.account!.accountId]!,
           route: txWrappers.map((wrapper) =>
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
-          coreTx: coreTxs[0]!,
-          tx: coreTxs[0]!,
+          coreTx,
+          tx: wrappedTx,
         } satisfies RevokeDelegationConfirm;
       }),
       step: Step.CONFIRM,
@@ -306,34 +318,26 @@ sample({
   }),
 });
 
+// The slider's own Sign button leaves the confirm step the same way the single one does.
 sample({
-  clock: [confirmModel.startSigning, txsConfirmed],
+  clock: txsConfirmed,
+  target: confirmModel.startSigning,
+});
+
+sample({
+  clock: confirmModel.confirmed,
   source: {
     revokeDelegationData: $revokeDelegationData,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
     step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
-    return revokeDelegationData.length > 0 && !!walletData && !!transactions && isStep(step, Step.CONFIRM);
+  filter: ({ revokeDelegationData, walletData, step }) => {
+    return revokeDelegationData.length > 0 && !!walletData && isStep(step, Step.CONFIRM);
   },
-  fn: ({ revokeDelegationData, walletData, transactions, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads:
-          transactions?.map((tx, index) => ({
-            chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : revokeDelegationData[index]!.account,
-            signatory: revokeDelegationData[0]!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
-      },
-      step: Step.SIGN,
-    };
-  },
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -367,21 +371,21 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: $walletData,
-    transactions: $transactions,
+    confirms: confirmModel.$confirmed,
     revokeDelegationData: $revokeDelegationData,
     step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
-    return !!revokeDelegationData && !!walletData && !!transactions && isStep(step, Step.SIGN);
+  filter: ({ revokeDelegationData, walletData, confirms, step }) => {
+    return !!revokeDelegationData && !!walletData && confirms.length > 0 && isStep(step, Step.SIGN);
   },
-  fn: ({ walletData, revokeDelegationData, transactions }, signParams) => ({
+  fn: ({ walletData, revokeDelegationData, confirms }, signParams) => ({
     event: {
       ...signParams,
       chain: walletData.chain!,
       account: revokeDelegationData[0]!.account,
       signatory: revokeDelegationData[0]!.signatory,
-      coreTxs: transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: transactions!.map((tx) => tx.wrappedTx),
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),

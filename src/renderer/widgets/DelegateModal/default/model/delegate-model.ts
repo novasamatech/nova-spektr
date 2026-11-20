@@ -1,10 +1,11 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import { createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { accountService, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -163,35 +164,43 @@ sample({
   }),
 });
 
+// The open confirm step keeps up with the form's transaction (see `follow`).
+confirmModel.follow({
+  clock: formModel.$tx,
+  $active: $step.map((step) => isStep(step, Step.CONFIRM)),
+  $transaction: combine({
+    tx: formModel.$tx,
+    coreTx: formModel.$coreTx,
+    route: formModel.$route,
+    signingPath: formModel.$signingPath,
+  }),
+});
+
+sample({
+  clock: txsConfirmed,
+  target: confirmModel.startSigning,
+});
+
 const startSigning = sample({
-  clock: [confirmModel.startSigning, txsConfirmed],
+  clock: confirmModel.confirmed,
   source: {
     delegateData: $delegateData,
     walletData: formModel.$walletData,
-    transaction: formModel.$tx,
     initiator: formModel.form.fields.initiator.$value,
     step: $step,
-    coreTx: formModel.$coreTx,
   },
-}).filterMap(({ delegateData, walletData, transaction, initiator, step }) => {
+  fn: (source, confirms) => ({ ...source, confirms }),
+}).filterMap(({ delegateData, walletData, initiator, step, confirms }) => {
   if (
     nonNullable(delegateData) &&
     nonNullable(walletData) &&
     nonNullable(walletData.chain) &&
-    nonNullable(transaction) &&
     nonNullable(initiator) &&
     nonNullable(delegateData.signatory) &&
     isStep(step, Step.CONFIRM)
   ) {
     return {
-      signingPayloads: [
-        {
-          chain: walletData.chain,
-          account: initiator,
-          signatory: delegateData.signatory,
-          transaction,
-        },
-      ],
+      signingPayloads: getSigningPayloads(confirms),
     };
   }
 });
@@ -214,26 +223,23 @@ const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: formModel.$walletData,
-    transaction: formModel.$tx,
+    confirms: confirmModel.$confirmed,
     delegateData: $delegateData,
     initiator: formModel.form.fields.initiator.$value,
     step: $step,
-    coreTx: formModel.$coreTx,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ delegateData, walletData, transaction, step, initiator, coreTx, signParams }) => {
+}).filterMap(({ delegateData, walletData, confirms, step, initiator, signParams }) => {
   if (
     nonNullable(delegateData) &&
     nonNullable(walletData) &&
     nonNullable(walletData.chain) &&
-    nonNullable(transaction) &&
+    confirms.length > 0 &&
     nonNullable(initiator) &&
     nonNullable(delegateData.signatory) &&
-    nonNullable(coreTx) &&
-    nonNullable(transaction) &&
     isStep(step, Step.SIGN)
   ) {
     return {
@@ -241,8 +247,8 @@ const signSubmitted = sample({
       chain: walletData.chain,
       account: initiator,
       signatory: delegateData.signatory,
-      coreTxs: [coreTx],
-      wrappedTxs: [transaction],
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
     };
   }
 });
@@ -313,17 +319,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { hasMultisig: formModel.$hasAnyMultisig, coreTx: formModel.$coreTx, wrappedTx: formModel.$tx },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filter: ({ hasMultisig }: { hasMultisig: boolean }, results: any) =>
-    hasMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { hasMultisig: formModel.$hasAnyMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ hasMultisig, confirms }, results) =>
+    hasMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
-      multisigAccountId: coreTx!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

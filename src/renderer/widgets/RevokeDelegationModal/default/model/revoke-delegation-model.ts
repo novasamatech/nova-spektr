@@ -12,7 +12,12 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  getSigningPayloads,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -245,31 +250,18 @@ sample({
 });
 
 const startSigning = sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    transaction: $tx,
     initiator: $initiator,
     signatory: $signatory,
     step: $step,
   },
-}).filterMap(({ initiator, signatory, chain, transaction, step }) => {
-  if (
-    nonNullable(initiator) &&
-    nonNullable(signatory) &&
-    nonNullable(chain) &&
-    nonNullable(transaction) &&
-    isStep(step, Step.CONFIRM)
-  ) {
+  fn: (source, confirms) => ({ ...source, confirms }),
+}).filterMap(({ initiator, signatory, chain, step, confirms }) => {
+  if (nonNullable(initiator) && nonNullable(signatory) && nonNullable(chain) && isStep(step, Step.CONFIRM)) {
     return {
-      signingPayloads: [
-        {
-          chain,
-          account: initiator,
-          signatory,
-          transaction,
-        },
-      ],
+      signingPayloads: getSigningPayloads(confirms),
     };
   }
 });
@@ -315,8 +307,7 @@ const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    transaction: $tx,
-    coreTx: $coreTx,
+    confirms: confirmModel.$confirmed,
     initiator: $initiator,
     signatory: $signatory,
     step: $step,
@@ -325,11 +316,10 @@ const signSubmitted = sample({
     ...source,
     signParams,
   }),
-}).filterMap(({ chain, transaction, coreTx, initiator, signatory, step, signParams }) => {
+}).filterMap(({ chain, confirms, initiator, signatory, step, signParams }) => {
   if (
     nonNullable(chain) &&
-    nonNullable(transaction) &&
-    nonNullable(coreTx) &&
+    confirms.length > 0 &&
     nonNullable(initiator) &&
     nonNullable(signatory) &&
     isStep(step, Step.SIGN)
@@ -339,8 +329,8 @@ const signSubmitted = sample({
       chain,
       account: initiator,
       signatory,
-      coreTxs: [coreTx],
-      wrappedTxs: [transaction],
+      coreTxs: confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: confirms.map((confirm) => confirm.tx),
     };
   }
 });

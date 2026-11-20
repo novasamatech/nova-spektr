@@ -15,6 +15,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -383,26 +384,9 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigningProxy,
-  source: {
-    chain: formModel.$chain,
-    tx: $createPureProxyTx,
-    initiator: $initiator,
-    signatory: $signatory,
-  },
-  filter: ({ chain, tx, initiator, signatory }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory),
-  fn: ({ chain, tx, initiator, signatory }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: initiator!,
-          transaction: tx!,
-          signatory: signatory,
-        },
-      ],
-    },
+  clock: confirmModel.confirmed,
+  fn: confirms => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({

@@ -15,6 +15,7 @@ import {
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type TransactionValidationDryRunError } from '@/shared/ui-entities';
 import { type PathNode } from '@/domains/backend';
@@ -783,7 +784,7 @@ draftMode.connectSave({
 // too: a gate that closed after the click (draft mode, a dropped route, an
 // extra still unpriced) must not be bypassable.
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: $canSign,
   filter: (canSign) => canSign,
   fn: () => Step.SIGN,
@@ -797,17 +798,10 @@ sample({
  * of colliding on the same nonce.
  */
 const sign = sample({
-  clock: confirmModel.startSigning,
-  source: { confirms: confirmModel.$confirms, canSign: $canSign },
-  filter: ({ canSign }) => canSign,
-  fn: ({ confirms }) => ({
-    signingPayloads: confirms.map((confirm) => ({
-      chain: confirm.meta.chain,
-      account: confirm.meta.initiator,
-      signatory: confirm.meta.signatory,
-      transaction: confirm.meta.tx,
-    })),
-  }),
+  clock: confirmModel.confirmed,
+  source: $canSign,
+  filter: (canSign) => canSign,
+  fn: (_, confirms) => ({ signingPayloads: getSigningPayloads(confirms) }),
 });
 
 sample({

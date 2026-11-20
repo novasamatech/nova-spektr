@@ -21,6 +21,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, type ChainAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -257,8 +258,22 @@ sample({
 
 // Submit
 
+// The confirm step shows the flow's current signer and values, so what the
+// step holds for signing is filled again whenever they change while it is open.
+const confirmOutdated = sample({
+  clock: [
+    $signer,
+    $initiators,
+    signatoryModel.$signatories,
+    formModel.form.fields.threshold.$value,
+    formModel.form.fields.chainId.$value,
+  ],
+  source: $step,
+  filter: step => isStep(step, Step.CONFIRM),
+});
+
 const formSubmitted = sample({
-  clock: formModel.form.validate,
+  clock: [formModel.form.validate, confirmOutdated],
   source: {
     tx: $tx,
     coreTx: $tx,
@@ -305,26 +320,9 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
-  source: {
-    chain: formModel.$chain,
-    tx: $tx,
-    signatory: $signer,
-    initiator: $initiator,
-  },
-  filter: ({ chain, tx, initiator, signatory }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory),
-  fn: ({ chain, tx, initiator, signatory }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: initiator!,
-          transaction: tx!,
-          signatory,
-        },
-      ],
-    },
+  clock: confirmModel.confirmed,
+  fn: confirms => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -335,8 +333,8 @@ sample({
 
 sample({
   clock: signModel.signed,
-  source: $tx,
-  filter: tx => nonNullable(tx),
+  source: { step: $step, confirms: confirmModel.$confirmed },
+  filter: ({ step, confirms }) => isStep(step, Step.SIGN) && confirms.length > 0,
   fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
   target: spread({
     event: submitModel.init,

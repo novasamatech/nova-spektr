@@ -1,6 +1,6 @@
 # Multisig Wallet Create
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-09-29
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -124,3 +124,5 @@ first-signatory key (never another key of the same wallet).
 - `account-sync` — other signatories discover a created classic multisig through the on-chain remark timestamp.
 - `wallet-pairing` — owns the Add wallet dropdown this feature plugs into.
 - The address book — external signatory names entered here become shared contact data.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

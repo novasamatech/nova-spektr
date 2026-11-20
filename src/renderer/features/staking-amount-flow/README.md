@@ -1,6 +1,6 @@
 # Staking amount flow (unbond / add stake)
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-10-28
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -196,3 +196,5 @@ _rules_, which are correct and long-proven, were carried over:
 - `signing-path`, `operations/OperationSign`, `operations/OperationSubmit`, `shared/transactions` — the shared signing
   and submission stack.
 - `staking-unstake`, `staking-bond-extra` — the Staking page's own forms, untouched; the source of the rules above.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

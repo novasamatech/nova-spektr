@@ -16,6 +16,7 @@ import {
   createTxValidationStore,
   createTxValidator,
   getActionRequiredAmount,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -644,7 +645,7 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   fn: () => Step.SIGN,
   target: stepChanged,
 });
@@ -740,32 +741,24 @@ sample({
   target: confirmModel.init,
 });
 
+// The open confirm step keeps up with the form's transaction (see `follow`).
+confirmModel.follow({
+  clock: $tx,
+  $active: $step.map((step) => step === Step.CONFIRM),
+  $transaction: combine({ tx: $tx, coreTx: $coreTx, route: $route }),
+});
+
 const sign = sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     form: form.$values,
-    transaction: $tx,
     api: $api,
   },
-  fn({ form, transaction, api }) {
-    if (
-      nullable(api) ||
-      nullable(transaction) ||
-      nullable(form.initiator) ||
-      nullable(form.signatory) ||
-      nullable(form.chain)
-    )
-      return null;
+  fn({ form, api }, confirms) {
+    if (nullable(api) || nullable(form.initiator) || nullable(form.signatory) || nullable(form.chain)) return null;
 
     return {
-      signingPayloads: [
-        {
-          chain: form.chain,
-          account: form.initiator,
-          signatory: form.signatory,
-          transaction,
-        },
-      ],
+      signingPayloads: getSigningPayloads(confirms),
     };
   },
 });

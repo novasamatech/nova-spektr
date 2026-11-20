@@ -13,6 +13,7 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -413,27 +414,22 @@ sample({
   target: stepChanged,
 });
 
+// The open confirm step keeps up with the flow's transaction (see `follow`).
+confirmModel.follow({
+  clock: $wrappedTx,
+  $active: $step.map((step) => step === Step.CONFIRM),
+  $transaction: combine({ tx: $wrappedTx, coreTx: $coreTx, route: $route, signingPath: $signingPath }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     verifyStore: $verifyStore,
-    wrappedTx: $wrappedTx,
     signatory: form.fields.signatory.$value,
   },
-  filter: ({ verifyStore, wrappedTx, signatory }) => {
-    return nonNullable(verifyStore) && nonNullable(wrappedTx) && nonNullable(signatory);
-  },
-  fn: ({ verifyStore, signatory, wrappedTx }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: verifyStore!.chain,
-          account: verifyStore!.initiator,
-          signatory: signatory!,
-          transaction: wrappedTx!,
-        },
-      ],
-    },
+  filter: ({ verifyStore, signatory }) => nonNullable(verifyStore) && nonNullable(signatory),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({

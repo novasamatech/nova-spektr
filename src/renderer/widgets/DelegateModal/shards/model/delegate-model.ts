@@ -14,6 +14,7 @@ import {
   nullable,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { getSigningPayloads } from '@/shared/transactions';
 import { type AnyAccount, accounts, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -293,18 +294,19 @@ sample({
     accounts: $accounts,
     txWrappers: $txWrappers,
     delegateData: $delegateData,
-    coreTxs: $coreTxs,
+    transactions: $transactions,
     step: $step,
   },
-  filter: ({ walletData, delegateData, step }) => {
+  filter: ({ walletData, delegateData, transactions, step }) => {
     return (
       nonNullable(delegateData) &&
       nonNullable(walletData.wallet) &&
       nonNullable(walletData.chain) &&
+      nonNullable(transactions) &&
       isStep(step, Step.INIT)
     );
   },
-  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs, step }) => {
+  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, transactions, step }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
     if (nullable(target)) {
@@ -315,8 +317,9 @@ sample({
     }
 
     return {
+      // One item per shard, each holding the transaction that shard signs and the account signing it.
       events: shards.map((shard, index) => {
-        const coreTx = coreTxs[index]!;
+        const { coreTx, wrappedTx } = transactions![index]!;
         const transferable = transferableAmount(
           balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
         );
@@ -331,14 +334,14 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
-          signatory: delegateData!.signatory!,
+          signatory: delegateData!.signatory ?? (wrapper ? wrapper.proxyAccount : shard),
           locks: delegateData!.locks[shard.accountId] ?? BN_ZERO,
           coreTx,
           initiator: shard,
           route: txWrappers.map((wrapper) =>
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
-          tx: coreTx,
+          tx: wrappedTx,
           signingPath: [],
         } satisfies DelegateConfirm;
       }),
@@ -351,37 +354,26 @@ sample({
   }),
 });
 
+// The slider's own Sign button leaves the confirm step the same way the single one does.
 sample({
-  clock: [confirmModel.startSigning, txsConfirmed],
+  clock: txsConfirmed,
+  target: confirmModel.startSigning,
+});
+
+sample({
+  clock: confirmModel.confirmed,
   source: {
     delegateData: $delegateData,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
-    accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return (
-      nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transactions) && isStep(step, Step.CONFIRM)
-    );
+  filter: ({ delegateData, walletData, step }) => {
+    return nonNullable(delegateData) && nonNullable(walletData) && isStep(step, Step.CONFIRM);
   },
-  fn: ({ delegateData, walletData, transactions, txWrappers, accounts }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads:
-          transactions?.map((tx, index) => ({
-            chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : accounts[index]!,
-            signatory: delegateData!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
-      },
-      step: Step.SIGN,
-    };
-  },
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
@@ -392,16 +384,16 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: $walletData,
-    transactions: $transactions,
+    confirms: confirmModel.$confirmed,
     delegateData: $delegateData,
     accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, accounts, step }) => {
+  filter: ({ delegateData, walletData, confirms, accounts, step }) => {
     return (
       nonNullable(delegateData) &&
       nonNullable(walletData) &&
-      nonNullable(transactions) &&
+      confirms.length > 0 &&
       accounts.length > 0 &&
       isStep(step, Step.SIGN)
     );
@@ -412,8 +404,8 @@ sample({
       chain: delegateFlowData.walletData.chain!,
       account: delegateFlowData.accounts[0]!,
       signatory: delegateFlowData.delegateData!.signatory,
-      coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
+      coreTxs: delegateFlowData.confirms.map((confirm) => confirm.coreTx),
+      wrappedTxs: delegateFlowData.confirms.map((confirm) => confirm.tx),
     },
     step: Step.SUBMIT,
   }),
@@ -475,15 +467,17 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { isMultisig: formModel.$isMultisig, coreTx: $coreTxs, wrappedTx: $transactions },
-  filter: ({ isMultisig }, results) => isMultisig && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx }, results) => {
+  source: { isMultisig: formModel.$isMultisig, confirms: confirmModel.$confirmed },
+  filter: ({ isMultisig, confirms }, results) =>
+    isMultisig && confirms.length > 0 && submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx[0]!.chainId,
-      callHash: wrappedTx![0]!.wrappedTx.args.callHash,
-      multisigAccountId: coreTx[0]!.accountId,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
+      multisigAccountId: coreTx.accountId,
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,
     });

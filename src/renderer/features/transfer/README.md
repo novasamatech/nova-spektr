@@ -1,6 +1,6 @@
 # Transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-08-26
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -105,3 +105,5 @@ external address book connection — nothing here shows for a user who has never
 - Name resolution (`widgets/NameResolver`) — recipient card and suggestion names follow the app-wide resolution chain.
 - [`recipient-verification`](../../aggregates/recipient-verification/README.md) — decides whether the recipient is
   "known" and drives the unknown-recipient warnings above.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

@@ -4,6 +4,7 @@ import { delay, spread } from 'patronum';
 import { type PartialProxiedAccount, ProxyTypes, ProxyVariant } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { getSigningPayloads } from '@/shared/transactions';
 import { multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
@@ -124,26 +125,29 @@ sample({
   }),
 });
 
-sample({
-  clock: confirmModel.startSigning,
-  source: {
+// The open confirm step keeps up with the form's transaction (see `follow`).
+confirmModel.follow({
+  clock: formModel.$tx,
+  $active: $step.map(addPureProxiedUtils.isConfirmStep),
+  $transaction: combine({
     tx: formModel.$tx,
+    coreTx: formModel.$coreTx,
+    route: formModel.$route,
+    signingPath: formModel.$signingPath,
+  }),
+});
+
+sample({
+  clock: confirmModel.confirmed,
+  source: {
     chain: formModel.form.fields.chain.$value,
     initiator: formModel.form.fields.initiator.$value,
     signatory: formModel.form.fields.signatory.$value,
   },
-  filter: ({ tx, chain, initiator, signatory }) =>
-    nonNullable(tx) && nonNullable(chain) && nonNullable(initiator) && nonNullable(signatory) && nonNullable(chain),
-  fn: ({ tx, chain, initiator, signatory }) => ({
+  filter: ({ chain, initiator, signatory }) => nonNullable(chain) && nonNullable(initiator) && nonNullable(signatory),
+  fn: (_, confirms) => ({
     event: {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: initiator!,
-          signatory,
-          transaction: tx!,
-        },
-      ] satisfies SigningPayload[],
+      signingPayloads: getSigningPayloads(confirms) satisfies SigningPayload[],
     },
     step: Step.SIGN,
   }),
@@ -250,18 +254,20 @@ sample({
   clock: submitModel.done,
   source: {
     route: formModel.$route,
-    coreTx: formModel.$coreTx,
-    wrappedTx: formModel.$tx,
+    confirms: confirmModel.$confirmed,
   },
-  filter: ({ route }, results) =>
-    route.some(accountUtils.isAnyMultisigAccount) && submitUtils.isSuccessResult(results[0]!.result),
-  fn: ({ coreTx, wrappedTx, route }, results) => {
+  filter: ({ route, confirms }, results) =>
+    confirms.length > 0 &&
+    route.some(accountUtils.isAnyMultisigAccount) &&
+    submitUtils.isSuccessResult(results[0]!.result),
+  fn: ({ confirms, route }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
     const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
       multisigAccountId: multisigService.getMultisigAccountId(multisigAccount!),
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,

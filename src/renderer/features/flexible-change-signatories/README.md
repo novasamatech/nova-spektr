@@ -1,6 +1,6 @@
 # Flexible Multisig — Change Signatories
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -109,3 +109,5 @@ marker so the operation can later be distinguished from a plain add-proxy and th
 - **Drafts** — see [`drafts`](../drafts/README.md) for how saved drafts are signed and submitted later.
 - The generic multisig "edit signatories" for non-flexible multisigs is a different flow; this feature is specific to
   the pure-proxy + controller architecture of flexible multisigs.
+- [`operations`](../operations/README.md#what-gets-signed) — the confirmation step hands to signing exactly the
+  transaction it shows, and refuses a sign request while that call duplicates a pending multisig operation.

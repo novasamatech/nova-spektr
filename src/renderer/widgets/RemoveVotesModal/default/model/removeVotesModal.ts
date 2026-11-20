@@ -199,7 +199,7 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.startSigning,
+  clock: removeVoteConfirmModel.confirmed,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -274,11 +274,10 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.startSigning,
-  source: removeVoteConfirmModel.$confirms,
+  clock: removeVoteConfirmModel.confirmed,
   fn: (confirms) => {
     return {
-      signingPayloads: confirms.map<SigningPayload>(({ meta }) => ({
+      signingPayloads: confirms.map<SigningPayload>((meta) => ({
         account: meta.initiator,
         chain: meta.chain,
         transaction: meta.tx,

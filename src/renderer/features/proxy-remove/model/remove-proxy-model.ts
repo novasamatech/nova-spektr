@@ -23,6 +23,7 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
+  getSigningPayloads,
 } from '@/shared/transactions';
 import { accountSync, multisigOperationService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -498,28 +499,22 @@ sample({
   }),
 });
 
+// The open confirm step keeps up with the flow's transaction (see `follow`).
+confirmModel.follow({
+  clock: $tx,
+  $active: $step.map(removeProxyUtils.isConfirmStep),
+  $transaction: combine({ tx: $tx, coreTx: $coreTx, route: $route }),
+});
+
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.confirmed,
   source: {
     removeProxyStore: $removeProxyStore,
-    wrappedTx: $tx,
     account: $proxiedAccount,
-    signatory: form.fields.signatory.$value,
   },
-  filter: ({ removeProxyStore, wrappedTx, account }) => {
-    return nonNullable(removeProxyStore) && nonNullable(wrappedTx) && nonNullable(account);
-  },
-  fn: ({ removeProxyStore, signatory, wrappedTx, account }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: removeProxyStore!.chain,
-          account: account!,
-          signatory: signatory!,
-          transaction: wrappedTx!,
-        },
-      ],
-    },
+  filter: ({ removeProxyStore, account }) => nonNullable(removeProxyStore) && nonNullable(account),
+  fn: (_, confirms) => ({
+    event: { signingPayloads: getSigningPayloads(confirms) },
     step: Step.SIGN,
   }),
   target: spread({
@@ -626,18 +621,20 @@ sample({
 
 sample({
   clock: submitModel.done,
-  source: { isMultisig: $isMultisig, coreTx: $coreTx, wrappedTx: $tx, route: $route },
-  filter: ({ isMultisig, route }, results) =>
+  source: { isMultisig: $isMultisig, confirms: confirmModel.$confirmed, route: $route },
+  filter: ({ isMultisig, confirms, route }, results) =>
     isMultisig &&
+    confirms.length > 0 &&
     submitUtils.isSuccessResult(results[0]!.result) &&
     nonNullable(route.find(accountUtils.isAnyMultisigAccount)),
-  fn: ({ coreTx, wrappedTx, route }, results) => {
+  fn: ({ confirms, route }, results) => {
     const { timepoint } = (results[0] as SuccessResult).params;
     const multisigAccount = route.find(accountUtils.isAnyMultisigAccount)!;
+    const { coreTx, tx } = confirms[0]!;
 
     return multisigOperationService.generateMultisigOperationRelativeLink({
-      chainId: coreTx!.chainId,
-      callHash: wrappedTx!.args.callHash,
+      chainId: coreTx.chainId,
+      callHash: tx.args.callHash,
       multisigAccountId: multisigService.getMultisigAccountId(multisigAccount),
       blockCreated: timepoint.height,
       indexCreated: timepoint.index,

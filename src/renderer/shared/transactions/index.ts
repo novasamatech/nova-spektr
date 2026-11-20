@@ -8,7 +8,12 @@ export { createInitiatorsStore } from './createInitiatorsStore';
 export { createSignatoriesStore } from './createSignatoriesStore';
 export { createRouteSignerStore } from './createRouteSignerStore';
 export { type InitiatorSelection, createSelectedInitiatorStore } from './createSelectedInitiatorStore';
-export { type ConfirmItem, type TxConfirmInfo, createTransactionConfirmStore } from './createTransactionConfirmStore';
+export {
+  type ConfirmItem,
+  type TxConfirmInfo,
+  createTransactionConfirmStore,
+  getSigningPayloads,
+} from './createTransactionConfirmStore';
 export { type ExtrinsicConfirmInfo, createExtrinsicConfirmStore } from './createExtrinsicConfirmStore';
 export { createTxValidationStore } from './createTxValidationStore';
 export {
