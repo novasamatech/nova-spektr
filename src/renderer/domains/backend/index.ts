@@ -1,4 +1,4 @@
-export { backendAuthService } from './auth/service';
+export { SIGN_IN_MESSAGE_VERSION, UnsupportedSignInMessageError, backendAuthService } from './auth/service';
 export { type ChallengeResponse, type SessionResponse, type VerifyResponse } from './auth/service';
 export { type Permission, PERMISSIONS } from './auth/constants';
 

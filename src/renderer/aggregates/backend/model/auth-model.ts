@@ -8,7 +8,7 @@ import { persist } from '@/shared/api/storage';
 import { type ChainId } from '@/shared/core';
 import { assert, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { backendAuthService } from '@/domains/backend';
+import { UnsupportedSignInMessageError, backendAuthService } from '@/domains/backend';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -254,11 +254,7 @@ sample({
   fn: ({ account, chainId }, { params, result }) => {
     const signatory = account!.account;
     // The origin comes from the URL the challenge was requested from — the user's own configuration.
-    const messageText = buildSignMessage({
-      backendUrl: params.baseUrl,
-      nonce: result.nonce,
-      messageVersion: result.messageVersion,
-    });
+    const messageText = buildSignMessage({ backendUrl: params.baseUrl, nonce: result.nonce });
     const message = new TextEncoder().encode(messageText);
 
     return { message, signatory, chainId };
@@ -337,16 +333,22 @@ $connectionResult
     (): ConnectionResult => ({ status: 'idle' }),
   );
 
+// A backend that cannot issue a challenge for the message the app signs gets its own
+// explanation; every other failure is shown with the message it came with.
+const getSignInErrorMessage = (error: Error) => {
+  return error instanceof UnsupportedSignInMessageError ? t('addressBook.auth.unsupportedSignInFormat') : error.message;
+};
+
 sample({
   clock: [requestChallengeFx.failData, verifySignatureFx.failData],
-  fn: (error: Error): ConnectionResult => ({ status: 'error', message: error.message }),
+  fn: (error: Error): ConnectionResult => ({ status: 'error', message: getSignInErrorMessage(error) }),
   target: $connectionResult,
 });
 
 // Wiring: effect failures → error step
 sample({
   clock: [requestChallengeFx.failData, verifySignatureFx.failData],
-  fn: (error: Error) => error.message,
+  fn: getSignInErrorMessage,
   target: $error,
 });
 
