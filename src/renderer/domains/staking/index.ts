@@ -8,7 +8,7 @@ export type {
   StakingRewards,
   ValidatorMap,
 } from './types';
-export type { DataCompleteness } from './completeness';
+export type { DataCompleteness, ScanRange, ScanReport, SourceScan, SourceScanStatus } from './completeness';
 export { combineCompleteness } from './completeness';
 export { AssetHubChains, DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from './constants';
 export { stakingUtils } from './helpers';

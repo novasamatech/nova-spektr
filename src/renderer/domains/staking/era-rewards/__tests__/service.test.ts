@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
 import { toAccountId } from '@/shared/lib/utils';
-import { type DataCompleteness } from '../../completeness';
+import { type DataCompleteness, type ScanReport } from '../../completeness';
 import { PERBILL } from '../../payouts/calculator';
 import { type RewardSource } from '../../types';
 import { getEraValidatorRewards } from '../service';
@@ -44,8 +44,31 @@ const EXPOSURE: EraExposureShares = {
   shares: { [STASH]: '300' },
 };
 
+/** The exposure scan's own report — handed on untouched, whatever it says. */
+const SCAN: ScanReport = {
+  unit: 'era',
+  sources: [
+    {
+      url: 'https://indexer.test',
+      chain: '0xhub',
+      status: 'complete',
+      merged: true,
+      range: { from: 0, to: ERA },
+      upToDate: true,
+    },
+  ],
+  missing: [],
+  conflicts: [],
+};
+
+const NO_SCAN: ScanReport = { unit: 'era', sources: [], missing: [], conflicts: [] };
+
 function setup(completeness: DataCompleteness, exposures: EraExposureShares[] = [EXPOSURE]) {
-  fetchShares.mockResolvedValue({ exposures: completeness === 'unavailable' ? [] : exposures, completeness });
+  fetchShares.mockResolvedValue({
+    exposures: completeness === 'unavailable' ? [] : exposures,
+    completeness,
+    scan: SCAN,
+  });
 
   storage.erasValidatorReward.mockImplementation((_api, eras) =>
     Promise.resolve(eras.map(era => ({ era, reward: new BN(1000) }))),
@@ -73,7 +96,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [NOMINATOR_REWARD], completeness: 'complete' });
+    expect(result).toEqual({ rewards: [NOMINATOR_REWARD], completeness: 'complete', scan: SCAN });
   });
 
   test('should keep what a partial exposure scan found and say it is partial', async () => {
@@ -81,7 +104,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [NOMINATOR_REWARD], completeness: 'partial' });
+    expect(result).toEqual({ rewards: [NOMINATOR_REWARD], completeness: 'partial', scan: SCAN });
   });
 
   test('should not report a partial scan that found nothing as nothing earned', async () => {
@@ -89,7 +112,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [], completeness: 'partial' });
+    expect(result).toEqual({ rewards: [], completeness: 'partial', scan: SCAN });
     expect(storage.erasValidatorReward).not.toHaveBeenCalled();
   });
 
@@ -98,7 +121,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [], completeness: 'unavailable' });
+    expect(result).toEqual({ rewards: [], completeness: 'unavailable', scan: SCAN });
     expect(storage.erasValidatorReward).not.toHaveBeenCalled();
   });
 
@@ -107,7 +130,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [], completeness: 'complete' });
+    expect(result).toEqual({ rewards: [], completeness: 'complete', scan: SCAN });
   });
 
   test('should be unavailable, not rejected, when the era reads fail', async () => {
@@ -116,7 +139,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards(params);
 
-    expect(result).toEqual({ rewards: [], completeness: 'unavailable' });
+    expect(result).toEqual({ rewards: [], completeness: 'unavailable', scan: NO_SCAN });
   });
 
   test('should answer for an empty era range without asking anyone', async () => {
@@ -124,7 +147,7 @@ describe('domains/staking/era-rewards/service', () => {
 
     const result = await getEraValidatorRewards({ ...params, eraFrom: ERA + 1, eraTo: ERA });
 
-    expect(result).toEqual({ rewards: [], completeness: 'complete' });
+    expect(result).toEqual({ rewards: [], completeness: 'complete', scan: NO_SCAN });
     expect(fetchShares).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
 # Staking Rewards Chart
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -30,15 +30,15 @@ recent payout is visible as a day rather than being averaged into a month.
 
 ## States / scenarios
 
-| State       | When it appears                                      | What the user sees                                                                                                                                                      |
-| ----------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Loading     | Reward history for the selection is in flight        | Header and controls, with a shimmer occupying exactly the plot's box                                                                                                    |
-| Empty       | Every indexer answered, nothing earned in the window | Header and controls, and "No rewards yet — start staking to see your…"                                                                                                  |
-| Chart       | At least one bar in the window is non-zero           | Total line, bars, gridlines, x labels                                                                                                                                   |
-| Incomplete  | An indexer of the asset's history did not answer     | The bars and total that did load, with "incomplete — some history couldn't be loaded" on the total line; with no bar at all, "Reward history is incomplete" in the plot |
-| Unavailable | No indexer of the asset's history answered           | "Couldn't load" in place of the total and "Couldn't load reward history" in the plot — never `0 DOT`, never "No rewards yet"                                            |
-| Bar hover   | Pointer over a bar                                   | A floating card: bucket title, per-account rows, a Total footer with fiat                                                                                               |
-| Fiat off    | Global "show fiat" toggle is off                     | The same card without the "≈ …" part of the total line                                                                                                                  |
+| State       | When it appears                                                        | What the user sees                                                                                                                                                      |
+| ----------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loading     | Reward history for the selection is in flight                          | Header and controls, with a shimmer occupying exactly the plot's box                                                                                                    |
+| Empty       | Every indexer answered, nothing earned in the window                   | Header and controls, and "No rewards yet — start staking to see your…"                                                                                                  |
+| Chart       | At least one bar in the window is non-zero                             | Total line, bars, gridlines, x labels                                                                                                                                   |
+| Incomplete  | An indexer of the asset's history is not in the chart, or two disagree | The bars and total that did load, with "incomplete — some history couldn't be loaded" on the total line; with no bar at all, "Reward history is incomplete" in the plot |
+| Unavailable | No indexer of the asset's history is in the chart                      | "Couldn't load" in place of the total and "Couldn't load reward history" in the plot — never `0 DOT`, never "No rewards yet"                                            |
+| Bar hover   | Pointer over a bar                                                     | A floating card: bucket title, per-account rows, a Total footer with fiat                                                                                               |
+| Fiat off    | Global "show fiat" toggle is off                                       | The same card without the "≈ …" part of the total line                                                                                                                  |
 
 The loading shimmer, the empty message and the plot all occupy the same box, so data arriving — or the user switching
 range or asset — never moves anything below the card. That box is whatever height the widget's cell leaves over: the
@@ -112,10 +112,19 @@ are real, but they are a lower bound, and the total line says so. When none of t
 nothing to total, so the card says the history **couldn't be loaded** rather than printing `0` or "No rewards yet" —
 both would claim the selection earned nothing. "No rewards yet" is shown only when every indexer answered. An indexer
 counts as answering in full only when it paged through every payout of the year (a stash paid daily has far more rows
-than one page), its row count did not move under the scan, and it has processed its chain up to the head; a payout two
-indexers both hold is drawn once, and one they disagree about is left out and the history marked incomplete. A history
+than one page), its row count did not move under the scan, and it has processed its chain up to the head. One that stops
+short of its last page — a page fails, the page limit comes first, the rows change under the scan — contributes no
+payout at all, including the ones it returned before stopping, so a bar is never built from half of a list. A history
 that is not complete is kept for 30 seconds instead of ten minutes: the card is re-requested on the next visit after
 that.
+
+**A payout is drawn once, and only when it is known whose it is.** Every indexer names the chain it follows, and a
+payout is told apart by that chain and its id on it — the id alone repeats across chains, since it is built from a block
+number. Payouts of different chains are different payouts and add up. A payout two indexers of the same chain both hold
+is drawn once; one they hold with different figures — another amount, another block or time — is left out under both and
+the history is marked incomplete, rather than either copy winning or both being summed. An indexer that does not name
+its chain is not drawn next to another indexer's payouts at all, with the same mark. The bars are the same whichever
+indexer responds first, and the history records which indexer stands for which chain and blocks.
 
 ## Related
 

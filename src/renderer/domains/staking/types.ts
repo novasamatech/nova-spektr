@@ -1,7 +1,7 @@
 import { type Stake, type Validator } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type DataCompleteness } from './completeness';
+import { type DataCompleteness, type ScanReport } from './completeness';
 
 export type StakingMap = Record<AccountId, Stake | undefined>;
 export type ValidatorMap = Record<AccountId, Validator>;
@@ -9,12 +9,17 @@ export type RewardsMap = Record<AccountId, string>;
 
 /**
  * Reward totals per account, and how far they can be trusted: a `partial` total
- * is a lower bound (a source did not answer), and an `unavailable` one is
- * "could not be loaded", never "earned nothing".
+ * is a lower bound (a source is not part of it, or two sources disagree), and
+ * an `unavailable` one is "could not be loaded", never "earned nothing".
+ *
+ * `scan` says where the total came from: every source asked, the chain and
+ * blocks each one stands for, which of them are in the total, and the figures
+ * the sources disagree about.
  */
 export type StakingRewards = {
   rewards: RewardsMap;
   completeness: DataCompleteness;
+  scan: ScanReport;
 };
 
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
@@ -44,10 +49,15 @@ export type MonthlyRewardRecord = {
 
 /**
  * The payout records of a period, and whether every source contributed its
- * share — a `partial` list is missing the rows of a source that did not
- * answer.
+ * share — a `partial` list is missing the rows of a source that is not part of
+ * it, or the payouts two sources disagree about.
+ *
+ * `scan` says where the list came from: every source asked, the chain and
+ * blocks each one stands for, which of them are in the list, and the payouts
+ * the sources disagree about.
  */
 export type MonthlyRewards = {
   records: MonthlyRewardRecord[];
   completeness: DataCompleteness;
+  scan: ScanReport;
 };

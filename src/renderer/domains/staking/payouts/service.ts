@@ -6,7 +6,7 @@ import { type EraIndex } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../completeness';
+import { type DataCompleteness, type ScanReport } from '../completeness';
 import { type EraStorage } from '../era-storage';
 import { exposureKey } from '../exposure-key';
 import { type RewardSource } from '../types';
@@ -51,8 +51,8 @@ type ResolvedPayout = {
   isSelf: boolean;
 };
 
-function emptyResult(source: PayoutSource, completeness: DataCompleteness): UnclaimedPayouts {
-  return { total: '0', payouts: [], source, completeness };
+function emptyResult(source: PayoutSource, completeness: DataCompleteness, scan?: ScanReport): UnclaimedPayouts {
+  return { total: '0', payouts: [], source, completeness, scan };
 }
 
 /**
@@ -353,28 +353,38 @@ async function calculatePayouts(
   return { total: total.toString(), payouts };
 }
 
+type CollectedExposures = {
+  exposures: EraValidatorExposure[];
+  source: PayoutSource;
+  completeness: DataCompleteness;
+  /** The indexer scan's own report — absent when no indexer was asked. */
+  scan?: ScanReport;
+};
+
 /**
- * Indexer exposures when the indexer's answer is whole; otherwise whatever it
- * did return topped up by the bounded on-chain scan, and never `complete`.
+ * Indexer exposures when the indexer's answer is whole; otherwise the rows of
+ * the indexers that were read in full, topped up by the bounded on-chain scan,
+ * and never `complete`.
  */
 async function collectExposures(
   { api, stash, rewardSources }: GetUnclaimedPayoutsParams,
   eraFrom: EraIndex,
   eraTo: EraIndex,
   storage: EraStorage,
-): Promise<{ exposures: EraValidatorExposure[]; source: PayoutSource; completeness: DataCompleteness }> {
+): Promise<CollectedExposures> {
   const indexed =
     rewardSources.length > 0 ? await fetchNominatorEraValidators({ rewardSources, stash, eraFrom, eraTo }) : null;
+  const scan = indexed?.scan;
 
   if (indexed?.completeness === 'complete') {
-    return { exposures: indexed.exposures, source: 'subquery', completeness: 'complete' };
+    return { exposures: indexed.exposures, source: 'subquery', completeness: 'complete', scan };
   }
 
   const chain = await collectChainExposures(api, stash, eraFrom, eraTo, storage);
   const hasIndexed = indexed !== null && indexed.completeness !== 'unavailable';
 
   if (!hasIndexed && chain.completeness === 'unavailable') {
-    return { exposures: [], source: 'unavailable', completeness: 'unavailable' };
+    return { exposures: [], source: 'unavailable', completeness: 'unavailable', scan };
   }
 
   // On-chain figures win over the indexer's for the same key.
@@ -387,6 +397,7 @@ async function collectExposures(
     exposures: Array.from(merged.values()),
     source: hasIndexed ? 'subquery' : 'chain',
     completeness: 'partial',
+    scan,
   };
 }
 
@@ -400,13 +411,13 @@ async function scanUnclaimedPayouts(params: GetUnclaimedPayoutsParams): Promise<
     return emptyResult(rewardSources.length > 0 ? 'subquery' : 'chain', 'complete');
   }
 
-  const { exposures, source, completeness } = await collectExposures(params, eraFrom, eraTo, storage);
-  if (completeness === 'unavailable') return UNAVAILABLE_PAYOUTS;
-  if (exposures.length === 0) return emptyResult(source, completeness);
+  const { exposures, source, completeness, scan } = await collectExposures(params, eraFrom, eraTo, storage);
+  if (completeness === 'unavailable') return { ...UNAVAILABLE_PAYOUTS, scan };
+  if (exposures.length === 0) return emptyResult(source, completeness, scan);
 
   const legacyClaimedEras = await getLegacyClaimedEras(api, stash);
   const candidates = exposures.filter(exposure => !legacyClaimedEras.has(exposure.era));
-  if (candidates.length === 0) return emptyResult(source, completeness);
+  if (candidates.length === 0) return emptyResult(source, completeness, scan);
 
   // Keys the chain did not answer for are dropped: offering them could build a
   // claim the runtime rejects as already paid. Their absence makes the result
@@ -414,15 +425,15 @@ async function scanUnclaimedPayouts(params: GetUnclaimedPayoutsParams): Promise<
   const { claimed, unknown } = await getClaimedPages(api, candidates);
   const answered =
     unknown.size === 0 ? candidates : candidates.filter(e => !unknown.has(exposureKey(e.era, e.validator)));
-  if (answered.length === 0) return { ...UNAVAILABLE_PAYOUTS, source };
+  if (answered.length === 0) return { ...UNAVAILABLE_PAYOUTS, source, scan };
 
   const { resolved, incomplete } = await resolvePayoutPages(api, stash, answered, claimed, storage);
   const finalCompleteness = unknown.size > 0 || incomplete ? 'partial' : completeness;
-  if (resolved.length === 0) return emptyResult(source, finalCompleteness);
+  if (resolved.length === 0) return emptyResult(source, finalCompleteness, scan);
 
   const { total, payouts } = await calculatePayouts(api, resolved, storage);
 
-  return { total, payouts, source, completeness: finalCompleteness };
+  return { total, payouts, source, completeness: finalCompleteness, scan };
 }
 
 /**

@@ -4,6 +4,7 @@ import { type Chain, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
 import { type DataCompleteness } from '../completeness';
+import { emptyScan } from '../source-scan';
 import { type MonthlyRewards, type RewardSource, type RewardsMap, type StakingRewards } from '../types';
 
 import {
@@ -16,8 +17,8 @@ import {
 } from './resource';
 import { collectChainRewardSources } from './service';
 
-const EMPTY_REWARDS: StakingRewards = { rewards: {}, completeness: 'unavailable' };
-const EMPTY_MONTHLY: MonthlyRewards = { records: [], completeness: 'unavailable' };
+const EMPTY_REWARDS: StakingRewards = { rewards: {}, completeness: 'unavailable', scan: emptyScan('block') };
+const EMPTY_MONTHLY: MonthlyRewards = { records: [], completeness: 'unavailable', scan: emptyScan('block') };
 
 /**
  * What can be said while nothing is requested: with no account there is nothing
@@ -69,7 +70,7 @@ export const useStakingRewards = (
         merged[account] = cached.rewards[account] ?? '0';
       }
 
-      return { rewards: merged, completeness: cached.completeness };
+      return { rewards: merged, completeness: cached.completeness, scan: cached.scan };
     },
   });
 
@@ -80,6 +81,11 @@ export const useStakingRewards = (
      * is a lower bound and an `unavailable` one could not be loaded at all.
      */
     completeness: params ? data.completeness : idleCompleteness(accounts),
+    /**
+     * Where the figures came from: every source asked, the chain each one
+     * stands for, which of them are in the figures and what they disagree on.
+     */
+    scan: data.scan,
     pending,
   };
 };
@@ -117,6 +123,11 @@ export const useMonthlyRewards = (accounts: AccountId[], chain: Chain | null, ch
      * list is missing a source's rows and an `unavailable` one says nothing.
      */
     completeness: params ? data.completeness : idleCompleteness(accounts),
+    /**
+     * Where the list came from: every source asked, the chain each one stands
+     * for, which of them are in the list and which payouts they disagree on.
+     */
+    scan: data.scan,
     pending,
   };
 };

@@ -1,6 +1,6 @@
 import { type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../completeness';
+import { type DataCompleteness, type ScanReport } from '../completeness';
 
 /**
  * Where the exposures of a scan came from — provenance only. Whether the answer
@@ -32,6 +32,13 @@ export type UnclaimedPayouts = {
    * could be checked.
    */
   completeness: DataCompleteness;
+  /**
+   * Where the indexed history came from: every indexer asked, the eras each one
+   * stands for, the eras nobody holds and the rows the indexers disagree about.
+   * Absent when no indexer was asked — the on-chain scan answered alone — or
+   * when nothing could be checked.
+   */
+  scan?: ScanReport;
 };
 
 /**

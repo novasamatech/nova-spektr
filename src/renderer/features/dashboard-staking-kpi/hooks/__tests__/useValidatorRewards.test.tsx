@@ -18,6 +18,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type EraRewardsParams,
   type EraValidatorRewards,
+  type ScanReport,
   type StakingPosition,
   type eraRewardsService,
   eraRewards,
@@ -107,10 +108,17 @@ const request = (chainId: ChainId, stash: AccountId): EraRewardsParams => {
   return { chainId, api, stashes: [stash], ...eraRange, rewardSources: [] };
 };
 
-const answer = (stash: AccountId, completeness: EraValidatorRewards['completeness']): EraValidatorRewards => ({
+const NO_SCAN: ScanReport = { unit: 'era', sources: [], missing: [], conflicts: [] };
+
+const answer = (
+  stash: AccountId,
+  completeness: EraValidatorRewards['completeness'],
+  scan: ScanReport = NO_SCAN,
+): EraValidatorRewards => ({
   rewards:
     completeness === 'unavailable' ? [] : [{ era: 99, validator, accountId: stash, amount: '10', isSelf: false }],
   completeness,
+  scan,
 });
 
 const wrapperFor = (scope: Scope) => {
@@ -159,6 +167,24 @@ describe('useValidatorRewards · completeness', () => {
     expect(result.current.incompleteChains).toEqual([POLKADOT_AH]);
     // What the partial answer found is kept — it is real, only not the whole.
     expect(result.current.rewards.map((reward) => reward.chainId).sort()).toEqual([POLKADOT_AH, KUSAMA_AH].sort());
+  });
+
+  it('names a chain whose indexers disagree about an era row as incomplete and keeps the rest', async () => {
+    const polkadotStash = createAccountId('conflict-polkadot');
+    const scope = forkScope();
+
+    // The row the indexers disagree on is not replayed; what they agree on is.
+    const conflicting: ScanReport = { ...NO_SCAN, conflicts: [`98-${validator}`] };
+    await seedReplay(scope, request(POLKADOT_AH, polkadotStash), answer(polkadotStash, 'partial', conflicting));
+
+    const positions = [position(POLKADOT_AH, polkadotStash)];
+    const { result } = renderHook(() => useValidatorRewards(positions, DEFAULT_REWARD_WINDOW), {
+      wrapper: wrapperFor(scope),
+    });
+
+    expect(result.current.incompleteChains).toEqual([POLKADOT_AH]);
+    expect(result.current.unavailableChains).toEqual([]);
+    expect(result.current.rewards.map((reward) => reward.era)).toEqual([99]);
   });
 
   it('reports an attribution that could not be loaded as incomplete, not as nothing earned', async () => {

@@ -29,12 +29,17 @@ import {
 
 const indexer = vi.hoisted(() => {
   type Response = {
+    indexedFrom: { nodes: { era: number }[] };
     indexedTo: { nodes: { era: number }[] };
     eraValidatorInfos: { totalCount: number; nodes: unknown[] };
   };
 
   const state: { response: Response; requests: number } = {
-    response: { indexedTo: { nodes: [] }, eraValidatorInfos: { totalCount: 0, nodes: [] } },
+    response: {
+      indexedFrom: { nodes: [] },
+      indexedTo: { nodes: [] },
+      eraValidatorInfos: { totalCount: 0, nodes: [] },
+    },
     requests: 0,
   };
 
@@ -75,6 +80,7 @@ const CAUGHT_UP = 1_000_000;
 
 function setIndexerResponse(nodes: ReturnType<typeof indexerNode>[], indexedTo = CAUGHT_UP) {
   indexer.response = {
+    indexedFrom: { nodes: [{ era: 0 }] },
     indexedTo: { nodes: [{ era: indexedTo }] },
     eraValidatorInfos: { totalCount: nodes.length, nodes },
   };
@@ -252,7 +258,7 @@ describe('Staking Payouts - Integration', () => {
     const result = await requestPayouts(handle, activeEra);
 
     // An indexer that answered "no exposures" is still an answer.
-    expect(result).toEqual({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
+    expect(result).toMatchObject({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
     expect(indexer.requests).toBe(1);
   });
 
@@ -283,7 +289,7 @@ describe('Staking Payouts - Integration', () => {
     const refreshed = await requestPayouts(handle, activeEra);
 
     expect(indexer.requests).toBe(2);
-    expect(refreshed).toEqual({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
+    expect(refreshed).toMatchObject({ total: '0', payouts: [], source: 'subquery', completeness: 'complete' });
   });
 
   it('should retry a partial result after thirty seconds instead of five minutes', async () => {
