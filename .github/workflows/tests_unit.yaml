@@ -52,6 +52,17 @@ jobs:
       checks: write
 
     steps:
+      # Local actions resolve from the job workspace; only the directory of the one used
+      # here is checked out. It runs first on purpose: checkout clears the workspace, so
+      # the reports are downloaded after it.
+      - name: ⚙️Checkout local actions
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          sparse-checkout: |
+            .github/workflows/publish-test-results
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: ⬇️ Download shard reports
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -60,7 +71,7 @@ jobs:
           merge-multiple: true
 
       - name: 📄 Post results
-        uses: EnricoMi/publish-unit-test-result-action/linux@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        uses: ./.github/workflows/publish-test-results
         with:
           files: ./reports/junit-*.xml
           check_name: 'Unit Test Results'

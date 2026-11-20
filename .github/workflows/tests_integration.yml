@@ -94,6 +94,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           sparse-checkout: |
+            .github/workflows/publish-test-results
             .github/workflows/install-allurectl
             .github/workflows/notify-telegram
           sparse-checkout-cone-mode: false
@@ -110,7 +111,7 @@ jobs:
 
       - name: 📄 Post results
         if: ${{ !cancelled() }}
-        uses: EnricoMi/publish-unit-test-result-action/linux@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        uses: ./.github/workflows/publish-test-results
         with:
           files: test-results/junit.xml
           check_name: 'Integration Test Results'
