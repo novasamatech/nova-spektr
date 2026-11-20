@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../../completeness';
+import { type DataCompleteness, type ScanReport } from '../../completeness';
 import { type RewardSource } from '../../types';
 import { PERBILL } from '../calculator';
 import { getUnclaimedPayouts } from '../service';
@@ -58,6 +58,23 @@ type SetupParams = {
   commission?: BN;
 };
 
+/** The indexer scan's own report — handed on untouched, whatever it says. */
+const SCAN: ScanReport = {
+  unit: 'era',
+  sources: [
+    {
+      url: 'https://indexer.test',
+      chain: '0xhub',
+      status: 'complete',
+      merged: true,
+      range: { from: 0, to: 100 },
+      upToDate: true,
+    },
+  ],
+  missing: [],
+  conflicts: [],
+};
+
 function setup({
   exposures = [{ era: ERA, validator: VALIDATOR, total: '1000', own: '200' }],
   indexerCompleteness = 'complete',
@@ -75,6 +92,7 @@ function setup({
   fetchExposures.mockResolvedValue({
     exposures: indexerCompleteness === 'unavailable' ? [] : exposures,
     completeness: indexerCompleteness,
+    scan: SCAN,
   });
 
   storage.bonded.mockResolvedValue([{ stash: STASH, controller: STASH }]);
@@ -155,6 +173,7 @@ describe('domains/staking/payouts/service', () => {
     expect(result.completeness).toEqual('complete');
     expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
     expect(result.total).toEqual('135');
+    expect(result.scan).toEqual(SCAN);
     expect(storage.nominators).not.toHaveBeenCalled();
   });
 
@@ -220,6 +239,7 @@ describe('domains/staking/payouts/service', () => {
 
     expect(fetchExposures).not.toHaveBeenCalled();
     expect(result.source).toEqual('chain');
+    expect(result.scan).toBeUndefined();
     // Only the last few eras of the current nominations were looked at.
     expect(result.completeness).toEqual('partial');
     expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
@@ -321,6 +341,7 @@ describe('domains/staking/payouts/service', () => {
     expect(storage.nominators).toHaveBeenCalled();
     expect(result.source).toEqual('subquery');
     expect(result.completeness).toEqual('partial');
+    expect(result.scan).toEqual(SCAN);
     expect(result.payouts).toEqual([{ era: ERA, validator: VALIDATOR, page: 0, amount: '135' }]);
   });
 

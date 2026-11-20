@@ -1,6 +1,6 @@
 # Dashboard Staking Summary
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -22,7 +22,10 @@ They ship no UI. When that debt is settled they go.
 Because they read the same reward history as the live widgets, the two retired reward widgets follow the same rule about
 it: a history one of its indexers did not answer for is marked incomplete next to the total, and one that could not be
 loaded at all reads "Couldn't load" instead of a zero or a "no rewards" message — so they stay a faithful reference
-rather than one that prints a partial sum as a total.
+rather than one that prints a partial sum as a total. The same holds for the stricter reading of that history: an
+indexer that was not read to its last page adds nothing, totals are added only across indexers that follow different
+chains, and a figure two indexers of one chain disagree on is left out — each of which the widgets show as the same
+incomplete mark.
 
 ## Who can use it / when it applies
 

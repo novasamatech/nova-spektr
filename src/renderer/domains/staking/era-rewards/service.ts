@@ -7,6 +7,7 @@ import { stakingPallet } from '@/shared/pallet/staking';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { exposureKey } from '../exposure-key';
 import { calculateNominatorPayout, calculateValidatorPayout } from '../payouts/calculator';
+import { emptyScan } from '../source-scan';
 import { type RewardSource } from '../types';
 
 import { fetchEraExposureShares } from './subquery';
@@ -69,16 +70,16 @@ function computeRewards(
   return rewards.sort((a, b) => b.era - a.era);
 }
 
-const UNAVAILABLE_REWARDS: EraValidatorRewards = { rewards: [], completeness: 'unavailable' };
+const UNAVAILABLE_REWARDS: EraValidatorRewards = { rewards: [], completeness: 'unavailable', scan: emptyScan('era') };
 
 async function replayEraRewards({ api, stashes, eraFrom, eraTo, rewardSources }: Params): Promise<EraValidatorRewards> {
   // No closed era in the range, or nobody to ask about: nothing was earned, and
   // that is known without asking anyone.
-  if (eraTo < eraFrom || stashes.length === 0) return { rewards: [], completeness: 'complete' };
+  if (eraTo < eraFrom || stashes.length === 0) return { rewards: [], completeness: 'complete', scan: emptyScan('era') };
 
-  const { exposures, completeness } = await fetchEraExposureShares({ rewardSources, stashes, eraFrom, eraTo });
-  if (completeness === 'unavailable') return UNAVAILABLE_REWARDS;
-  if (exposures.length === 0) return { rewards: [], completeness };
+  const { exposures, completeness, scan } = await fetchEraExposureShares({ rewardSources, stashes, eraFrom, eraTo });
+  if (completeness === 'unavailable') return { ...UNAVAILABLE_REWARDS, scan };
+  if (exposures.length === 0) return { rewards: [], completeness, scan };
 
   const eras = uniq(exposures.map(exposure => exposure.era));
 
@@ -105,7 +106,7 @@ async function replayEraRewards({ api, stashes, eraFrom, eraTo, rewardSources }:
     eraPrefs.map(({ era, validator, prefs }) => [exposureKey(era, validator), prefs.commission]),
   );
 
-  return { rewards: computeRewards(exposures, rewardByEra, pointsByEra, commissionByKey), completeness };
+  return { rewards: computeRewards(exposures, rewardByEra, pointsByEra, commissionByKey), completeness, scan };
 }
 
 /**
@@ -119,7 +120,9 @@ async function replayEraRewards({ api, stashes, eraFrom, eraTo, rewardSources }:
  * decides the era range instead of always asking for the full history.
  *
  * The answer is as complete as the exposure scan behind it: rewards replayed
- * over a `partial` scan are real but add up to a lower bound.
+ * over a `partial` scan are real but add up to a lower bound. The scan's own
+ * report travels with it — which indexer stands for which eras, which eras
+ * nobody holds, and which rows the indexers disagree about.
  *
  * Never rejects: a read that fails outright turns the whole answer
  * `unavailable`, which the UI shows as "could not load" rather than as zero.

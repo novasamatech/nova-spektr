@@ -1,6 +1,6 @@
 import { type EraIndex } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../completeness';
+import { type DataCompleteness, type ScanReport } from '../completeness';
 
 /**
  * One stash's share of one validator's payout in one era.
@@ -44,6 +44,8 @@ export type EraExposureShares = {
 export type IndexedExposureShares = {
   exposures: EraExposureShares[];
   completeness: DataCompleteness;
+  /** Which indexer stands for which eras, and what the scan is missing. */
+  scan: ScanReport;
 };
 
 /**
@@ -54,4 +56,11 @@ export type IndexedExposureShares = {
 export type EraValidatorRewards = {
   rewards: EraValidatorReward[];
   completeness: DataCompleteness;
+  /**
+   * Where the exposures behind the figure came from: every indexer asked, the
+   * eras each one stands for, the eras nobody holds and the rows the indexers
+   * disagree about. No source in it — no indexer was asked, or the replay
+   * failed before its answer could be used.
+   */
+  scan: ScanReport;
 };

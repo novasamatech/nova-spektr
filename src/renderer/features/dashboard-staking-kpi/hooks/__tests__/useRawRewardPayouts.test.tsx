@@ -13,7 +13,13 @@ import {
   polkadotAssetHubChain,
 } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MonthlyRewards, type MonthlyRewardsParams, rewards, rewardsService } from '@/domains/staking';
+import {
+  type MonthlyRewards,
+  type MonthlyRewardsParams,
+  type ScanReport,
+  rewards,
+  rewardsService,
+} from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { useRawPayoutsSince, useRawRewardPayouts } from '../useRawRewardPayouts';
 
@@ -59,8 +65,14 @@ const wrapperFor = (scope: Scope) => {
   return Wrapper;
 };
 
-const seedHistory = async (scope: Scope, params: MonthlyRewardsParams, result: MonthlyRewards) => {
-  fetchRecords.mockResolvedValueOnce(result);
+const NO_SCAN: ScanReport = { unit: 'block', sources: [], missing: [], conflicts: [] };
+
+const seedHistory = async (
+  scope: Scope,
+  params: MonthlyRewardsParams,
+  result: Pick<MonthlyRewards, 'records' | 'completeness'> & { scan?: ScanReport },
+) => {
+  fetchRecords.mockResolvedValueOnce({ scan: NO_SCAN, ...result });
   await allSettled(monthlyRewardsResource.fetch, { scope, params });
 };
 
@@ -97,6 +109,32 @@ describe('useRawRewardPayouts · completeness', () => {
 
     expect(result.current.pendingChains).toEqual([KUSAMA_AH]);
     expect(result.current.incompleteChains).toEqual([]);
+  });
+
+  it('counts a chain whose sources disagree about a payout as incomplete', async () => {
+    const account = createAccountId('raw-payouts-conflict');
+    const chains: Record<ChainId, Chain> = { [POLKADOT_AH]: withRewardSource(polkadotAssetHubChain) };
+    const scope = fork({ values: [[networkModel.$chains, chains]] });
+    const { result: since } = renderHook(() => useRawPayoutsSince());
+
+    // The payout the sources disagree on is not among the records, so the file
+    // would be missing a row: the same state as a source that did not answer.
+    await seedHistory(
+      scope,
+      {
+        chainId: POLKADOT_AH,
+        accounts: [account],
+        rewardSources: rewardsService.collectChainRewardSources(chains[POLKADOT_AH]!, chains, 'staking-chain'),
+        since: since.current,
+      },
+      { records: [], completeness: 'partial', scan: { ...NO_SCAN, conflicts: ['0xhub:7-1'] } },
+    );
+
+    const requests = [{ chainId: POLKADOT_AH, accountIds: [account] }];
+    const { result } = renderHook(() => useRawRewardPayouts(requests), { wrapper: wrapperFor(scope) });
+
+    expect(result.current.incompleteChains).toEqual([POLKADOT_AH]);
+    expect(result.current.pendingChains).toEqual([]);
   });
 
   it('counts a chain with no source to ask as incomplete, not as a history without payouts', () => {

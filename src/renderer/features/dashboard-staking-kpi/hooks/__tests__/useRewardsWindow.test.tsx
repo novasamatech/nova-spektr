@@ -13,7 +13,13 @@ import {
   polkadotAssetHubChain,
 } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type StakingRewards, type StakingRewardsParams, rewards, rewardsService } from '@/domains/staking';
+import {
+  type ScanReport,
+  type StakingRewards,
+  type StakingRewardsParams,
+  rewards,
+  rewardsService,
+} from '@/domains/staking';
 import { networkModel } from '@/entities/network';
 import { useRewardsWindow } from '../useRewardsWindow';
 
@@ -74,8 +80,14 @@ const request = (chainId: ChainId, accounts: AccountId[]): StakingRewardsParams 
   since: SINCE,
 });
 
-const seedWindow = async (scope: Scope, params: StakingRewardsParams, result: StakingRewards) => {
-  fetchRewards.mockResolvedValueOnce(result);
+const NO_SCAN: ScanReport = { unit: 'block', sources: [], missing: [], conflicts: [] };
+
+const seedWindow = async (
+  scope: Scope,
+  params: StakingRewardsParams,
+  result: Pick<StakingRewards, 'rewards' | 'completeness'> & { scan?: ScanReport },
+) => {
+  fetchRewards.mockResolvedValueOnce({ scan: NO_SCAN, ...result });
   await allSettled(stakingRewardsResource.fetch, { scope, params });
 };
 
@@ -96,6 +108,27 @@ describe('useRewardsWindow · completeness', () => {
 
     expect(result.current.byChain[POLKADOT_AH]).toEqual({ [account]: '70' });
     expect(result.current.completeness).toEqual({ [POLKADOT_AH]: 'partial', [KUSAMA_AH]: 'unavailable' });
+  });
+
+  it('keeps a chain whose sources disagree about a total as partial, with the figure they agree on', async () => {
+    const account = createAccountId('rewards-window-conflict');
+    const accounts = [account];
+    const scope = fork({ values: [[networkModel.$chains, chains]] });
+
+    // The domain leaves a total two sources disagree on out of the figure and
+    // reports the answer as partial; the card needs nothing more to mark it.
+    await seedWindow(scope, request(POLKADOT_AH, accounts), {
+      rewards: { [account]: '40' },
+      completeness: 'partial',
+      scan: { ...NO_SCAN, conflicts: [`0xhub:${account}`] },
+    });
+
+    const { result } = renderHook(() => useRewardsWindow([POLKADOT_AH], accounts, SINCE), {
+      wrapper: wrapperFor(scope),
+    });
+
+    expect(result.current.byChain[POLKADOT_AH]).toEqual({ [account]: '40' });
+    expect(result.current.completeness).toEqual({ [POLKADOT_AH]: 'partial' });
   });
 
   it('says nothing about a chain whose window has not answered yet', async () => {

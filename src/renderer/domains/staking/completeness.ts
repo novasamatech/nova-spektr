@@ -31,3 +31,71 @@ export function combineCompleteness(parts: readonly DataCompleteness[]): DataCom
 
   return 'partial';
 }
+
+/**
+ * How the page walk of one source ended. Only a `complete` walk hands its rows
+ * over; the rows of any other walk are thrown away where they were read.
+ *
+ * - `complete` — every page was read and the rows add up to the count the source
+ *   announced;
+ * - `failed` — a page could not be read, or the source delivered fewer rows than
+ *   it announced;
+ * - `cut-short` — the page limit was reached before the announced count, or the
+ *   set changed while it was being read.
+ */
+export type SourceScanStatus = 'complete' | 'failed' | 'cut-short';
+
+/** A stretch of eras or blocks, inclusive on both ends. */
+export type ScanRange = { from: number; to: number };
+
+/** What one source contributed to a merged answer, and what it stands for. */
+export type SourceScan = {
+  /** The endpoint that was asked. */
+  url: string;
+  /**
+   * Genesis hash of the chain the endpoint says it indexes. `null` — it did not
+   * say, or did not answer at all.
+   */
+  chain: string | null;
+  status: SourceScanStatus;
+  /**
+   * Its rows are part of the merged answer. Never true for a walk that did not
+   * complete; a complete one is still left out when nothing proves its rows are
+   * not the rows of another source.
+   */
+  merged: boolean;
+  /**
+   * What the source says it holds, in the unit of the report: its oldest and
+   * newest era, or the first and last block of its chain it has processed.
+   * `null` — it did not say, or holds nothing.
+   */
+  range: ScanRange | null;
+  /**
+   * The source has reached the end of what was asked: the last era of the
+   * range, or the head of its chain.
+   */
+  upToDate: boolean;
+};
+
+/**
+ * Where a merged answer came from: every source that was asked, which part of
+ * history each one stands for, and what the answer is missing.
+ *
+ * The same whatever order the sources answered in or were listed in.
+ */
+export type ScanReport = {
+  /** The unit of every range in the report. */
+  unit: 'era' | 'block';
+  sources: SourceScan[];
+  /**
+   * Stretches of the requested era range no merged source holds. Always empty
+   * for a `block` report: a reward scan is asked by time, so what it is missing
+   * is read off the sources — one that is not merged or not up to date.
+   */
+  missing: ScanRange[];
+  /**
+   * Identifiers of the records two merged sources hold with different values.
+   * None of them is in the answer.
+   */
+  conflicts: string[];
+};

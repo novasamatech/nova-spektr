@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { type Chain, type ChainId, ExternalType } from '@/shared/core';
 import { keys, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../completeness';
 import { AssetHubChains } from '../constants';
+import { type ChainSourceMeta, type SourceWalk, emptyScan, mergeChainScans, walkSourcePages } from '../source-scan';
 import {
   type MonthlyRewardRecord,
   type MonthlyRewards,
@@ -131,12 +131,18 @@ const MAX_INDEXER_LAG_BLOCKS = 100;
 const MAX_INDEXER_IDLE_MS = 60 * 60 * 1000;
 
 /**
- * Where the indexer stands. Read with every request: an indexer that has not
- * reached the end of the period answers "no rows" for what it has not seen yet,
- * and that answer must not be read as "nothing was paid".
+ * What the indexer says about itself: the chain it indexes, the blocks of it it
+ * has processed, and where the chain's head is. Read with every request.
+ *
+ * An indexer that has not reached the end of the period answers "no rows" for
+ * what it has not seen yet, and that answer must not be read as "nothing was
+ * paid". The chain is what tells two sources' rewards apart: a reward is an
+ * event of exactly one chain.
  */
 const INDEXER_STATUS = `
     _metadata {
+      genesisHash
+      startHeight
       lastProcessedHeight
       targetHeight
       lastProcessedTimestamp
@@ -206,6 +212,8 @@ const integerSchema = z.union([z.string().regex(/^\d+$/), z.number().int().nonne
  */
 const indexerStatusSchema = z
   .object({
+    genesisHash: z.string().min(1).nullish(),
+    startHeight: z.number().int().nullish(),
     lastProcessedHeight: z.number().int().nullish(),
     targetHeight: z.number().int().nullish(),
     lastProcessedTimestamp: integerSchema.nullish(),
@@ -259,76 +267,20 @@ function isCaughtUp(status: IndexerStatus, now: number): boolean {
   return target - height <= MAX_INDEXER_LAG_BLOCKS && now - processedAt <= MAX_INDEXER_IDLE_MS;
 }
 
-/** What one source said, kept apart from every other source's answer. */
-type SourceRead<T> = {
-  value: T;
-  /** Every row of the filtered set was read, from one consistent set. */
-  paged: boolean;
-  /** The indexer has reached the end of the period. */
-  covers: boolean;
-};
-
-type Page<T> = { rows: T[]; totalCount: number; status: IndexerStatus };
-
 /**
- * Pages through one indexer's list until `totalCount` is reached.
- *
- * Where the indexer stands and how many rows the set holds are fixed by the
- * first page: a count that moves while paging means rows were added or removed
- * under the scan, so the pages no longer form one set and the read is cut
- * short. Running into `maxPages` is cut short too. A page that cannot be read,
- * or an empty page before `totalCount`, makes the whole read unusable
- * (`null`).
+ * What a source declares about itself. One that does not say which chain it
+ * indexes, or which blocks it has processed, declares nothing on that point —
+ * it is never guessed.
  */
-async function readPages<T>(
-  url: string,
-  maxPages: number,
-  requestPage: (offset: number) => Promise<Page<T> | null>,
-): Promise<SourceRead<T[]> | null> {
-  const rows: T[] = [];
-  let expectedCount: number | null = null;
-  let covers = false;
-  let offset = 0;
+function toSourceMeta(status: IndexerStatus, now: number): ChainSourceMeta {
+  const from = status?.startHeight;
+  const to = status?.lastProcessedHeight;
 
-  for (let page = 0; page < maxPages; page++) {
-    const result = await requestPage(offset);
-    if (!result) return null;
-
-    if (expectedCount === null) {
-      expectedCount = result.totalCount;
-      covers = isCaughtUp(result.status, Date.now());
-    } else if (result.totalCount !== expectedCount) {
-      return { value: rows, paged: false, covers };
-    }
-
-    rows.push(...result.rows);
-    offset += result.rows.length;
-    if (offset >= expectedCount) return { value: rows, paged: true, covers };
-
-    if (result.rows.length === 0) {
-      console.error('Staking: indexer returned fewer reward rows than it promised', url);
-
-      return null;
-    }
-  }
-
-  return { value: rows, paged: false, covers };
-}
-
-/**
- * How far an answer merged from several sources can be trusted. The sources
- * hold different slices of the same history (before and after the staking
- * migration), so one that did not answer, was cut short or has not reached the
- * end of the period leaves a hole nobody else fills.
- */
-function mergedCompleteness(answers: readonly (SourceRead<unknown> | null)[], hasConflicts: boolean): DataCompleteness {
-  const answered = answers.filter(nonNullable);
-  if (answered.length === 0) return 'unavailable';
-
-  const complete =
-    answered.length === answers.length && !hasConflicts && answered.every(answer => answer.paged && answer.covers);
-
-  return complete ? 'complete' : 'partial';
+  return {
+    chain: status?.genesisHash ?? null,
+    range: nonNullable(from) && nonNullable(to) ? { from, to } : null,
+    upToDate: isCaughtUp(status, now),
+  };
 }
 
 type FetchStakingRewardsParams = {
@@ -338,28 +290,35 @@ type FetchStakingRewardsParams = {
   since?: number;
 };
 
+/** One account's reward total as one source holds it. */
+type AccountTotal = { accountId: AccountId; amount: string };
+
 /**
- * What one source holds for the accounts. `null` — the source did not answer,
- * or its answer could not be read in full; nothing of it is used.
+ * One row per account: a source's own rows for the same account are its own to
+ * add up.
  */
-async function fetchSourceRewards(
+function sumByAccount(rows: { address: string; amount: string }[]): AccountTotal[] {
+  const sums = new Map<AccountId, BN>();
+  for (const { address, amount } of rows) {
+    const accountId = toAccountId(address);
+    sums.set(accountId, (sums.get(accountId) ?? new BN(0)).add(new BN(amount)));
+  }
+
+  return [...sums].map(([accountId, amount]) => ({ accountId, amount: amount.toString() }));
+}
+
+/**
+ * What one source holds for the accounts, read on its own. Totals are handed
+ * over only when the source was read in full.
+ */
+async function readSourceTotals(
   { url, addressPrefix }: RewardSource,
   accounts: AccountId[],
   since: number | undefined,
-): Promise<SourceRead<Map<AccountId, BN>> | null> {
+): Promise<SourceWalk<AccountTotal, ChainSourceMeta>> {
   try {
     const client = new GraphQLClient(url);
     const addresses = accounts.map(accountId => toAddress(accountId, { prefix: addressPrefix }));
-
-    const sumByAccount = (rows: { address: string; amount: string }[]) => {
-      const sums = new Map<AccountId, BN>();
-      for (const { address, amount } of rows) {
-        const accountId = toAccountId(address);
-        sums.set(accountId, (sums.get(accountId) ?? new BN(0)).add(new BN(amount)));
-      }
-
-      return sums;
-    };
 
     if (since !== undefined) {
       // One aggregate row per account, not a paged list.
@@ -368,7 +327,7 @@ async function fetchSourceRewards(
       if (!parsed.success) {
         console.error('Staking: unexpected accountRewards shape from', url, parsed.error);
 
-        return null;
+        return { status: 'failed', meta: null };
       }
 
       const rows = parsed.data.accountRewards.groupedAggregates.flatMap(({ keys: groupKeys, sum }) => {
@@ -377,10 +336,10 @@ async function fetchSourceRewards(
         return address ? [{ address, amount: sum.amount }] : [];
       });
 
-      return { value: sumByAccount(rows), paged: true, covers: isCaughtUp(parsed.data._metadata, Date.now()) };
+      return { status: 'complete', rows: sumByAccount(rows), meta: toSourceMeta(parsed.data._metadata, Date.now()) };
     }
 
-    const read = await readPages(url, MAX_TOTAL_PAGES, async offset => {
+    const walk = await walkSourcePages(url, MAX_TOTAL_PAGES, async offset => {
       const response = await client.request(GET_TOTAL_REWARDS, { addresses, first: PAGE_SIZE, offset });
       const parsed = totalRewardsSchema.safeParse(response);
       if (!parsed.success) {
@@ -394,28 +353,37 @@ async function fetchSourceRewards(
       return {
         rows: nodes.map(({ id, amount }) => ({ address: id, amount })),
         totalCount,
-        status: parsed.data._metadata,
+        meta: toSourceMeta(parsed.data._metadata, Date.now()),
       };
     });
-    if (!read) return null;
 
-    return { ...read, value: sumByAccount(read.value) };
+    return walk.status === 'complete' ? { ...walk, rows: sumByAccount(walk.rows) } : walk;
   } catch (error) {
     console.error('Staking: rewards request failed for', url, error);
 
-    return null;
+    return { status: 'failed', meta: null };
   }
 }
 
 /**
- * Rewards of the accounts — all-time, or since `since` — summed over every
- * configured source, and how far the sum can be trusted.
+ * Rewards of the accounts — all-time, or since `since` — over every configured
+ * source, how far the figure can be trusted, and where it came from.
  *
- * Each source is read on its own and only its whole answer is added: a source
- * that fails contributes nothing. The sum is `complete` only when every source
- * answered in full and has indexed up to now; otherwise it is a lower bound
- * (`partial`), and with no source answering it says nothing (`unavailable`) —
- * the zeroes of `baseMap` are then placeholders, not "earned nothing".
+ * Each source is read on its own and only a source read in full is used: one
+ * that fails, or whose walk is cut short, contributes nothing.
+ *
+ * A source's total is an aggregate — there are no payouts in it to tell apart —
+ * so totals are added together only across sources that say they index
+ * different chains: a reward is an event of exactly one chain, and those totals
+ * cannot count the same one twice. Sources of the same chain hold the same
+ * rewards: a total they agree on is counted once, one they disagree on is a
+ * conflict and is left out of the figure. A source that does not say which
+ * chain it indexes is not added to another source's total at all.
+ *
+ * The figure is `complete` only when every source is in it, has indexed up to
+ * now, and none of them disagree; otherwise it is a lower bound (`partial`),
+ * and with no source in it it says nothing (`unavailable`) — the zeroes of
+ * `baseMap` are then placeholders, not "earned nothing".
  */
 export const fetchStakingRewards = async ({
   accounts,
@@ -423,10 +391,17 @@ export const fetchStakingRewards = async ({
   baseMap,
   since,
 }: FetchStakingRewardsParams): Promise<StakingRewards> => {
-  if (accounts.length === 0) return { rewards: baseMap, completeness: 'complete' };
-  if (rewardSources.length === 0) return { rewards: baseMap, completeness: 'unavailable' };
+  if (accounts.length === 0) return { rewards: baseMap, completeness: 'complete', scan: emptyScan('block') };
 
-  const answers = await Promise.all(rewardSources.map(source => fetchSourceRewards(source, accounts, since)));
+  const sources = await Promise.all(
+    rewardSources.map(async source => ({ url: source.url, walk: await readSourceTotals(source, accounts, since) })),
+  );
+
+  const { records, completeness, scan } = mergeChainScans({
+    sources,
+    getId: total => total.accountId,
+    isSame: (a, b) => a.amount === b.amount,
+  });
 
   const sums = new Map<AccountId, BN>();
   for (const accountId of keys(baseMap)) {
@@ -436,12 +411,9 @@ export const fetchStakingRewards = async ({
     }
   }
 
-  // Safe to add up: every source is a different indexer (deduplicated by URL),
-  // each indexes one chain, and a payout is an event of exactly one chain.
-  for (const answer of answers.filter(nonNullable)) {
-    for (const [accountId, amount] of answer.value) {
-      sums.set(accountId, (sums.get(accountId) ?? new BN(0)).add(amount));
-    }
+  // Every total left here belongs to a different chain, or to another account.
+  for (const { accountId, amount } of records) {
+    sums.set(accountId, (sums.get(accountId) ?? new BN(0)).add(new BN(amount)));
   }
 
   const rewards: RewardsMap = { ...baseMap };
@@ -449,7 +421,7 @@ export const fetchStakingRewards = async ({
     rewards[accountId] = amount.toString();
   }
 
-  return { rewards, completeness: mergedCompleteness(answers, false) };
+  return { rewards, completeness, scan };
 };
 
 type FetchMonthlyRewardsParams = {
@@ -458,16 +430,16 @@ type FetchMonthlyRewardsParams = {
   since: number;
 };
 
-async function fetchSourceRecords(
+async function readSourceRecords(
   { url, addressPrefix }: RewardSource,
   accounts: AccountId[],
   since: number,
-): Promise<SourceRead<MonthlyRewardRecord[]> | null> {
+): Promise<SourceWalk<MonthlyRewardRecord, ChainSourceMeta>> {
   try {
     const client = new GraphQLClient(url);
     const addresses = accounts.map(accountId => toAddress(accountId, { prefix: addressPrefix }));
 
-    return await readPages(url, MAX_RECORD_PAGES, async offset => {
+    return await walkSourcePages(url, MAX_RECORD_PAGES, async offset => {
       const response = await client.request(GET_MONTHLY_REWARDS, {
         addresses,
         since: since.toString(),
@@ -483,70 +455,62 @@ async function fetchSourceRecords(
 
       const { totalCount, nodes } = parsed.data.accountRewards;
 
-      return { rows: nodes, totalCount, status: parsed.data._metadata };
+      return { rows: nodes, totalCount, meta: toSourceMeta(parsed.data._metadata, Date.now()) };
     });
   } catch (error) {
     console.error('Staking: monthly rewards request failed for', url, error);
 
-    return null;
+    return { status: 'failed', meta: null };
   }
 }
 
-/**
- * Identity of one payout across indexers. The record id alone is not enough: it
- * is built from the block number, and two chains' block numbers coincide — the
- * same payout read twice carries the same id, block and time.
- */
-function payoutKey({ id, blockNumber, timestamp }: MonthlyRewardRecord): string {
-  return `${id}@${blockNumber}:${timestamp}`;
-}
-
+/** Two sources of one chain hold the same payout only when every field agrees. */
 function isSamePayout(a: MonthlyRewardRecord, b: MonthlyRewardRecord): boolean {
-  return a.address === b.address && a.amount === b.amount && a.type === b.type;
+  return (
+    a.address === b.address &&
+    a.amount === b.amount &&
+    a.type === b.type &&
+    a.blockNumber === b.blockNumber &&
+    a.timestamp === b.timestamp
+  );
 }
 
 /**
  * Every payout the accounts received since `since`, from every configured
- * source, and whether the list is whole.
+ * source, whether the list is whole, and where it came from.
  *
- * Each source is read on its own: one that fails contributes no rows. A payout
- * two sources both hold is listed once; one they disagree about is dropped
- * instead of either silently winning. The list is `complete` only when every
- * source answered in full, has indexed up to now, and no two disagree;
- * otherwise the payouts in it are real but some may be missing (`partial`).
- * `unavailable` — no source answered; an empty list then says nothing about
- * what was paid.
+ * Each source is read on its own and only a source read in full is used. A
+ * payout is identified by the chain its source says it indexes and by the
+ * record id within that chain — the id alone is built from the block number,
+ * and two chains reach the same one. A payout two sources of one chain both
+ * hold is listed once; one they disagree about is a conflict and is dropped
+ * instead of either winning. A source that does not say which chain it indexes
+ * is not listed next to another source's payouts at all.
+ *
+ * The list is `complete` only when every source is in it, has indexed up to
+ * now, and no two disagree; otherwise the payouts in it are real but some may
+ * be missing (`partial`). `unavailable` — no source is in it; an empty list
+ * then says nothing about what was paid.
  */
 export const fetchMonthlyRewards = async ({
   accounts,
   rewardSources,
   since,
 }: FetchMonthlyRewardsParams): Promise<MonthlyRewards> => {
-  if (accounts.length === 0) return { records: [], completeness: 'complete' };
-  if (rewardSources.length === 0) return { records: [], completeness: 'unavailable' };
+  if (accounts.length === 0) return { records: [], completeness: 'complete', scan: emptyScan('block') };
 
-  const answers = await Promise.all(rewardSources.map(source => fetchSourceRecords(source, accounts, since)));
+  const sources = await Promise.all(
+    rewardSources.map(async source => ({ url: source.url, walk: await readSourceRecords(source, accounts, since) })),
+  );
 
-  const merged = new Map<string, MonthlyRewardRecord>();
-  const conflicts = new Set<string>();
+  const { records, completeness, scan } = mergeChainScans({
+    sources,
+    getId: record => record.id,
+    isSame: isSamePayout,
+  });
 
-  for (const answer of answers.filter(nonNullable)) {
-    for (const record of answer.value) {
-      const key = payoutKey(record);
-      const known = merged.get(key);
+  // Oldest first, and never in the order the sources were listed in.
+  records.sort((a, b) => a.timestamp - b.timestamp || a.blockNumber - b.blockNumber || a.id.localeCompare(b.id));
 
-      if (known && !isSamePayout(known, record)) {
-        conflicts.add(key);
-      }
-      merged.set(key, record);
-    }
-  }
-
-  for (const key of conflicts) {
-    merged.delete(key);
-  }
-
-  const records = [...merged.values()].sort((a, b) => a.timestamp - b.timestamp);
-
-  return { records, completeness: mergedCompleteness(answers, conflicts.size > 0) };
+  return { records, completeness, scan };
 };

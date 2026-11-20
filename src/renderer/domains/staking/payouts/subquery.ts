@@ -2,10 +2,20 @@ import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
 import { type EraIndex } from '@/shared/core';
-import { nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DataCompleteness } from '../completeness';
+import { type DataCompleteness, type ScanReport } from '../completeness';
 import { exposureKey } from '../exposure-key';
+import {
+  type EraSourceMeta,
+  type SourceWalk,
+  ERA_SOURCE_STATUS,
+  emptyScan,
+  eraSourceStatusSchema,
+  mergeEraScans,
+  toEraSourceMeta,
+  walkSourcePages,
+} from '../source-scan';
 import { type RewardSource } from '../types';
 
 import { type EraValidatorExposure } from './types';
@@ -18,18 +28,10 @@ const MAX_PAGES = 20;
 /**
  * Validators the stash was exposed to in the given era range — either as a
  * nominator (member of `others`) or as the validator itself.
- *
- * `indexedTo` is the newest era the indexer holds at all: an indexer that
- * stopped short of the range answers "no rows" for it, and that answer must not
- * be read as "the stash was exposed nowhere".
  */
 const GET_ERA_VALIDATORS = `
   query NominatorEraValidators($address: String!, $eraFrom: Int!, $eraTo: Int!, $first: Int!, $offset: Int!) {
-    indexedTo: eraValidatorInfos(first: 1, orderBy: ERA_DESC) {
-      nodes {
-        era
-      }
-    }
+    ${ERA_SOURCE_STATUS}
     eraValidatorInfos(
       first: $first
       offset: $offset
@@ -53,10 +55,7 @@ const GET_ERA_VALIDATORS = `
 /** External schema — validated at runtime, never trusted. */
 const balanceSchema = z.union([z.string(), z.number()]).transform(String);
 
-const responseSchema = z.object({
-  indexedTo: z.object({
-    nodes: z.array(z.object({ era: z.number().int().nonnegative() })),
-  }),
+const responseSchema = eraSourceStatusSchema.extend({
   eraValidatorInfos: z.object({
     totalCount: z.number().int().nonnegative(),
     nodes: z.array(
@@ -80,32 +79,20 @@ type FetchNominatorEraValidatorsParams = {
 export type IndexedExposures = {
   exposures: EraValidatorExposure[];
   completeness: DataCompleteness;
+  /** Which indexer stands for which eras, and what the answer is missing. */
+  scan: ScanReport;
 };
 
-/** What one indexer said, kept apart from every other indexer's answer. */
-type SourceAnswer = {
-  exposures: EraValidatorExposure[];
-  /** Paging reached `totalCount` — nothing of the filtered set was left out. */
-  paged: boolean;
-  /** The indexer has reached the end of the range. */
-  covers: boolean;
-};
-
-async function fetchSource(
+/** One indexer's own walk, kept apart from every other indexer's. */
+async function walkSource(
   { url, addressPrefix }: RewardSource,
   { stash, eraFrom, eraTo }: Omit<FetchNominatorEraValidatorsParams, 'rewardSources'>,
-): Promise<SourceAnswer | null> {
+): Promise<SourceWalk<EraValidatorExposure, EraSourceMeta>> {
   try {
     const client = new GraphQLClient(url);
     const address = toAddress(stash, { prefix: addressPrefix });
 
-    const exposures: EraValidatorExposure[] = [];
-    let indexedTo = -1;
-    let expectedCount: number | null = null;
-    let paged = false;
-    let offset = 0;
-
-    for (let page = 0; page < MAX_PAGES; page++) {
+    return await walkSourcePages(url, MAX_PAGES, async offset => {
       const response = await client.request(GET_ERA_VALIDATORS, {
         address,
         eraFrom,
@@ -123,47 +110,40 @@ async function fetchSource(
 
       const { nodes, totalCount } = parsed.data.eraValidatorInfos;
 
-      // Coverage and size are fixed by the first page. A row indexed mid-scan
-      // lands on a page already read and shifts the later ones, so a count that
-      // moves means the pages no longer add up to one consistent set.
-      if (expectedCount === null) {
-        expectedCount = totalCount;
-        indexedTo = parsed.data.indexedTo.nodes[0]?.era ?? -1;
-      } else if (totalCount !== expectedCount) {
-        break;
-      }
-
-      for (const node of nodes) {
-        exposures.push({ era: node.era, validator: toAccountId(node.address), total: node.total, own: node.own });
-      }
-
-      offset += nodes.length;
-      if (offset >= expectedCount) {
-        paged = true;
-        break;
-      }
-      // Fewer rows than promised and no more coming: the set is not whole.
-      if (nodes.length === 0) break;
-    }
-
-    return { exposures, paged, covers: indexedTo >= eraTo };
+      return {
+        rows: nodes.map(node => ({
+          era: node.era,
+          validator: toAccountId(node.address),
+          total: node.total,
+          own: node.own,
+        })),
+        totalCount,
+        meta: toEraSourceMeta(parsed.data),
+      };
+    });
   } catch (error) {
     console.error('Staking: era validators request failed for', url, error);
 
-    return null;
+    return { status: 'failed', meta: null };
   }
+}
+
+function isSameExposure(a: EraValidatorExposure, b: EraValidatorExposure): boolean {
+  return a.total === b.total && a.own === b.own;
 }
 
 /**
  * Exposures of the stash over the era range, merged from every configured
- * indexer, and how far the merged answer can be trusted.
+ * indexer, how far the merged answer can be trusted, and where it came from.
  *
- * Each indexer is read on its own and only its whole answer is used — a source
- * that fails halfway contributes nothing. The answer is `complete` only when no
- * source failed or was cut short, no two sources disagree, and at least one of
- * them has indexed up to the end of the range. Sources that report different
- * figures for the same `(era, validator)` drop that key instead of one of them
- * silently winning.
+ * Each indexer is walked on its own and its rows are used only when the walk
+ * completed — one that fails on a page, runs into the page limit or changes
+ * under the walk contributes nothing. Rows are merged by `(era, validator)`:
+ * one two indexers hold with the same figures is kept once, one they hold with
+ * different figures is a conflict and is dropped instead of either winning.
+ *
+ * The answer is `complete` only when every indexer was merged, none of them
+ * disagree, and the eras they say they hold reach the whole range.
  */
 export async function fetchNominatorEraValidators({
   rewardSources,
@@ -171,37 +151,21 @@ export async function fetchNominatorEraValidators({
   eraFrom,
   eraTo,
 }: FetchNominatorEraValidatorsParams): Promise<IndexedExposures> {
-  if (rewardSources.length === 0 || eraTo < eraFrom) return { exposures: [], completeness: 'unavailable' };
+  if (eraTo < eraFrom) return { exposures: [], completeness: 'unavailable', scan: emptyScan('era') };
 
-  const answers = await Promise.all(rewardSources.map(source => fetchSource(source, { stash, eraFrom, eraTo })));
-  const answered = answers.filter(nonNullable);
+  const sources = await Promise.all(
+    rewardSources.map(async source => ({ url: source.url, walk: await walkSource(source, { stash, eraFrom, eraTo }) })),
+  );
 
-  if (answered.length === 0) return { exposures: [], completeness: 'unavailable' };
+  const { records, completeness, scan } = mergeEraScans({
+    sources,
+    requested: { from: eraFrom, to: eraTo },
+    getKey: exposure => exposureKey(exposure.era, exposure.validator),
+    isSame: isSameExposure,
+  });
 
-  const merged = new Map<string, EraValidatorExposure>();
-  const conflicts = new Set<string>();
+  // The order of the rows never depends on which indexer was listed first.
+  const exposures = records.sort((a, b) => b.era - a.era || a.validator.localeCompare(b.validator));
 
-  for (const { exposures } of answered) {
-    for (const exposure of exposures) {
-      const key = exposureKey(exposure.era, exposure.validator);
-      const known = merged.get(key);
-
-      if (known && (known.total !== exposure.total || known.own !== exposure.own)) {
-        conflicts.add(key);
-      }
-      merged.set(key, exposure);
-    }
-  }
-
-  for (const key of conflicts) {
-    merged.delete(key);
-  }
-
-  const complete =
-    answered.length === answers.length &&
-    conflicts.size === 0 &&
-    answered.every(answer => answer.paged) &&
-    answered.some(answer => answer.covers);
-
-  return { exposures: Array.from(merged.values()), completeness: complete ? 'complete' : 'partial' };
+  return { exposures, completeness, scan };
 }
