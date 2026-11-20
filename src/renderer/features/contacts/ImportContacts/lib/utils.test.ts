@@ -114,6 +114,18 @@ describe('contactImportUtils', () => {
       }
     });
 
+    it('should remove an Arabic letter mark from a contact name', async () => {
+      const json = JSON.stringify([{ name: 'Ali\u061Cce', address: ALICE_ADDRESS }]);
+      const file = new File([json], 'contacts.json', { type: 'application/json' });
+
+      const result = await contactImportUtils.parseJSON(file);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data[0]!.name).toBe('Alice');
+      }
+    });
+
     it('should trim whitespace from contact names', async () => {
       const json = JSON.stringify([{ name: '  Alice  ', address: ALICE_ADDRESS }]);
       const file = new File([json], 'contacts.json', { type: 'application/json' });

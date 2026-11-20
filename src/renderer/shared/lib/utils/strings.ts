@@ -7,23 +7,28 @@ import { type HexString } from '@/shared/core';
 const LINE_BREAKING_CHARS = /[\p{Cc}\p{Zl}\p{Zp}]/gu;
 
 /**
- * Invisible formatting characters that are removed from a display name:
+ * Format and default-ignorable characters removed from a display name. The rule
+ * is category-based, not a list: every code point that is `\p{Cf}` or
+ * `\p{Default_Ignorable_Code_Point}` is removed — bidi controls and marks, zero
+ * width spaces, tag characters, fillers, variation selectors and so on — which
+ * also covers characters these categories gain later. Three exceptions, each
+ * because removing the character changes how the name reads:
  *
- * - U+00AD soft hyphen
- * - U+180E Mongolian vowel separator
- * - U+200B zero width space
- * - U+200E / U+200F left-to-right / right-to-left mark
- * - U+202A–U+202E bidi embedding / override controls
- * - U+2060–U+2064 word joiner and invisible operators
- * - U+2066–U+206F bidi isolates and deprecated format controls
- * - U+FEFF byte order mark / zero width no-break space
+ * - U+200C / U+200D (zero width non-joiner / joiner) are always kept: they shape
+ *   letters in Persian/Urdu/Kurdish text, build Indic conjuncts and join emoji
+ *   sequences.
+ * - U+FE0E / U+FE0F are kept only right after a `\p{Emoji}` code point, where
+ *   they choose text or emoji presentation and build keycaps.
+ * - U+E0100–U+E01EF are kept only right after a `\p{Unified_Ideograph}` code
+ *   point, where they select the glyph variant of an ideograph in CJK names.
  *
- * ZERO WIDTH NON-JOINER (U+200C) and ZERO WIDTH JOINER (U+200D) are
- * deliberately kept: they shape letters in Persian/Urdu/Kurdish text, build
- * Indic conjuncts and join emoji sequences, so stripping them changes the word.
- * The address book backend applies the same character set — keep both in sync.
+ * "Right after" is checked before anything is removed, so a selector separated
+ * from its base by a removed character, or following another selector, is
+ * removed as well. The address book backend applies the same rule — keep both
+ * in sync.
  */
-const INVISIBLE_CHARS = /[\u00AD\u180E\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/gu;
+const FORMAT_CHARS =
+  /(?![\u{200C}\u{200D}]|(?<=\p{Emoji})[\u{FE0E}\u{FE0F}]|(?<=\p{Unified_Ideograph})[\u{E0100}-\u{E01EF}])[\p{Cf}\p{Default_Ignorable_Code_Point}]/gu;
 
 /**
  * Whitespace plus the kept joiners: a joiner at the edge of a name shapes
@@ -36,8 +41,10 @@ const EDGE_CHARS = /^[\s\u200C\u200D]+|[\s\u200C\u200D]+$/gu;
  * or identity name — by:
  *
  * - Replacing control characters and line/paragraph separators with a space
- * - Removing invisible formatting characters (zero width space, bidi controls,
- *   BOM, soft hyphen, …) while keeping the joiners U+200C / U+200D
+ * - Removing format and default-ignorable characters (zero width space, bidi
+ *   controls, BOM, soft hyphen, tag characters, fillers, …) while keeping the
+ *   joiners U+200C / U+200D, emoji presentation selectors after an emoji and
+ *   ideographic variation selectors after an ideograph
  * - Trimming leading/trailing whitespace and joiners, so a name made of joiners
  *   only sanitizes to an empty string
  * - Normalizing Unicode to NFC form
@@ -47,7 +54,7 @@ const EDGE_CHARS = /^[\s\u200C\u200D]+|[\s\u200C\u200D]+$/gu;
  * @returns {String} Sanitized name
  */
 export const sanitizeDisplayName = (name: string): string => {
-  return name.replace(LINE_BREAKING_CHARS, ' ').replace(INVISIBLE_CHARS, '').replace(EDGE_CHARS, '').normalize('NFC');
+  return name.replace(LINE_BREAKING_CHARS, ' ').replace(FORMAT_CHARS, '').replace(EDGE_CHARS, '').normalize('NFC');
 };
 
 /**
