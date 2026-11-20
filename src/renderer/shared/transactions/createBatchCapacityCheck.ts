@@ -18,7 +18,7 @@ type Params = {
  * Checks that a batch built from user-supplied rows (e.g. a CSV file) fits into
  * a single extrinsic. Such a batch is one operation for the user, so it must be
  * signed as one: when it is too heavy, the form reports how many rows fit
- * instead of letting the batch be split at signing time.
+ * instead of leaving the batch to be refused at signing time.
  *
  * The verdict needs a weight RPC. While that call fails, the batch is
  * unverified and stays blocked just like a heavy one — a batch that cannot be

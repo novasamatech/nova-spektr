@@ -3273,7 +3273,7 @@
       "changeNode": "Change node",
       "close": "Close",
       "enableNetwork": "Open network settings",
-      "extrinsicTooHeavyDescription": "It doesn’t fit into a single transaction on {chain}, and a multisig operation can’t be split into parts. Go back and include fewer items in the operation.",
+      "extrinsicTooHeavyDescription": "It doesn’t fit into a single transaction on {chain}, and this operation can’t be split into parts. Go back and include fewer items in the operation.",
       "extrinsicTooHeavyTitle": "Operation is too large to sign",
       "feeUnavailableDescription": "The operation can't be signed until the fee is known. Try again, or switch to another node.",
       "feeUnavailableTitle": "Couldn't estimate the network fee",

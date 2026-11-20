@@ -16,7 +16,7 @@ vi.mock('../SigningSwitch', () => ({
 
 const TOO_HEAVY_TITLE = 'Operation is too large to sign';
 const TOO_HEAVY_DESCRIPTION =
-  'It doesn’t fit into a single transaction on Polkadot, and a multisig operation can’t be split into parts. Go back and include fewer items in the operation.';
+  'It doesn’t fit into a single transaction on Polkadot, and this operation can’t be split into parts. Go back and include fewer items in the operation.';
 const LOADING_TEXT = 'Preparing signing data...';
 
 const renderSign = (scope: Scope) => {

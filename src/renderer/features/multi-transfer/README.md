@@ -1,13 +1,15 @@
 # Multi-transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
 Sends the **native token to many recipients at once** from a single CSV file. An ops or treasury user uploads a table of
 address/amount pairs — payouts, reimbursements, airdrops — and Spektr validates every row, previews the result, and
 submits it as one transaction (a `utility.batchAll` once more than one transfer is produced). The payout run is atomic:
-it is never split into several transactions, so a file too heavy for one extrinsic is rejected before signing.
+it is never split into several transactions, so a file too heavy for one extrinsic is rejected before signing. The rule
+holds at signing too, for every kind of signer (a plain account, a proxy, a multisig): a batch that turns out too heavy
+there is refused, not signed in parts.
 
 CSV is the **only** input channel: there is no manual row-by-row entry. The feature exists because these payouts arrive
 as spreadsheets and a mistake in one row of a hundred is expensive, so the emphasis is on catching bad rows before
@@ -62,6 +64,7 @@ The flow is **form → confirm → sign → submit**.
 | Confirm             | "Continue" pressed                                                  | Total amount + fiat, chain, initiator/signatory, fee, multisig deposit, call data                                                      |
 | Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                          |
 | Sign / Submit       | Confirmed                                                           | Standard sign and submit screens                                                                                                       |
+| Too heavy to sign   | The batch passed the form check but no longer fits at signing       | The "Operation is too large to sign" screen in place of the signing UI; Close returns to the confirmation and nothing is signed        |
 
 **Draft mode** turns the form into "compose a draft" instead of "sign now": no signatory is required, the transaction is
 built from the draft signing-path's source account, and saving the draft redirects to the Operations page.

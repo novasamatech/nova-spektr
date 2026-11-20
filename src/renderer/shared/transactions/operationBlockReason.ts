@@ -25,7 +25,8 @@ export type OperationBlockReasonKind =
   | 'no-signatory'
   | 'fee-unavailable'
   // The call is heavier than one extrinsic may be and cannot be split (a
-  // multisig call is signed exactly as co-signers agreed on).
+  // multisig call is signed exactly as co-signers agreed on, a batch of
+  // transfers or vesting schedules executes all-or-nothing).
   | 'extrinsic-too-heavy'
   // The call could not be encoded, so there is nothing to sign and no call
   // hash to check against pending multisig operations. A local verdict: the

@@ -194,8 +194,9 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
 }
 
 async function getSplitExtrinsicFee(extrinsic: Extrinsic, api: ApiPromise) {
-  // The fee of a call too heavy to sign is still its fee: estimating it keeps the
-  // confirmation readable, and signing is what refuses it (see `splitExtrinsic`).
+  // Only the parts that will actually be signed are priced. A call too heavy to
+  // sign that cannot be split is priced as the one call it is: estimating it keeps
+  // the confirmation readable, and signing is what refuses it (see `splitExtrinsic`).
   const parts = await splitExtrinsic(extrinsic, api).catch((error: unknown) => {
     if (error instanceof ExtrinsicTooHeavyError) return [extrinsic];
     throw error;
@@ -299,9 +300,10 @@ type CallWrapper = {
 
 /**
  * Single-signer wrappers whose inner batch may be split into several signed
- * extrinsics. `multisig.asMulti` is deliberately absent: splitting beneath it
- * would produce operations whose call hashes differ from the one co-signers
- * agreed on (or are approving), so a multisig call is always signed as is.
+ * extrinsics, when the batch itself may be (see `SPLITTABLE_BATCH_CALLS`).
+ * `multisig.asMulti` is deliberately absent: splitting beneath it would produce
+ * operations whose call hashes differ from the one co-signers agreed on (or are
+ * approving), so a multisig call is always signed as is.
  */
 const CALL_WRAPPERS: CallWrapper[] = [
   { section: 'proxy', method: 'proxy', innerCallIndex: 2 },
@@ -351,13 +353,39 @@ function isMultisigExtrinsic(extrinsic: Extrinsic) {
 }
 
 /**
+ * Calls whose batch may be signed as several extrinsics. Reward payouts are
+ * independent of one another, and the conviction-voting housekeeping
+ * (delegation per track, vote removal, unlock) relies only on the order of its
+ * calls, which the parts keep. None of them moves the signer's funds to another
+ * account, so a run that lands only in part is finished by running it again.
+ * They are batched to save signatures, not to make the run all-or-nothing.
+ */
+const SPLITTABLE_BATCH_CALLS: Partial<Record<string, readonly string[]>> = {
+  staking: ['payoutStakers', 'payoutStakersByPage'],
+  convictionVoting: ['delegate', 'undelegate', 'removeVote', 'unlock'],
+};
+
+/**
+ * Whether a batch may be signed as several extrinsics. The verdict comes from
+ * the calls themselves, so it is the same on every path that brings a batch to
+ * signing: a form, the basket, a draft or pasted call data. Any other batch
+ * (transfers, vesting schedules, bond + nominate, proxy changes, unknown calls)
+ * is one all-or-nothing operation and is signed as built or not at all.
+ */
+function isSplittableBatch(calls: Call[]) {
+  return calls.every(call => SPLITTABLE_BATCH_CALLS[call.section]?.includes(call.method) ?? false);
+}
+
+/**
  * Splits a batch that does not fit into a single extrinsic into several
  * batches, each keeping the original batch method (`batch` / `batchAll` /
  * `forceBatch`). An extrinsic that already fits is returned untouched.
  *
- * A multisig call is never split (see `CALL_WRAPPERS`); when it does not fit,
- * it throws `ExtrinsicTooHeavyError` instead of handing back a call the chain
- * is bound to reject.
+ * Only a batch made of calls known to be safe to split is split (see
+ * `SPLITTABLE_BATCH_CALLS`), and a multisig call never is (see
+ * `CALL_WRAPPERS`). When any other batch or a multisig call does not fit, it
+ * throws `ExtrinsicTooHeavyError` instead of handing back parts that would no
+ * longer execute all-or-nothing, or a call the chain is bound to reject.
  */
 async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Extrinsic[]> {
   return splitWithinBudget(extrinsic, api, getExtrinsicWeightLimit(api));
@@ -386,6 +414,10 @@ async function splitWithinBudget(
 
     const callsArg = extrinsic.args.at(0);
     const calls = (callsArg && Array.isArray(callsArg) ? callsArg : []) as Call[];
+    if (!isSplittableBatch(calls)) {
+      throw new ExtrinsicTooHeavyError(extrinsic.method.section, extrinsic.method.method);
+    }
+
     const chunks = await splitCallsByWeight(api, calls, budget);
     const buildBatch = api.tx.utility[extrinsic.method.method];
     assert(buildBatch, `Unknown batch method utility.${extrinsic.method.method}`);
