@@ -8,6 +8,8 @@ import { WalletIcon } from '@/shared/ui-entities';
 import { type MessageSigningProps } from '../lib/types';
 import { extensionMessageSign } from '../model/extension-message-sign';
 
+import { MessageToSign } from './MessageToSign';
+
 export const ExtensionMessageSign = ({ payload, signerWallet, onGoBack, onResult }: MessageSigningProps) => {
   useGate(extensionMessageSign.flow, { payload });
 
@@ -33,6 +35,8 @@ export const ExtensionMessageSign = ({ payload, signerWallet, onGoBack, onResult
           <FootnoteText className="text-text-secondary">{signerWallet.name}</FootnoteText>
         </div>
       )}
+
+      <MessageToSign message={payload.message} />
 
       <SmallTitleText>{t('signing.signingInProgress')}</SmallTitleText>
 

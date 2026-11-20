@@ -18,6 +18,8 @@ import {
 } from '@/entities/transaction';
 import { type MessageSigningProps } from '../lib/types';
 
+import { MessageToSign } from './MessageToSign';
+
 export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: MessageSigningProps) => {
   const { t } = useI18n();
   const { status: cameraStatus, retry: retryCamera } = useCameraAvailability();
@@ -65,6 +67,8 @@ export const VaultMessageSign = ({ payload, signerWallet, onGoBack, onResult }: 
             <FootnoteText className="text-text-secondary">{signerWallet.name}</FootnoteText>
           </div>
         )}
+
+        <MessageToSign message={message} />
 
         <SmallTitleText>{t('addressBook.auth.scanQrTitle')}</SmallTitleText>
         <QrTxGenerator payload={qrPayload} size="240px" />

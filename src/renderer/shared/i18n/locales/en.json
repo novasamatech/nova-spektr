@@ -58,7 +58,8 @@
       "sessionExpiredToast": "Address Book session expired",
       "signingMessage": "Waiting for signature...",
       "signInSuccess": "Successfully signed in",
-      "signOutButton": "Sign out"
+      "signOutButton": "Sign out",
+      "unsupportedSignInFormat": "This server doesn’t support the sign-in format this app requires. The server has to be updated before you can sign in."
     },
     "backendConfiguration": {
       "addTitle": "Add Connection",
@@ -3780,6 +3781,7 @@
     "metadataLoadError": "Couldn’t load up-to-date metadata. Please try again.",
     "loadingQr": "Generating QR code...",
     "loadingSignData": "Preparing signing data...",
+    "messageToSignLabel": "Message to sign",
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",

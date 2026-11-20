@@ -3,6 +3,12 @@ import { z } from 'zod';
 import { authFetch, clearCsrfToken, parseResponse } from '@/shared/api/backend-fetch';
 
 /**
+ * The one sign-in message format the app signs: its text names the backend
+ * origin.
+ */
+export const SIGN_IN_MESSAGE_VERSION = 2;
+
+/**
  * Challenge nonces are 32 random bytes as lower-case hex; anything else is
  * refused before signing.
  */
@@ -12,8 +18,20 @@ const challengeResponseSchema = z.object({
   challengeId: z.string(),
   nonce: z.string().regex(NONCE_PATTERN),
   expiresAt: z.number(),
-  messageVersion: z.number().int().positive().optional(),
+  // Required: a challenge without it, or with another value, is not a challenge the app can answer.
+  messageVersion: z.literal(SIGN_IN_MESSAGE_VERSION),
 });
+
+/**
+ * The backend's challenge does not advertise the sign-in message format the app
+ * signs. Nothing is offered for signing; the backend has to be updated.
+ */
+export class UnsupportedSignInMessageError extends Error {
+  constructor() {
+    super('The backend does not support the sign-in message format this app signs');
+    this.name = 'UnsupportedSignInMessageError';
+  }
+}
 
 const verifyResponseSchema = z.object({
   permissions: z.array(z.string()),
@@ -35,7 +53,15 @@ async function requestChallenge(baseUrl: string, accountId: string): Promise<Cha
     body: JSON.stringify({ accountId }),
   });
 
-  return parseResponse(result, challengeResponseSchema);
+  try {
+    return parseResponse(result, challengeResponseSchema);
+  } catch (error) {
+    if (error instanceof z.ZodError && error.issues.some(issue => issue.path[0] === 'messageVersion')) {
+      throw new UnsupportedSignInMessageError();
+    }
+
+    throw error;
+  }
 }
 
 async function verifySignature(

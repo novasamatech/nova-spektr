@@ -1,6 +1,6 @@
 # Address book backend connection & authentication
 
-> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-04
+> Part of the [Feature Map](../../features/README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -15,14 +15,14 @@ or network issues.
 
 ## States / scenarios
 
-| State             | When it appears                                | What the user sees                                                                          |
-| ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| URL entry         | Modal opened with no backend or while editing  | URL input with live reachability probe (checking / reachable / unreachable / wrong backend) |
-| Account selection | URL is valid and the user is not yet connected | Account select, preselected with the previously used account when known                     |
-| Signing           | Connect pressed                                | Signing flow; for Vault accounts also a network selector (see below)                        |
-| Connected         | Session is live and the URL is unchanged       | Connected account with a disconnect action                                                  |
-| Error             | Challenge or signature verification failed     | Error alert with a "try again" action                                                       |
-| Session expired   | Background health check loses the session      | Toast with a reconnect shortcut                                                             |
+| State             | When it appears                                                   | What the user sees                                                                                    |
+| ----------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| URL entry         | Modal opened with no backend or while editing                     | URL input with live reachability probe (checking / reachable / unreachable / wrong backend)           |
+| Account selection | URL is valid and the user is not yet connected                    | Account select, preselected with the previously used account when known                               |
+| Signing           | Connect pressed                                                   | The message being signed and the signing flow; for Vault accounts also a network selector (see below) |
+| Connected         | Session is live and the URL is unchanged                          | Connected account with a disconnect action                                                            |
+| Error             | Challenge failed or was refused, or signature verification failed | Error alert with a "try again" action                                                                 |
+| Session expired   | Background health check loses the session                         | Toast with a reconnect shortcut                                                                       |
 
 ### Account preselection
 
@@ -49,13 +49,25 @@ order as everywhere in the app: Polkadot group, Kusama group, others, testnets).
 
 ## Sign-in message
 
-The account signs a text message built from the backend's challenge:
+The account signs one text message, and only this one:
 
-- When the backend advertises message version 2, the message names the origin of the backend URL configured in the app
-  (`ADDRESS_BOOK_AUTH v2` / `origin: …` / `nonce: …`), so the signature is only accepted by that backend. For any other
-  version — none, 1, or one this client does not know — the previous format (`ADDRESS_BOOK_AUTH:<nonce>`) is signed.
-- A challenge whose nonce is not `0x` followed by 64 lower-case hex characters is refused before anything is signed; the
-  modal shows the error state.
+```text
+<Bytes>ADDRESS_BOOK_AUTH v2
+origin: <origin of the backend URL configured in the app>
+nonce: <nonce from the backend's challenge></Bytes>
+```
+
+- The origin always comes from the backend URL configured in the app, never from the challenge, so the signature is only
+  accepted by that backend.
+- The backend's challenge has to advertise message version 2. A challenge without a version, or with any other version,
+  is refused before anything is offered for signing: no signature request reaches the extension or Polkadot Vault, and
+  the modal shows the error state saying that the server does not support the sign-in format the app requires and has to
+  be updated. The app cannot sign in to a backend that only issues such challenges.
+- A challenge whose nonce is not `0x` followed by 64 lower-case hex characters is refused the same way, with the error
+  state.
+- The signing step shows the complete message exactly as it is handed to the signer — every character, the `<Bytes>`
+  wrapper included, line breaks kept, in a monospace block labelled "Message to sign". Polkadot Vault accounts see it
+  above the QR code; extension accounts see it while the extension's own prompt is open.
 
 ## Desktop request policy
 
@@ -71,7 +83,8 @@ flowchart TD
     URL["Enter backend URL"] --> ACC["Select account"]
     ACC --> SIGN["Sign challenge<br/>(Vault: pick network, last used preselected)"]
     SIGN -- "verified" --> DONE["Connected — contacts sync"]
-    SIGN -- "failed" --> ERR["Error — try again"]
+    ACC -- "challenge failed or refused" --> ERR["Error — try again"]
+    SIGN -- "failed" --> ERR
     DONE --> HC{"Periodic session check"}
     HC -- "expired" --> TOAST["Expired toast → reconnect"]
 ```

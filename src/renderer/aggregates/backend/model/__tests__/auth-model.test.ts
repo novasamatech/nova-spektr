@@ -1,11 +1,20 @@
 import { allSettled, createWatch, fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// The HTTP seam of the backend services: the refused-challenge cases run the real
+// challenge request (and its schema) over a canned response.
+const { authFetchMock } = vi.hoisted(() => ({ authFetchMock: vi.fn() }));
+
+vi.mock('@/shared/api/backend-fetch', async importOriginal => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  authFetch: authFetchMock,
+}));
+
 import { type ChainId, type VaultBaseAccount, AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { backendAuthService } from '@/domains/backend';
+import { type ChallengeResponse, backendAuthService } from '@/domains/backend';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -202,7 +211,12 @@ describe('authModel — login flow', () => {
   });
 
   const NONCE = `0x${'ab'.repeat(32)}`;
-  const CHALLENGE = { challengeId: 'challenge-1', nonce: NONCE, expiresAt: 1_000_000, messageVersion: 2 };
+  const CHALLENGE: ChallengeResponse = {
+    challengeId: 'challenge-1',
+    nonce: NONCE,
+    expiresAt: 1_000_000,
+    messageVersion: 2,
+  };
 
   it('completes the happy path: connect → challenge → sign → verified session', async () => {
     const challengeSpy = vi.spyOn(backendAuthService, 'requestChallenge').mockResolvedValue(CHALLENGE);
@@ -324,6 +338,92 @@ describe('authModel — login flow', () => {
     });
     expect(scope.getState(authModel.$error)).toBe('User is blocked');
     expect(scope.getState(authModel.$isAuthenticated)).toBe(false);
+  });
+});
+
+describe('authModel — challenge message version', () => {
+  const NONCE = `0x${'ab'.repeat(32)}`;
+  const UNSUPPORTED_FORMAT_ERROR =
+    'This server doesn’t support the sign-in format this app requires. The server has to be updated before you can sign in.';
+
+  const createSignInScope = () => {
+    return fork({
+      values: [
+        [walletModel.__test.$rawWallets, [vaultWallet]],
+        [accounts.__test.$list, [createVaultAccount('1', TEST_ACCOUNTS[0])]],
+        [authModel.$selectedAccountId, TEST_ACCOUNTS[0]],
+        [backendConfigurationModel.$draftUrl, 'https://backend.test/path/'],
+      ],
+      handlers: [
+        [authModel.__test.verifySignatureFx, vi.fn()],
+        [authModel.__test.checkSessionFx, () => null],
+      ],
+    });
+  };
+
+  const respondWithChallenge = (challenge: Record<string, unknown>) => {
+    authFetchMock.mockReset();
+    authFetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: {},
+      body: JSON.stringify({ challengeId: 'challenge-1', nonce: NONCE, expiresAt: 1_000_000, ...challenge }),
+    });
+  };
+
+  it.each([
+    ['absent', {}],
+    ['1', { messageVersion: 1 }],
+    ['3', { messageVersion: 3 }],
+  ])('refuses a challenge whose message version is %s and asks no signer', async (_label, version) => {
+    respondWithChallenge(version);
+    const scope = createSignInScope();
+
+    const signRequestSpy = vi.fn();
+    createWatch({ unit: messageSignModel.init, fn: signRequestSpy, scope });
+
+    void allSettled(authModel.events.connectTriggered, { scope });
+
+    await vi.waitFor(() => {
+      expect(scope.getState(authModel.$authStep)).toBe('error');
+    });
+    expect(authFetchMock).toHaveBeenCalledTimes(1);
+    expect(scope.getState(authModel.$error)).toBe(UNSUPPORTED_FORMAT_ERROR);
+    expect(scope.getState(authModel.$connectionResult)).toEqual({ status: 'error', message: UNSUPPORTED_FORMAT_ERROR });
+    // Nothing was handed to the signing flow, and no challenge is kept to verify against.
+    expect(signRequestSpy).not.toHaveBeenCalled();
+    expect(scope.getState(messageSignModel.$signStore)).toBeNull();
+    expect(scope.getState(authModel.$isAuthenticated)).toBe(false);
+  });
+
+  it('signs the origin-bound message built from the configured URL for a version 2 challenge', async () => {
+    respondWithChallenge({ messageVersion: 2 });
+    const scope = createSignInScope();
+
+    void allSettled(authModel.events.connectTriggered, { scope });
+
+    await vi.waitFor(() => {
+      expect(scope.getState(messageSignModel.$signStore)).not.toBeNull();
+    });
+    expect(authFetchMock).toHaveBeenCalledWith('https://backend.test/path/auth/challenge', expect.anything());
+    expect(scope.getState(authModel.$authStep)).toBe('signing');
+    expect(new TextDecoder().decode(scope.getState(messageSignModel.$signStore)?.message)).toBe(
+      `<Bytes>ADDRESS_BOOK_AUTH v2\norigin: https://backend.test\nnonce: ${NONCE}</Bytes>`,
+    );
+  });
+
+  it('takes the origin from the configured URL even when the challenge names another one', async () => {
+    respondWithChallenge({ messageVersion: 2, origin: 'https://other.test', backendUrl: 'https://other.test' });
+    const scope = createSignInScope();
+
+    void allSettled(authModel.events.connectTriggered, { scope });
+
+    await vi.waitFor(() => {
+      expect(scope.getState(messageSignModel.$signStore)).not.toBeNull();
+    });
+    expect(new TextDecoder().decode(scope.getState(messageSignModel.$signStore)?.message)).toBe(
+      `<Bytes>ADDRESS_BOOK_AUTH v2\norigin: https://backend.test\nnonce: ${NONCE}</Bytes>`,
+    );
   });
 });
 

@@ -25,7 +25,8 @@ const CHALLENGE_ID = 'challenge-1';
 const CSRF_TOKEN = 'csrf-after-verify';
 
 const V2_MESSAGE = `<Bytes>ADDRESS_BOOK_AUTH v2\norigin: ${BACKEND_URL}\nnonce: ${NONCE}</Bytes>`;
-const V1_MESSAGE = `<Bytes>ADDRESS_BOOK_AUTH:${NONCE}</Bytes>`;
+const UNSUPPORTED_FORMAT_ERROR =
+  'This server doesn’t support the sign-in format this app requires. The server has to be updated before you can sign in.';
 
 // --- Signers -----------------------------------------------------------------
 
@@ -200,7 +201,7 @@ describe('Backend sign-in message', () => {
     await allureMetadata({
       epic: 'AddressBook',
       feature: 'Backend Session',
-      story: 'sign-in message versions',
+      story: 'sign-in message',
     });
   });
 
@@ -283,28 +284,23 @@ describe('Backend sign-in message', () => {
     it.each([
       ['absent', {}],
       ['1', { messageVersion: 1 }],
-      ['3 (unknown to this client)', { messageVersion: 3 }],
-    ])('SP-71: signs the v1 message when the challenge messageVersion is %s', async (_label, version) => {
+      ['3', { messageVersion: 3 }],
+    ])('SP-71: refuses a challenge whose messageVersion is %s before signing', async (_label, version) => {
       const signRaw = installFakeExtension();
       const { requests } = stubBackend(challengeRoutes({ nonce: NONCE, ...version }));
       env = await buildEnvironment({ wallet: extensionWallet, account: extensionAccount });
 
-      const payload = await connectAndWaitForMessage(env);
-      expect(new TextDecoder().decode(payload.message)).toBe(V1_MESSAGE);
+      void allSettled(authModel.events.connectTriggered, { scope: env.scope });
+      await env.waitForState(authModel.$authStep, (step) => step === 'error');
 
-      const signature = await signWithExtension(env, payload);
-
-      expect(signRaw).toHaveBeenCalledTimes(1);
-      expect(decodeSignRawData(signRaw.mock.calls[0]![0])).toBe(V1_MESSAGE);
-
-      submitSignature(env, signature!, extensionAccountId);
-      await env.waitForState(authModel.$isAuthenticated, (authenticated) => authenticated);
-
-      expect(requests['/auth/verify']![0]!.body).toEqual({
-        accountId: extensionAccountId,
-        challengeId: CHALLENGE_ID,
-        signature: SIGNATURE,
-      });
+      expect(requests['/auth/challenge']).toHaveLength(1);
+      expect(requests['/auth/verify']).toBeUndefined();
+      // Nothing reached the signing flow, so no signer was ever asked to sign.
+      expect(env.getState(messageSignModel.$signStore)).toBeNull();
+      expect(signRaw).not.toHaveBeenCalled();
+      expect(env.getState(authModel.$error)).toBe(UNSUPPORTED_FORMAT_ERROR);
+      expect(env.getState(authModel.$connectionResult)).toEqual({ status: 'error', message: UNSUPPORTED_FORMAT_ERROR });
+      expect(env.getState(authModel.$isAuthenticated)).toBe(false);
     });
 
     it('SP-72: moves to the error step with the backend message when verify answers 401', async () => {

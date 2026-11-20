@@ -7,7 +7,7 @@ vi.mock('@/shared/api/backend-fetch', async importOriginal => ({
   authFetch: authFetchMock,
 }));
 
-import { backendAuthService } from './service';
+import { UnsupportedSignInMessageError, backendAuthService } from './service';
 
 const NONCE = `0x${'ab'.repeat(32)}`;
 
@@ -36,9 +36,31 @@ describe('backendAuthService.requestChallenge', () => {
   it.each([`${NONCE}</Bytes><Bytes>extra`, `0x${'AB'.repeat(32)}`, `0x${'ab'.repeat(31)}`, 'ab'.repeat(32), 'nonce-1'])(
     'refuses a malformed nonce: %s',
     async nonce => {
-      authFetchMock.mockResolvedValueOnce(jsonResponse({ challengeId: 'c-1', nonce, expiresAt: 1 }));
+      authFetchMock.mockResolvedValueOnce(jsonResponse({ challengeId: 'c-1', nonce, expiresAt: 1, messageVersion: 2 }));
 
       await expect(backendAuthService.requestChallenge('https://backend.test', '0x01')).rejects.toThrow();
     },
   );
+
+  it.each([
+    ['absent', {}],
+    ['null', { messageVersion: null }],
+    ['1', { messageVersion: 1 }],
+    ['3', { messageVersion: 3 }],
+    ['the string "2"', { messageVersion: '2' }],
+  ])('refuses a challenge whose message version is %s', async (_label, version) => {
+    authFetchMock.mockResolvedValueOnce(jsonResponse({ challengeId: 'c-1', nonce: NONCE, expiresAt: 1, ...version }));
+
+    await expect(backendAuthService.requestChallenge('https://backend.test', '0x01')).rejects.toBeInstanceOf(
+      UnsupportedSignInMessageError,
+    );
+  });
+
+  it('keeps the backend message for a failed challenge request', async () => {
+    authFetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Too many requests' }, 429));
+
+    await expect(backendAuthService.requestChallenge('https://backend.test', '0x01')).rejects.toThrow(
+      'Too many requests',
+    );
+  });
 });
