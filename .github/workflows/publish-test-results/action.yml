@@ -1,0 +1,75 @@
+name: Publish test results
+description: Publish JUnit results as a check run and a pull request comment with a fixed reporter revision and hash-checked dependencies
+
+inputs:
+  files:
+    description: File patterns of the test result files, relative to the job workspace
+    required: true
+  check_name:
+    description: Name of the created check run
+    required: true
+  comment_mode:
+    description: When the pull request comment is written, one of the reporter's `comment_mode` values
+    required: true
+  github_token:
+    description: Token that creates the check run and the pull request comment
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # The reporter is the source of EnricoMi/publish-unit-test-result-action at one
+    # commit. git names a commit by the hash of its content, so a fetch of the full
+    # commit id yields exactly that revision; a tag or a branch name in its place does
+    # not pass the comparison below. Nothing of the reporter's own action definition
+    # runs: only its Python sources are used.
+    - name: Fetch the reporter
+      id: reporter
+      shell: bash
+      env:
+        REPORTER_REPOSITORY: https://github.com/EnricoMi/publish-unit-test-result-action.git
+        # v2.24.0
+        REPORTER_COMMIT: d0a4676d0e0b938bc201470d88276b7c74c712b3
+      run: |
+        reporter_dir="$RUNNER_TEMP/publish-test-results/reporter"
+        git init --quiet "$reporter_dir"
+        git -C "$reporter_dir" fetch --quiet --depth 1 "$REPORTER_REPOSITORY" "$REPORTER_COMMIT"
+        git -C "$reporter_dir" checkout --quiet --detach FETCH_HEAD
+        if [ "$(git -C "$reporter_dir" rev-parse HEAD)" != "$REPORTER_COMMIT" ]; then
+          echo "::error::The reporter checkout is not at commit $REPORTER_COMMIT"
+          exit 1
+        fi
+        echo "dir=$reporter_dir" >> "$GITHUB_OUTPUT"
+
+    # Every dependency comes from requirements.txt next to this file: fixed versions,
+    # checked against their SHA-256 hashes, wheels only (no setup.py runs) and nothing
+    # resolved at install time. The reporter's own requirement files are not read. The
+    # virtual environment keeps the packages away from the runner's system Python
+    # packages.
+    - name: Install the reporter's dependencies
+      id: venv
+      shell: bash
+      run: |
+        venv_dir="$RUNNER_TEMP/publish-test-results/venv"
+        python3 -m venv "$venv_dir"
+        "$venv_dir/bin/python" -m pip install --disable-pip-version-check --no-cache-dir \
+          --require-hashes --no-deps --only-binary :all: \
+          --requirement "$GITHUB_ACTION_PATH/requirements.txt"
+        echo "python=$venv_dir/bin/python" >> "$GITHUB_OUTPUT"
+
+    # The reporter reads its options from the environment and runs in the job
+    # workspace, as it does in its own action. Options not listed here keep the
+    # reporter's defaults; the pause between API reads is the one default its action
+    # sets to a value other than the script's built-in one.
+    - name: Publish test results
+      shell: bash
+      env:
+        REPORTER_DIR: ${{ steps.reporter.outputs.dir }}
+        REPORTER_PYTHON: ${{ steps.venv.outputs.python }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        FILES: ${{ inputs.files }}
+        CHECK_NAME: ${{ inputs.check_name }}
+        COMMENT_MODE: ${{ inputs.comment_mode }}
+        SECONDS_BETWEEN_GITHUB_READS: '0.25'
+      run: |
+        "$REPORTER_PYTHON" "$REPORTER_DIR/python/publish_test_results.py"
