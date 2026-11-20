@@ -1,6 +1,6 @@
 # Vested transfer
 
-> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-05
+> Part of the [Feature Map](../README.md) — Last reviewed: 2026-11-20
 
 ## Overview
 
@@ -11,7 +11,8 @@ every row against the chain's own vesting rules, previews the result, and submit
 so a file too heavy for one extrinsic is rejected before signing — an inline error names how many rows fit (estimated
 against the chain's static per-extrinsic weight limit, wrapping included), and submit and draft saving stay blocked
 until a smaller file is uploaded. While the weight RPC behind that check fails, the file is unverified and stays blocked
-the same way, with an inline error and a retry action.
+the same way, with an inline error and a retry action. The rule holds at signing too, for every kind of signer (a plain
+account, a proxy, a multisig): a batch that turns out too heavy there is refused, not signed in parts.
 
 CSV is the **only** input channel: there is no manual row-by-row entry. The feature exists because these payouts arrive
 as spreadsheets, and a mistake in one row of a hundred is expensive and irreversible — so the emphasis is on catching
@@ -74,6 +75,7 @@ The flow is **form → confirm → sign → submit**.
 | Confirm             | "Continue" pressed                                                  | Total amount + fiat, chain, initiator/signatory, the parsed-file preview row, fee, deposit, call data                                   |
 | Duplicate pending   | The same call is already a pending multisig operation on this chain | A red "Same transaction already exist" alert with an "Open operations" action; Sign is hidden                                           |
 | Sign / Submit       | Confirmed                                                           | Standard sign and submit screens; closing mid-signing asks for confirmation                                                             |
+| Too heavy to sign   | The batch passed the form check but no longer fits at signing       | The "Operation is too large to sign" screen in place of the signing UI; Close returns to the confirmation and nothing is signed         |
 
 Changing the network or uploading a new file **discards the parsed CSV and all row errors** — every rule depends on
 chain constants, so nothing validated against the previous chain can be trusted.

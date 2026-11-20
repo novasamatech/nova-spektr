@@ -11,7 +11,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ExtrinsicTooHeavyError } from './errors';
 import { transactionService } from './service';
 import { metadata } from './service.mocks';
-import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from './types';
+import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction, type Extrinsic } from './types';
 
 type TransferDecodedTransaction = DecodedTransaction<{
   dest: AccountId;
@@ -368,6 +368,7 @@ describe('Transaction service', () => {
     // budget with margin is ~1.33e12 — 13 calls of CALL_REF_TIME fit, 14 do not.
     const CALL_REF_TIME = 100_000_000_000;
     const WRAPPER_REF_TIME = 1_000_000_000;
+    const EXTRINSIC_FEE = 42;
 
     type MockCall = { section: string; method: string; args: readonly unknown[] };
 
@@ -381,12 +382,25 @@ describe('Transaction service', () => {
       if (call.section === 'proxy' && call.method === 'proxy') {
         return WRAPPER_REF_TIME + getMockRefTime(call.args[2] as MockCall);
       }
+      if (call.section === 'utility' && call.method === 'asDerivative') {
+        return WRAPPER_REF_TIME + getMockRefTime(call.args[1] as MockCall);
+      }
 
       return CALL_REF_TIME;
     };
 
-    const createWeightedApi = async () => {
-      const api = await createMockApi();
+    // One api for the whole block: building it from metadata is the slow part.
+    let api: ApiPromise;
+
+    beforeAll(async () => {
+      api = await createMockApi();
+    });
+
+    afterAll(async () => {
+      await api.disconnect();
+    });
+
+    beforeEach(() => {
       const prototype = Object.getPrototypeOf(createTransferExtrinsic(api, TEST_ADDRESS_1, TRANSFER_AMOUNT_1));
 
       vi.spyOn(prototype, 'paymentInfo').mockImplementation(function (this: { method: MockCall }) {
@@ -395,14 +409,26 @@ describe('Transaction service', () => {
           proofSize: 1,
         });
 
-        return Promise.resolve({ weight });
+        return Promise.resolve({ weight, partialFee: api.registry.createType('Balance', EXTRINSIC_FEE) });
       });
-
-      return api;
-    };
+    });
 
     const createTransfers = (api: ApiPromise, count: number) =>
       Array.from({ length: count }, (_, index) => createTransferExtrinsic(api, TEST_ADDRESS_1, index + 1));
+
+    const createVestedTransfers = (api: ApiPromise, count: number) =>
+      Array.from({ length: count }, (_, index) =>
+        api.tx.vesting.vestedTransfer(TEST_ADDRESS_1, { locked: index + 1, perBlock: 1, startingBlock: 1 }),
+      );
+
+    const createPayouts = (api: ApiPromise, count: number) =>
+      Array.from({ length: count }, (_, index) => api.tx.staking.payoutStakers(TEST_ADDRESS_1, index));
+
+    const wrappers = {
+      'proxy.proxy': (api: ApiPromise, call: Extrinsic['method']) => api.tx.proxy.proxy(TEST_ADDRESS_2, null, call),
+      'utility.asDerivative': (api: ApiPromise, call: Extrinsic['method']) => api.tx.utility.asDerivative(0, call),
+    };
+    const wrapperNames = ['proxy.proxy', 'utility.asDerivative'] as const;
 
     const countCalls = (extrinsics: { method: MockCall }[]) =>
       extrinsics.reduce((sum, { method }) => sum + (method.args[0] as unknown[]).length, 0);
@@ -412,7 +438,6 @@ describe('Transaction service', () => {
     });
 
     it('returns a batch that fits into one extrinsic untouched', async () => {
-      const api = await createWeightedApi();
       const extrinsic = api.tx.utility.batchAll(createTransfers(api, 13));
 
       const result = await transactionService.splitExtrinsic(extrinsic, api);
@@ -421,10 +446,9 @@ describe('Transaction service', () => {
     });
 
     it.each(['batch', 'batchAll', 'forceBatch'] as const)(
-      'keeps utility.%s when splitting a heavy batch',
+      'keeps utility.%s when splitting a heavy batch of payouts',
       async method => {
-        const api = await createWeightedApi();
-        const extrinsic = api.tx.utility[method](createTransfers(api, 20));
+        const extrinsic = api.tx.utility[method](createPayouts(api, 20));
 
         const result = await transactionService.splitExtrinsic(extrinsic, api);
 
@@ -433,6 +457,105 @@ describe('Transaction service', () => {
         expect(countCalls(result)).toEqual(20);
       },
     );
+
+    it('still splits a heavy batch of delegation changes', async () => {
+      const undelegations = Array.from({ length: 10 }, (_, track) => api.tx.convictionVoting.undelegate(track));
+      const delegations = Array.from({ length: 10 }, (_, track) =>
+        api.tx.convictionVoting.delegate(track, TEST_ADDRESS_2, 'Locked1x', 1),
+      );
+      const extrinsic = api.tx.utility.batchAll([...undelegations, ...delegations]);
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(countCalls(result)).toEqual(20);
+    });
+
+    // The mock metadata predates paged payouts, so the calls a batch may be split
+    // for are also checked by name against a stubbed api.
+    it.each([
+      ['staking', 'payoutStakers'],
+      ['staking', 'payoutStakersByPage'],
+      ['convictionVoting', 'delegate'],
+      ['convictionVoting', 'undelegate'],
+      ['convictionVoting', 'removeVote'],
+      ['convictionVoting', 'unlock'],
+    ])('splits a heavy batch made of %s.%s calls', async (section, method) => {
+      const { registry, consts } = api;
+      const toExtrinsic = (call: MockCall) => ({
+        method: call,
+        args: call.args,
+        paymentInfo: () =>
+          Promise.resolve({
+            weight: registry.createType<Weight>('SpWeightsWeightV2Weight', {
+              refTime: getMockRefTime(call),
+              proofSize: 1,
+            }),
+          }),
+      });
+      const batchAll = (extrinsics: { method: MockCall }[]) =>
+        toExtrinsic({ section: 'utility', method: 'batchAll', args: [extrinsics.map(e => e.method)] });
+      const stubApi = { consts, tx: Object.assign(toExtrinsic, { utility: { batchAll } }) } as unknown as ApiPromise;
+      const calls = Array.from({ length: 20 }, () => toExtrinsic({ section, method, args: [] }));
+      const extrinsic = batchAll(calls) as unknown as Extrinsic;
+
+      const result = await transactionService.splitExtrinsic(extrinsic, stubApi);
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(countCalls(result)).toEqual(20);
+    });
+
+    it('refuses a heavy batch of transfers instead of splitting it', async () => {
+      const extrinsic = api.tx.utility.batchAll(createTransfers(api, 20));
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it('refuses a heavy batch of vested transfers instead of splitting it', async () => {
+      const extrinsic = api.tx.utility.batchAll(createVestedTransfers(api, 20));
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it('refuses a heavy batch that mixes payouts with a transfer', async () => {
+      const extrinsic = api.tx.utility.batchAll([...createPayouts(api, 19), ...createTransfers(api, 1)]);
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it.each(wrapperNames)('signs a batch of transfers that fits beneath %s as is', async wrapperName => {
+      const batch = api.tx.utility.batchAll(createTransfers(api, 12));
+      const extrinsic = wrappers[wrapperName](api, batch.method);
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result).toEqual([extrinsic]);
+    });
+
+    it.each(wrapperNames)('refuses a heavy batch of transfers beneath %s', async wrapperName => {
+      const batch = api.tx.utility.batchAll(createTransfers(api, 20));
+      const extrinsic = wrappers[wrapperName](api, batch.method);
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it.each(wrapperNames)('refuses a heavy batch of vested transfers beneath %s', async wrapperName => {
+      const batch = api.tx.utility.batchAll(createVestedTransfers(api, 20));
+      const extrinsic = wrappers[wrapperName](api, batch.method);
+
+      await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
+    });
+
+    it.each(wrapperNames)('still splits a heavy batch of payouts beneath %s', async wrapperName => {
+      const batch = api.tx.utility.batchAll(createPayouts(api, 20));
+      const extrinsic = wrappers[wrapperName](api, batch.method);
+      const [section, method] = wrapperName.split('.');
+
+      const result = await transactionService.splitExtrinsic(extrinsic, api);
+
+      expect(result.length).toBeGreaterThan(1);
+      expect(result.every(part => part.method.section === section && part.method.method === method)).toBe(true);
+    });
 
     const createMultisig = (api: ApiPromise, calls: number) => {
       const batch = api.tx.utility.batchAll(createTransfers(api, calls));
@@ -444,7 +567,6 @@ describe('Transaction service', () => {
     };
 
     it('signs a multisig call that fits as is', async () => {
-      const api = await createWeightedApi();
       const extrinsic = createMultisig(api, 13);
 
       const result = await transactionService.splitExtrinsic(extrinsic, api);
@@ -454,44 +576,36 @@ describe('Transaction service', () => {
     });
 
     it('refuses to split a heavy batch wrapped in multisig.asMulti', async () => {
-      const api = await createWeightedApi();
       const extrinsic = createMultisig(api, 20);
 
       await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
     });
 
     it('refuses a heavy multisig call behind a proxy', async () => {
-      const api = await createWeightedApi();
       const extrinsic = api.tx.proxy.proxy(TEST_ADDRESS_2, null, createMultisig(api, 20).method);
 
       await expect(transactionService.splitExtrinsic(extrinsic, api)).rejects.toBeInstanceOf(ExtrinsicTooHeavyError);
     });
 
     it('still estimates the fee of a heavy multisig call', async () => {
-      const api = await createWeightedApi();
       const extrinsic = createMultisig(api, 20);
-      const prototype = Object.getPrototypeOf(extrinsic);
-      vi.spyOn(prototype, 'paymentInfo').mockImplementation(function (this: { method: MockCall }) {
-        const weight = api.registry.createType<Weight>('SpWeightsWeightV2Weight', {
-          refTime: getMockRefTime(this.method),
-          proofSize: 1,
-        });
 
-        return Promise.resolve({ weight, partialFee: api.registry.createType('Balance', 42) });
-      });
-
-      await expect(transactionService.getSplitExtrinsicFee(extrinsic, api)).resolves.toEqual(new BN(42));
+      await expect(transactionService.getSplitExtrinsicFee(extrinsic, api)).resolves.toEqual(new BN(EXTRINSIC_FEE));
     });
 
-    it('still splits a heavy batch behind a single-signer proxy', async () => {
-      const api = await createWeightedApi();
-      const batch = api.tx.utility.batchAll(createTransfers(api, 20));
-      const extrinsic = api.tx.proxy.proxy(TEST_ADDRESS_2, null, batch.method);
+    it('prices a heavy batch of transfers as the one extrinsic it is', async () => {
+      const extrinsic = api.tx.utility.batchAll(createTransfers(api, 20));
 
-      const result = await transactionService.splitExtrinsic(extrinsic, api);
+      await expect(transactionService.getSplitExtrinsicFee(extrinsic, api)).resolves.toEqual(new BN(EXTRINSIC_FEE));
+    });
 
-      expect(result.length).toBeGreaterThan(1);
-      expect(result.every(part => part.method.section === 'proxy' && part.method.method === 'proxy')).toBe(true);
+    it('prices a heavy batch of payouts as the sum of its parts', async () => {
+      const extrinsic = api.tx.utility.batchAll(createPayouts(api, 20));
+      const parts = await transactionService.splitExtrinsic(extrinsic, api);
+
+      await expect(transactionService.getSplitExtrinsicFee(extrinsic, api)).resolves.toEqual(
+        new BN(EXTRINSIC_FEE * parts.length),
+      );
     });
   });
 

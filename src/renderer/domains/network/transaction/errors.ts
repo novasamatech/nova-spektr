@@ -1,8 +1,10 @@
 /**
  * Thrown by `transactionService.splitExtrinsic` when an extrinsic does not fit
- * into a single extrinsic's weight budget and cannot be split either (a
- * multisig call must be signed exactly as co-signers agreed on). Signing it
- * would only end in a chain-side `ExhaustsResources` rejection.
+ * into a single extrinsic's weight budget and cannot be split either: a
+ * multisig call must be signed exactly as co-signers agreed on, and a batch
+ * whose calls belong together (transfers, vesting schedules) must execute
+ * all-or-nothing. Signing it as is would only end in a chain-side
+ * `ExhaustsResources` rejection.
  */
 export class ExtrinsicTooHeavyError extends Error {
   readonly section: string;

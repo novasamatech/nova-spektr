@@ -110,8 +110,10 @@ const encodeExtrinsicsFx = createEffect((input: TransactionSigningPayload[]): Ex
 });
 
 /**
- * Some batch extrinsics can be too large for network. in this case we're
- * splitting them into multiple chunks.
+ * Some batch extrinsics can be too large for network. A batch of calls that are
+ * safe to sign apart (payouts, governance housekeeping) is split into multiple
+ * chunks; any other batch, like a multisig call, is rejected with
+ * `ExtrinsicTooHeavyError` — see `transactionService.splitExtrinsic`.
  */
 const splitExtrinsicsFx = createEffect(async (input: ExtrinsicSigningPayload[]) => {
   let splitted: ExtrinsicSigningPayload[] = [];
